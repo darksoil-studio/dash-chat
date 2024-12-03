@@ -15,6 +15,11 @@ integrity:
     bundled: <NIX_PACKAGE>
     dependencies: null
     dylib: null
+  - name: file_storage_integrity
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies: null
+    dylib: null
 coordinator:
   zomes:
   - name: profiles
@@ -28,5 +33,11 @@ coordinator:
     bundled: <NIX_PACKAGE>
     dependencies:
     - name: linked_devices_integrity
+    dylib: null
+  - name: file_storage
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies:
+    - name: file_storage_integrity
     dylib: null
 lineage: []
