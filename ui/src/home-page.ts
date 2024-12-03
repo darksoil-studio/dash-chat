@@ -54,7 +54,7 @@ import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { appStyles } from './app-styles.js';
-import { isMobileContext } from './context.js';
+import { isMobileContext, rootRouterContext } from './context.js';
 
 @customElement('home-page')
 export class HomePage extends SignalWatcher(LitElement) {
@@ -67,6 +67,9 @@ export class HomePage extends SignalWatcher(LitElement) {
 	@consume({ context: messengerStoreContext, subscribe: true })
 	messengerStore!: MessengerStore;
 
+	@consume({ context: rootRouterContext, subscribe: true })
+	rootRouter!: Router;
+
 	routes = new Routes(this, [
 		{
 			path: '',
@@ -78,7 +81,18 @@ export class HomePage extends SignalWatcher(LitElement) {
 				html`<peer-chat
 					.peerChatHash=${decodeHashFromBase64(peerChatHash!)}
 					style="flex: 1; margin: 8px"
-				></peer-chat>`,
+				>
+					${this.isMobile
+						? html`
+								<sl-icon-button
+									style="color: black"
+									slot="top-bar-left-action"
+									.src=${wrapPathInSvg(mdiArrowLeft)}
+									@click=${() => this.rootRouter.goto('')}
+								></sl-icon-button>
+							`
+						: html``}
+				</peer-chat>`,
 		},
 		{
 			path: 'peer/:peer',
@@ -86,31 +100,37 @@ export class HomePage extends SignalWatcher(LitElement) {
 				html`<peer-chat
 					.peer=${decodeHashFromBase64(peer!)}
 					style="flex: 1; margin: 8px"
-				></peer-chat>`,
+				>
+					${this.isMobile
+						? html`
+								<sl-icon-button
+									style="color: black"
+									slot="top-bar-left-action"
+									.src=${wrapPathInSvg(mdiArrowLeft)}
+									@click=${() => this.rootRouter.goto('')}
+								></sl-icon-button>
+							`
+						: html``}
+				</peer-chat>`,
 		},
 		{
 			path: 'group-chat/:groupChatHash',
 			render: ({ groupChatHash }) =>
 				html`<group-chat
 					.groupChatHash=${decodeHashFromBase64(groupChatHash!)}
-					style="flex: 1; margin: 8px"
+					style="flex: 1; margin: 8px; margin-top: 0"
 				>
-					<sl-icon-button
-						style="color: black"
-						slot="top-bar-left-action"
-						.src=${wrapPathInSvg(mdiArrowLeft)}
-						@click=${() => this.routes.goto(`group-chat/${groupChatHash}`)}
-					></sl-icon-button>
+					${this.isMobile
+						? html`
+								<sl-icon-button
+									style="color: black"
+									slot="top-bar-left-action"
+									.src=${wrapPathInSvg(mdiArrowLeft)}
+									@click=${() => this.rootRouter.goto('')}
+								></sl-icon-button>
+							`
+						: html``}
 				</group-chat>`,
-		},
-		{
-			path: 'group-chat/:groupChatHash/details',
-			render: ({ groupChatHash }) => html`
-				<group-details
-					.groupChatHash=${decodeHashFromBase64(groupChatHash!)}
-					style="flex: 1; margin: 8px"
-				></group-details>
-			`,
 		},
 	]);
 
@@ -164,8 +184,9 @@ export class HomePage extends SignalWatcher(LitElement) {
 				</sl-tab-panel>
 				<sl-tab-panel name="all_profiles">
 					<all-profiles
-						.excludedProfiles=${this.myProfile.status === 'completed'
-							? [this.myProfile.value?.profileHash]
+						.excludedProfiles=${this.myProfile.status === 'completed' &&
+						this.myProfile.value
+							? [this.myProfile.value.profileHash]
 							: []}
 						style="flex: 1; margin: 8px"
 						@profile-selected=${async (e: CustomEvent) => {
@@ -186,28 +207,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 
 	@consume({ context: isMobileContext })
 	isMobile!: boolean;
-
-	renderContent() {
-		if (this.isMobile) {
-			if (this.routes.currentPathname() === '') {
-				return this.renderHomePanel();
-			} else {
-				return this.routes.outlet();
-			}
-		}
-
-		return html`
-			<div class="row" style="flex: 1">
-				<div class="column" style="flex-basis: 400px">
-					${this.renderHomePanel()}
-				</div>
-
-				<sl-divider vertical> </sl-divider>
-
-				${this.routes.outlet()}
-			</div>
-		`;
-	}
 
 	renderActions() {
 		if (this.isMobile) {
@@ -276,111 +275,42 @@ export class HomePage extends SignalWatcher(LitElement) {
 		`;
 	}
 
-	peerChatNickname(peerChatHash: EntryHash): AsyncResult<string> {
-		const peerChat = this.messengerStore.peerChats
-			.get(peerChatHash)
-			.currentPeerChat.get();
-		if (peerChat.status !== 'completed') return peerChat;
-
-		const peer = peerChat.value.peer_1.agents.find(
-			a =>
-				encodeHashToBase64(a) ===
-				encodeHashToBase64(this.profilesStore.client.client.myPubKey),
-		)
-			? peerChat.value.peer_2
-			: peerChat.value.peer_1;
-
-		if (peer.profile) {
-			return {
-				status: 'completed',
-				value: peer.profile.nickname,
-			};
-		}
-		return this.agentNickname(peer.agents[0]);
-	}
-	agentNickname(agent: AgentPubKey): AsyncResult<string> {
-		const profile = this.profilesStore.profileForAgent.get(agent).get();
-		if (profile.status !== 'completed') return profile;
-		const latestVersion = profile.value!.latestVersion.get();
-		if (latestVersion.status !== 'completed') return latestVersion;
-
-		return {
-			status: 'completed',
-			value: latestVersion.value.entry.nickname,
-		};
-	}
-
-	renderChatName() {
-		const params = this.routes.params;
-		const isPeerChat = this.routes.currentPathname().startsWith('peer-chat');
-		if (isPeerChat) {
-			const peerChatHash = decodeHashFromBase64(params.peerChatHash!);
-			const nickname = this.peerChatNickname(peerChatHash);
-			if (nickname.status !== 'completed') return html``;
-			return html`<span>${nickname.value}</span>`;
-		}
-		const isGroupChat = this.routes.currentPathname().startsWith('group-chat');
-		if (isGroupChat) {
-			const groupChatHash = decodeHashFromBase64(params.groupChatHash!);
-			const groupChat = this.messengerStore.groupChats
-				.get(groupChatHash)
-				.currentGroupChat.get();
-			if (groupChat.status !== 'completed') return html``;
-
-			return html`
-				<div
-					class="row"
-					style="flex: 1; align-items: center; gap: 8px; cursor: pointer"
-					@click=${() => {
-						this.routes.goto(
-							`group-chat/${encodeHashToBase64(groupChatHash)}/details`,
-						);
-					}}
-				>
-					<show-avatar-image .imageHash=${groupChat.value.info.avatar_hash}>
-					</show-avatar-image>
-					<span>${groupChat.value.info.name} </span>
-				</div>
-			`;
-		}
-		const isPeer = this.routes.currentPathname().startsWith('peer');
-		if (isPeer) {
-			const peer = decodeHashFromBase64(params.peer!);
-			const nickname = this.agentNickname(peer);
-			if (nickname.status !== 'completed') return html``;
-			return html`<span>${nickname.value}</span>`;
-		}
-	}
-
-	renderTopBar() {
-		if (this.isMobile && this.routes.currentPathname() !== '') {
-			return html`
-				<div class="row top-bar" style="gap: 8px">
-					<sl-icon-button
-						style="color: black"
-						.src=${wrapPathInSvg(mdiArrowLeft)}
-						@click=${() => this.routes.goto('')}
-					></sl-icon-button>
-					${this.renderChatName()}
-				</div>
-			`;
-		}
-
+	renderMobile() {
 		return html`
-			<div class="row top-bar">
-				<span class="title" style="flex: 1">${msg('Messenger Demo')}</span>
+			<div class="column" style="flex: 1">
+				<div class="row top-bar">
+					<span class="title" style="flex: 1">${msg('Messenger Demo')}</span>
 
-				${this.renderActions()}
+					${this.renderActions()}
+				</div>
+			</div>
+		`;
+	}
+
+	renderDesktop() {
+		return html`
+			<div class="column" style="flex: 1">
+				<div class="row top-bar">
+					<span class="title" style="flex: 1">${msg('Messenger Demo')}</span>
+
+					${this.renderActions()}
+				</div>
+				<div class="row" style="flex: 1">
+					<div class="column" style="flex-basis: 400px">
+						${this.renderHomePanel()}
+					</div>
+
+					<sl-divider vertical> </sl-divider>
+
+					${this.routes.outlet()}
+				</div>
 			</div>
 		`;
 	}
 
 	render() {
-		return html`
-			<div class="column" style="flex: 1">
-				${this.renderTopBar()} ${this.renderContent()}
-			</div>
-		`;
+		if (this.isMobile) return this.renderMobile();
+		return this.renderDesktop();
 	}
 
 	static styles = [
