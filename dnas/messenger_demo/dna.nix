@@ -17,6 +17,8 @@
       inputs.tnesh-stack.outputs.builders.${system}.dna {
         dnaManifest = ./workdir/dna.yaml;
         zomes = {
+          messenger_integrity = inputs'.messenger.packages.messenger_integrity;
+          messenger = inputs'.messenger.packages.messenger;
           file_storage_integrity = inputs'.file-storage.packages.file_storage_integrity;
           file_storage = inputs'.file-storage.packages.file_storage;
           # Include here the zome packages for this DNA, e.g.:

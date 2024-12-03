@@ -20,6 +20,11 @@ integrity:
     bundled: <NIX_PACKAGE>
     dependencies: null
     dylib: null
+  - name: messenger_integrity
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies: null
+    dylib: null
 coordinator:
   zomes:
   - name: profiles
@@ -39,5 +44,11 @@ coordinator:
     bundled: <NIX_PACKAGE>
     dependencies:
     - name: file_storage_integrity
+    dylib: null
+  - name: messenger
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies:
+    - name: messenger_integrity
     dylib: null
 lineage: []

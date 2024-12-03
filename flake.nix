@@ -15,6 +15,8 @@
     linked-devices-zome.url =
       "github:darksoil-studio/linked-devices-zome/main-0.4";
     profiles-zome.url = "github:darksoil-studio/profiles-zome/main-0.4";
+    messenger.url =
+      "git+ssh://git@github.com/darksoil-studio/messenger-zome?ref=main-0.4";
   };
 
   nixConfig = {

@@ -25,7 +25,8 @@
     "lit": "^3.0.0",
     "urlpattern-polyfill": "^10.0.0",
     "@darksoil-studio/linked-devices-zome": "github:darksoil-studio/linked-devices-zome#7801fc92421fde6a8f9ac2899f2202a29f62e327&path:ui",
-    "@darksoil-studio/file-storage-zome": "github:darksoil-studio/file-storage#40908026f903164dc522b149b43b4c61a624155d&path:ui"
+    "@darksoil-studio/file-storage-zome": "github:darksoil-studio/file-storage#40908026f903164dc522b149b43b4c61a624155d&path:ui",
+    "@darksoil-studio/messenger-zome": "github:darksoil-studio/messenger-zome#main-0.4&path:ui"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.10.3",

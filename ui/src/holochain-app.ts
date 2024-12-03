@@ -1,5 +1,6 @@
 import '@darksoil-studio/file-storage-zome/dist/elements/file-storage-context.js';
 import '@darksoil-studio/linked-devices-zome/dist/elements/linked-devices-context.js';
+import '@darksoil-studio/messenger-zome/dist/elements/messenger-context.js';
 import '@darksoil-studio/profiles-zome/dist/elements/my-profile.js';
 import '@darksoil-studio/profiles-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/profiles-zome/dist/elements/profiles-context.js';
@@ -111,15 +112,17 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 
 		return html`
 			<app-client-context .client=${this._client}>
-				<file-storage-context role="messenger_demo">
-					<linked-devices-context role="messenger_demo">
-						<profiles-context role="messenger_demo">
-							<profile-prompt style="flex: 1;">
-								${this.router.outlet()}
-							</profile-prompt>
-						</profiles-context>
-					</linked-devices-context>
-				</file-storage-context>
+				<messenger-context role="messenger_demo">
+					<file-storage-context role="messenger_demo">
+						<linked-devices-context role="messenger_demo">
+							<profiles-context role="messenger_demo">
+								<profile-prompt style="flex: 1;">
+									${this.router.outlet()}
+								</profile-prompt>
+							</profiles-context>
+						</linked-devices-context>
+					</file-storage-context>
+				</messenger-context>
 			</app-client-context>
 		`;
 	}
