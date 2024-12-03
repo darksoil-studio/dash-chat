@@ -10,6 +10,11 @@ integrity:
     bundled: <NIX_PACKAGE>
     dependencies: null
     dylib: null
+  - name: linked_devices_integrity
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies: null
+    dylib: null
 coordinator:
   zomes:
   - name: profiles
@@ -17,5 +22,11 @@ coordinator:
     bundled: <NIX_PACKAGE>
     dependencies:
     - name: profiles_integrity
+    dylib: null
+  - name: linked_devices
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies:
+    - name: linked_devices_integrity
     dylib: null
 lineage: []

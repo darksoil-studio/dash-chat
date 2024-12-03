@@ -23,7 +23,8 @@
     "@msgpack/msgpack": "^2.8.0",
     "@shoelace-style/shoelace": "^2.11.0",
     "lit": "^3.0.0",
-    "urlpattern-polyfill": "^10.0.0"
+    "urlpattern-polyfill": "^10.0.0",
+    "@darksoil-studio/linked-devices-zome": "github:darksoil-studio/linked-devices-zome#7801fc92421fde6a8f9ac2899f2202a29f62e327&path:ui"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.10.3",

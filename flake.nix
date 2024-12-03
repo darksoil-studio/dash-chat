@@ -3,7 +3,6 @@
 
   inputs = {
     p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
-    profiles-zome.url = "github:darksoil-studio/profiles-zome/main-0.4";
     holonix.url = "github:holochain/holonix/main-0.4";
 
     nixpkgs.follows = "holonix/nixpkgs";
@@ -11,6 +10,10 @@
 
     tnesh-stack.url = "github:darksoil-studio/tnesh-stack/main-0.4";
     playground.url = "github:darksoil-studio/holochain-playground";
+
+    linked-devices-zome.url =
+      "github:darksoil-studio/linked-devices-zome/main-0.4";
+    profiles-zome.url = "github:darksoil-studio/profiles-zome/main-0.4";
   };
 
   nixConfig = {
@@ -25,51 +28,39 @@
   };
 
   outputs = inputs:
-    inputs.flake-parts.lib.mkFlake
-      {
-        inherit inputs;
-      }
-      {
-        imports = [
-          ./happ.nix
-        ];
-      
-        systems = builtins.attrNames inputs.holonix.devShells;
-        perSystem =
-          { inputs'
-          , config
-          , pkgs
-          , system
-          , ...
-          }: {
-            devShells.default = pkgs.mkShell {
-              inputsFrom = [
-              inputs'.p2p-shipyard.devShells.holochainTauriDev 
-                inputs'.tnesh-stack.devShells.synchronized-pnpm
-                inputs'.holonix.devShells.default
-              ];
-              packages = [
-                (inputs'.holonix.packages.holochain.override {
-                  cargoExtraArgs = " --features unstable-functions";
-                })
-                inputs'.tnesh-stack.packages.hc-scaffold-happ
-                inputs'.playground.packages.hc-playground
-              ];
-            };
-            devShells.androidDev = pkgs.mkShell {
-              inputsFrom = [
-              inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev 
-                inputs'.tnesh-stack.devShells.synchronized-pnpm
-                inputs'.holonix.devShells.default
-              ];
-              packages = [
-                (inputs'.holonix.packages.holochain.override {
-                  cargoExtraArgs = " --features unstable-functions";
-                })
-                inputs'.tnesh-stack.packages.hc-scaffold-happ
-                inputs'.playground.packages.hc-playground
-              ];
-            };
-          };
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [ ./happ.nix ];
+
+      systems = builtins.attrNames inputs.holonix.devShells;
+      perSystem = { inputs', config, pkgs, system, ... }: {
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            inputs'.p2p-shipyard.devShells.holochainTauriDev
+            inputs'.tnesh-stack.devShells.synchronized-pnpm
+            inputs'.holonix.devShells.default
+          ];
+          packages = [
+            (inputs'.holonix.packages.holochain.override {
+              cargoExtraArgs = " --features unstable-functions";
+            })
+            inputs'.tnesh-stack.packages.hc-scaffold-happ
+            inputs'.playground.packages.hc-playground
+          ];
+        };
+        devShells.androidDev = pkgs.mkShell {
+          inputsFrom = [
+            inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
+            inputs'.tnesh-stack.devShells.synchronized-pnpm
+            inputs'.holonix.devShells.default
+          ];
+          packages = [
+            (inputs'.holonix.packages.holochain.override {
+              cargoExtraArgs = " --features unstable-functions";
+            })
+            inputs'.tnesh-stack.packages.hc-scaffold-happ
+            inputs'.playground.packages.hc-playground
+          ];
+        };
       };
+    };
 }

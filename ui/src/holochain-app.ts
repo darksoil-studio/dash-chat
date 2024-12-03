@@ -19,6 +19,7 @@ import { appStyles } from "./app-styles.js";
 import { rootRouterContext } from "./context.js";
 import "./home-page.js";
 import '@darksoil-studio/profiles-zome/dist/elements/profiles-context.js';
+import '@darksoil-studio/linked-devices-zome/dist/elements/linked-devices-context.js';
 
 @localized()
 @customElement("holochain-app")
@@ -105,11 +106,13 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 
     return html`
       <app-client-context .client=${this._client}>
-        <profiles-context role="messenger_demo">
-          <profile-prompt style="flex: 1;">
-            ${this.router.outlet()}
-          </profile-prompt>
-        </profiles-context>
+        <linked-devices-context role="messenger_demo">
+          <profiles-context role="messenger_demo">
+            <profile-prompt style="flex: 1;">
+              ${this.router.outlet()}
+            </profile-prompt>
+          </profiles-context>
+        </linked-devices-context>
       </app-client-context>
     `;
   }
