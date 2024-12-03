@@ -1,0 +1,17 @@
+{
+  "name": "tests",
+  "private": true,
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@msgpack/msgpack": "^2.8.0",
+    "@holochain/client": "^0.18.0-rc",
+    "@holochain/tryorama": "^0.18.0-dev.0",
+    "@tnesh-stack/signals": "^0.400.0-rc",
+    "@tnesh-stack/utils": "^0.400.0-rc",
+    "typescript": "^5.4.5",
+    "vitest": "^1.4.0"
+  },
+  "type": "module"
+}

@@ -1,0 +1,21 @@
+manifest_version: '1'
+name: messenger_demo
+integrity:
+  network_seed: null
+  properties: null
+  origin_time: 1733234736326055
+  zomes:
+  - name: profiles_integrity
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies: null
+    dylib: null
+coordinator:
+  zomes:
+  - name: profiles
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies:
+    - name: profiles_integrity
+    dylib: null
+lineage: []

@@ -1,0 +1,31 @@
+{
+  "name": "messenger-demo-dev",
+  "private": true,
+  "scripts": {
+    "start": "AGENTS=2 pnpm network",
+    "network": "hc s clean && pnpm build:happ && BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) UI_PORT=8888 concurrently -k \"pnpm -F ui start\" \"pnpm launch\" \"hc playground\" \"pnpm local-services\"",
+    "launch": "echo pass | WEBKIT_DISABLE_DMABUF_RENDERER=1 RUST_LOG=warn hc launch --piped -n $AGENTS workdir/messenger-demo.happ --ui-port $UI_PORT network --bootstrap http://127.0.0.1:$BOOTSTRAP_PORT webrtc ws://127.0.0.1:$SIGNAL_PORT",
+    "local-services": "hc run-local-services --bootstrap-port $BOOTSTRAP_PORT --signal-port $SIGNAL_PORT",
+    "test": "pnpm build:happ && pnpm -F tests test",
+    "build:happ": "nix build -L .#messenger-demo_happ.meta.debug -o workdir/messenger-demo.happ",
+    "package": "nix build -L .#messenger-demo_happ -o workdir/messenger-demo.happ && pnpm -F ui package && hc web-app pack workdir"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@eslint/js": "^9.0.0",
+    "concurrently": "^6.2.1",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "new-port-cli": "^1.0.0",
+    "prettier": "^3.2.5",
+    "typescript-eslint": "^8.0.0",
+    "typescript": "^5.4.5"
+  },
+  "type": "module",
+  "engines": {
+    "pnpm": ">=9.0.0"
+  },
+  "hcScaffold": {
+    "template": "/nix/store/7xd0v86pfxinhw6p49p78vqkipjr3a9a-hc-scaffold/template"
+  }
+}

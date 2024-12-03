@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="Description" content="Put your description here." />
+    <base href="/" />
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+        background-color: #ededed;
+        height: 100%;
+        width: 100%;
+      }
+      
+      body {
+        display: flex;
+      }
+      
+      body, :root {
+        /* Changes the primary theme color to purple using primitives */
+        --sl-color-primary-50: var(--sl-color-purple-50);
+        --sl-color-primary-100: var(--sl-color-purple-100);
+        --sl-color-primary-200: var(--sl-color-purple-200);
+        --sl-color-primary-300: var(--sl-color-purple-300);
+        --sl-color-primary-400: var(--sl-color-purple-400);
+        --sl-color-primary-500: var(--sl-color-purple-500);
+        --sl-color-primary-600: var(--sl-color-purple-600);
+        --sl-color-primary-700: var(--sl-color-purple-700);
+        --sl-color-primary-800: var(--sl-color-purple-800);
+        --sl-color-primary-900: var(--sl-color-purple-900);
+        --sl-color-primary-950: var(--sl-color-purple-950);
+      }
+
+    </style>
+    <title>Messenger Demo</title>
+  </head>
+
+  <body>
+    <holochain-app></holochain-app>
+
+    <script type="module">
+      // Replace 'light.css' with 'dark.css' if you want the dark theme, and then add class="sl-theme-dark" to the body element
+      import '@shoelace-style/shoelace/dist/themes/light.css';
+      import "urlpattern-polyfill";
+      import "./src/holochain-app.ts";
+    </script>
+  </body>
+</html>

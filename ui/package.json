@@ -1,0 +1,37 @@
+{
+  "name": "ui",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "vite --port $UI_PORT --clearScreen false",
+    "build": "vite build",
+    "lint": "eslint src && prettier \"**/*.ts\" --check --ignore-path .gitignore",
+    "format": "eslint src && prettier \"**/*.ts\" --write --ignore-path .gitignore",
+    "package": "pnpm build && cd dist && bestzip ../dist.zip *",
+    "localize:extract": "lit-localize extract",
+    "localize:build": "lit-localize build"
+  },
+  "dependencies": {
+    "@holochain/client": "^0.18.0-rc",
+    "@darksoil-studio/profiles-zome": "github:darksoil-studio/profiles-zome#00617b4ce2ab5b6a29cccf908dfeeb35e1644c2b&path:ui",
+    "@tnesh-stack/elements": "^0.400.0-rc",
+    "@tnesh-stack/signals": "^0.400.0-rc",
+    "@tnesh-stack/utils": "^0.400.0-rc",
+    "@lit/context": "^1.0.0",
+    "@lit/localize": "^0.12.0",
+    "@mdi/js": "^7.2.0",
+    "@msgpack/msgpack": "^2.8.0",
+    "@shoelace-style/shoelace": "^2.11.0",
+    "lit": "^3.0.0",
+    "urlpattern-polyfill": "^10.0.0"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.10.3",
+    "@lit/localize-tools": "^0.6.3",
+    "bestzip": "^2.2.0",
+    "typescript": "^5.4.5",
+    "tslib": "^2.6.2",
+    "vite": "^4.0.0",
+    "vite-plugin-static-copy": "^0.13.0"
+  }
+}
