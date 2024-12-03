@@ -5,12 +5,14 @@ opt-level = "z"
 opt-level = "z"
 
 [workspace]
-members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
+members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*", "src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]
-holochain = { version = "0.5.0-dev.3", default-features = false, features = [
-  "test_utils",
-] }
 hdi = "0.6.0-dev.1"
 hdk = "0.5.0-dev.3"
+
+[workspace.dependencies.holochain]
+default-features = false
+features = ["test_utils"]
+version = "0.5.0-dev.3"

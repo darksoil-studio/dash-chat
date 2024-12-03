@@ -2,6 +2,7 @@
   description = "Template for Holochain app development";
 
   inputs = {
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
     profiles-zome.url = "github:darksoil-studio/profiles-zome/main-0.4";
     holonix.url = "github:holochain/holonix/main-0.4";
 
@@ -42,7 +43,22 @@
           , ...
           }: {
             devShells.default = pkgs.mkShell {
-              inputsFrom = [ 
+              inputsFrom = [
+              inputs'.p2p-shipyard.devShells.holochainTauriDev 
+                inputs'.tnesh-stack.devShells.synchronized-pnpm
+                inputs'.holonix.devShells.default
+              ];
+              packages = [
+                (inputs'.holonix.packages.holochain.override {
+                  cargoExtraArgs = " --features unstable-functions";
+                })
+                inputs'.tnesh-stack.packages.hc-scaffold-happ
+                inputs'.playground.packages.hc-playground
+              ];
+            };
+            devShells.androidDev = pkgs.mkShell {
+              inputsFrom = [
+              inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev 
                 inputs'.tnesh-stack.devShells.synchronized-pnpm
                 inputs'.holonix.devShells.default
               ];

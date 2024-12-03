@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "vite --port $UI_PORT --clearScreen false",
+    "start": "vite --clearScreen false",
     "build": "vite build",
     "lint": "eslint src && prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "format": "eslint src && prettier \"**/*.ts\" --write --ignore-path .gitignore",
