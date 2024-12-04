@@ -5,15 +5,11 @@ export const appStyles = [
 	css`
 		.top-bar {
 			align-items: center;
-			background-color: var(--sl-color-primary-500);
 			padding: 0 16px;
 			height: 64px;
-		}
-
-		group-chat::part(top-bar) {
-			background-color: unset;
-			color: black;
-			box-shadow: rgba(149, 157, 165, 0.2) 0px 4px 8px;
+			background-color: var(--sl-color-neutral-100);
+			border: 1px solid var(--sl-color-gray-300, lightgrey);
+			box-shadow: rgba(149, 157, 165, 0.2) 2px 2px 4px;
 		}
 	`,
 	...sharedStyles,

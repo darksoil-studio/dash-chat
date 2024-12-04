@@ -15,8 +15,10 @@
     linked-devices-zome.url =
       "github:darksoil-studio/linked-devices-zome/main-0.4";
     profiles-zome.url = "github:darksoil-studio/profiles-zome/main-0.4";
-    messenger.url =
+    messenger-zome.url =
       "git+ssh://git@github.com/darksoil-studio/messenger-zome?ref=main-0.4";
+    aons.url =
+      "git+ssh://git@github.com/darksoil-studio/always-online-nodes?ref=main";
   };
 
   nixConfig = {
@@ -32,7 +34,7 @@
 
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ ./happ.nix ];
+      imports = [ ./happ.nix ./aon.nix ];
 
       systems = builtins.attrNames inputs.holonix.devShells;
       perSystem = { inputs', config, pkgs, system, ... }: {
@@ -46,6 +48,7 @@
             (inputs'.holonix.packages.holochain.override {
               cargoExtraArgs = " --features unstable-functions";
             })
+            inputs'.p2p-shipyard.packages.hc-pilot
             inputs'.tnesh-stack.packages.hc-scaffold-happ
             inputs'.playground.packages.hc-playground
           ];

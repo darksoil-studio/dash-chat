@@ -16,7 +16,7 @@ importers:
         version: 2.1.0
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^4.3.0
-        version: 4.3.0(prettier@3.4.1)
+        version: 4.3.0(prettier@3.4.2)
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
@@ -36,8 +36,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       prettier:
-        specifier: ^3.4.1
-        version: 3.4.1
+        specifier: ^3.4.2
+        version: 3.4.2
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -79,7 +79,7 @@ importers:
         version: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/7801fc92421fde6a8f9ac2899f2202a29f62e327#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/messenger-zome':
         specifier: github:darksoil-studio/messenger-zome#main-0.4&path:ui
-        version: git+https://git@github.com:darksoil-studio/messenger-zome.git#ee560212a77e200e669578623f3739250a3bcf5c&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
+        version: git+ssh://git@github.com/darksoil-studio/messenger-zome.git#e4fe28564581a3e4b91999bdfab4b56386ab3235&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/profiles-zome':
         specifier: github:darksoil-studio/profiles-zome#c49c6b6cc587ba545fc290ec675713ecbd176331&path:ui
         version: https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/c49c6b6cc587ba545fc290ec675713ecbd176331#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
@@ -241,8 +241,8 @@ packages:
     resolution: {path: ui, tarball: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/c8b08f5da81d030e846dcb7afa8e244d3c0a6d50}
     version: 0.1.0
 
-  '@darksoil-studio/messenger-zome@git+https://git@github.com:darksoil-studio/messenger-zome.git#ee560212a77e200e669578623f3739250a3bcf5c&path:ui':
-    resolution: {commit: ee560212a77e200e669578623f3739250a3bcf5c, path: ui, repo: git@github.com:darksoil-studio/messenger-zome.git, type: git}
+  '@darksoil-studio/messenger-zome@git+ssh://git@github.com/darksoil-studio/messenger-zome.git#e4fe28564581a3e4b91999bdfab4b56386ab3235&path:ui':
+    resolution: {commit: e4fe28564581a3e4b91999bdfab4b56386ab3235, path: ui, repo: git+ssh://git@github.com/darksoil-studio/messenger-zome.git, type: git}
     version: 0.1.0
 
   '@darksoil-studio/notifications-zome@https://codeload.github.com/darksoil-studio/notifications-zome/tar.gz/6dfdb11c8a1731e99f7454ec85adf32be7ab85b8#path:ui':
@@ -1972,8 +1972,8 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier@3.4.1:
-    resolution: {integrity: sha512-G+YdqtITVZmOJje6QkXQWzl3fSfMxFwm1tjTyo9exhkmWSqC4Yhd1+lug++IlR2mvRVAxEDDWYkQdeSztajqgg==}
+  prettier@3.4.2:
+    resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -2652,7 +2652,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/messenger-zome@git+https://git@github.com:darksoil-studio/messenger-zome.git#ee560212a77e200e669578623f3739250a3bcf5c&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)':
+  '@darksoil-studio/messenger-zome@git+ssh://git@github.com/darksoil-studio/messenger-zome.git#e4fe28564581a3e4b91999bdfab4b56386ab3235&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)':
     dependencies:
       '@darksoil-studio/file-storage-zome': https://codeload.github.com/darksoil-studio/file-storage/tar.gz/3d2362bed697e62b5e63891189e331bb56567be7#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/linked-devices-zome': https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/7801fc92421fde6a8f9ac2899f2202a29f62e327#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
@@ -3244,7 +3244,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.1)':
+  '@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.2)':
     dependencies:
       '@babel/generator': 7.17.7
       '@babel/parser': 7.26.2
@@ -3252,7 +3252,7 @@ snapshots:
       '@babel/types': 7.17.0
       javascript-natural-sort: 0.7.1
       lodash: 4.17.21
-      prettier: 3.4.1
+      prettier: 3.4.2
     transitivePeerDependencies:
       - supports-color
 
@@ -4446,7 +4446,7 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier@3.4.1: {}
+  prettier@3.4.2: {}
 
   pretty-format@29.7.0:
     dependencies:

@@ -5,7 +5,6 @@ import {
 } from '@darksoil-studio/messenger-zome';
 import '@darksoil-studio/messenger-zome/dist/elements/all-chats.js';
 import '@darksoil-studio/messenger-zome/dist/elements/group-chat.js';
-import '@darksoil-studio/messenger-zome/dist/elements/group-details.js';
 import '@darksoil-studio/messenger-zome/dist/elements/peer-chat.js';
 import {
 	ProfilesStore,
@@ -80,7 +79,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 			render: ({ peerChatHash }) =>
 				html`<peer-chat
 					.peerChatHash=${decodeHashFromBase64(peerChatHash!)}
-					style="flex: 1; margin: 8px"
+					style="flex: 1;"
 				>
 					${this.isMobile
 						? html`
@@ -97,10 +96,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 		{
 			path: 'peer/:peer',
 			render: ({ peer }) =>
-				html`<peer-chat
-					.peer=${decodeHashFromBase64(peer!)}
-					style="flex: 1; margin: 8px"
-				>
+				html`<peer-chat .peer=${decodeHashFromBase64(peer!)} style="flex: 1;">
 					${this.isMobile
 						? html`
 								<sl-icon-button
@@ -118,7 +114,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 			render: ({ groupChatHash }) =>
 				html`<group-chat
 					.groupChatHash=${decodeHashFromBase64(groupChatHash!)}
-					style="flex: 1; margin: 8px; margin-top: 0"
+					style="flex: 1;"
 				>
 					${this.isMobile
 						? html`
@@ -255,6 +251,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 					style="font-size: 24px"
 					@click=${() =>
 						this.dispatchEvent(new CustomEvent('create-group-chat-selected'))}
+					variant="text"
 					><sl-icon
 						slot="prefix"
 						.src=${wrapPathInSvg(mdiAccountMultiplePlus)}
@@ -333,6 +330,9 @@ export class HomePage extends SignalWatcher(LitElement) {
 			}
 			sl-tab::part(base) {
 				flex: 1;
+			}
+			sl-divider {
+				margin-right: 0;
 			}
 		`,
 		...appStyles,

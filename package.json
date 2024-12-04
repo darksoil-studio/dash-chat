@@ -3,8 +3,9 @@
   "private": true,
   "scripts": {
     "start": "AGENTS=2 pnpm network",
-    "network": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm launch\"",
+    "network": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm launch:pilot\"",
     "launch": "concurrently-repeat \"pnpm tauri dev --no-watch\" $AGENTS",
+    "launch:pilot": "concurrently-repeat \"hc-pilot workdir/messenger-demo.happ --ui-port 1420\" $AGENTS",
     "test": "pnpm build:happ && pnpm -F tests test",
     "build:happ": "nix build -L .#messenger-demo_happ.meta.debug -o workdir/messenger-demo.happ",
     "package": "nix build -L .#messenger-demo_happ -o workdir/messenger-demo.happ && pnpm -F ui package && hc web-app pack workdir",
@@ -22,7 +23,7 @@
     "eslint-config-prettier": "^9.1.0",
     "internal-ip-cli": "^2.0.0",
     "new-port-cli": "^1.0.0",
-    "prettier": "^3.4.1",
+    "prettier": "^3.4.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.17.0"
   },
