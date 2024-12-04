@@ -17094,11 +17094,11 @@
         "tnesh-stack": "tnesh-stack_45"
       },
       "locked": {
-        "lastModified": 1733307837,
-        "narHash": "sha256-xxVn7ze1MgTjMFyFGt9Y+4Nqy9tCudBUsXAMlaRkLqY=",
+        "lastModified": 1733328452,
+        "narHash": "sha256-aY/LnqfiFAOHZZ400MQw+p2Q0FnA0ODk7R/d3PYdvVs=",
         "ref": "main-0.4",
-        "rev": "e4fe28564581a3e4b91999bdfab4b56386ab3235",
-        "revCount": 67,
+        "rev": "4565ae8012813a81572a2209858c36e7f4539ae8",
+        "revCount": 70,
         "type": "git",
         "url": "ssh://git@github.com/darksoil-studio/messenger-zome"
       },

@@ -2,19 +2,12 @@
 
 {
   # Import all `dnas/*/dna.nix` files
-  imports = (
-    map (m: "${./.}/dnas/${m}/dna.nix")
-      (builtins.attrNames (if builtins.pathExists ./dnas then builtins.readDir ./dnas else {} ))
-  );
+  imports = (map (m: "${./.}/dnas/${m}/dna.nix") (builtins.attrNames
+    (if builtins.pathExists ./dnas then builtins.readDir ./dnas else { })));
 
-  perSystem =
-    { inputs'
-    , lib
-    , self'
-    , system
-    , ...
-    }: {
-  	  packages.messenger-demo_happ = inputs.tnesh-stack.outputs.builders.${system}.happ {
+  perSystem = { inputs', lib, self', system, ... }: {
+    packages.messenger_demo_happ =
+      inputs.tnesh-stack.outputs.builders.${system}.happ {
         happManifest = ./workdir/happ.yaml;
         dnas = {
           # Include here the DNA packages for this hApp, e.g.:
@@ -23,5 +16,5 @@
           messenger_demo = self'.packages.messenger_demo_dna;
         };
       };
-  	};
+  };
 }

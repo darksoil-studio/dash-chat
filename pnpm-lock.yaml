@@ -79,7 +79,7 @@ importers:
         version: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/7801fc92421fde6a8f9ac2899f2202a29f62e327#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/messenger-zome':
         specifier: github:darksoil-studio/messenger-zome#main-0.4&path:ui
-        version: git+ssh://git@github.com/darksoil-studio/messenger-zome.git#e4fe28564581a3e4b91999bdfab4b56386ab3235&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
+        version: git+ssh://git@github.com/darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/profiles-zome':
         specifier: github:darksoil-studio/profiles-zome#c49c6b6cc587ba545fc290ec675713ecbd176331&path:ui
         version: https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/c49c6b6cc587ba545fc290ec675713ecbd176331#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
@@ -152,8 +152,8 @@ packages:
     resolution: {integrity: sha512-oLcVCTeIFadUoArDTwpluncplrYBmTCCZZgXCbgNGvOBBiSDDK3eWO4b/+eOTli5tKv1lg+a5/NAXg+nTcei1w==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/generator@7.26.2':
-    resolution: {integrity: sha512-zevQbhbau95nkoxSq3f/DC/SC+EEOUZd3DYqfSkMhY2/wfSeaHV1Ew4vk8e+x8lja31IbyuUa2uQ3JONqKbysw==}
+  '@babel/generator@7.26.3':
+    resolution: {integrity: sha512-6FF/urZvD0sTeO7k6/B15pMLC4CHUv1426lzr3N01aHJTl046uCAh9LXW/fzeXXjPNCJ6iABW5XaWOsIZB93aQ==}
     engines: {node: '>=6.9.0'}
 
   '@babel/helper-environment-visitor@7.24.7':
@@ -180,8 +180,8 @@ packages:
     resolution: {integrity: sha512-Ed61U6XJc3CVRfkERJWDz4dJwKe7iLmmJsbOGu9wSloNSFttHV0I8g6UAgb7qnK5ly5bGLPd4oXZlxCdANBOWQ==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/parser@7.26.2':
-    resolution: {integrity: sha512-DWMCZH9WA4Maitz2q21SRKHo9QXZxkDsbNZoVD62gusNtNBBqDg9i7uOhASfTfIGNzW+O+r7+jAlM8dwphcJKQ==}
+  '@babel/parser@7.26.3':
+    resolution: {integrity: sha512-WJ/CvmY8Mea8iDXo6a7RK2wbmJITT5fN3BEkRuFlxVyNx8jOKIIhmC4fSkTcPcf8JyavbBwIe6OpiCOBXt/IcA==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -201,8 +201,8 @@ packages:
     resolution: {integrity: sha512-TmKSNO4D5rzhL5bjWFcVHHLETzfQ/AmbKpKPOSjlP0WoHZ6L911fgoOKY4Alp/emzG4cHJdyN49zpgkbXFEHHw==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/types@7.26.0':
-    resolution: {integrity: sha512-Z/yiTPj+lDVnF7lWeKCIJzaIkI0vYO87dMpZ4bg4TDrFe4XXLFWL1TbXU27gBP3QccxV9mZICCrnjnYlJjXHOA==}
+  '@babel/types@7.26.3':
+    resolution: {integrity: sha512-vN5p+1kl59GVKMvTHt55NzzmYVxprfJD+ql7U9NFIfKCBkYE55LYtS+WtPlaYOyzydrKI8Nezd+aZextrd+FMA==}
     engines: {node: '>=6.9.0'}
 
   '@bitgo/blake2b-wasm@3.2.3':
@@ -241,8 +241,8 @@ packages:
     resolution: {path: ui, tarball: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/c8b08f5da81d030e846dcb7afa8e244d3c0a6d50}
     version: 0.1.0
 
-  '@darksoil-studio/messenger-zome@git+ssh://git@github.com/darksoil-studio/messenger-zome.git#e4fe28564581a3e4b91999bdfab4b56386ab3235&path:ui':
-    resolution: {commit: e4fe28564581a3e4b91999bdfab4b56386ab3235, path: ui, repo: git+ssh://git@github.com/darksoil-studio/messenger-zome.git, type: git}
+  '@darksoil-studio/messenger-zome@git+ssh://git@github.com/darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui':
+    resolution: {commit: 4565ae8012813a81572a2209858c36e7f4539ae8, path: ui, repo: git+ssh://git@github.com/darksoil-studio/messenger-zome.git, type: git}
     version: 0.1.0
 
   '@darksoil-studio/notifications-zome@https://codeload.github.com/darksoil-studio/notifications-zome/tar.gz/6dfdb11c8a1731e99f7454ec85adf32be7ab85b8#path:ui':
@@ -2492,38 +2492,38 @@ snapshots:
       jsesc: 2.5.2
       source-map: 0.5.7
 
-  '@babel/generator@7.26.2':
+  '@babel/generator@7.26.3':
     dependencies:
-      '@babel/parser': 7.26.2
-      '@babel/types': 7.26.0
+      '@babel/parser': 7.26.3
+      '@babel/types': 7.26.3
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
       jsesc: 3.0.2
 
   '@babel/helper-environment-visitor@7.24.7':
     dependencies:
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
 
   '@babel/helper-function-name@7.24.7':
     dependencies:
       '@babel/template': 7.25.9
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
 
   '@babel/helper-hoist-variables@7.24.7':
     dependencies:
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
 
   '@babel/helper-split-export-declaration@7.24.7':
     dependencies:
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
 
   '@babel/helper-string-parser@7.25.9': {}
 
   '@babel/helper-validator-identifier@7.25.9': {}
 
-  '@babel/parser@7.26.2':
+  '@babel/parser@7.26.3':
     dependencies:
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
 
   '@babel/runtime@7.26.0':
     dependencies:
@@ -2532,19 +2532,19 @@ snapshots:
   '@babel/template@7.25.9':
     dependencies:
       '@babel/code-frame': 7.26.2
-      '@babel/parser': 7.26.2
-      '@babel/types': 7.26.0
+      '@babel/parser': 7.26.3
+      '@babel/types': 7.26.3
 
   '@babel/traverse@7.23.2':
     dependencies:
       '@babel/code-frame': 7.26.2
-      '@babel/generator': 7.26.2
+      '@babel/generator': 7.26.3
       '@babel/helper-environment-visitor': 7.24.7
       '@babel/helper-function-name': 7.24.7
       '@babel/helper-hoist-variables': 7.24.7
       '@babel/helper-split-export-declaration': 7.24.7
-      '@babel/parser': 7.26.2
-      '@babel/types': 7.26.0
+      '@babel/parser': 7.26.3
+      '@babel/types': 7.26.3
       debug: 4.3.7
       globals: 11.12.0
     transitivePeerDependencies:
@@ -2555,7 +2555,7 @@ snapshots:
       '@babel/helper-validator-identifier': 7.25.9
       to-fast-properties: 2.0.0
 
-  '@babel/types@7.26.0':
+  '@babel/types@7.26.3':
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
@@ -2652,7 +2652,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/messenger-zome@git+ssh://git@github.com/darksoil-studio/messenger-zome.git#e4fe28564581a3e4b91999bdfab4b56386ab3235&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)':
+  '@darksoil-studio/messenger-zome@git+ssh://git@github.com/darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)':
     dependencies:
       '@darksoil-studio/file-storage-zome': https://codeload.github.com/darksoil-studio/file-storage/tar.gz/3d2362bed697e62b5e63891189e331bb56567be7#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/linked-devices-zome': https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/7801fc92421fde6a8f9ac2899f2202a29f62e327#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
@@ -3247,7 +3247,7 @@ snapshots:
   '@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.2)':
     dependencies:
       '@babel/generator': 7.17.7
-      '@babel/parser': 7.26.2
+      '@babel/parser': 7.26.3
       '@babel/traverse': 7.23.2
       '@babel/types': 7.17.0
       javascript-natural-sort: 0.7.1

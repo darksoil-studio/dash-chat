@@ -273,6 +273,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 	}
 
 	renderMobile() {
+		if (this.routes.currentPathname() !== '') return this.routes.outlet();
 		return html`
 			<div class="column" style="flex: 1">
 				<div class="row top-bar">
@@ -280,6 +281,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 
 					${this.renderActions()}
 				</div>
+				${this.renderHomePanel()}
 			</div>
 		`;
 	}

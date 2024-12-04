@@ -34,7 +34,7 @@
 
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ ./happ.nix ./aon.nix ];
+      imports = [ ./happ.nix ./tauri-app.nix ];
 
       systems = builtins.attrNames inputs.holonix.devShells;
       perSystem = { inputs', config, pkgs, system, ... }: {

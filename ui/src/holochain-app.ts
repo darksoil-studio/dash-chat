@@ -99,12 +99,12 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 							>${msg('Create Group Chat')}</span
 						>
 					</div>
-					<div class="column" style="align-items: center; flex: 1">
-						<sl-card style="width: 400px; margin-top: 24px">
+					<div class="row" style="justify-content: center; flex: 1">
+						<sl-card style="margin: 16px; flex-basis: 500px">
 							<div class="column" style="gap: 12px; flex: 1">
 								<span class="title">${msg('New Group Chat')} </span>
 								<create-group-chat
-									style="flex: 1"
+									style="flex: 1;"
 									@group-chat-created=${(e: CustomEvent) => {
 										this.router.goto(
 											`/home/group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
