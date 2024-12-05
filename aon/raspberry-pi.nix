@@ -39,8 +39,8 @@
               enable = true;
               interfaces = [ "wlan0" ];
               networks = let
-                SSID = builtins.getEnv ("SSID");
-                SSID-PASSWORD = builtins.getEnv ("SSIDPASSWORD");
+                SSID = "Pixel_4841";
+                SSID-PASSWORD = "12344321";
               in { ${SSID} = { psk = SSID-PASSWORD; }; };
             };
 
@@ -88,7 +88,7 @@
                   dna = self.outputs.packages."x86_64-linux".messenger_demo_dna;
                 in "always-only-node ${dna} --data-dir ${homeDir}";
                 Restart = "always";
-                RestartSec = 1;
+                RestartSec = 10;
               };
             };
 
