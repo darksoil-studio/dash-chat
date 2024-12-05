@@ -29,8 +29,5 @@
   "type": "module",
   "engines": {
     "pnpm": ">=9.0.0"
-  },
-  "hcScaffold": {
-    "template": "/nix/store/7xd0v86pfxinhw6p49p78vqkipjr3a9a-hc-scaffold/template"
   }
 }

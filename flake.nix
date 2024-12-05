@@ -8,7 +8,7 @@
     flake-parts.follows = "holonix/flake-parts";
 
     tnesh-stack.url = "github:darksoil-studio/tnesh-stack/main-0.4";
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/wamr";
     playground.url = "github:darksoil-studio/holochain-playground/main-0.4";
 
     file-storage.url = "github:darksoil-studio/file-storage/main-0.4";
