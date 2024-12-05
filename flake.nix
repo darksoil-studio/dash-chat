@@ -19,6 +19,9 @@
       "git+ssh://git@github.com/darksoil-studio/messenger-zome?ref=main-0.4";
     aons.url =
       "git+ssh://git@github.com/darksoil-studio/always-online-nodes?ref=main";
+
+    nixos-generators.url = "github:nix-community/nixos-generators";
+
   };
 
   nixConfig = {
@@ -34,7 +37,7 @@
 
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ ./happ.nix ./tauri-app.nix ];
+      imports = [ ./happ.nix ./tauri-app.nix ./aon/raspberry-pi.nix ];
 
       systems = builtins.attrNames inputs.holonix.devShells;
       perSystem = { inputs', config, pkgs, system, ... }: {
