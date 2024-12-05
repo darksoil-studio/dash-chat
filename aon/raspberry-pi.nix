@@ -86,6 +86,7 @@
             in {
               enable = true;
               path = [ aon ];
+              wantedBy = [ "multi-user.target" ];
               serviceConfig = {
                 ExecStart =
                   "${aon}/bin/always-online-node --data-dir ${homeDir}";
