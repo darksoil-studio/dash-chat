@@ -46,6 +46,7 @@ import {
 	Router,
 	Routes,
 	appClientContext,
+	notify,
 	notifyError,
 	wrapPathInSvg,
 } from '@tnesh-stack/elements';
@@ -246,9 +247,10 @@ export class HomePage extends SignalWatcher(LitElement) {
 							} else if (value === 'scan_agent_info') {
 								try {
 									const agentInfos = await scanAgentInfoQrcode();
-									this.adminWebsocket.addAgentInfo({
+									await this.adminWebsocket.addAgentInfo({
 										agent_infos: agentInfos,
 									});
+									notify(msg('Added AgentInfo.'));
 								} catch (e) {
 									console.log(JSON.stringify(e));
 									notifyError(msg(str`Error scanning agent info: ${e}`));

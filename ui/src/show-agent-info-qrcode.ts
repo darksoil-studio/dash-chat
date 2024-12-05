@@ -4,7 +4,11 @@ import { localized } from '@lit/localize';
 import { decode, encode } from '@msgpack/msgpack';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/qr-code/qr-code.js';
-import { Format, scan } from '@tauri-apps/plugin-barcode-scanner';
+import {
+	Format,
+	requestPermissions,
+	scan,
+} from '@tauri-apps/plugin-barcode-scanner';
 import { SignalWatcher } from '@tnesh-stack/signals';
 import { fromUint8Array, toUint8Array } from 'js-base64';
 import { LitElement, html } from 'lit';
@@ -13,6 +17,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { adminWebsocketContext } from './context.js';
 
 export async function scanAgentInfoQrcode(): Promise<Array<AgentInfoSigned>> {
+	await requestPermissions();
 	const result = await scan({ windowed: false, formats: [Format.QRCode] });
 	const agentInfos = decode(
 		toUint8Array(result.content),
