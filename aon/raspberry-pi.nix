@@ -82,10 +82,12 @@
               serviceConfig = {
                 ExecStart = let
                   homeDir = config.users.users.${user}.home;
-                  dna = self.outputs.packages."x86_64-linux".messenger_demo_dna;
-                in "${
-                  inputs.aons.outputs.packages."aarch64-linux".always-online-node
-                }/bin/always-only-node ${dna} --data-dir ${homeDir}";
+                  aon =
+                    inputs.aons.outputs.builders."aarch64-linux".aon-for-dna {
+                      dna_bundle =
+                        self.outputs.packages."x86_64-linux".messenger_demo_dna;
+                    };
+                in "${aon}/bin/always-only-node --data-dir ${homeDir}";
                 Restart = "always";
                 RestartSec = 10;
               };
