@@ -21,7 +21,7 @@ import {
 	encodeHashToBase64,
 } from '@holochain/client';
 import { consume } from '@lit/context';
-import { msg } from '@lit/localize';
+import { msg, str } from '@lit/localize';
 import {
 	mdiAccount,
 	mdiAccountGroup,
@@ -46,6 +46,7 @@ import {
 	Router,
 	Routes,
 	appClientContext,
+	notifyError,
 	wrapPathInSvg,
 } from '@tnesh-stack/elements';
 import '@tnesh-stack/elements/dist/elements/display-error.js';
@@ -243,10 +244,15 @@ export class HomePage extends SignalWatcher(LitElement) {
 								) as ShowAgentInfoQrcode;
 								showAgentInfoQrcode.show();
 							} else if (value === 'scan_agent_info') {
-								const agentInfos = await scanAgentInfoQrcode();
-								this.adminWebsocket.addAgentInfo({
-									agent_infos: agentInfos,
-								});
+								try {
+									const agentInfos = await scanAgentInfoQrcode();
+									this.adminWebsocket.addAgentInfo({
+										agent_infos: agentInfos,
+									});
+								} catch (e) {
+									console.log(JSON.stringify(e));
+									notifyError(msg(str`Error scanning agent info: ${e}`));
+								}
 							}
 						}}
 					>

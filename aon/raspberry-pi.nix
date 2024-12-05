@@ -38,10 +38,10 @@
             networking.wireless = {
               enable = true;
               interfaces = [ "wlan0" ];
-              # networks = let
-              #   SSID = builtins.getEnv ("SSID");
-              #   SSID-PASSWORD = builtins.getEnv ("SSIDPASSWORD");
-              # in { ${SSID} = { psk = SSID-PASSWORD; }; };
+              networks = let
+                SSID = builtins.getEnv ("SSID");
+                SSID-PASSWORD = builtins.getEnv ("SSIDPASSWORD");
+              in { ${SSID} = { psk = SSID-PASSWORD; }; };
             };
 
             users = {
@@ -58,7 +58,7 @@
             services.create_ap = {
               enable = true;
               settings = {
-                INTERNET_IFACE = "eth0";
+                INTERNET_IFACE = "end0";
                 WIFI_IFACE = "wlan0";
                 SSID = "rpi";
                 PASSPHRASE = "12345678";
@@ -83,11 +83,12 @@
                 inputs.aons.outputs.packages."aarch64-linux".always-online-node
               ];
               serviceConfig = {
-                Restart = "always";
                 ExecStart = let
                   homeDir = config.users.users.${user}.home;
                   dna = self.outputs.packages."x86_64-linux".messenger_demo_dna;
-                in "mkdir -p ${homeDir}/messenger_aon && always-only-node ${dna} --data-dir ${homeDir}/messenger_aon";
+                in "always-only-node ${dna} --data-dir ${homeDir}";
+                Restart = "always";
+                RestartSec = 1;
               };
             };
 
@@ -97,10 +98,6 @@
       format = "sd-aarch64";
 
       specialArgs = { inherit inputs; };
-
-      # formatConfigs = {
-      #   sd-aarch64 = { lib, ... }: { sdImage.compressImage = false; };
-      # };
 
     };
   };
