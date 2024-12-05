@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"identifier": "studio.darksoil.messengerdemo",
 	"build": {
-		"beforeBuildCommand": "npm run build -w ui",
+		"beforeBuildCommand": "pnpm -F ui build",
 		"devUrl": "http://localhost:1420",
 		"frontendDist": "../ui/dist"
 	},
