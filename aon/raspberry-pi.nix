@@ -2,7 +2,7 @@
 
 {
   perSystem = { inputs', self', lib, system, ... }: {
-    packages.rpi-aon-iso = inputs.nixos-generators.nixosGenerate {
+    packages.rpi-aon = inputs.nixos-generators.nixosGenerate {
       system = "aarch64-linux";
       modules = [
         ({ inputs, config, pkgs, ... }:

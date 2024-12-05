@@ -21,7 +21,7 @@
       "git+ssh://git@github.com/darksoil-studio/always-online-nodes?ref=main";
 
     nixos-generators.url = "github:nix-community/nixos-generators";
-    nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
+    # nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
 
   };
 
