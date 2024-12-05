@@ -8,7 +8,7 @@
       cargoToml = builtins.fromTOML (builtins.readFile ./src-tauri/Cargo.toml);
       pname = cargoToml.package.name;
       version = tauriConfig.version;
-      craneLib = (inputs.crane.mkLib pkgs).overrideToolchain
+      craneLib = (inputs.holonix.inputs.crane.mkLib pkgs).overrideToolchain
         inputs'.holonix.packages.rust;
       src = inputs.p2p-shipyard.outputs.lib.cleanTauriSource { inherit lib; }
         (craneLib.path ./.);
@@ -17,18 +17,23 @@
         inherit version;
         pname = "${pname}-ui";
         pnpmWorkspace = "ui";
-        src = (inputs.hc-infra.outputs.lib.cleanPnpmDepsSource { inherit lib; })
+        src =
+          (inputs.tnesh-stack.outputs.lib.cleanPnpmDepsSource { inherit lib; })
           ./.;
 
-        nativeBuildInputs = with inputs'.pnpmnixpkgs.legacyPackages; [
-          nodejs
-          pnpm.configHook
-        ];
-        pnpmDeps = inputs'.pnpmnixpkgs.legacyPackages.pnpm.fetchDeps {
-          inherit (finalAttrs) pnpmWorkspace version pname src;
+        nativeBuildInputs =
+          with inputs.tnesh-stack.inputs.pnpmnixpkgs.outputs.legacyPackages.${system}; [
+            nodejs
+            pnpm.configHook
+            git
+          ];
+        pnpmDeps =
+          inputs.tnesh-stack.inputs.pnpmnixpkgs.outputs.legacyPackages.${system}.pnpm.fetchDeps {
+            inherit (finalAttrs) pnpmWorkspace version pname src;
 
-          hash = "sha256-vBtvE4+jpjcPL8JMTiP9aIinnSN2a1CpfhB256BVjvk=";
-        };
+            hash = "sha256-vBtvE4+jpjcPL8JMTiP9aIinnSN2a1CpfhB256BVjvk=";
+            buildInputs = [ pkgs.git pkgs.openssh ];
+          };
         buildPhase = ''
           runHook preBuild
 
