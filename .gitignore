@@ -37,3 +37,4 @@ storybook-static
 
 .direnv/
 .hc*
+result*

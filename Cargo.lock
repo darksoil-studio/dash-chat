@@ -617,29 +617,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bindgen"
-version = "0.69.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "271383c67ccabffb7381723dea0672a673f292304fcb45c01cc648c7a8d58088"
-dependencies = [
- "bitflags 2.6.0",
- "cexpr",
- "clang-sys",
- "itertools 0.12.1",
- "lazy_static",
- "lazycell",
- "log",
- "prettyplease",
- "proc-macro2",
- "quote",
- "regex",
- "rustc-hash",
- "shlex",
- "syn 2.0.90",
- "which",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -974,15 +951,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d43a04d8753f35258c91f8ec639f792891f748a1edbd759cf1dcea3382ad83c"
 
 [[package]]
-name = "cexpr"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fac387a98bb7c37292057cffc56d62ecb629900026402633ae9160df93a8766"
-dependencies = [
- "nom",
-]
-
-[[package]]
 name = "cfb"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1074,17 +1042,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "clang-sys"
-version = "1.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b023947811758c97c59bf9d1c188fd619ad4718dcaa767947df1cadb14f39f4"
-dependencies = [
- "glob",
- "libc",
- "libloading 0.8.6",
-]
-
-[[package]]
 name = "clap"
 version = "2.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1147,15 +1104,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 dependencies = [
  "bitflags 1.3.2",
-]
-
-[[package]]
-name = "cmake"
-version = "0.1.52"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c682c223677e0e5b6b7f63a64b9351844c3f1b1678a68b7ee617e30fb082620e"
-dependencies = [
- "cc",
 ]
 
 [[package]]
@@ -2949,122 +2897,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hc-wasmer"
-version = "4.3.6-hc.1"
-source = "git+https://github.com/holochain/wasmer?branch=fix/android-build#04fe29156b7a979e2a1c85e363c48eb237a8862e"
-dependencies = [
- "bindgen",
- "bytes",
- "cfg-if 1.0.0",
- "cmake",
- "derivative",
- "hc-wasmer-compiler",
- "hc-wasmer-derive",
- "hc-wasmer-types",
- "hc-wasmer-vm",
- "indexmap 1.9.3",
- "js-sys",
- "more-asserts",
- "rustc-demangle",
- "serde",
- "serde-wasm-bindgen",
- "shared-buffer",
- "target-lexicon",
- "thiserror 1.0.69",
- "tracing",
- "ureq",
- "wasm-bindgen",
- "wasmparser",
- "wat",
- "windows-sys 0.59.0",
- "zip 2.2.1",
-]
-
-[[package]]
-name = "hc-wasmer-compiler"
-version = "4.3.6-hc.1"
-source = "git+https://github.com/holochain/wasmer?branch=fix/android-build#04fe29156b7a979e2a1c85e363c48eb237a8862e"
-dependencies = [
- "backtrace",
- "bytes",
- "cfg-if 1.0.0",
- "enum-iterator",
- "enumset",
- "hc-wasmer-types",
- "hc-wasmer-vm",
- "lazy_static",
- "leb128",
- "libc",
- "memmap2 0.5.10",
- "more-asserts",
- "region",
- "rkyv",
- "self_cell",
- "shared-buffer",
- "smallvec",
- "thiserror 1.0.69",
- "windows-sys 0.59.0",
- "xxhash-rust",
-]
-
-[[package]]
-name = "hc-wasmer-derive"
-version = "4.3.6-hc.1"
-source = "git+https://github.com/holochain/wasmer?branch=fix/android-build#04fe29156b7a979e2a1c85e363c48eb237a8862e"
-dependencies = [
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "hc-wasmer-types"
-version = "4.3.6-hc.1"
-source = "git+https://github.com/holochain/wasmer?branch=fix/android-build#04fe29156b7a979e2a1c85e363c48eb237a8862e"
-dependencies = [
- "bytecheck",
- "enum-iterator",
- "enumset",
- "getrandom 0.2.15",
- "hex",
- "indexmap 1.9.3",
- "more-asserts",
- "rkyv",
- "sha2",
- "target-lexicon",
- "thiserror 1.0.69",
- "xxhash-rust",
-]
-
-[[package]]
-name = "hc-wasmer-vm"
-version = "4.3.6-hc.1"
-source = "git+https://github.com/holochain/wasmer?branch=fix/android-build#04fe29156b7a979e2a1c85e363c48eb237a8862e"
-dependencies = [
- "backtrace",
- "cc",
- "cfg-if 1.0.0",
- "corosensei",
- "crossbeam-queue",
- "dashmap 6.1.0",
- "derivative",
- "enum-iterator",
- "fnv",
- "hc-wasmer-types",
- "indexmap 1.9.3",
- "lazy_static",
- "libc",
- "mach2",
- "memoffset 0.9.1",
- "more-asserts",
- "region",
- "scopeguard",
- "thiserror 1.0.69",
- "windows-sys 0.59.0",
-]
-
-[[package]]
 name = "hc_deepkey_sdk"
 version = "0.7.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3312,7 +3144,6 @@ dependencies = [
  "async-trait",
  "backtrace",
  "base64 0.22.1",
- "bytes",
  "cfg-if 1.0.0",
  "chrono",
  "derive_more",
@@ -3321,7 +3152,6 @@ dependencies = [
  "futures",
  "getrandom 0.2.15",
  "ghost_actor",
- "hc-wasmer",
  "hc_deepkey_sdk",
  "hc_sleuth",
  "hdk",
@@ -3367,7 +3197,6 @@ dependencies = [
  "rand 0.8.5",
  "rand-utf8",
  "rand_chacha 0.3.1",
- "reqwest 0.12.9",
  "rusqlite",
  "sd-notify",
  "serde",
@@ -3637,7 +3466,7 @@ dependencies = [
 [[package]]
 name = "holochain_runtime"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=wamr#c1b124aed97e030f4d49ab978bb91b482fb99329"
+source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.4#af4d177bab3a35d8771cedb15f57628acb18f22b"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -3933,7 +3762,6 @@ checksum = "cf87b72bbdc589f1859f385b25e3951e2a41cd7cc19ece3a2ad41009e8b1516c"
 dependencies = [
  "bimap",
  "bytes",
- "hc-wasmer",
  "hex",
  "holochain_serialized_bytes",
  "holochain_wasmer_common",
@@ -3990,15 +3818,6 @@ dependencies = [
  "subtle",
  "thiserror 1.0.69",
  "tracing",
-]
-
-[[package]]
-name = "home"
-version = "0.5.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5"
-dependencies = [
- "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5091,12 +4910,6 @@ name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
-
-[[package]]
-name = "lazycell"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "leb128"
@@ -7590,12 +7403,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "719b953e2095829ee67db738b3bfa9fa368c94900df327b3f07fe6e794d2fe1f"
 
 [[package]]
-name = "rustc-hash"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
-
-[[package]]
 name = "rustc_version"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7649,9 +7456,7 @@ version = "0.23.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "934b404430bb06b3fae2cba809eb45a1ab1aecd64491213d7c3301b88393f8d1"
 dependencies = [
- "log",
  "once_cell",
- "ring 0.17.8",
  "rustls-pki-types",
  "rustls-webpki 0.102.8",
  "subtle",
@@ -8919,7 +8724,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-holochain"
 version = "0.0.0"
-source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=wamr#c1b124aed97e030f4d49ab978bb91b482fb99329"
+source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.4#af4d177bab3a35d8771cedb15f57628acb18f22b"
 dependencies = [
  "anyhow",
  "bzip2",
@@ -8927,7 +8732,6 @@ dependencies = [
  "either",
  "futures",
  "hc_seed_bundle",
- "holochain",
  "holochain_client",
  "holochain_runtime",
  "holochain_types",
@@ -9883,13 +9687,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "02d1a66277ed75f640d608235660df48c8e3c19f3b4edb6a263315626cc3c01d"
 dependencies = [
  "base64 0.22.1",
- "flate2",
  "log",
  "once_cell",
- "rustls 0.23.19",
- "rustls-pki-types",
  "url",
- "webpki-roots 0.26.7",
 ]
 
 [[package]]
@@ -10547,18 +10347,6 @@ dependencies = [
  "thiserror 1.0.69",
  "windows 0.58.0",
  "windows-core 0.58.0",
-]
-
-[[package]]
-name = "which"
-version = "4.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87ba24419a2078cd2b0f2ede2691b6c66d8e47836da3b6db8265ebad47afbfc7"
-dependencies = [
- "either",
- "home",
- "once_cell",
- "rustix",
 ]
 
 [[package]]

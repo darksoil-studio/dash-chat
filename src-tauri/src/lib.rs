@@ -27,7 +27,7 @@ pub fn run() {
         ))
         .setup(|app| {
             #[cfg(mobile)]
-            app.handle().plugin(tauri_plugin_barcode_scanner::init());
+            app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
 
             let handle = app.handle().clone();
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
