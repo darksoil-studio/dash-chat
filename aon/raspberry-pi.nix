@@ -33,15 +33,15 @@
             #   };
             # };
 
-            networking = { hostName = "rpimaster"; };
-
             networking.wireless = {
+              hostName = "rpimaster";
               enable = true;
               interfaces = [ "wlan0" ];
-              networks = let
-                SSID = "Pixel_4841";
-                SSID-PASSWORD = "12344321";
-              in { ${SSID} = { psk = SSID-PASSWORD; }; };
+              firewall.enable = false;
+              # networks = let
+              #   SSID = "Pixel_4841";
+              #   SSID-PASSWORD = "12344321";
+              # in { ${SSID} = { psk = SSID-PASSWORD; }; };
             };
 
             users = {
