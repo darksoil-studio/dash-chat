@@ -87,7 +87,8 @@
               enable = true;
               path = [ aon ];
               serviceConfig = {
-                ExecStart = "${aon}/bin/always-only-node --data-dir ${homeDir}";
+                ExecStart =
+                  "${aon}/bin/always-online-node --data-dir ${homeDir}";
                 Restart = "always";
                 RestartSec = 10;
               };

@@ -609,11 +609,11 @@
         "tnesh-stack": "tnesh-stack"
       },
       "locked": {
-        "lastModified": 1733427403,
-        "narHash": "sha256-gatEvDnVXqi9/j5GHM8B0PDj2r3w570QzobUZ2naufA=",
+        "lastModified": 1733431213,
+        "narHash": "sha256-tLiKsTpRi8H17A85rbg/0Yi1BkFvknGSL2585qo8Qvg=",
         "ref": "main",
-        "rev": "9fc180a8a48d03732d668de58a5b25dbbaed8241",
-        "revCount": 10,
+        "rev": "f83b0bc365193d9b19fc32d357b8fe61152c2230",
+        "revCount": 11,
         "type": "git",
         "url": "ssh://git@github.com/darksoil-studio/always-online-nodes"
       },
@@ -21535,11 +21535,11 @@
         "webkitgtknixpkgs": "webkitgtknixpkgs_23"
       },
       "locked": {
-        "lastModified": 1733310974,
-        "narHash": "sha256-XY+eez45z69q0k+k4Sh6NDUkzU6UNuim9tGW/On7PRA=",
+        "lastModified": 1733430670,
+        "narHash": "sha256-v1aV6MiP8wV6X0HVdmedM3JKgltAZAY7FcH695C5PEw=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "af4d177bab3a35d8771cedb15f57628acb18f22b",
+        "rev": "4fe5160361e3da7e11b27b7a3d9b6b0481a0faaf",
         "type": "github"
       },
       "original": {
