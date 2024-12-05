@@ -609,11 +609,11 @@
         "tnesh-stack": "tnesh-stack"
       },
       "locked": {
-        "lastModified": 1733322328,
-        "narHash": "sha256-VQoS+SEsXT0DZ0b8cSRZUkER0B4RqdMFTwQvHwTQctA=",
+        "lastModified": 1733404618,
+        "narHash": "sha256-ZBFirBZFQSNY30lhwZyilHOC9g0sne7752Cf2afG6ME=",
         "ref": "main",
-        "rev": "ae579e10df2afb6312044240dab4cba7f7914507",
-        "revCount": 5,
+        "rev": "e960479c5591e21899589f93b49fce59cc659d9e",
+        "revCount": 8,
         "type": "git",
         "url": "ssh://git@github.com/darksoil-studio/always-online-nodes"
       },

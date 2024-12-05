@@ -177,6 +177,71 @@
       "description": "Permission identifier",
       "oneOf": [
         {
+          "description": "This permission set configures which\nbarcode scanning features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all barcode related features.\n\n",
+          "type": "string",
+          "const": "barcode-scanner:default"
+        },
+        {
+          "description": "Enables the cancel command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:allow-cancel"
+        },
+        {
+          "description": "Enables the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:allow-check-permissions"
+        },
+        {
+          "description": "Enables the open_app_settings command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:allow-open-app-settings"
+        },
+        {
+          "description": "Enables the request_permissions command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:allow-request-permissions"
+        },
+        {
+          "description": "Enables the scan command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:allow-scan"
+        },
+        {
+          "description": "Enables the vibrate command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:allow-vibrate"
+        },
+        {
+          "description": "Denies the cancel command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:deny-cancel"
+        },
+        {
+          "description": "Denies the check_permissions command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:deny-check-permissions"
+        },
+        {
+          "description": "Denies the open_app_settings command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:deny-open-app-settings"
+        },
+        {
+          "description": "Denies the request_permissions command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:deny-request-permissions"
+        },
+        {
+          "description": "Denies the scan command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:deny-scan"
+        },
+        {
+          "description": "Denies the vibrate command without any pre-configured scope.",
+          "type": "string",
+          "const": "barcode-scanner:deny-vibrate"
+        },
+        {
           "description": "Default core plugins set which includes:\n- 'core:path:default'\n- 'core:event:default'\n- 'core:window:default'\n- 'core:webview:default'\n- 'core:app:default'\n- 'core:image:default'\n- 'core:resources:default'\n- 'core:menu:default'\n- 'core:tray:default'\n",
           "type": "string",
           "const": "core:default"

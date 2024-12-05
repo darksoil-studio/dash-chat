@@ -79,7 +79,7 @@ importers:
         version: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/7801fc92421fde6a8f9ac2899f2202a29f62e327#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/messenger-zome':
         specifier: github:darksoil-studio/messenger-zome#main-0.4&path:ui
-        version: git+ssh://git@github.com/darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
+        version: git+https://git@github.com:darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/profiles-zome':
         specifier: github:darksoil-studio/profiles-zome#c49c6b6cc587ba545fc290ec675713ecbd176331&path:ui
         version: https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/c49c6b6cc587ba545fc290ec675713ecbd176331#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
@@ -101,6 +101,9 @@ importers:
       '@shoelace-style/shoelace':
         specifier: ^2.11.0
         version: 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
+      '@tauri-apps/plugin-barcode-scanner':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@tnesh-stack/elements':
         specifier: ^0.400.0-rc
         version: 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
@@ -110,6 +113,9 @@ importers:
       '@tnesh-stack/utils':
         specifier: ^0.400.0-rc
         version: 0.400.0-rc.0
+      js-base64:
+        specifier: ^3.7.7
+        version: 3.7.7
       lit:
         specifier: ^3.0.0
         version: 3.2.1
@@ -241,8 +247,8 @@ packages:
     resolution: {path: ui, tarball: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/c8b08f5da81d030e846dcb7afa8e244d3c0a6d50}
     version: 0.1.0
 
-  '@darksoil-studio/messenger-zome@git+ssh://git@github.com/darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui':
-    resolution: {commit: 4565ae8012813a81572a2209858c36e7f4539ae8, path: ui, repo: git+ssh://git@github.com/darksoil-studio/messenger-zome.git, type: git}
+  '@darksoil-studio/messenger-zome@git+https://git@github.com:darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui':
+    resolution: {commit: 4565ae8012813a81572a2209858c36e7f4539ae8, path: ui, repo: git@github.com:darksoil-studio/messenger-zome.git, type: git}
     version: 0.1.0
 
   '@darksoil-studio/notifications-zome@https://codeload.github.com/darksoil-studio/notifications-zome/tar.gz/6dfdb11c8a1731e99f7454ec85adf32be7ab85b8#path:ui':
@@ -798,6 +804,9 @@ packages:
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
 
+  '@tauri-apps/api@2.1.1':
+    resolution: {integrity: sha512-fzUfFFKo4lknXGJq8qrCidkUcKcH2UHhfaaCNt4GzgzGaW2iS26uFOg4tS3H4P8D6ZEeUxtiD5z0nwFF0UN30A==}
+
   '@tauri-apps/cli-darwin-arm64@2.1.0':
     resolution: {integrity: sha512-ESc6J6CE8hl1yKH2vJ+ALF+thq4Be+DM1mvmTyUCQObvezNCNhzfS6abIUd3ou4x5RGH51ouiANeT3wekU6dCw==}
     engines: {node: '>= 10'}
@@ -862,6 +871,9 @@ packages:
     resolution: {integrity: sha512-K2VhcKqBhAeS5pNOVdnR/xQRU6jwpgmkSL2ejHXcl0m+kaTggT0WRDQnFtPq6NljA7aE03cvwsbCAoFG7vtkJw==}
     engines: {node: '>= 10'}
     hasBin: true
+
+  '@tauri-apps/plugin-barcode-scanner@2.0.0':
+    resolution: {integrity: sha512-7kSU8C03YJkLbxjEHBwm/rffTwT3gSRXeOz9NVO7HEHuqNujnNjCoUd+VCxemI1HhRCzJSDFoAkeXRWFxUN3jg==}
 
   '@tnesh-stack/elements@0.400.0-rc.1':
     resolution: {integrity: sha512-Y9BgDIOP/M4WNyWP4fbaEL98Vd9sTmUm7g9RfV53PHiNn37dWeAUnYikzQnIkjNvu8MfK5+QK1D9k8/QnRpwug==}
@@ -2652,7 +2664,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/messenger-zome@git+ssh://git@github.com/darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)':
+  '@darksoil-studio/messenger-zome@git+https://git@github.com:darksoil-studio/messenger-zome.git#4565ae8012813a81572a2209858c36e7f4539ae8&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)':
     dependencies:
       '@darksoil-studio/file-storage-zome': https://codeload.github.com/darksoil-studio/file-storage/tar.gz/3d2362bed697e62b5e63891189e331bb56567be7#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
       '@darksoil-studio/linked-devices-zome': https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/7801fc92421fde6a8f9ac2899f2202a29f62e327#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.12)
@@ -3159,6 +3171,8 @@ snapshots:
 
   '@sinclair/typebox@0.27.8': {}
 
+  '@tauri-apps/api@2.1.1': {}
+
   '@tauri-apps/cli-darwin-arm64@2.1.0':
     optional: true
 
@@ -3201,6 +3215,10 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.1.0
       '@tauri-apps/cli-win32-ia32-msvc': 2.1.0
       '@tauri-apps/cli-win32-x64-msvc': 2.1.0
+
+  '@tauri-apps/plugin-barcode-scanner@2.0.0':
+    dependencies:
+      '@tauri-apps/api': 2.1.1
 
   '@tnesh-stack/elements@0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.12)':
     dependencies:

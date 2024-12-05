@@ -1,8 +1,9 @@
-use holochain_types::prelude::AppBundle; use lair_keystore::dependencies::sodoken::{BufRead, BufWrite};
+use holochain_types::prelude::AppBundle;
+use lair_keystore::dependencies::sodoken::{BufRead, BufWrite};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, WANNetworkConfig};
 use tauri::AppHandle;
+use tauri_plugin_holochain::{HolochainExt, HolochainPluginConfig, WANNetworkConfig};
 
 const APP_ID: &'static str = "messenger-demo";
 const SIGNAL_URL: &'static str = "wss://sbd.holo.host";
@@ -21,9 +22,10 @@ pub fn run() {
                 .level(log::LevelFilter::Warn)
                 .build(),
         )
+        .plugin(tauri_plugin_barcode_scanner::init())
         .plugin(tauri_plugin_holochain::init(
             vec_to_locked(vec![]).expect("Can't build passphrase"),
-            HolochainPluginConfig::new(holochain_dir(), wan_network_config())
+            HolochainPluginConfig::new(holochain_dir(), wan_network_config()),
         ))
         .setup(|app| {
             let handle = app.handle().clone();
@@ -31,8 +33,14 @@ pub fn run() {
                 setup(handle).await?;
 
                 // After set up we can be sure our app is installed and up to date, so we can just open it
-                let mut window_builder = app.holochain()?
-                    .main_window_builder(String::from("main"), false, Some(String::from("messenger-demo")), None)
+                let mut window_builder = app
+                    .holochain()?
+                    .main_window_builder(
+                        String::from("main"),
+                        true,
+                        Some(String::from("messenger-demo")),
+                        None,
+                    )
                     .await?;
 
                 #[cfg(desktop)]
@@ -68,24 +76,22 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
         .await
         .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
 
-    if installed_apps.iter().find(|app| app.installed_app_id.as_str().eq(APP_ID)).is_none() {
+    if installed_apps
+        .iter()
+        .find(|app| app.installed_app_id.as_str().eq(APP_ID))
+        .is_none()
+    {
         handle
             .holochain()?
-            .install_app(
-                String::from(APP_ID),
-                happ_bundle(),
-                None,
-                None,
-                None,
-            )
+            .install_app(String::from(APP_ID), happ_bundle(), None, None, None)
             .await?;
 
         Ok(())
     } else {
-        handle.holochain()?.update_app_if_necessary(
-            String::from(APP_ID),
-            happ_bundle()
-        ).await?;
+        handle
+            .holochain()?
+            .update_app_if_necessary(String::from(APP_ID), happ_bundle())
+            .await?;
 
         Ok(())
     }
@@ -101,7 +107,7 @@ fn wan_network_config() -> Option<WANNetworkConfig> {
             ice_servers_urls: vec![
                 url2::url2!("stun:stun-0.main.infra.holo.host:443"),
                 url2::url2!("stun:stun-1.main.infra.holo.host:443"),
-            ]
+            ],
         })
     }
 }
@@ -116,12 +122,13 @@ fn holochain_dir() -> PathBuf {
                     name: "messenger-demo",
                     author: std::env!("CARGO_PKG_AUTHORS"),
                 },
-            ).expect("Could not get the UserCache directory")
+            )
+            .expect("Could not get the UserCache directory")
         }
         #[cfg(not(target_os = "android"))]
         {
-            let tmp_dir =
-                tempdir::TempDir::new("messenger-demo").expect("Could not create temporary directory");
+            let tmp_dir = tempdir::TempDir::new("messenger-demo")
+                .expect("Could not create temporary directory");
 
             // Convert `tmp_dir` into a `Path`, destroying the `TempDir`
             // without deleting the directory.

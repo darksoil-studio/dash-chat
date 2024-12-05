@@ -13,6 +13,7 @@ import {
 import '@darksoil-studio/profiles-zome/dist/elements/all-profiles.js';
 import '@darksoil-studio/profiles-zome/dist/elements/profile-list-item.js';
 import {
+	AdminWebsocket,
 	AgentPubKey,
 	AppClient,
 	EntryHash,
@@ -26,12 +27,13 @@ import {
 	mdiAccountGroup,
 	mdiAccountMultiple,
 	mdiAccountMultiplePlus,
+	mdiAccountSwitch,
 	mdiArrowLeft,
 	mdiChat,
 	mdiChatOutline,
 	mdiDotsVertical,
+	mdiQrcodeScan,
 } from '@mdi/js';
-import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
@@ -53,12 +55,23 @@ import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { appStyles } from './app-styles.js';
-import { isMobileContext, rootRouterContext } from './context.js';
+import {
+	adminWebsocketContext,
+	isMobileContext,
+	rootRouterContext,
+} from './context.js';
+import {
+	ShowAgentInfoQrcode,
+	scanAgentInfoQrcode,
+} from './show-agent-info-qrcode.js';
 
 @customElement('home-page')
 export class HomePage extends SignalWatcher(LitElement) {
-	@consume({ context: appClientContext })
+	@consume({ context: appClientContext, subscribe: true })
 	client!: AppClient;
+
+	@consume({ context: adminWebsocketContext, subscribe: true })
+	adminWebsocket!: AdminWebsocket;
 
 	@consume({ context: profilesStoreContext, subscribe: true })
 	profilesStore!: ProfilesStore;
@@ -207,6 +220,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 	renderActions() {
 		if (this.isMobile) {
 			return html`
+				<show-agent-info-qrcode> </show-agent-info-qrcode>
 				<sl-dropdown>
 					<sl-icon-button
 						slot="trigger"
@@ -214,7 +228,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 						.src=${wrapPathInSvg(mdiDotsVertical)}
 					></sl-icon-button>
 					<sl-menu
-						@sl-select=${(e: CustomEvent) => {
+						@sl-select=${async (e: CustomEvent) => {
 							const item = e.detail.item as SlMenuItem;
 							const value = item.value;
 							if (value === 'new_group') {
@@ -223,6 +237,16 @@ export class HomePage extends SignalWatcher(LitElement) {
 								);
 							} else if (value === 'my_profile') {
 								this.dispatchEvent(new CustomEvent('profile-clicked'));
+							} else if (value === 'show_agent_info') {
+								const showAgentInfoQrcode = this.shadowRoot!.querySelector(
+									'show-agent-info-qrcode',
+								) as ShowAgentInfoQrcode;
+								showAgentInfoQrcode.show();
+							} else if (value === 'scan_agent_info') {
+								const agentInfos = await scanAgentInfoQrcode();
+								this.adminWebsocket.addAgentInfo({
+									agent_infos: agentInfos,
+								});
 							}
 						}}
 					>
@@ -240,12 +264,27 @@ export class HomePage extends SignalWatcher(LitElement) {
 							></sl-icon>
 							${msg('My Profile')}</sl-menu-item
 						>
+						<sl-menu-item value="show_agent_info">
+							<sl-icon
+								.src=${wrapPathInSvg(mdiAccountSwitch)}
+								slot="prefix"
+							></sl-icon>
+							${msg('Show Agent Info')}</sl-menu-item
+						>
+						<sl-menu-item value="scan_agent_info">
+							<sl-icon
+								.src=${wrapPathInSvg(mdiQrcodeScan)}
+								slot="prefix"
+							></sl-icon>
+							${msg('Scan Agent Info')}</sl-menu-item
+						>
 					</sl-menu>
 				</sl-dropdown>
 			`;
 		}
 
 		return html`
+			<show-agent-info-qrcode> </show-agent-info-qrcode>
 			<div class="row" style="gap: 16px; align-items: center">
 				<sl-button
 					style="font-size: 24px"
@@ -268,6 +307,33 @@ export class HomePage extends SignalWatcher(LitElement) {
 						)}
 					.agentPubKey=${this.client.myPubKey}
 				></profile-list-item>
+				<sl-dropdown>
+					<sl-icon-button
+						slot="trigger"
+						style="font-size: 24px; color: var(--sl-color-neutral-900)"
+						.src=${wrapPathInSvg(mdiDotsVertical)}
+					></sl-icon-button>
+					<sl-menu
+						@sl-select=${async (e: CustomEvent) => {
+							const item = e.detail.item as SlMenuItem;
+							const value = item.value;
+							if (value === 'show_agent_info') {
+								const showAgentInfoQrcode = this.shadowRoot!.querySelector(
+									'show-agent-info-qrcode',
+								) as ShowAgentInfoQrcode;
+								showAgentInfoQrcode.show();
+							}
+						}}
+					>
+						<sl-menu-item value="show_agent_info">
+							<sl-icon
+								.src=${wrapPathInSvg(mdiAccountSwitch)}
+								slot="prefix"
+							></sl-icon>
+							${msg('Show Agent Info')}</sl-menu-item
+						>
+					</sl-menu>
+				</sl-dropdown>
 			</div>
 		`;
 	}

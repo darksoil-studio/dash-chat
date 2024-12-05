@@ -7,6 +7,7 @@ import '@darksoil-studio/profiles-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/profiles-zome/dist/elements/profiles-context.js';
 import {
 	ActionHash,
+	AdminWebsocket,
 	AppClient,
 	AppWebsocket,
 	encodeHashToBase64,
@@ -31,7 +32,11 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import { appStyles } from './app-styles.js';
-import { isMobileContext, rootRouterContext } from './context.js';
+import {
+	adminWebsocketContext,
+	isMobileContext,
+	rootRouterContext,
+} from './context.js';
 import './home-page.js';
 import { LinkDeviceDialog } from './link-device-dialog.js';
 import './link-device-dialog.js';
@@ -49,6 +54,10 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	_error: unknown | undefined;
 
 	_client!: AppClient;
+
+	@provide({ context: adminWebsocketContext })
+	@property()
+	_adminWs!: AdminWebsocket;
 
 	@provide({ context: isMobileContext })
 	@property()
@@ -129,6 +138,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 
 		try {
 			this._client = await AppWebsocket.connect();
+			this._adminWs = await AdminWebsocket.connect();
 		} catch (e: unknown) {
 			this._error = e;
 		} finally {

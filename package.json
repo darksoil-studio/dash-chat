@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "AGENTS=2 pnpm network",
-    "network": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm launch:pilot\"",
+    "network": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm launch\"",
     "launch": "concurrently-repeat \"pnpm tauri dev --no-watch\" $AGENTS",
     "launch:pilot": "concurrently-repeat \"hc-pilot workdir/messenger-demo.happ --ui-port 1420\" $AGENTS",
     "test": "pnpm build:happ && pnpm -F tests test",
