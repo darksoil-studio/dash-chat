@@ -21,6 +21,9 @@
             #     generic-extlinux-compatible.enable = true;
             #   };
             # };
+            # Disabling the whole `profiles/base.nix` module, which is responsible
+            # for adding ZFS and a bunch of other unnecessary programs:
+            disabledModules = [ "profiles/base.nix" ];
 
             # fileSystems = {
             #   "/" = {
@@ -91,7 +94,7 @@
             system.stateVersion = "24.05";
           })
       ];
-      format = "iso";
+      format = "sd-aarch64";
 
       specialArgs = { inherit inputs; };
 
