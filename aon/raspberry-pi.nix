@@ -79,14 +79,13 @@
 
             systemd.services.messenger_aon = {
               enable = true;
-              path = [
-                inputs.aons.outputs.packages."aarch64-linux".always-online-node
-              ];
               serviceConfig = {
                 ExecStart = let
                   homeDir = config.users.users.${user}.home;
                   dna = self.outputs.packages."x86_64-linux".messenger_demo_dna;
-                in "always-only-node ${dna} --data-dir ${homeDir}";
+                in "${
+                  inputs.aons.outputs.packages."aarch64-linux".always-online-node
+                }/bin/always-only-node ${dna} --data-dir ${homeDir}";
                 Restart = "always";
                 RestartSec = 10;
               };
