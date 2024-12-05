@@ -1,6 +1,5 @@
 use holochain_types::prelude::AppBundle;
 use lair_keystore::dependencies::sodoken::{BufRead, BufWrite};
-use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::AppHandle;
 use tauri_plugin_holochain::{HolochainExt, HolochainPluginConfig, WANNetworkConfig};
@@ -22,12 +21,14 @@ pub fn run() {
                 .level(log::LevelFilter::Warn)
                 .build(),
         )
-        .plugin(tauri_plugin_barcode_scanner::init())
         .plugin(tauri_plugin_holochain::init(
             vec_to_locked(vec![]).expect("Can't build passphrase"),
             HolochainPluginConfig::new(holochain_dir(), wan_network_config()),
         ))
         .setup(|app| {
+            #[cfg(mobile)]
+            app.handle().plugin(tauri_plugin_barcode_scanner::init());
+
             let handle = app.handle().clone();
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
                 setup(handle).await?;

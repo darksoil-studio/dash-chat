@@ -3,10 +3,5 @@
 	"identifier": "main-capability",
 	"description": "Capability for the main window",
 	"windows": ["main"],
-	"permissions": [
-		"core:default",
-		"core:window:allow-set-title",
-		"barcode-scanner:allow-scan",
-		"barcode-scanner:allow-cancel"
-	]
+	"permissions": ["core:default", "core:window:allow-set-title"]
 }

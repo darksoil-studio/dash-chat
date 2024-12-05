@@ -35,10 +35,10 @@
             networking.wireless = {
               enable = true;
               interfaces = [ "wlan0" ];
-              networks = let
-                SSID = builtins.getEnv ("SSID");
-                SSID-PASSWORD = builtins.getEnv ("SSIDPASSWORD");
-              in { ${SSID} = { psk = SSID-PASSWORD; }; };
+              # networks = let
+              #   SSID = builtins.getEnv ("SSID");
+              #   SSID-PASSWORD = builtins.getEnv ("SSIDPASSWORD");
+              # in { ${SSID} = { psk = SSID-PASSWORD; }; };
             };
 
             users = {
