@@ -102,7 +102,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
 }
 
 fn wan_network_config() -> Option<WANNetworkConfig> {
-    if tauri::is_dev() {
+    if !tauri::is_dev() {
         None
     } else {
         Some(WANNetworkConfig {
