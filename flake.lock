@@ -21535,11 +21535,11 @@
         "webkitgtknixpkgs": "webkitgtknixpkgs_23"
       },
       "locked": {
-        "lastModified": 1733430670,
-        "narHash": "sha256-v1aV6MiP8wV6X0HVdmedM3JKgltAZAY7FcH695C5PEw=",
+        "lastModified": 1733510382,
+        "narHash": "sha256-1CmOgV8iZBm47UaGnhd+w2f/+STiovGDMQw67N8H7sI=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "4fe5160361e3da7e11b27b7a3d9b6b0481a0faaf",
+        "rev": "8456347cefe8a63527069f28f5b29133bf8b63f5",
         "type": "github"
       },
       "original": {
