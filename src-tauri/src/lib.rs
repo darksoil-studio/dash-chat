@@ -6,7 +6,7 @@ use tauri_plugin_holochain::{HolochainExt, HolochainPluginConfig, WANNetworkConf
 
 const APP_ID: &'static str = "messenger-demo";
 const SIGNAL_URL: &'static str = "wss://sbd.holo.host";
-const BOOTSTRAP_URL: &'static str = "https://bootstrap-0.infra.holochain.org";
+const BOOTSTRAP_URL: &'static str = "https://bootstrap.holo.host";
 
 pub fn happ_bundle() -> AppBundle {
     let bytes = include_bytes!("../../workdir/messenger-demo.happ");
@@ -21,7 +21,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Warn)
+                .level(log::LevelFilter::Info)
                 .build(),
         )
         .plugin(tauri_plugin_holochain::init(
@@ -108,10 +108,7 @@ fn wan_network_config() -> Option<WANNetworkConfig> {
         Some(WANNetworkConfig {
             signal_url: url2::url2!("{}", SIGNAL_URL),
             bootstrap_url: url2::url2!("{}", BOOTSTRAP_URL),
-            ice_servers_urls: vec![
-                url2::url2!("stun:stun-0.main.infra.holo.host:443"),
-                url2::url2!("stun:stun-1.main.infra.holo.host:443"),
-            ],
+            ice_servers_urls: vec![],
         })
     }
 }
