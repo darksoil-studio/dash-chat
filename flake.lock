@@ -8305,11 +8305,11 @@
     "hc-scaffold_11": {
       "flake": false,
       "locked": {
-        "lastModified": 1733246336,
-        "narHash": "sha256-ER0mm4onjFZZXf1NZ6hp9uIbvYQ6dNpf2VqmRpbGllM=",
+        "lastModified": 1733424882,
+        "narHash": "sha256-q5SemDNTKYSTaLFlvCxp33D4JGuzOg4BuGP0CeETO6w=",
         "owner": "holochain",
         "repo": "scaffolding",
-        "rev": "931fdf3b13a893063b6e7822c65755f76a491f75",
+        "rev": "a4f55818135edd9b6b67c6652e8097f63c7a16ab",
         "type": "github"
       },
       "original": {
@@ -12297,11 +12297,11 @@
         "rust-overlay": "rust-overlay_11"
       },
       "locked": {
-        "lastModified": 1733258375,
-        "narHash": "sha256-ap72ZyENV3gBUVHvuVb25bm6mbxyKZjiXUy3Tmg2tEI=",
+        "lastModified": 1733443322,
+        "narHash": "sha256-iqSwtImtMiQ7ap3Jxa/lxdtMaxTqJ/6L4zCOJIcY9Y4=",
         "owner": "holochain",
         "repo": "holonix",
-        "rev": "e6e11c9d08a7135c3c7754981b0376a195def69f",
+        "rev": "27f3d11d24773177090c42f7c0c46ed80a48ac51",
         "type": "github"
       },
       "original": {
@@ -17094,11 +17094,11 @@
         "tnesh-stack": "tnesh-stack_45"
       },
       "locked": {
-        "lastModified": 1733328452,
-        "narHash": "sha256-aY/LnqfiFAOHZZ400MQw+p2Q0FnA0ODk7R/d3PYdvVs=",
+        "lastModified": 1733475350,
+        "narHash": "sha256-OlNYpXu7q/X0ijwdEfnyc2M23EUAvT0mSP2p2OU/ORQ=",
         "ref": "main-0.4",
-        "rev": "4565ae8012813a81572a2209858c36e7f4539ae8",
-        "revCount": 70,
+        "rev": "5d270afccce6c8e1d68887f407f52faa809f3f05",
+        "revCount": 75,
         "type": "git",
         "url": "ssh://git@github.com/darksoil-studio/messenger-zome"
       },
