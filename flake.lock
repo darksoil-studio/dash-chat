@@ -16914,11 +16914,11 @@
         "tnesh-stack": "tnesh-stack_17"
       },
       "locked": {
-        "lastModified": 1733493462,
-        "narHash": "sha256-sY6/T4y0FlWz9XaYhqsjzFwLEXdJSGgj0GqWY27BGyw=",
+        "lastModified": 1733503932,
+        "narHash": "sha256-XEDvHth73cXCTmyc8ay4jjL52KHWz/u0YQDtRN8eoJw=",
         "owner": "darksoil-studio",
         "repo": "linked-devices-zome",
-        "rev": "0ef695044070521269f537d1aabe8e0fa8e50cad",
+        "rev": "35cd82e0e3172ecaca4d9f8d9cd64ecc932ed388",
         "type": "github"
       },
       "original": {
@@ -17024,11 +17024,11 @@
         "tnesh-stack": "tnesh-stack_40"
       },
       "locked": {
-        "lastModified": 1733493462,
-        "narHash": "sha256-sY6/T4y0FlWz9XaYhqsjzFwLEXdJSGgj0GqWY27BGyw=",
+        "lastModified": 1733503932,
+        "narHash": "sha256-XEDvHth73cXCTmyc8ay4jjL52KHWz/u0YQDtRN8eoJw=",
         "owner": "darksoil-studio",
         "repo": "linked-devices-zome",
-        "rev": "0ef695044070521269f537d1aabe8e0fa8e50cad",
+        "rev": "35cd82e0e3172ecaca4d9f8d9cd64ecc932ed388",
         "type": "github"
       },
       "original": {
@@ -17094,11 +17094,11 @@
         "tnesh-stack": "tnesh-stack_45"
       },
       "locked": {
-        "lastModified": 1733504189,
-        "narHash": "sha256-9XrtwJyxMvZLCPNnczOUbzkt05pIW/+bOiakn5jm7dI=",
+        "lastModified": 1733504599,
+        "narHash": "sha256-XdxDeeY5Vg1wG6BY1XnZ0E5F4FaA5N/AH1jwpVZ6LxY=",
         "ref": "main-0.4",
-        "rev": "d6636798a2b7f435d07e73bee1513c6f15bfbb6a",
-        "revCount": 80,
+        "rev": "449cdb5e7e060e57c95bc18a494224cd44cfe70e",
+        "revCount": 81,
         "type": "git",
         "url": "ssh://git@github.com/darksoil-studio/messenger-zome"
       },
@@ -23416,11 +23416,11 @@
         "tnesh-stack": "tnesh-stack_44"
       },
       "locked": {
-        "lastModified": 1733493509,
-        "narHash": "sha256-ebhFQLc8kcLwVZEFbqC0xgIg2DWulbHVTsEjPPTX+HI=",
+        "lastModified": 1733504066,
+        "narHash": "sha256-a2Bw/ijEflg8sjQ2QTSQRTylWSi47ZuH8q3RnfUAr/I=",
         "owner": "darksoil-studio",
         "repo": "profiles-zome",
-        "rev": "e894c270ba62df2a149d927c854aa3f594f237bf",
+        "rev": "1a1a945ef301be9f61de3ddfc4190abfe39dbff4",
         "type": "github"
       },
       "original": {
