@@ -79,7 +79,7 @@ importers:
         version: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/35cd82e0e3172ecaca4d9f8d9cd64ecc932ed388#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
       '@darksoil-studio/messenger-zome':
         specifier: github:darksoil-studio/messenger-zome#main-0.4&path:ui
-        version: git+https://git@github.com:darksoil-studio/messenger-zome.git#d4c93f61e126b775007057d66133f573ea61e3d3&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: git+https://git@github.com:darksoil-studio/messenger-zome.git#58b917640e54dc1e90ee19779d2cb072fe90675f&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
       '@darksoil-studio/profiles-zome':
         specifier: github:darksoil-studio/profiles-zome#f51984762a47f56e7f353bad264cf7b01f54475d&path:ui
         version: https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/f51984762a47f56e7f353bad264cf7b01f54475d#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
@@ -247,8 +247,8 @@ packages:
     resolution: {path: ui, tarball: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/35cd82e0e3172ecaca4d9f8d9cd64ecc932ed388}
     version: 0.1.0
 
-  '@darksoil-studio/messenger-zome@git+https://git@github.com:darksoil-studio/messenger-zome.git#d4c93f61e126b775007057d66133f573ea61e3d3&path:ui':
-    resolution: {commit: d4c93f61e126b775007057d66133f573ea61e3d3, path: ui, repo: git@github.com:darksoil-studio/messenger-zome.git, type: git}
+  '@darksoil-studio/messenger-zome@git+https://git@github.com:darksoil-studio/messenger-zome.git#58b917640e54dc1e90ee19779d2cb072fe90675f&path:ui':
+    resolution: {commit: 58b917640e54dc1e90ee19779d2cb072fe90675f, path: ui, repo: git@github.com:darksoil-studio/messenger-zome.git, type: git}
     version: 0.1.0
 
   '@darksoil-studio/notifications-zome@https://codeload.github.com/darksoil-studio/notifications-zome/tar.gz/60ece1f60a97722a817f86276f84918125b5731f#path:ui':
@@ -2673,7 +2673,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/messenger-zome@git+https://git@github.com:darksoil-studio/messenger-zome.git#d4c93f61e126b775007057d66133f573ea61e3d3&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@darksoil-studio/messenger-zome@git+https://git@github.com:darksoil-studio/messenger-zome.git#58b917640e54dc1e90ee19779d2cb072fe90675f&path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
     dependencies:
       '@darksoil-studio/file-storage-zome': https://codeload.github.com/darksoil-studio/file-storage/tar.gz/3d2362bed697e62b5e63891189e331bb56567be7#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
       '@darksoil-studio/linked-devices-zome': https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/35cd82e0e3172ecaca4d9f8d9cd64ecc932ed388#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
