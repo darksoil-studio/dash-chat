@@ -33,7 +33,14 @@ export class LinkDeviceDialog extends SignalWatcher(LitElement) {
 				style="--width: 700px"
 			>
 				${this.linking
-					? html` <link-device-recipient> </link-device-recipient> `
+					? html`
+							<link-device-recipient
+								@device-linked=${() => {
+									this.dialog.hide();
+								}}
+							>
+							</link-device-recipient>
+						`
 					: html``}
 			</sl-dialog>
 		`;
