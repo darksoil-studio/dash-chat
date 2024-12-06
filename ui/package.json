@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@darksoil-studio/file-storage-zome": "github:darksoil-studio/file-storage#3d2362bed697e62b5e63891189e331bb56567be7&path:ui",
-    "@darksoil-studio/linked-devices-zome": "github:darksoil-studio/linked-devices-zome#0ef695044070521269f537d1aabe8e0fa8e50cad&path:ui",
+    "@darksoil-studio/linked-devices-zome": "github:darksoil-studio/linked-devices-zome#35cd82e0e3172ecaca4d9f8d9cd64ecc932ed388&path:ui",
     "@darksoil-studio/messenger-zome": "github:darksoil-studio/messenger-zome#main-0.4&path:ui",
-    "@darksoil-studio/profiles-zome": "github:darksoil-studio/profiles-zome#e894c270ba62df2a149d927c854aa3f594f237bf&path:ui",
+    "@darksoil-studio/profiles-zome": "github:darksoil-studio/profiles-zome#1a1a945ef301be9f61de3ddfc4190abfe39dbff4&path:ui",
     "@holochain/client": "^0.18.0-rc",
     "@lit/context": "^1.0.0",
     "@lit/localize": "^0.12.0",
