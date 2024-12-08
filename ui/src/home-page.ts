@@ -204,7 +204,29 @@ export class HomePage extends SignalWatcher(LitElement) {
 							const agents = await toPromise(
 								this.profilesStore.agentsForProfile.get(e.detail.profileHash),
 							);
-							this.routes.goto(`peer/${encodeHashToBase64(agents[0])}`);
+
+							if (agents.length > 0) {
+								this.routes.goto(`peer/${encodeHashToBase64(agents[0])}`);
+							} else {
+								const profile = await toPromise(
+									this.profilesStore.profiles.get(e.detail.profileHash)
+										.original,
+								);
+
+								if (profile) {
+									this.routes.goto(
+										`peer/${encodeHashToBase64(profile.action.author)}`,
+									);
+								} else {
+									const profile = await toPromise(
+										this.profilesStore.profiles.get(e.detail.profileHash)
+											.latestVersion,
+									);
+									this.routes.goto(
+										`peer/${encodeHashToBase64(profile.action.author)}`,
+									);
+								}
+							}
 						}}
 					>
 					</all-profiles>
@@ -212,6 +234,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 			</sl-tab-group>
 		`;
 	}
+
 	get myProfile() {
 		return this.profilesStore.myProfile.get();
 	}
