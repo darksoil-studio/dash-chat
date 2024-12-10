@@ -79,6 +79,12 @@ jobs:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - uses: actions/checkout@v2
 
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-24.05
+
       - name: setup node
         uses: actions/setup-node@v1
         with:
@@ -93,11 +99,6 @@ jobs:
       - name: install x86_64 target
         if: matrix.args == '--target x86_64-apple-darwin'
         run: rustup target add x86_64-apple-darwin
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3 # docs https://pnpm.io/continuous-integration#github-actions
-        with:
-            version: 9.7.0  # Optional: specify a pnpm version
 
       - name: install Go stable
         uses: actions/setup-go@v4
@@ -121,9 +122,14 @@ jobs:
             libsoup-3.0 \
             webkit2gtk-4.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3 # docs https://pnpm.io/continuous-integration#github-actions
+        with:
+            version: 9.7.0  # Optional: specify a pnpm version
+
       - name: Install and prepare
         run: |
-          pnpm install
+          nix develop .#pnpm --command bash -c "pnpm install"
 
       - name: Download release of the .happ
         uses: robinraju/release-downloader@v1.10

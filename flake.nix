@@ -39,6 +39,9 @@
 
       systems = builtins.attrNames inputs.holonix.devShells;
       perSystem = { inputs', config, pkgs, system, ... }: {
+        devShells.pnpm = pkgs.mkShell {
+          inputsFrom = [ inputs'.tnesh-stack.devShells.synchronized-pnpm ];
+        };
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             inputs'.p2p-shipyard.devShells.holochainTauriDev
