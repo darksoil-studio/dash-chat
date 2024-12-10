@@ -609,11 +609,11 @@
         "tnesh-stack": "tnesh-stack"
       },
       "locked": {
-        "lastModified": 1733848341,
-        "narHash": "sha256-A/ETdhA5e6Ggl6+e5BTkRXnjVltYsw+FQhPF/TTINF8=",
+        "lastModified": 1733849429,
+        "narHash": "sha256-6/Ba7irfZdVqPSzSWV6e/AAZrn5gVdcdscZ3ahHfhfc=",
         "owner": "darksoil-studio",
         "repo": "always-online-nodes",
-        "rev": "3512f1902df20c7f07fb9f337e40ca705cc99515",
+        "rev": "40301cdefc4be32301c9c78bea6b000e87b5f606",
         "type": "github"
       },
       "original": {
