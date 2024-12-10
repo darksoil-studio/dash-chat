@@ -9,7 +9,6 @@ on:
 
 jobs:
   build-aon:
-    needs: build-aon
     strategy:
       matrix:
         # os: [ubuntu-22.04, macos-latest, macos-13]
