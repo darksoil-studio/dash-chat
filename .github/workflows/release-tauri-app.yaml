@@ -122,6 +122,14 @@ jobs:
             libsoup-3.0 \
             webkit2gtk-4.1
 
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: darksoil-studio
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v3 # docs https://pnpm.io/continuous-integration#github-actions
         with:
@@ -129,7 +137,7 @@ jobs:
 
       - name: Install and prepare
         run: |
-          nix develop .#pnpm --command bash -c "pnpm install"
+          nix develop --accept-flake-config .#pnpm --command bash -c "pnpm install"
 
       - name: Download release of the .happ
         uses: robinraju/release-downloader@v1.10

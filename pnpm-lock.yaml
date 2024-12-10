@@ -49,7 +49,7 @@ importers:
     dependencies:
       '@holochain-open-dev/elements':
         specifier: ^0.400.0-rc
-        version: 0.400.0-rc.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: 0.400.0-rc.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@mdi/js':
         specifier: ^7.2.0
         version: 7.4.47
@@ -58,7 +58,7 @@ importers:
         version: 0.2.0
       '@shoelace-style/shoelace':
         specifier: ^2.11.0
-        version: 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       http-server:
         specifier: ^14.1.1
         version: 14.1.1
@@ -100,16 +100,16 @@ importers:
     dependencies:
       '@darksoil-studio/file-storage-zome':
         specifier: github:darksoil-studio/file-storage#60ab8020777e2ba83294a43f4e3835ee71cb3fa2&path:ui
-        version: https://codeload.github.com/darksoil-studio/file-storage/tar.gz/60ab8020777e2ba83294a43f4e3835ee71cb3fa2#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: https://codeload.github.com/darksoil-studio/file-storage/tar.gz/60ab8020777e2ba83294a43f4e3835ee71cb3fa2#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/linked-devices-zome':
         specifier: github:darksoil-studio/linked-devices-zome#5eb4af940554974d61c65b90636999fcd0b54662&path:ui
-        version: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/5eb4af940554974d61c65b90636999fcd0b54662#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/5eb4af940554974d61c65b90636999fcd0b54662#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/messenger-zome':
         specifier: github:darksoil-studio/messenger-zome#afd9fdea0a42e32f29c745f3665ac0ba7479095e&path:ui
-        version: https://codeload.github.com/darksoil-studio/messenger-zome/tar.gz/afd9fdea0a42e32f29c745f3665ac0ba7479095e#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: https://codeload.github.com/darksoil-studio/messenger-zome/tar.gz/afd9fdea0a42e32f29c745f3665ac0ba7479095e#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/profiles-zome':
         specifier: github:darksoil-studio/profiles-zome#8e608fd6e094c4674631e79a0fba8276b93116dd&path:ui
-        version: https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/8e608fd6e094c4674631e79a0fba8276b93116dd#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/8e608fd6e094c4674631e79a0fba8276b93116dd#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@holochain/client':
         specifier: ^0.18.0-rc
         version: 0.18.0-rc.1
@@ -127,13 +127,13 @@ importers:
         version: 2.8.0
       '@shoelace-style/shoelace':
         specifier: ^2.11.0
-        version: 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tauri-apps/plugin-barcode-scanner':
         specifier: ^2.0.0
         version: 2.2.0
       '@tnesh-stack/elements':
         specifier: ^0.400.0-rc
-        version: 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+        version: 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tnesh-stack/signals':
         specifier: ^0.400.0-rc
         version: 0.400.0-rc.0
@@ -152,7 +152,7 @@ importers:
     devDependencies:
       '@custom-elements-manifest/analyzer':
         specifier: ^0.10.3
-        version: 0.10.3
+        version: 0.10.4
       '@lit-labs/observers':
         specifier: ^2.0.4
         version: 2.0.4
@@ -252,8 +252,8 @@ packages:
     resolution: {integrity: sha512-WyOx8cJQ+FQus4Mm4uPIZA64gbk3Wxh0so5Lcii0aJifqwoVOlfFtorjLE0Hen4OYyHZMXDWqMmaQemBhgxFRQ==}
     engines: {node: '>=14'}
 
-  '@custom-elements-manifest/analyzer@0.10.3':
-    resolution: {integrity: sha512-e2Ax59vK9sNedmDlPqZS11L54iAlKSjOJuv5etpTy5SygLBW3GcUtocHZm8wO013L0griTPpgWB0tuV7/JXy5A==}
+  '@custom-elements-manifest/analyzer@0.10.4':
+    resolution: {integrity: sha512-hse8o20Jd82BwWank29/J9OC4PmSTwUoEmll3LEjDF3WLY/Lc8g3TUYSib/3GARCS8Q5myT2RPqEWfRa+6bkIg==}
     hasBin: true
 
   '@custom-elements-manifest/find-dependencies@0.0.5':
@@ -940,8 +940,8 @@ packages:
   '@types/prop-types@15.7.14':
     resolution: {integrity: sha512-gNMvNH49DJ7OJYv+KAKn0Xp45p8PLl6zo2YnvDIbTd4J6MER2BmWN49TG7n9LvkyihINxeKW8+3bfS2yDC9dzQ==}
 
-  '@types/react@18.3.14':
-    resolution: {integrity: sha512-NzahNKvjNhVjuPBQ+2G7WlxstQ+47kXZNHlUvFakDViuIEfGY926GqhMueQFZ7woG+sPiQKlF36XfrIUVSUfFg==}
+  '@types/react@18.3.15':
+    resolution: {integrity: sha512-XQzbwkCwrsabawgWsvDDwsDTRuH1sf6Uj1fnFYoG03ZXfT54/aBvlylKR9ix70pXAtTn8dFzj358zVcZN4m83w==}
 
   '@types/sizzle@2.3.9':
     resolution: {integrity: sha512-xzLEyKB50yqCUPUJkIsrVvoWNfFUbIZI+RspLWt8u+tIW/BetMBZtgV2LY/2o+tYH8dRvQ+eoPf3NdhQCcLE2w==}
@@ -2767,7 +2767,7 @@ snapshots:
 
   '@ctrl/tinycolor@4.1.0': {}
 
-  '@custom-elements-manifest/analyzer@0.10.3':
+  '@custom-elements-manifest/analyzer@0.10.4':
     dependencies:
       '@custom-elements-manifest/find-dependencies': 0.0.5
       '@github/catalyst': 1.7.0
@@ -2790,16 +2790,16 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@darksoil-studio/file-storage-zome@https://codeload.github.com/darksoil-studio/file-storage/tar.gz/60ab8020777e2ba83294a43f4e3835ee71cb3fa2#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@darksoil-studio/file-storage-zome@https://codeload.github.com/darksoil-studio/file-storage/tar.gz/60ab8020777e2ba83294a43f4e3835ee71cb3fa2#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@holochain/client': 0.18.0-rc.1
       '@lit-labs/task': 2.1.2
       '@lit/context': 1.1.3
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
-      '@scoped-elements/dropzone': 0.2.7(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
-      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
-      '@tnesh-stack/elements': 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@scoped-elements/dropzone': 0.2.7(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/elements': 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tnesh-stack/utils': 0.400.0-rc.0
       idb-keyval: 6.2.1
       js-base64: 3.7.7
@@ -2810,16 +2810,16 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/linked-devices-zome@https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/5eb4af940554974d61c65b90636999fcd0b54662#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@darksoil-studio/linked-devices-zome@https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/5eb4af940554974d61c65b90636999fcd0b54662#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@holochain/client': 0.18.0-rc.1
       '@lit/context': 1.1.3
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
       '@msgpack/msgpack': 2.8.0
-      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tauri-apps/plugin-barcode-scanner': 2.2.0
-      '@tnesh-stack/elements': 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@tnesh-stack/elements': 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tnesh-stack/signals': 0.400.0-rc.0
       '@tnesh-stack/utils': 0.400.0-rc.0
       js-base64: 3.7.7
@@ -2830,18 +2830,18 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/messenger-zome@https://codeload.github.com/darksoil-studio/messenger-zome/tar.gz/afd9fdea0a42e32f29c745f3665ac0ba7479095e#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@darksoil-studio/messenger-zome@https://codeload.github.com/darksoil-studio/messenger-zome/tar.gz/afd9fdea0a42e32f29c745f3665ac0ba7479095e#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
-      '@darksoil-studio/file-storage-zome': https://codeload.github.com/darksoil-studio/file-storage/tar.gz/60ab8020777e2ba83294a43f4e3835ee71cb3fa2#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
-      '@darksoil-studio/linked-devices-zome': https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/5eb4af940554974d61c65b90636999fcd0b54662#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
-      '@darksoil-studio/profiles-zome': https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/8e608fd6e094c4674631e79a0fba8276b93116dd#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@darksoil-studio/file-storage-zome': https://codeload.github.com/darksoil-studio/file-storage/tar.gz/60ab8020777e2ba83294a43f4e3835ee71cb3fa2#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@darksoil-studio/linked-devices-zome': https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/5eb4af940554974d61c65b90636999fcd0b54662#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@darksoil-studio/profiles-zome': https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/8e608fd6e094c4674631e79a0fba8276b93116dd#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@holochain/client': 0.18.0-rc.1
       '@lit/context': 1.1.3
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
       '@msgpack/msgpack': 2.8.0
-      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
-      '@tnesh-stack/elements': 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/elements': 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tnesh-stack/signals': 0.400.0-rc.0
       '@tnesh-stack/utils': 0.400.0-rc.0
       color-hash: 2.0.2
@@ -2852,16 +2852,16 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/profiles-zome@https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/8e608fd6e094c4674631e79a0fba8276b93116dd#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@darksoil-studio/profiles-zome@https://codeload.github.com/darksoil-studio/profiles-zome/tar.gz/8e608fd6e094c4674631e79a0fba8276b93116dd#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
-      '@darksoil-studio/linked-devices-zome': https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/5eb4af940554974d61c65b90636999fcd0b54662#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@darksoil-studio/linked-devices-zome': https://codeload.github.com/darksoil-studio/linked-devices-zome/tar.gz/5eb4af940554974d61c65b90636999fcd0b54662#path:ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@holochain/client': 0.18.0-rc.1
       '@lit/context': 1.1.3
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
       '@msgpack/msgpack': 2.8.0
-      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
-      '@tnesh-stack/elements': 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/elements': 0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tnesh-stack/signals': 0.400.0-rc.0
       '@tnesh-stack/utils': 0.400.0-rc.0
       lit: 3.2.1
@@ -3062,13 +3062,13 @@ snapshots:
 
   '@holo-host/identicon@0.1.0': {}
 
-  '@holochain-open-dev/elements@0.400.0-rc.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@holochain-open-dev/elements@0.400.0-rc.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@holo-host/identicon': 0.1.0
       '@holochain/client': 0.18.0-rc.1
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
-      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       lit: 3.2.1
       prosemirror-commands: 1.6.2
       prosemirror-keymap: 1.2.2
@@ -3200,9 +3200,9 @@ snapshots:
     dependencies:
       lit: 3.2.1
 
-  '@lit/react@1.0.6(@types/react@18.3.14)':
+  '@lit/react@1.0.6(@types/react@18.3.15)':
     dependencies:
-      '@types/react': 18.3.14
+      '@types/react': 18.3.15
 
   '@lit/reactive-element@1.6.3':
     dependencies:
@@ -3295,10 +3295,10 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.28.1':
     optional: true
 
-  '@scoped-elements/dropzone@0.2.7(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@scoped-elements/dropzone@0.2.7(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@mdi/js': 7.4.47
-      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@types/dropzone': 5.7.9
       dropzone: 5.9.3
       lit: 2.8.0
@@ -3310,11 +3310,11 @@ snapshots:
 
   '@shoelace-style/localize@3.2.1': {}
 
-  '@shoelace-style/shoelace@2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@shoelace-style/shoelace@2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@ctrl/tinycolor': 4.1.0
       '@floating-ui/dom': 1.6.12
-      '@lit/react': 1.0.6(@types/react@18.3.14)
+      '@lit/react': 1.0.6(@types/react@18.3.15)
       '@shoelace-style/animations': 1.2.0
       '@shoelace-style/localize': 3.2.1
       composed-offset-position: 0.0.6(@floating-ui/utils@0.2.8)
@@ -3375,7 +3375,7 @@ snapshots:
     dependencies:
       '@tauri-apps/api': 2.1.1
 
-  '@tnesh-stack/elements@0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.14)':
+  '@tnesh-stack/elements@0.400.0-rc.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@holo-host/identicon': 0.1.0
       '@holochain/client': 0.18.0-rc.1
@@ -3383,7 +3383,7 @@ snapshots:
       '@lit/context': 1.1.3
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
-      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.14)
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       lit: 3.2.1
     transitivePeerDependencies:
       - '@floating-ui/utils'
@@ -3447,7 +3447,7 @@ snapshots:
 
   '@types/prop-types@15.7.14': {}
 
-  '@types/react@18.3.14':
+  '@types/react@18.3.15':
     dependencies:
       '@types/prop-types': 15.7.14
       csstype: 3.1.3
