@@ -9,7 +9,7 @@
     "test": "pnpm build:happ && pnpm -F tests test",
     "build:happ": "nix build -L .#messenger_demo_happ.meta.debug -o workdir/messenger-demo.happ",
     "package": "nix build -L .#messenger_demo_happ -o workdir/messenger-demo.happ && pnpm -F ui package && hc web-app pack workdir",
-    "network:android": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm tauri dev\" \"pnpm tauri android dev\"",
+    "network:android": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm tauri dev\" \"pnpm tauri android dev --release\"",
     "tauri": "tauri"
   },
   "devDependencies": {

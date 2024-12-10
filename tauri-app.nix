@@ -31,7 +31,7 @@
           inputs.tnesh-stack.inputs.pnpmnixpkgs.outputs.legacyPackages.${system}.pnpm.fetchDeps {
             inherit (finalAttrs) pnpmWorkspace version pname src;
 
-            hash = "sha256-vBtvE4+jpjcPL8JMTiP9aIinnSN2a1CpfhB256BVjvk=";
+            hash = "sha256-mZfJwjdA70wLsjgBIH5+bOq0pkY3AkWTMienq4YkjxU=";
             buildInputs = [ pkgs.git pkgs.openssh ];
           };
         buildPhase = ''

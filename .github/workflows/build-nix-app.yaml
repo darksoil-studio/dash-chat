@@ -1,0 +1,92 @@
+name: "build-nix-app"
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push: 
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-cache-release-happ:
+    permissions:
+      contents: write
+    runs-on: ubuntu-22.04
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - uses: actions/checkout@v3
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-24.05
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: darksoil-studio
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2
+
+      - name: Build and cache messenger-demo-happ
+        env:
+          CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
+        run: |
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config --no-update-lock-file -L .#messenger_demo_dna.hash  && nix build --accept-flake-config --no-update-lock-file -L .#messenger_demo_happ
+          nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]'
+          cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]')
+          cachix pin darksoil-studio messenger_demo_happ $(nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]')
+
+  build-and-cache-nix-tauri-app:
+    needs: build-and-cache-release-happ
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-latest, macos-13]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Extend space
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        uses: ./.github/actions/extend-space
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-24.05
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-open-dev
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: darksoil-studio
+
+      - name: Build messenger-demo
+        env:
+          CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
+        run: |
+          cachix watch-exec darksoil-studio -- nix build -L --accept-flake-config --no-update-lock-file .#messenger-demo
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2
+
+      - name: Pin messenger-demo
+        if: github.event_name != 'pull_request'
+        env:
+          CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
+        run: |
+          cachix pin darksoil-studio messenger-demo $(nix path-info --json --accept-flake-config --no-warn-dirty .#messenger-demo | jq -r 'keys[0]')

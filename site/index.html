@@ -1,0 +1,100 @@
+<html class="sl-theme-dark">
+	<head>
+		<link
+			href="https://fonts.googleapis.com/css?family=Rubik"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="style.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+	</head>
+	<body>
+		<div class="parallax">
+			<div
+				class="parallax__layer parallax__layer--back darksoil-background"
+			></div>
+			<div class="parallax__layer parallax__layer--base">
+				<rocket-content-area>
+					<h2 class="area-headline">
+						offline and resilient peer-to-peer chat app<br />
+					</h2>
+
+					<rocket-columns style="align-items: center">
+						<rocket-card style="flex: 1">
+							<p>
+								living power is the companion app for the Biolectrical
+								educational toolkit.
+							</p>
+						</rocket-card>
+						<div class="column" style="margin-bottom: 64px; flex: 1">
+							<div
+								style="
+									flex: 1;
+									justify-content: center;
+									display: flex;
+									flex-direction: row;
+								"
+							>
+								<div style="display: flex; flex-direction: column; gap: 16px">
+									<download-installer-button
+										style="flex-basis: 400px"
+										windows-url="https://github.com/darksoil-studio/messenger-demo/releases/download/v0.0.1/messenger-demo_0.0.1_x64-setup.exe"
+										nix-command="nix run github:darksoil-studio/messenger-demo/v0.0.1"
+										macos-intel-url="https://github.com/darksoil-studio/messenger-demo/releases/download/v0.0.1/messenger-demo_x64.app.tar.gz"
+										macos-silicon-url="https://github.com/darksoil-studio/messenger-demo/releases/download/v0.0.1/messenger-demo_aarch64.app.tar.gz"
+										linux-url="https://github.com/darksoil-studio/messenger-demo/releases/download/v0.0.1/messenger-demo_0.0.1_amd64.AppImage"
+									>
+									</download-installer-button>
+
+									<span>or</span>
+
+									<sl-button
+										href="https://github.com/darksoil-studio/messenger-demo/releases/download/v0.0.1/messenger-demo_0.0.1_amd64.AppImage"
+										variant="primary"
+										size="large"
+										style="flex: 1"
+									>
+										Download for Android aarch64
+									</sl-button>
+								</div>
+							</div>
+						</div>
+					</rocket-columns>
+
+					<div>
+						<h2 id="darksoil" link-text="darksoil.studio">
+							a darksoil studio project
+						</h2>
+						<p>
+							living power is a darksoil studio project.
+							<br />
+							<br />
+							Learn more about darksoil at
+							<a href="https://darksoil.studio">darksoil.studio</a>.
+						</p>
+					</div>
+				</rocket-content-area>
+			</div>
+		</div>
+		<script type="module">
+			import './src/download-installer-button.ts';
+		</script>
+		<script type="module">
+			export async function registerCustomElements() {
+				// server-only components
+				// prettier-ignore
+				customElements.define('rocket-content-area', await import('@rocket/components/content-area.js').then(m => m.RocketContentArea));
+				// prettier-ignore
+				customElements.define('rocket-header-scroll-menu', await import('@rocket/components/header-scroll-menu.js').then(m => m.RocketHeaderScrollMenu));
+				// prettier-ignore
+				customElements.define('rocket-card', await import('@rocket/components/card.js').then(m => m.RocketCard));
+				// prettier-ignore
+				customElements.define('rocket-columns', await import('@rocket/components/columns.js').then(m => m.RocketColumns));
+			}
+
+			registerCustomElements();
+		</script>
+		<script type="module">
+			import '@shoelace-style/shoelace/dist/themes/dark.css';
+		</script>
+	</body>
+</html>

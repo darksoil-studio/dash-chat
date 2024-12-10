@@ -1,0 +1,19 @@
+{
+  "name": "site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@rocket/components": "^0.2.0",
+    "@shoelace-style/shoelace": "^2.11.0",
+    "@holochain-open-dev/elements": "^0.400.0-rc",
+    "@mdi/js": "^7.2.0",
+    "http-server": "^14.1.1",
+    "lit": "^3.1.3",
+    "tslib": "^2.6.2",
+    "vite": "^4.0.0"
+  }
+}

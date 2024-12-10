@@ -31,10 +31,10 @@ jobs:
         with:
           name: darksoil-studio
 
-      - name: Install and test
+      - name: Build happ
         run: |
           nix-store --gc
-          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm install && pnpm run build:happ"
+          nix build -L .#messenger_demo_happ -o workdir/messenger-demo.happ
 
       - name: Retrieve version
         run: |

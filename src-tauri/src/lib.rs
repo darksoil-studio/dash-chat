@@ -16,7 +16,7 @@ pub fn happ_bundle() -> AppBundle {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
-    config.gossip_arc_clamp = Some(tauri_plugin_holochain::GossipArcClamp::Full);
+    // config.gossip_arc_clamp = Some(tauri_plugin_holochain::GossipArcClamp::Full);
 
     tauri::Builder::default()
         .plugin(
