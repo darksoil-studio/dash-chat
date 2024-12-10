@@ -123,7 +123,7 @@ jobs:
 
       - name: Install and prepare
         run: |
-          pnpm install
+          nix develop --command bash -c "pnpm install"
 
       - name: Download release of the .happ
         uses: robinraju/release-downloader@v1.10
