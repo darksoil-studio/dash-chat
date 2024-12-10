@@ -11,10 +11,9 @@
     p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
     playground.url = "github:darksoil-studio/holochain-playground/main-0.4";
 
-    file-storage.url = "github:darksoil-studio/file-storage/main-0.4";
-    linked-devices-zome.url =
-      "github:darksoil-studio/linked-devices-zome/main-0.4";
-    profiles-zome.url = "github:darksoil-studio/profiles-zome/main-0.4";
+    file-storage.follows = "messenger-zome/file-storage";
+    linked-devices-zome.follows = "messenger-zome/linked-devices-zome";
+    profiles-zome.follows = "messenger-zome/profiles-zome";
     messenger-zome.url = "github:darksoil-studio/messenger-zome/main-0.4";
     aons.url = "github:darksoil-studio/always-online-nodes/main";
 
