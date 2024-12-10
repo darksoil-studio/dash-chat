@@ -68,6 +68,7 @@ jobs:
             args: ''
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
+    permissions: write-all
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -94,7 +95,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           override: true
-          toolchain: stable
+          toolchain: 1.80.1
     
       - name: install x86_64 target
         if: matrix.args == '--target x86_64-apple-darwin'
@@ -152,6 +153,12 @@ jobs:
       - name: build the app
         uses: tauri-apps/tauri-action@v0
         env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ needs.publish-happ.outputs.releaseId }}
