@@ -94,6 +94,11 @@ jobs:
         if: matrix.args == '--target x86_64-apple-darwin'
         run: rustup target add x86_64-apple-darwin
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3 # docs https://pnpm.io/continuous-integration#github-actions
+        with:
+            version: 9  # Optional: specify a pnpm version
+
       - name: install Go stable
         uses: actions/setup-go@v4
         with:
