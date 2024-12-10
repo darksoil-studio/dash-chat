@@ -79,6 +79,12 @@ jobs:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - uses: actions/checkout@v2
 
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-24.05
+
       - name: setup node
         uses: actions/setup-node@v1
         with:
@@ -97,7 +103,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3 # docs https://pnpm.io/continuous-integration#github-actions
         with:
-            version: 9.7  # Optional: specify a pnpm version
+            version: 9  # Optional: specify a pnpm version
 
       - name: install Go stable
         uses: actions/setup-go@v4
