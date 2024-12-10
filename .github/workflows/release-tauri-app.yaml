@@ -82,7 +82,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v1
         with:
-          node-version: 20
+          node-version: 20.12.2
 
       - name: install Rust stable
         uses: actions-rs/toolchain@v1
