@@ -32,7 +32,7 @@
             inherit (finalAttrs) pnpmWorkspace version pname src;
 
             hash = "sha256-mZfJwjdA70wLsjgBIH5+bOq0pkY3AkWTMienq4YkjxU=";
-            buildInputs = [ pkgs.git pkgs.openssh ];
+            buildInputs = [ pkgs.git ];
           };
         buildPhase = ''
           runHook preBuild
