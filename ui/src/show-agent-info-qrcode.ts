@@ -35,11 +35,11 @@ export class ShowAgentInfoQrcode extends SignalWatcher(LitElement) {
 	@state()
 	agentInfos!: Array<AgentInfoSigned>;
 
-	async firstUpdated() {
-		this.agentInfos = await this.adminWebsocket.agentInfo({
-			cell_id: null,
-		});
-	}
+	// async firstUpdated() {
+	// 	this.agentInfos = await this.adminWebsocket.agentInfo({
+	// 		cell_id: null,
+	// 	});
+	// }
 
 	get dialog() {
 		return this.shadowRoot!.querySelector('sl-dialog')!;

@@ -3,9 +3,7 @@
 	"version": "0.0.1",
 	"identifier": "studio.darksoil.messengerdemo",
 	"build": {
-		"beforeBuildCommand": "pnpm -F ui build",
-		"devUrl": "http://localhost:1420",
-		"frontendDist": "../ui/dist"
+		"devUrl": "http://localhost:1420"
 	},
 	"app": {
 		"withGlobalTauri": false,
