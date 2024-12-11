@@ -1,4 +1,3 @@
-import { wrapPathInSvg } from '@holochain-open-dev/elements';
 import { mdiDownload } from '@mdi/js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/copy-button/copy-button.js';
@@ -8,6 +7,7 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
+import { wrapPathInSvg } from '@tnesh-stack/elements';
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
