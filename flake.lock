@@ -12287,11 +12287,11 @@
         "tnesh-stack": "tnesh-stack_37"
       },
       "locked": {
-        "lastModified": 1733876541,
-        "narHash": "sha256-Ays2bdBnXg9Ywp/5XhvTjFZ4PvvylR85kacnSqNIEeo=",
+        "lastModified": 1733878001,
+        "narHash": "sha256-5dokG0x2h6w9ei/mZiFbHTTYuTognIkHD7HVMxhYdYk=",
         "owner": "darksoil-studio",
         "repo": "messenger-zome",
-        "rev": "37e4e9e50b6d88a83978ec2f61c1d3aac21d373f",
+        "rev": "06c8f1fa6a2475e06b1923bad013b38d13b05bd8",
         "type": "github"
       },
       "original": {
