@@ -12287,16 +12287,16 @@
         "tnesh-stack": "tnesh-stack_37"
       },
       "locked": {
-        "lastModified": 1733873351,
-        "narHash": "sha256-YR6xWweom52U+VymoCPEBqJmASnEMW1122LXJ33tihQ=",
+        "lastModified": 1733875752,
+        "narHash": "sha256-zYtg7hqZBNPjSuFq5X18Dd9BryKEAMmKZdveTst9Eck=",
         "owner": "darksoil-studio",
         "repo": "messenger-zome",
-        "rev": "cd2bffaf2d4777bd52fb04e3971b03d5bcc08caa",
+        "rev": "4bc1e74f5ed1d1db7e42e8c2e5fd0979b51d91bb",
         "type": "github"
       },
       "original": {
         "owner": "darksoil-studio",
-        "ref": "main-0.4",
+        "ref": "utils",
         "repo": "messenger-zome",
         "type": "github"
       }
