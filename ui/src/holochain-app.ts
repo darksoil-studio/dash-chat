@@ -135,7 +135,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 
 		try {
 			this._client = await AppWebsocket.connect();
-			this._adminWs = await AdminWebsocket.connect();
+			// this._adminWs = await AdminWebsocket.connect();
 		} catch (e: unknown) {
 			this._error = e;
 		} finally {
