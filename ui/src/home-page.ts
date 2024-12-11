@@ -295,14 +295,14 @@ export class HomePage extends SignalWatcher(LitElement) {
 							></sl-icon>
 							${msg('My Profile')}</sl-menu-item
 						>
-						<sl-menu-item value="show_agent_info">
+						<sl-menu-item value="show_agent_info" style="display:none">
 							<sl-icon
 								.src=${wrapPathInSvg(mdiAccountSwitch)}
 								slot="prefix"
 							></sl-icon>
 							${msg('Show Agent Info')}</sl-menu-item
 						>
-						<sl-menu-item value="scan_agent_info">
+						<sl-menu-item value="scan_agent_info" style="display:none">
 							<sl-icon
 								.src=${wrapPathInSvg(mdiQrcodeScan)}
 								slot="prefix"
@@ -341,7 +341,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 				<sl-dropdown>
 					<sl-icon-button
 						slot="trigger"
-						style="font-size: 24px; color: var(--sl-color-neutral-900)"
+						style="font-size: 24px; color: var(--sl-color-neutral-900); display: none "
 						.src=${wrapPathInSvg(mdiDotsVertical)}
 					></sl-icon-button>
 					<sl-menu

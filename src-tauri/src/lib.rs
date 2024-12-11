@@ -1,4 +1,4 @@
-use holochain_types::prelude::AppBundle;
+use holochain_types::web_app::WebAppBundle;
 use lair_keystore::dependencies::sodoken::{BufRead, BufWrite};
 use std::path::PathBuf;
 use tauri::AppHandle;
@@ -8,9 +8,9 @@ const APP_ID: &'static str = "messenger-demo";
 const SIGNAL_URL: &'static str = "wss://sbd.holo.host";
 const BOOTSTRAP_URL: &'static str = "https://bootstrap.holo.host";
 
-pub fn happ_bundle() -> AppBundle {
-    let bytes = include_bytes!("../../workdir/messenger-demo.happ");
-    AppBundle::decode(bytes).expect("Failed to decode messenger-demo happ")
+pub fn happ_bundle() -> WebAppBundle {
+    let bytes = include_bytes!("../../workdir/messenger-demo.webhapp");
+    WebAppBundle::decode(bytes).expect("Failed to decode messenger-demo happ")
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -39,10 +39,10 @@ pub fn run() {
                 // After set up we can be sure our app is installed and up to date, so we can just open it
                 let mut window_builder = app
                     .holochain()?
-                    .main_window_builder(
-                        String::from("main"),
-                        true,
-                        Some(String::from("messenger-demo")),
+                    .web_happ_window_builder(
+                        String::from(APP_ID),
+                        // true,
+                        // Some(String::from("messenger-demo")),
                         None,
                     )
                     .await?;
@@ -87,14 +87,14 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
     {
         handle
             .holochain()?
-            .install_app(String::from(APP_ID), happ_bundle(), None, None, None)
+            .install_web_app(String::from(APP_ID), happ_bundle(), None, None, None)
             .await?;
 
         Ok(())
     } else {
         handle
             .holochain()?
-            .update_app_if_necessary(String::from(APP_ID), happ_bundle())
+            .update_web_app_if_necessary(String::from(APP_ID), happ_bundle())
             .await?;
 
         Ok(())

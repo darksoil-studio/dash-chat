@@ -34,7 +34,7 @@ jobs:
       - name: Build happ
         run: |
           nix-store --gc
-          nix build -L .#messenger_demo_happ -o workdir/messenger-demo.happ
+          nix develop --command bash -c "pnpm i && pnpm package"
 
       - name: Retrieve version
         run: |
@@ -45,7 +45,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "workdir/messenger-demo.happ"
+          artifacts: "workdir/messenger-demo.webhapp"
           body: "See assets below to download and install this version."
           name: Messenger Demo v${{ steps.version.outputs.APP_VERSION }}
           tag: v${{ steps.version.outputs.APP_VERSION }}
@@ -88,7 +88,7 @@ jobs:
 
       - name: Install and prepare
         run: |
-          pnpm install
+          pnpm install -w
 
       - name: install Rust stable
         uses: actions-rs/toolchain@v1
@@ -129,7 +129,7 @@ jobs:
         with: 
           token: ${{ secrets.GITHUB_TOKEN }}
           releaseId: ${{ needs.publish-happ.outputs.releaseId }}
-          fileName: 'messenger-demo.happ'
+          fileName: 'messenger-demo.webhapp'
           out-file-path: 'workdir/'
 
       - name: build the app
