@@ -1,5 +1,4 @@
-use holochain_types::{app::AppBundle};
-use lair_keystore::dependencies::sodoken::{BufRead, BufWrite};
+use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use std::path::PathBuf;
 use tauri::{menu::{Menu, MenuItem, PredefinedMenuItem, Submenu}, AppHandle, Manager};

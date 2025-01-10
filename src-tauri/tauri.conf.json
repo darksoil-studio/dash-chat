@@ -25,6 +25,15 @@
 		],
 		"macOS": {
 			"entitlements": "entitlements.plist"
+		},
+		"createUpdaterArtifacts": true
+	},
+	"plugins": {
+		"updater": {
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE1OTZGQTY5ODU3NDA3NTUKUldSVkIzU0ZhZnFXcFk4d0JuMjNXeUJsVG1XblZoQ1hBRzNvUUVmYVBsSmkva2k5NmJaeExQa1cK",
+			"endpoints": [
+				"https://github.com/darksoil-studio/living-power/releases/latest/download/latest.json"
+			]
 		}
 	}
 }

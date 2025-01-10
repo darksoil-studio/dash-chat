@@ -16,4 +16,14 @@ hdk = "0.4.0"
 
 [patch.crates-io]
 holochain = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+holo_hash = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
 holochain_types = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+holochain_zome_types = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+holochain_integrity_types = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+holochain_nonce = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+holochain_secure_primitive = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+mr_bundle = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+holochain_keystore = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+holochain_conductor_api = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+kitsune_p2p_mdns  = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+kitsune_p2p_types = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
