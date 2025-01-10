@@ -1,7 +1,9 @@
 use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use std::path::PathBuf;
-use tauri::{menu::{Menu, MenuItem, PredefinedMenuItem, Submenu}, AppHandle, Manager};
+use tauri::{AppHandle, Manager};
+#[cfg(not(mobile))]
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, WANNetworkConfig};
 
 const APP_ID: &'static str = "messenger-demo";
@@ -17,7 +19,7 @@ pub fn happ_bundle() -> AppBundle {
 pub fn run() {
     std::env::set_var("WASM_LOG", "info");
 
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
@@ -28,33 +30,6 @@ pub fn run() {
             vec_to_locked(vec![]).expect("Can't build passphrase"),
             HolochainPluginConfig::new(holochain_dir(), wan_network_config()),
         ))
-        .menu(|handle| {
-            Menu::with_items(
-                handle,
-                &[&Submenu::with_items(
-                    handle,
-                    "File",
-                    true,
-                    &[
-                        &MenuItem::with_id(
-                            handle,
-                            "open-logs-folder",
-                            "Open Logs Folder",
-                            true,
-                            None::<&str>,
-                        )?,
-                        &MenuItem::with_id(
-                            handle,
-                            "factory-reset",
-                            "Factory Reset",
-                            true,
-                            None::<&str>,
-                        )?,
-                        &PredefinedMenuItem::close_window(handle, None)?,
-                    ],
-                )?],
-            )
-        })
         .setup(|app| {
             #[cfg(mobile)]
             app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
@@ -62,6 +37,7 @@ pub fn run() {
             app.handle()
                 .plugin(tauri_plugin_updater::Builder::new().build())?;
 
+            #[cfg(not(mobile))]
             app.handle()
                 .on_menu_event(|app_handle, menu_event| match menu_event.id().as_ref() {
                     "open-logs-folder" => {
@@ -126,7 +102,40 @@ pub fn run() {
             result?;
 
             Ok(())
-        })
+        });
+
+    #[cfg(not(mobile))]
+    {
+        builder = builder.menu(|handle| {
+            Menu::with_items(
+                handle,
+                &[&Submenu::with_items(
+                    handle,
+                    "File",
+                    true,
+                    &[
+                        &MenuItem::with_id(
+                            handle,
+                            "open-logs-folder",
+                            "Open Logs Folder",
+                            true,
+                            None::<&str>,
+                        )?,
+                        &MenuItem::with_id(
+                            handle,
+                            "factory-reset",
+                            "Factory Reset",
+                            true,
+                            None::<&str>,
+                        )?,
+                        &PredefinedMenuItem::close_window(handle, None)?,
+                    ],
+                )?],
+            )
+        });
+    }
+
+    builder
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
