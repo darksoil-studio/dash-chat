@@ -1,22 +1,22 @@
-use holochain_types::web_app::WebAppBundle;
+use holochain_types::{app::AppBundle};
 use lair_keystore::dependencies::sodoken::{BufRead, BufWrite};
+use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use std::path::PathBuf;
-use tauri::AppHandle;
-use tauri_plugin_holochain::{HolochainExt, HolochainPluginConfig, WANNetworkConfig};
+use tauri::{menu::{Menu, MenuItem, PredefinedMenuItem, Submenu}, AppHandle, Manager};
+use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, WANNetworkConfig};
 
 const APP_ID: &'static str = "messenger-demo";
 const SIGNAL_URL: &'static str = "wss://sbd.holo.host";
 const BOOTSTRAP_URL: &'static str = "https://bootstrap.holo.host";
 
-pub fn happ_bundle() -> WebAppBundle {
-    let bytes = include_bytes!("../../workdir/messenger-demo.webhapp");
-    WebAppBundle::decode(bytes).expect("Failed to decode messenger-demo happ")
+pub fn happ_bundle() -> AppBundle {
+    let bytes = include_bytes!("../../workdir/messenger-demo.happ");
+    AppBundle::decode(bytes).expect("Failed to decode messenger-demo happ")
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
-    // config.gossip_arc_clamp = Some(tauri_plugin_holochain::GossipArcClamp::Full);
+    std::env::set_var("WASM_LOG", "info");
 
     tauri::Builder::default()
         .plugin(
@@ -24,13 +24,78 @@ pub fn run() {
                 .level(log::LevelFilter::Warn)
                 .build(),
         )
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_holochain::init(
             vec_to_locked(vec![]).expect("Can't build passphrase"),
-            config,
+            HolochainPluginConfig::new(holochain_dir(), wan_network_config()),
         ))
+        .menu(|handle| {
+            Menu::with_items(
+                handle,
+                &[&Submenu::with_items(
+                    handle,
+                    "File",
+                    true,
+                    &[
+                        &MenuItem::with_id(
+                            handle,
+                            "open-logs-folder",
+                            "Open Logs Folder",
+                            true,
+                            None::<&str>,
+                        )?,
+                        &MenuItem::with_id(
+                            handle,
+                            "factory-reset",
+                            "Factory Reset",
+                            true,
+                            None::<&str>,
+                        )?,
+                        &PredefinedMenuItem::close_window(handle, None)?,
+                    ],
+                )?],
+            )
+        })
         .setup(|app| {
             #[cfg(mobile)]
             app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
+            #[cfg(not(mobile))]
+            app.handle()
+                .plugin(tauri_plugin_updater::Builder::new().build())?;
+
+            app.handle()
+                .on_menu_event(|app_handle, menu_event| match menu_event.id().as_ref() {
+                    "open-logs-folder" => {
+                        let log_folder = app_handle
+                            .path()
+                            .app_log_dir()
+                            .expect("Could not get app log dir");
+                        if let Err(err) = opener::reveal(log_folder.clone()) {
+                            log::error!("Failed to open log dir at {log_folder:?}: {err:?}");
+                        }
+                    }
+                    "factory-reset" => {
+                        let h = app_handle.clone();
+                         app_handle
+                                .dialog()
+                                .message("Are you sure you want to perform a factory reset? All your data will be lost.")
+                                .title("Factory Reset")
+                                .buttons(MessageDialogButtons::OkCancel)
+                                .show(move |result| match result {
+                                    true => {
+                                        if let Err(err) = std::fs::remove_dir_all(holochain_dir()) {
+                                            log::error!("Failed to perform factory reset: {err:?}");
+                                        } else {
+                                            h.restart();
+                                        }
+                                    }
+                                    false => {
+            
+                                    }
+                                });
+                    }
+                    _ => {}
+                });
 
             let handle = app.handle().clone();
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
@@ -39,17 +104,19 @@ pub fn run() {
                 // After set up we can be sure our app is installed and up to date, so we can just open it
                 let mut window_builder = app
                     .holochain()?
-                    .web_happ_window_builder(
+                    .main_window_builder(
                         String::from(APP_ID),
-                        // true,
-                        // Some(String::from("messenger-demo")),
+                        true,
+                        Some(String::from(APP_ID)),
                         None,
                     )
                     .await?;
 
                 #[cfg(desktop)]
                 {
-                    window_builder = window_builder.title(String::from("Messenger Demo"))
+                    window_builder = window_builder
+                        .title(String::from("Messenger Demo"))
+                        .inner_size(1400.0, 1000.0);
                 }
 
                 window_builder.build()?;
@@ -87,14 +154,14 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
     {
         handle
             .holochain()?
-            .install_web_app(String::from(APP_ID), happ_bundle(), None, None, None)
+            .install_app(String::from(APP_ID), happ_bundle(), None, None, None)
             .await?;
 
         Ok(())
     } else {
         handle
             .holochain()?
-            .update_web_app_if_necessary(String::from(APP_ID), happ_bundle())
+            .update_app_if_necessary(String::from(APP_ID), happ_bundle())
             .await?;
 
         Ok(())
@@ -146,22 +213,5 @@ fn holochain_dir() -> PathBuf {
         )
         .expect("Could not get app root")
         .join("holochain")
-    }
-}
-
-fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<BufRead> {
-    match BufWrite::new_mem_locked(pass_tmp.len()) {
-        Err(e) => {
-            pass_tmp.fill(0);
-            Err(e.into())
-        }
-        Ok(p) => {
-            {
-                let mut lock = p.write_lock();
-                lock.copy_from_slice(&pass_tmp);
-                pass_tmp.fill(0);
-            }
-            Ok(p.to_read())
-        }
     }
 }

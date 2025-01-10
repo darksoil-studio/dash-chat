@@ -19,12 +19,14 @@ tauri-build = { version = "2.0.0", default-features = false , features = [] }
 
 [dependencies]
 tauri = { version = "2.0.0", features = ["devtools"] }
-tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/p2p-shipyard", branch = "disable-origins" }
-holochain_types = { version = "0.4.0-dev" }
+tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/p2p-shipyard", branch = "main-0.4" }
+holochain_types = { version = "0.4" }
 lair_keystore = { version = "0.5" }
 
-holochain_client = { version = "0.6.0-dev" }
+holochain_client = { version = "0.6" }
 
+tauri-plugin-dialog = "2"
+opener = { version = "0.7", features = ["reveal"] }
 log = "0.4"
 tauri-plugin-log = "2.0.0"
 url2 = "0.0.6"
@@ -34,4 +36,7 @@ anyhow = "1"
 uuid = "1"
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
-tauri-plugin-barcode-scanner = "2.0.0-beta.0"
+tauri-plugin-barcode-scanner = "2"
+
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-updater = "2"

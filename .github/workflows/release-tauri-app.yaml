@@ -34,7 +34,7 @@ jobs:
       - name: Build happ
         run: |
           nix-store --gc
-          nix develop --command bash -c "pnpm i && pnpm package"
+          nix build -L .#messenger_demo_happ -o workdir/messenger-demo.happ
 
       - name: Retrieve version
         run: |
@@ -88,13 +88,13 @@ jobs:
 
       - name: Install and prepare
         run: |
-          pnpm install -w
+          pnpm install
 
       - name: install Rust stable
         uses: actions-rs/toolchain@v1
         with:
           override: true
-          toolchain: 1.80.1
+          toolchain: 1.81.0
     
       - name: install x86_64 target
         if: matrix.args == '--target x86_64-apple-darwin'
@@ -135,12 +135,12 @@ jobs:
       - name: build the app
         uses: tauri-apps/tauri-action@v0
         env:
-          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          # APPLE_ID: ${{ secrets.APPLE_ID }}
-          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ needs.publish-happ.outputs.releaseId }}
