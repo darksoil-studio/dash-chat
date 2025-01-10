@@ -11,5 +11,9 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-hdi = "0.5.0-rc"
-hdk = "0.4.0-rc"
+hdi = "0.5.0"
+hdk = "0.4.0"
+
+[patch.crates-io]
+holochain = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }
+holochain_types = { git = "https://github.com/holochain/holochain", rev = "5a7494888ee75abd4b0b18725fe36afcfd97193a" }

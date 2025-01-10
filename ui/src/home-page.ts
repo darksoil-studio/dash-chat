@@ -62,10 +62,6 @@ import {
 	isMobileContext,
 	rootRouterContext,
 } from './context.js';
-import {
-	ShowAgentInfoQrcode,
-	scanAgentInfoQrcode,
-} from './show-agent-info-qrcode.js';
 
 @customElement('home-page')
 export class HomePage extends SignalWatcher(LitElement) {
@@ -262,22 +258,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 								);
 							} else if (value === 'my_profile') {
 								this.dispatchEvent(new CustomEvent('profile-clicked'));
-							} else if (value === 'show_agent_info') {
-								const showAgentInfoQrcode = this.shadowRoot!.querySelector(
-									'show-agent-info-qrcode',
-								) as ShowAgentInfoQrcode;
-								showAgentInfoQrcode.show();
-							} else if (value === 'scan_agent_info') {
-								try {
-									const agentInfos = await scanAgentInfoQrcode();
-									await this.adminWebsocket.addAgentInfo({
-										agent_infos: agentInfos,
-									});
-									notify(msg('Added AgentInfo.'));
-								} catch (e) {
-									console.log(JSON.stringify(e));
-									notifyError(msg(str`Error scanning agent info: ${e}`));
-								}
 							}
 						}}
 					>
@@ -294,20 +274,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 								slot="prefix"
 							></sl-icon>
 							${msg('My Profile')}</sl-menu-item
-						>
-						<sl-menu-item value="show_agent_info" style="display:none">
-							<sl-icon
-								.src=${wrapPathInSvg(mdiAccountSwitch)}
-								slot="prefix"
-							></sl-icon>
-							${msg('Show Agent Info')}</sl-menu-item
-						>
-						<sl-menu-item value="scan_agent_info" style="display:none">
-							<sl-icon
-								.src=${wrapPathInSvg(mdiQrcodeScan)}
-								slot="prefix"
-							></sl-icon>
-							${msg('Scan Agent Info')}</sl-menu-item
 						>
 					</sl-menu>
 				</sl-dropdown>
@@ -338,33 +304,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 						)}
 					.agentPubKey=${this.client.myPubKey}
 				></profile-list-item>
-				<sl-dropdown>
-					<sl-icon-button
-						slot="trigger"
-						style="font-size: 24px; color: var(--sl-color-neutral-900); display: none "
-						.src=${wrapPathInSvg(mdiDotsVertical)}
-					></sl-icon-button>
-					<sl-menu
-						@sl-select=${async (e: CustomEvent) => {
-							const item = e.detail.item as SlMenuItem;
-							const value = item.value;
-							if (value === 'show_agent_info') {
-								const showAgentInfoQrcode = this.shadowRoot!.querySelector(
-									'show-agent-info-qrcode',
-								) as ShowAgentInfoQrcode;
-								showAgentInfoQrcode.show();
-							}
-						}}
-					>
-						<sl-menu-item value="show_agent_info">
-							<sl-icon
-								.src=${wrapPathInSvg(mdiAccountSwitch)}
-								slot="prefix"
-							></sl-icon>
-							${msg('Show Agent Info')}</sl-menu-item
-						>
-					</sl-menu>
-				</sl-dropdown>
 			</div>
 		`;
 	}

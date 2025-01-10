@@ -16893,6 +16893,10 @@
           "messenger-zome",
           "profiles-zome"
         ],
+        "rust-overlay": [
+          "holonix",
+          "rust-overlay"
+        ],
         "tnesh-stack": "tnesh-stack_41"
       }
     },

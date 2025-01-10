@@ -6,6 +6,7 @@
 
     nixpkgs.follows = "holonix/nixpkgs";
     flake-parts.follows = "holonix/flake-parts";
+    rust-overlay.follows = "holonix/rust-overlay";
 
     tnesh-stack.url = "github:darksoil-studio/tnesh-stack/main-0.4";
     p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
@@ -18,7 +19,6 @@
     aons.url = "github:darksoil-studio/always-online-nodes/main";
 
     nixos-generators.url = "github:nix-community/nixos-generators";
-
   };
 
   nixConfig = {
@@ -37,39 +37,51 @@
       imports = [ ./happ.nix ./tauri-app.nix ./aon/raspberry-pi.nix ];
 
       systems = builtins.attrNames inputs.holonix.devShells;
-      perSystem = { inputs', config, pkgs, system, ... }: {
-        devShells.pnpm = pkgs.mkShell {
-          inputsFrom = [ inputs'.tnesh-stack.devShells.synchronized-pnpm ];
+      perSystem = { inputs', config, pkgs, system, ... }:
+
+        let
+          overlays = [ (import inputs.rust-overlay) ];
+          pkgs = import inputs.nixpkgs { inherit system overlays; };
+
+          rustVersion = "1.81.0";
+
+          # define Rust toolchain version and targets to be used in this flake
+          rust = (pkgs.rust-bin.stable.${rustVersion}.minimal.override {
+            extensions = [ "clippy" "rustfmt" ];
+            targets = [ "wasm32-unknown-unknown" ];
+          });
+
+        in {
+          devShells.pnpm = pkgs.mkShell {
+            inputsFrom = [ inputs'.tnesh-stack.devShells.synchronized-pnpm ];
+          };
+          devShells.default = pkgs.mkShell {
+            inputsFrom = [
+              inputs'.p2p-shipyard.devShells.holochainTauriDev
+              inputs'.tnesh-stack.devShells.synchronized-pnpm
+              inputs'.holonix.devShells.default
+            ];
+            packages = [
+              (rust)
+              inputs'.tnesh-stack.packages.holochain
+              inputs'.p2p-shipyard.packages.hc-pilot
+              inputs'.tnesh-stack.packages.hc-scaffold-happ
+              inputs'.playground.packages.hc-playground
+            ];
+          };
+          devShells.androidDev = pkgs.mkShell {
+            inputsFrom = [
+              inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
+              inputs'.tnesh-stack.devShells.synchronized-pnpm
+              inputs'.holonix.devShells.default
+            ];
+            packages = [
+              rust
+              inputs'.tnesh-stack.packages.holochain
+              inputs'.tnesh-stack.packages.hc-scaffold-happ
+              inputs'.playground.packages.hc-playground
+            ];
+          };
         };
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            inputs'.p2p-shipyard.devShells.holochainTauriDev
-            inputs'.tnesh-stack.devShells.synchronized-pnpm
-            inputs'.holonix.devShells.default
-          ];
-          packages = [
-            (inputs'.holonix.packages.holochain.override {
-              cargoExtraArgs = " --features unstable-functions";
-            })
-            inputs'.p2p-shipyard.packages.hc-pilot
-            inputs'.tnesh-stack.packages.hc-scaffold-happ
-            inputs'.playground.packages.hc-playground
-          ];
-        };
-        devShells.androidDev = pkgs.mkShell {
-          inputsFrom = [
-            inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
-            inputs'.tnesh-stack.devShells.synchronized-pnpm
-            inputs'.holonix.devShells.default
-          ];
-          packages = [
-            (inputs'.holonix.packages.holochain.override {
-              cargoExtraArgs = " --features unstable-functions";
-            })
-            inputs'.tnesh-stack.packages.hc-scaffold-happ
-            inputs'.playground.packages.hc-playground
-          ];
-        };
-      };
     };
 }
