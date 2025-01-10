@@ -15510,11 +15510,11 @@
         "tnesh-stack": "tnesh-stack_38"
       },
       "locked": {
-        "lastModified": 1736505556,
-        "narHash": "sha256-nFdlkbwE+fOFPEo+TAsVzhF/TDnfjOArD+YCf3Eulvs=",
+        "lastModified": 1736510361,
+        "narHash": "sha256-uqZf5b72aU1rlJl6Av5/xwDWMhmdIbVS8j8EJTRPRqk=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "6e9b9440b215e97b728a9d472c6c9ba47af65bba",
+        "rev": "ba9752af31b39cf69212b3be34bd656b68595773",
         "type": "github"
       },
       "original": {

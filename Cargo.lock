@@ -3554,7 +3554,7 @@ dependencies = [
 [[package]]
 name = "holochain_runtime"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.4#fe85ade2e00b1807f8d73302cc45db82633d5926"
+source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=rust-1.81#a213a5e0eb58e109a458da8c92cf37677ae5f2e8"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -4084,7 +4084,7 @@ dependencies = [
  "http 1.2.0",
  "hyper 1.5.2",
  "hyper-util",
- "rustls 0.23.20",
+ "rustls 0.23.21",
  "rustls-pki-types",
  "tokio",
  "tokio-rustls 0.26.1",
@@ -6930,7 +6930,7 @@ dependencies = [
  "quinn-proto",
  "quinn-udp",
  "rustc-hash 2.1.0",
- "rustls 0.23.20",
+ "rustls 0.23.21",
  "socket2 0.5.8",
  "thiserror 2.0.10",
  "tokio",
@@ -6948,7 +6948,7 @@ dependencies = [
  "rand 0.8.5",
  "ring 0.17.8",
  "rustc-hash 2.1.0",
- "rustls 0.23.20",
+ "rustls 0.23.21",
  "rustls-pki-types",
  "slab",
  "thiserror 2.0.10",
@@ -7482,7 +7482,7 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "quinn",
- "rustls 0.23.20",
+ "rustls 0.23.21",
  "rustls-pemfile 2.2.0",
  "rustls-pki-types",
  "serde",
@@ -7787,9 +7787,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.20"
+version = "0.23.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5065c3f250cbd332cd894be57c40fa52387247659b14a2d6041d121547903b1b"
+checksum = "8f287924602bf649d949c63dc8ac8b235fa5387d394020705b80c4eb597ce5b8"
 dependencies = [
  "log",
  "once_cell",
@@ -9121,7 +9121,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-holochain"
 version = "0.0.0"
-source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.4#fe85ade2e00b1807f8d73302cc45db82633d5926"
+source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=rust-1.81#a213a5e0eb58e109a458da8c92cf37677ae5f2e8"
 dependencies = [
  "anyhow",
  "bzip2",
@@ -9555,7 +9555,7 @@ version = "0.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f6d0975eaace0cf0fcadee4e4aaa5da15b5c079146f2cffb67c113be122bf37"
 dependencies = [
- "rustls 0.23.20",
+ "rustls 0.23.21",
  "tokio",
 ]
 
@@ -10114,7 +10114,7 @@ dependencies = [
  "flate2",
  "log",
  "once_cell",
- "rustls 0.23.20",
+ "rustls 0.23.21",
  "rustls-pki-types",
  "url",
  "webpki-roots 0.26.7",
@@ -10468,6 +10468,7 @@ dependencies = [
  "wasmer-derive",
  "wasmer-types",
  "wasmer-vm",
+ "wasmparser 0.216.0",
  "wat",
  "windows-sys 0.59.0",
  "xz",
