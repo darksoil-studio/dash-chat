@@ -3271,7 +3271,7 @@ dependencies = [
  "holochain_util",
  "holochain_wasm_test_utils",
  "holochain_wasmer_host",
- "holochain_websocket 0.4.0 (git+https://github.com/holochain/holochain?rev=5a7494888ee75abd4b0b18725fe36afcfd97193a)",
+ "holochain_websocket",
  "holochain_zome_types",
  "hostname 0.4.0",
  "human-panic",
@@ -3390,7 +3390,7 @@ dependencies = [
  "holochain_nonce",
  "holochain_serialized_bytes",
  "holochain_types",
- "holochain_websocket 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "holochain_websocket",
  "holochain_zome_types",
  "kitsune_p2p_types",
  "lair_keystore_api",
@@ -3849,24 +3849,6 @@ dependencies = [
  "tracing",
  "wasmer",
  "wasmer-middlewares",
-]
-
-[[package]]
-name = "holochain_websocket"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8443d219ec5f7b073b8600243f28e25bba040ef829929b571d1ea491cba47e3f"
-dependencies = [
- "async-trait",
- "futures",
- "holochain_serialized_bytes",
- "holochain_types",
- "serde",
- "serde_bytes",
- "thiserror 1.0.69",
- "tokio",
- "tokio-tungstenite",
- "tracing",
 ]
 
 [[package]]
