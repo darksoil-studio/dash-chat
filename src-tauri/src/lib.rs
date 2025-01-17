@@ -18,6 +18,8 @@ pub fn happ_bundle() -> AppBundle {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     std::env::set_var("WASM_LOG", "info");
+    let mut config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
+    // config.gossip_arc_clamp = None;
 
     let mut builder = tauri::Builder::default()
         .plugin(
@@ -28,7 +30,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_holochain::init(
             vec_to_locked(vec![]).expect("Can't build passphrase"),
-            HolochainPluginConfig::new(holochain_dir(), wan_network_config()),
+            config
         ))
         .setup(|app| {
             #[cfg(mobile)]
