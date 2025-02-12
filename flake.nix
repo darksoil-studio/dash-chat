@@ -9,7 +9,7 @@
     rust-overlay.follows = "holonix/rust-overlay";
 
     tnesh-stack.url = "github:darksoil-studio/tnesh-stack/main-0.4";
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/rust-1.81";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
     playground.url = "github:darksoil-studio/holochain-playground/main-0.4";
 
     file-storage.follows = "messenger-zome/file-storage";

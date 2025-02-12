@@ -16,24 +16,17 @@
       ui = pkgs.stdenv.mkDerivation (finalAttrs: {
         inherit version;
         pname = "${pname}-ui";
-        pnpmWorkspace = "ui";
         src =
           (inputs.tnesh-stack.outputs.lib.cleanPnpmDepsSource { inherit lib; })
           ./.;
 
-        nativeBuildInputs =
-          with inputs.tnesh-stack.inputs.pnpmnixpkgs.outputs.legacyPackages.${system}; [
-            nodejs
-            pnpm.configHook
-            git
-          ];
-        pnpmDeps =
-          inputs.tnesh-stack.inputs.pnpmnixpkgs.outputs.legacyPackages.${system}.pnpm.fetchDeps {
-            inherit (finalAttrs) pnpmWorkspace version pname src;
+        nativeBuildInputs = with pkgs; [ nodejs pnpm.configHook git ];
+        pnpmDeps = pkgs.pnpm.fetchDeps {
+          inherit (finalAttrs) version pname src;
 
-            hash = "sha256-mZfJwjdA70wLsjgBIH5+bOq0pkY3AkWTMienq4YkjxU=";
-            buildInputs = [ pkgs.git ];
-          };
+          hash = "sha256-dTDVxc7/oSPTKATO854qRpB6S3M5kz1ig6m2iOEdACo=";
+          buildInputs = [ pkgs.git ];
+        };
         buildPhase = ''
           runHook preBuild
 
