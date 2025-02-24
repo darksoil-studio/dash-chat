@@ -5,30 +5,10 @@ opt-level = "z"
 opt-level = "z"
 
 [workspace]
-members = [
-# "dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*", 
-"src-tauri"]
+members = ["src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]
-hdi = "0.5.0"
-hdk = "0.4.0"
+hdi = "0.5.1"
+hdk = "0.4.1"
 
-[patch.crates-io]
-holochain = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holo_hash = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holochain_types = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holochain_zome_types = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holochain_integrity_types = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holochain_nonce = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holochain_secure_primitive = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-mr_bundle = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holochain_keystore = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holochain_websocket = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-holochain_conductor_api = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-kitsune_p2p_mdns  = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-kitsune_p2p_types = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-kitsune_p2p_timestamp = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-kitsune_p2p_bin_data = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-kitsune_p2p_dht_arc = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}
-kitsune_p2p_dht = { git = "https://github.com/holochain/holochain", branch = "main-0.4"}

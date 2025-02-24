@@ -12,12 +12,12 @@
     p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
     playground.url = "github:darksoil-studio/holochain-playground/main-0.4";
 
+    messenger-zome.url = "github:darksoil-studio/messenger-zome/develop";
     file-storage.follows = "messenger-zome/file-storage";
     linked-devices-zome.follows = "messenger-zome/linked-devices-zome";
     profiles-zome.follows = "messenger-zome/profiles-zome";
-    messenger-zome.url = "github:darksoil-studio/messenger-zome/utils";
-    aons.url = "github:darksoil-studio/always-online-nodes/main";
 
+    aons.url = "github:darksoil-studio/always-online-nodes/main";
     nixos-generators.url = "github:nix-community/nixos-generators";
   };
 
