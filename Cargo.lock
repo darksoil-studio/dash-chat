@@ -631,9 +631,9 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "base64ct"
-version = "1.6.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
+checksum = "c103cbbedac994e292597ab79342dbd5b306a362045095db54917d92a9fdfd92"
 
 [[package]]
 name = "bimap"
@@ -978,6 +978,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bzip2"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75b89e7c29231c673a61a46e722602bcd138298f6b9e81e71119693534585f5c"
+dependencies = [
+ "bzip2-sys",
+]
+
+[[package]]
 name = "bzip2-sys"
 version = "0.1.12+1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1089,7 +1098,7 @@ checksum = "d38f2da7a0a2c4ccf0065be06397cc26a81f4e528be095826eee9d4adbb8c60f"
 dependencies = [
  "byteorder",
  "fnv",
- "uuid 1.14.0",
+ "uuid 1.15.0",
 ]
 
 [[package]]
@@ -1122,9 +1131,9 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
 name = "chrono"
-version = "0.4.39"
+version = "0.4.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e36cc9d416881d2e24f9a963be5fb1cd90966419ac844274161d10488b3e825"
+checksum = "1a7964611d71df112cb1730f2ee67324fcf4d0fc6606acbbe9bfe06df124637c"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
@@ -1132,7 +1141,7 @@ dependencies = [
  "num-traits",
  "serde",
  "wasm-bindgen",
- "windows-targets 0.52.6",
+ "windows-link",
 ]
 
 [[package]]
@@ -3098,7 +3107,7 @@ checksum = "7f4044c2cadf3d960fa91a7ef91590da202797fe82cf687b029235f98be5ff49"
 dependencies = [
  "r2d2",
  "rusqlite",
- "uuid 1.14.0",
+ "uuid 1.15.0",
 ]
 
 [[package]]
@@ -3390,7 +3399,7 @@ dependencies = [
  "tx5-go-pion-turn",
  "url",
  "url2",
- "uuid 1.14.0",
+ "uuid 1.15.0",
  "wasmer",
  "wasmer-middlewares",
 ]
@@ -4103,7 +4112,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "toml 0.8.20",
- "uuid 1.14.0",
+ "uuid 1.15.0",
 ]
 
 [[package]]
@@ -4557,7 +4566,7 @@ dependencies = [
  "tar",
  "tempfile",
  "tokio",
- "zip 2.2.2",
+ "zip 2.2.3",
 ]
 
 [[package]]
@@ -5244,7 +5253,7 @@ dependencies = [
  "tar",
  "ureq",
  "vcpkg",
- "zip 2.2.2",
+ "zip 2.2.3",
 ]
 
 [[package]]
@@ -5457,7 +5466,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "messenger-demo-tauri"
+name = "messenger-demo"
 version = "0.0.0"
 dependencies = [
  "anyhow",
@@ -5478,7 +5487,7 @@ dependencies = [
  "tauri-plugin-updater",
  "tempdir",
  "url2",
- "uuid 1.14.0",
+ "uuid 1.15.0",
 ]
 
 [[package]]
@@ -5630,18 +5639,18 @@ dependencies = [
 
 [[package]]
 name = "munge"
-version = "0.4.1"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64142d38c84badf60abf06ff9bd80ad2174306a5b11bd4706535090a30a419df"
+checksum = "a0091202c98cf06da46c279fdf50cccb6b1c43b4521abdf6a27b4c7e71d5d9d7"
 dependencies = [
  "munge_macro",
 ]
 
 [[package]]
 name = "munge_macro"
-version = "0.4.1"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bb5c1d8184f13f7d0ccbeeca0def2f9a181bce2624302793005f5ca8aa62e5e"
+checksum = "734799cf91479720b2f970c61a22850940dd91e27d4f02b1c6fc792778df2459"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7834,7 +7843,7 @@ dependencies = [
  "rkyv_derive 0.7.45",
  "seahash",
  "tinyvec",
- "uuid 1.14.0",
+ "uuid 1.15.0",
 ]
 
 [[package]]
@@ -7853,7 +7862,7 @@ dependencies = [
  "rend 0.5.2",
  "rkyv_derive 0.8.10",
  "tinyvec",
- "uuid 1.14.0",
+ "uuid 1.15.0",
 ]
 
 [[package]]
@@ -8236,9 +8245,9 @@ dependencies = [
 
 [[package]]
 name = "schemars"
-version = "0.8.21"
+version = "0.8.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09c024468a378b7e36765cd36702b7a90cc3cba11654f6685c8f233408e89e92"
+checksum = "3fbf2ae1b8bc8e02df939598064d22402220cd5bbcca1c76f7d6a310974d5615"
 dependencies = [
  "dyn-clone",
  "indexmap 1.9.3",
@@ -8246,14 +8255,14 @@ dependencies = [
  "serde",
  "serde_json",
  "url",
- "uuid 1.14.0",
+ "uuid 1.15.0",
 ]
 
 [[package]]
 name = "schemars_derive"
-version = "0.8.21"
+version = "0.8.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1eee588578aff73f856ab961cd2f79e36bc45d7ded33a7562adba4667aecc0e"
+checksum = "32e265784ad618884abaea0600a9adf15393368d840e0222d101a072f3f7534d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -9280,7 +9289,7 @@ dependencies = [
  "thiserror 2.0.11",
  "time",
  "url",
- "uuid 1.14.0",
+ "uuid 1.15.0",
  "walkdir",
 ]
 
@@ -9367,7 +9376,7 @@ dependencies = [
  "thiserror 2.0.11",
  "toml 0.8.20",
  "url",
- "uuid 1.14.0",
+ "uuid 1.15.0",
 ]
 
 [[package]]
@@ -9376,7 +9385,7 @@ version = "0.0.0"
 source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.4#6e4bc6b1b052e5cd2edf15588004e67869c9cca0"
 dependencies = [
  "anyhow",
- "bzip2",
+ "bzip2 0.4.4",
  "ctrlc",
  "either",
  "futures",
@@ -9461,7 +9470,7 @@ dependencies = [
  "tokio",
  "url",
  "windows-sys 0.59.0",
- "zip 2.2.2",
+ "zip 2.2.3",
 ]
 
 [[package]]
@@ -9542,7 +9551,7 @@ dependencies = [
  "toml 0.8.20",
  "url",
  "urlpattern",
- "uuid 1.14.0",
+ "uuid 1.15.0",
  "walkdir",
 ]
 
@@ -10465,9 +10474,9 @@ dependencies = [
 
 [[package]]
 name = "uuid"
-version = "1.14.0"
+version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93d59ca99a559661b96bf898d8fce28ed87935fd2bea9f05983c1464dd6c71b1"
+checksum = "bd8dcafa1ca14750d8d7a05aa05988c17aab20886e1f3ae33a40223c58d92ef7"
 dependencies = [
  "getrandom 0.3.1",
  "rand 0.9.0",
@@ -10748,7 +10757,7 @@ dependencies = [
  "wat",
  "windows-sys 0.59.0",
  "xz",
- "zip 2.2.2",
+ "zip 2.2.3",
 ]
 
 [[package]]
@@ -11915,7 +11924,7 @@ checksum = "760394e246e4c28189f19d488c058bf16f564016aefac5d32bb1f3b51d5e9261"
 dependencies = [
  "aes",
  "byteorder",
- "bzip2",
+ "bzip2 0.4.4",
  "constant_time_eq 0.1.5",
  "crc32fast",
  "crossbeam-utils",
@@ -11929,13 +11938,13 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "2.2.2"
+version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae9c1ea7b3a5e1f4b922ff856a129881167511563dc219869afe3787fc0c1a45"
+checksum = "b280484c454e74e5fff658bbf7df8fdbe7a07c6b2de4a53def232c15ef138f3a"
 dependencies = [
  "aes",
  "arbitrary",
- "bzip2",
+ "bzip2 0.5.1",
  "constant_time_eq 0.3.1",
  "crc32fast",
  "crossbeam-utils",

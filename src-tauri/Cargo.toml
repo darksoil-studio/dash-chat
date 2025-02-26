@@ -1,5 +1,5 @@
 [package]
-name = "messenger-demo-tauri"
+name = "messenger-demo"
 version = "0.0.0"
 description = "Messenger Demo"
 authors = ["you"]
