@@ -87,16 +87,19 @@
     in rec {
       packages = {
         inherit ui;
-        messenger-demo = pkgs.runCommandNoCC "messenger-demo" {
-          buildInputs = [ pkgs.makeWrapper ];
+        messenger-demo = if pkgs.stdenv.isLinux then
+          (pkgs.runCommandNoCC "messenger-demo" {
+            buildInputs = [ pkgs.makeWrapper ];
 
-        } ''
-          mkdir $out
-          mkdir $out/bin
-          # Because we create this ourself, by creating a wrapper
-          makeWrapper ${tauriApp}/bin/messenger-demo $out/bin/messenger-demo \
-            --set WEBKIT_DISABLE_DMABUF_RENDERER 1
-        '';
+          } ''
+            mkdir $out
+            mkdir $out/bin
+            # Because we create this ourself, by creating a wrapper
+            makeWrapper ${tauriApp}/bin/messenger-demo $out/bin/messenger-demo \
+              --set WEBKIT_DISABLE_DMABUF_RENDERER 1
+          '')
+        else
+          tauriApp;
       };
 
       apps.default.program = pkgs.writeShellApplication {
