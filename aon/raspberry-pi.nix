@@ -93,9 +93,9 @@
 
             systemd.services.messenger_aon = let
               homeDir = config.users.users.${user}.home;
-              aon = inputs.aons.outputs.builders."aarch64-linux".aon-for-dna {
-                dna_bundle =
-                  self.outputs.packages."x86_64-linux".messenger_demo_dna;
+              aon = inputs.aons.outputs.builders."aarch64-linux".aon-for-happs {
+                happs =
+                  [ self.outputs.packages."x86_64-linux".messenger_demo_happ ];
               };
             in {
               enable = true;
