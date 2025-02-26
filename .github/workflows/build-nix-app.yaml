@@ -21,7 +21,7 @@ jobs:
         uses: cachix/install-nix-action@v27
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          nix_path: nixpkgs=channel:nixos-24.05
+          nix_path: nixpkgs=channel:nixos-24.11
 
       - uses: cachix/cachix-action@v15
         with:
@@ -38,7 +38,8 @@ jobs:
         env:
           CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
         run: |
-          cachix watch-exec darksoil-studio -- nix build --accept-flake-config --no-update-lock-file -L .#messenger_demo_dna.hash  && nix build --accept-flake-config --no-update-lock-file -L .#messenger_demo_happ
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config --no-update-lock-file -L .#messenger_demo_dna.hash
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config --no-update-lock-file -L .#messenger_demo_happ
           nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]'
           cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]')
           cachix pin darksoil-studio messenger_demo_happ $(nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]')
@@ -51,7 +52,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Extend space
         if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -61,7 +62,7 @@ jobs:
         uses: cachix/install-nix-action@v27
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          nix_path: nixpkgs=channel:nixos-24.05
+          nix_path: nixpkgs=channel:nixos-24.11
 
       - uses: cachix/cachix-action@v15
         with:
