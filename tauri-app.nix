@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ self, inputs, ... }:
 
 {
   perSystem = { inputs', pkgs, lib, self', system, ... }:
@@ -75,8 +75,12 @@
             substituteInPlace src-tauri/tauri.conf.json \
               --replace-fail '"frontendDist": "../ui/dist"' '"frontendDist": "${ui}/dist"' \
               --replace-fail '"beforeBuildCommand": "pnpm -F ui build",' '"beforeBuildCommand": "",'
-            cp ${self'.packages.messenger_demo_happ} workdir/messenger-demo.happ
-            cp ${self'.packages.messenger_demo_dna.hash} workdir/messenger_demo_dna-hash
+            cp ${
+              self.outputs.packages."x86_64-linux".messenger_demo_happ
+            } workdir/messenger-demo.happ
+            cp ${
+              self.outputs.packages."x86_64-linux".messenger_demo_dna.hash
+            } workdir/messenger_demo_dna-hash
           fi
           ${commonArgs.cargoBuildCommand}'';
       });
