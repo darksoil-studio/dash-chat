@@ -45,7 +45,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "workdir/messenger-demo.webhapp"
+          artifacts: "workdir/messenger-demo.happ"
           body: "See assets below to download and install this version."
           name: Messenger Demo v${{ steps.version.outputs.APP_VERSION }}
           tag: v${{ steps.version.outputs.APP_VERSION }}
@@ -129,7 +129,7 @@ jobs:
         with: 
           token: ${{ secrets.GITHUB_TOKEN }}
           releaseId: ${{ needs.publish-happ.outputs.releaseId }}
-          fileName: 'messenger-demo.webhapp'
+          fileName: 'messenger-demo.happ'
           out-file-path: 'workdir/'
 
       - name: build the app

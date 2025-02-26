@@ -1,6 +1,6 @@
 {
 	"productName": "messenger-demo",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"identifier": "studio.darksoil.messengerdemo",
 	"build": {
 		"beforeBuildCommand": "pnpm -F ui build",
@@ -10,7 +10,11 @@
 	"app": {
 		"withGlobalTauri": false,
 		"security": {
-			"capabilities": ["mobile-capability", "main-capability"]
+			"capabilities": [
+				"mobile-capability",
+				"main-capability",
+				"desktop-capability"
+			]
 		}
 	},
 	"bundle": {
@@ -30,7 +34,7 @@
 	},
 	"plugins": {
 		"updater": {
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE1OTZGQTY5ODU3NDA3NTUKUldSVkIzU0ZhZnFXcFk4d0JuMjNXeUJsVG1XblZoQ1hBRzNvUUVmYVBsSmkva2k5NmJaeExQa1cK",
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE3RUU3OTAxOUYzN0M2RkEKUldUNnhqZWZBWG51RitCWXhZdFY4RHVhQzY0bVgxU0tnc0JBSm9pSmliZ2pBUGRvOWFlbWV6b24K",
 			"endpoints": [
 				"https://github.com/darksoil-studio/messenger-demo/releases/latest/download/latest.json"
 			]

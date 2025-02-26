@@ -29,6 +29,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import { appStyles } from './app-styles.js';
+import './automatic-update-dialog.js';
 import {
 	adminWebsocketContext,
 	isMobileContext,
@@ -208,6 +209,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		}
 
 		return html`
+			<automatic-update-dialog> </automatic-update-dialog>
 			<app-client-context .client=${this._client}>
 				<messenger-context role="messenger_demo">
 					<file-storage-context role="messenger_demo">
