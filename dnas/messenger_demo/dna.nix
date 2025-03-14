@@ -17,6 +17,8 @@
       inputs.tnesh-stack.outputs.builders.${system}.dna {
         dnaManifest = ./workdir/dna.yaml;
         zomes = {
+          notifications_integrity = inputs'.notifications-zome.packages.notifications_integrity;
+          notifications = inputs'.notifications-zome.packages.notifications;
           messenger_integrity =
             inputs'.messenger-zome.packages.messenger_integrity;
           messenger = inputs'.messenger-zome.packages.messenger;

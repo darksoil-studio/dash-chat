@@ -19,7 +19,6 @@ pub fn happ_bundle() -> AppBundle {
 pub fn run() {
     std::env::set_var("WASM_LOG", "info");
     let config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
-    // config.gossip_arc_clamp = None;
 
     let mut builder = tauri::Builder::default()
         .plugin(
@@ -193,27 +192,13 @@ fn wan_network_config() -> Option<WANNetworkConfig> {
 
 fn holochain_dir() -> PathBuf {
     if tauri::is_dev() {
-        #[cfg(target_os = "android")]
-        {
-            app_dirs2::app_root(
-                app_dirs2::AppDataType::UserCache,
-                &app_dirs2::AppInfo {
-                    name: "messenger-demo",
-                    author: std::env!("CARGO_PKG_AUTHORS"),
-                },
-            )
-            .expect("Could not get the UserCache directory")
-        }
-        #[cfg(not(target_os = "android"))]
-        {
-            let tmp_dir = tempdir::TempDir::new("messenger-demo")
-                .expect("Could not create temporary directory");
+        let tmp_dir = tempdir::TempDir::new("messenger-demo")
+            .expect("Could not create temporary directory");
 
-            // Convert `tmp_dir` into a `Path`, destroying the `TempDir`
-            // without deleting the directory.
-            let tmp_path = tmp_dir.into_path();
-            tmp_path
-        }
+        // Convert `tmp_dir` into a `Path`, destroying the `TempDir`
+        // without deleting the directory.
+        let tmp_path = tmp_dir.into_path();
+        tmp_path
     } else {
         app_dirs2::app_root(
             app_dirs2::AppDataType::UserData,

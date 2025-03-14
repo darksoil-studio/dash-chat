@@ -2,6 +2,8 @@
   description = "Template for Holochain app development";
 
   inputs = {
+    notifications-zome.url =
+      "github:darksoil-studio/notifications-zome/main-0.4";
     holonix.url = "github:holochain/holonix/main-0.4";
 
     nixpkgs.follows = "holonix/nixpkgs";
@@ -9,7 +11,7 @@
     rust-overlay.follows = "holonix/rust-overlay";
 
     tnesh-stack.url = "github:darksoil-studio/tnesh-stack/main-0.4";
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/wamr";
     playground.url = "github:darksoil-studio/holochain-playground/main-0.4";
 
     messenger-zome.url = "github:darksoil-studio/messenger-zome/main-0.4";

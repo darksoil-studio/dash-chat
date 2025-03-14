@@ -9,6 +9,7 @@ import '@darksoil-studio/friends-zome/dist/elements/select-friend.js';
 import '@darksoil-studio/linked-devices-zome/dist/elements/linked-devices-context.js';
 import '@darksoil-studio/messenger-zome/dist/elements/create-group-chat.js';
 import '@darksoil-studio/messenger-zome/dist/elements/messenger-context.js';
+import '@darksoil-studio/notifications-zome/dist/elements/notifications-context.js';
 import '@darksoil-studio/profiles-provider/dist/elements/my-profile.js';
 import {
 	AdminWebsocket,
@@ -103,83 +104,6 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				// Redirect to "/home/"
 				this.router.goto('/my-friends');
 				return false;
-			},
-		},
-		{
-			path: '/my-friends',
-			render: () => {
-				const friendsStore = (
-					this.shadowRoot!.querySelector('friends-context') as FriendsContext
-				)?.store;
-				const pendingFriendRequests = friendsStore?.pendingFriendRequests.get();
-				return html`
-					<overlay-page
-						.title=${msg('My friends')}
-						icon="back"
-						@close-requested=${() => this.router.goto('/home/')}
-					>
-						<sl-dialog id="add-friend-dialog" .label=${msg('Add friend')}>
-							<div class="column" style="gap: 16px">
-								<span
-									>${msg(
-										'Have your friend scan this QR code to send you a friend request.',
-									)}
-								</span>
-								<friend-request-qr-code style="align-self: center">
-								</friend-request-qr-code>
-							</div>
-							${this._isMobile
-								? html`
-										<sl-button
-											variant="primary"
-											slot="footer"
-											@click=${() =>
-												scanQrCodeAndSendFriendRequest(friendsStore)}
-											>${msg('Scan QR Code')}
-										</sl-button>
-									`
-								: html``}
-						</sl-dialog>
-						<div class="column" style="gap: 16px">
-							${pendingFriendRequests?.status === 'completed' &&
-							Object.keys(pendingFriendRequests.value).length > 0
-								? html`
-										<sl-card>
-											<div class="column" style="gap: 8px; flex: 1">
-												<span class="title">${msg('Friend requests')}</span>
-												<friend-requests> </friend-requests>
-											</div>
-										</sl-card>
-									`
-								: html``}
-							<sl-card>
-								<div class="column" style="gap: 8px; flex: 1">
-									<span class="title">${msg('Friends')}</span>
-									<my-friends> </my-friends>
-								</div>
-							</sl-card>
-
-							<div class="row">
-								<span style="flex: 1"></span>
-								<sl-button
-									variant="primary"
-									@click=${() =>
-										(
-											this.shadowRoot!.getElementById(
-												'add-friend-dialog',
-											) as SlDialog
-										).show()}
-								>
-									<sl-icon
-										slot="prefix"
-										.src=${wrapPathInSvg(mdiAccountPlus)}
-									></sl-icon>
-									${msg('Add Friend')}
-								</sl-button>
-							</div>
-						</div>
-					</overlay-page>
-				`;
 			},
 		},
 		{
@@ -309,15 +233,17 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		return html`
 			<automatic-update-dialog> </automatic-update-dialog>
 			<app-client-context .client=${this._client}>
-				<messenger-context role="messenger_demo">
-					<linked-devices-context role="messenger_demo">
-						<friends-context role="messenger_demo">
-							<profile-prompt style="flex: 1;">
-								${this.router.outlet()}
-							</profile-prompt>
-						</friends-context>
-					</linked-devices-context>
-				</messenger-context>
+				<notifications-context role="messenger_demo">
+					<messenger-context role="messenger_demo">
+						<linked-devices-context role="messenger_demo">
+							<friends-context role="messenger_demo">
+								<profile-prompt style="flex: 1;">
+									${this.router.outlet()}
+								</profile-prompt>
+							</friends-context>
+						</linked-devices-context>
+					</messenger-context>
+				</notifications-context>
 			</app-client-context>
 		`;
 	}
