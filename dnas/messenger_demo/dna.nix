@@ -20,18 +20,12 @@
           messenger_integrity =
             inputs'.messenger-zome.packages.messenger_integrity;
           messenger = inputs'.messenger-zome.packages.messenger;
-          file_storage_integrity =
-            inputs'.file-storage.packages.file_storage_integrity;
-          file_storage = inputs'.file-storage.packages.file_storage;
           # Include here the zome packages for this DNA, e.g.:
-          # profiles_integrity = inputs'.profiles-zome.packages.profiles_integrity;
-          # This overrides all the "bundled" properties for the DNA manifest
           linked_devices_integrity =
             inputs'.linked-devices-zome.packages.linked_devices_integrity;
           linked_devices = inputs'.linked-devices-zome.packages.linked_devices;
-          profiles_integrity =
-            inputs'.profiles-zome.packages.profiles_integrity;
-          profiles = inputs'.profiles-zome.packages.profiles;
+          friends_integrity = inputs'.friends-zome.packages.friends_integrity;
+          friends = inputs'.friends-zome.packages.friends;
         };
       };
   };

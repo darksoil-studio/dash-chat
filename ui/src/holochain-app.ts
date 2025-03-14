@@ -1,10 +1,9 @@
-import '@darksoil-studio/file-storage-zome/dist/elements/file-storage-context.js';
+import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
+import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/linked-devices-zome/dist/elements/linked-devices-context.js';
 import '@darksoil-studio/messenger-zome/dist/elements/create-group-chat.js';
 import '@darksoil-studio/messenger-zome/dist/elements/messenger-context.js';
-import '@darksoil-studio/profiles-zome/dist/elements/my-profile.js';
-import '@darksoil-studio/profiles-zome/dist/elements/profile-prompt.js';
-import '@darksoil-studio/profiles-zome/dist/elements/profiles-context.js';
+import '@darksoil-studio/profiles-provider/dist/elements/my-profile.js';
 import {
 	AdminWebsocket,
 	AppClient,
@@ -38,6 +37,8 @@ import {
 import './home-page.js';
 import { LinkDeviceDialog } from './link-device-dialog.js';
 import './link-device-dialog.js';
+import './overlay-page.js';
+import './select-friend.js';
 
 export const MOBILE_WIDTH_PX = 600;
 
@@ -84,8 +85,9 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 			render: () =>
 				html`<home-page
 					@profile-clicked=${() => this.router.goto('/my-profile')}
-					@create-group-chat-selected=${() =>
+					@create-group-chat-clicked=${() =>
 						this.router.goto('/create-group-chat')}
+					@new-message-clicked=${() => this.router.goto('/new-message')}
 				></home-page>`,
 		},
 		{
@@ -93,36 +95,50 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 			render: () => this.renderMyProfilePage(),
 		},
 		{
+			path: '/new-message',
+			render: () => html`
+				<overlay-page
+					.title=${msg('New message')}
+					icon="back"
+					@close-requested=${() => this.router.goto('/home/')}
+				>
+					<sl-card>
+						<select-friend
+							style="flex: 1;"
+							@friend-selected=${(e: CustomEvent) => {
+								this.router.goto(
+									`/home/peer/${encodeHashToBase64(e.detail.friend.agents[0])}`,
+								);
+							}}
+						>
+						</select-friend>
+					</sl-card>
+				</overlay-page>
+			`,
+		},
+		{
 			path: '/create-group-chat',
 			render: () => html`
-				<div class="column fill">
-					<div class="row top-bar">
-						<sl-icon-button
-							style="color: black"
-							.src=${wrapPathInSvg(mdiArrowLeft)}
-							@click=${() => this.router.goto('/home/')}
-						></sl-icon-button>
-						<span class="title" style="flex: 1"
-							>${msg('Create Group Chat')}</span
-						>
-					</div>
-					<div class="row" style="justify-content: center; flex: 1">
-						<sl-card style="margin: 16px; flex-basis: 500px">
-							<div class="column" style="gap: 12px; flex: 1">
-								<span class="title">${msg('New Group Chat')} </span>
-								<create-group-chat
-									style="flex: 1;"
-									@group-chat-created=${(e: CustomEvent) => {
-										this.router.goto(
-											`/home/group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
-										);
-									}}
-								>
-								</create-group-chat>
-							</div>
-						</sl-card>
-					</div>
-				</div>
+				<overlay-page
+					.title=${msg('New group chat')}
+					icon="back"
+					@close-requested=${() => this.router.goto('/home/')}
+				>
+					<sl-card>
+						<div class="column" style="gap: 12px; flex: 1">
+							<span class="title">${msg('New group chat')} </span>
+							<create-group-chat
+								style="flex: 1;"
+								@group-chat-created=${(e: CustomEvent) => {
+									this.router.goto(
+										`/home/group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
+									);
+								}}
+							>
+							</create-group-chat>
+						</div>
+					</sl-card>
+				</overlay-page>
 			`,
 		},
 	]);
@@ -147,29 +163,23 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	renderMyProfilePage() {
 		return html`
 			<link-device-dialog id="link-device-dialog"> </link-device-dialog>
-			<div class="column fill">
-				<div class="row top-bar" style="gap: 8px">
-					<sl-icon-button
-						style="color: black"
-						.src=${wrapPathInSvg(mdiArrowLeft)}
-						@click=${() => this.router.goto('/home/')}
-					></sl-icon-button>
-					<span class="title" style="flex: 1">${msg('My Profile')}</span>
-
-					<div style="flex: 1"></div>
-
-					<sl-button
-						@click=${() => {
-							const dialog = this.shadowRoot!.getElementById(
-								'link-device-dialog',
-							) as LinkDeviceDialog;
-							dialog.show();
-						}}
-					>
-						<sl-icon .src=${wrapPathInSvg(mdiLink)}></sl-icon>
-						${msg('Link Device')}
-					</sl-button>
-				</div>
+			<overlay-page
+				.title=${msg('My profile')}
+				icon="back"
+				@close-requested=${() => this.router.goto('/home/')}
+			>
+				<sl-button
+					slot="action"
+					@click=${() => {
+						const dialog = this.shadowRoot!.getElementById(
+							'link-device-dialog',
+						) as LinkDeviceDialog;
+						dialog.show();
+					}}
+				>
+					<sl-icon .src=${wrapPathInSvg(mdiLink)}></sl-icon>
+					${msg('Link Device')}
+				</sl-button>
 
 				<sl-card
 					style=${styleMap({
@@ -180,7 +190,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				>
 					<my-profile style="margin: 16px; flex: 1"></my-profile>
 				</sl-card>
-			</div>
+			</overlay-page>
 		`;
 	}
 
@@ -212,15 +222,13 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 			<automatic-update-dialog> </automatic-update-dialog>
 			<app-client-context .client=${this._client}>
 				<messenger-context role="messenger_demo">
-					<file-storage-context role="messenger_demo">
-						<linked-devices-context role="messenger_demo">
-							<profiles-context role="messenger_demo">
-								<profile-prompt style="flex: 1;">
-									${this.router.outlet()}
-								</profile-prompt>
-							</profiles-context>
-						</linked-devices-context>
-					</file-storage-context>
+					<linked-devices-context role="messenger_demo">
+						<friends-context role="messenger_demo">
+							<profile-prompt style="flex: 1;">
+								${this.router.outlet()}
+							</profile-prompt>
+						</friends-context>
+					</linked-devices-context>
 				</messenger-context>
 			</app-client-context>
 		`;

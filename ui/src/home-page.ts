@@ -1,4 +1,3 @@
-import '@darksoil-studio/file-storage-zome/dist/elements/show-avatar-image.js';
 import {
 	MessengerStore,
 	messengerStoreContext,
@@ -7,16 +6,13 @@ import '@darksoil-studio/messenger-zome/dist/elements/all-chats.js';
 import '@darksoil-studio/messenger-zome/dist/elements/group-chat.js';
 import '@darksoil-studio/messenger-zome/dist/elements/peer-chat.js';
 import {
-	ProfilesStore,
-	profilesStoreContext,
-} from '@darksoil-studio/profiles-zome';
-import '@darksoil-studio/profiles-zome/dist/elements/all-profiles.js';
-import '@darksoil-studio/profiles-zome/dist/elements/profile-list-item.js';
+	ProfilesProvider,
+	profilesProviderContext,
+} from '@darksoil-studio/profiles-provider';
+import '@darksoil-studio/profiles-provider/dist/elements/profile-list-item.js';
 import {
 	AdminWebsocket,
-	AgentPubKey,
 	AppClient,
-	EntryHash,
 	decodeHashFromBase64,
 	encodeHashToBase64,
 } from '@holochain/client';
@@ -24,15 +20,13 @@ import { consume } from '@lit/context';
 import { msg, str } from '@lit/localize';
 import {
 	mdiAccount,
-	mdiAccountGroup,
 	mdiAccountMultiple,
 	mdiAccountMultiplePlus,
-	mdiAccountSwitch,
 	mdiArrowLeft,
 	mdiChat,
 	mdiChatOutline,
 	mdiDotsVertical,
-	mdiQrcodeScan,
+	mdiMessagePlus,
 } from '@mdi/js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -71,8 +65,8 @@ export class HomePage extends SignalWatcher(LitElement) {
 	@consume({ context: adminWebsocketContext, subscribe: true })
 	adminWebsocket!: AdminWebsocket;
 
-	@consume({ context: profilesStoreContext, subscribe: true })
-	profilesStore!: ProfilesStore;
+	@consume({ context: profilesProviderContext, subscribe: true })
+	profilesProvider!: ProfilesProvider;
 
 	@consume({ context: messengerStoreContext, subscribe: true })
 	messengerStore!: MessengerStore;
@@ -154,86 +148,63 @@ export class HomePage extends SignalWatcher(LitElement) {
 
 	renderHomePanel() {
 		return html`
-			<sl-tab-group placement="bottom" style="flex: 1; margin: 0 8px">
-				<sl-tab style="flex: 1" slot="nav" panel="all_chats">
-					<div class="column" style="align-items: center; gap: 8px; flex: 1">
-						<sl-icon
-							.src=${wrapPathInSvg(mdiChat)}
-							style="font-size: 24px"
-						></sl-icon>
-						<span> ${msg('Chats')} </span>
-					</div>
-				</sl-tab>
-				<sl-tab style="flex: 1" slot="nav" panel="all_profiles">
-					<div class="column" style="align-items: center; gap: 8px; flex: 1">
-						<sl-icon
-							.src=${wrapPathInSvg(mdiAccountMultiple)}
-							style="font-size: 24px"
-						></sl-icon>
-						<span> ${msg('Members')} </span>
-					</div></sl-tab
-				>
-				<sl-tab-panel name="all_chats">
-					<all-chats
-						style="flex: 1; margin: 8px"
-						@group-chat-selected=${(e: CustomEvent) => {
-							this.routes.goto(
-								`group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
-							);
-						}}
-						@peer-chat-selected=${(e: CustomEvent) => {
-							this.routes.goto(
-								`peer-chat/${encodeHashToBase64(e.detail.peerChatHash)}`,
-							);
-						}}
-					>
-					</all-chats>
-				</sl-tab-panel>
-				<sl-tab-panel name="all_profiles">
-					<all-profiles
-						.excludedProfiles=${this.myProfile.status === 'completed' &&
-						this.myProfile.value
-							? [this.myProfile.value.profileHash]
-							: []}
-						style="flex: 1; margin: 8px"
-						@profile-selected=${async (e: CustomEvent) => {
-							const agents = await toPromise(
-								this.profilesStore.agentsForProfile.get(e.detail.profileHash),
-							);
-
-							if (agents.length > 0) {
-								this.routes.goto(`peer/${encodeHashToBase64(agents[0])}`);
-							} else {
-								const profile = await toPromise(
-									this.profilesStore.profiles.get(e.detail.profileHash)
-										.original,
-								);
-
-								if (profile) {
-									this.routes.goto(
-										`peer/${encodeHashToBase64(profile.action.author)}`,
-									);
-								} else {
-									const profile = await toPromise(
-										this.profilesStore.profiles.get(e.detail.profileHash)
-											.latestVersion,
-									);
-									this.routes.goto(
-										`peer/${encodeHashToBase64(profile.action.author)}`,
-									);
-								}
-							}
-						}}
-					>
-					</all-profiles>
-				</sl-tab-panel>
-			</sl-tab-group>
+			<all-chats
+				style="flex: 1; margin: 8px"
+				@group-chat-selected=${(e: CustomEvent) => {
+					this.routes.goto(
+						`group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
+					);
+				}}
+				@peer-chat-selected=${(e: CustomEvent) => {
+					this.routes.goto(
+						`peer-chat/${encodeHashToBase64(e.detail.peerChatHash)}`,
+					);
+				}}
+			>
+			</all-chats>
 		`;
 	}
 
-	get myProfile() {
-		return this.profilesStore.myProfile.get();
-	}
+	// 		</sl-tab-panel>
+	// 		<sl-tab-panel name="all_profiles">
+	// 			<all-profiles
+	// 				.excludedProfiles=${this.myProfile.status === 'completed' &&
+	// 				this.myProfile.value
+	// 					? [this.myProfile.value.profileHash]
+	// 					: []}
+	// 				style="flex: 1; margin: 8px"
+	// 				@profile-selected=${async (e: CustomEvent) => {
+	// 					const agents = await toPromise(
+	// 						this.profilesStore.agentsForProfile.get(e.detail.profileHash),
+	// 					);
+
+	// 					if (agents.length > 0) {
+	// 						this.routes.goto(`peer/${encodeHashToBase64(agents[0])}`);
+	// 					} else {
+	// 						const profile = await toPromise(
+	// 							this.profilesStore.profiles.get(e.detail.profileHash)
+	// 								.original,
+	// 						);
+
+	// 						if (profile) {
+	// 							this.routes.goto(
+	// 								`peer/${encodeHashToBase64(profile.action.author)}`,
+	// 							);
+	// 						} else {
+	// 							const profile = await toPromise(
+	// 								this.profilesStore.profiles.get(e.detail.profileHash)
+	// 									.latestVersion,
+	// 							);
+	// 							this.routes.goto(
+	// 								`peer/${encodeHashToBase64(profile.action.author)}`,
+	// 							);
+	// 						}
+	// 					}
+	// 				}}
+	// 			>
+	// 			</all-profiles>
+	// 		</sl-tab-panel>
+	// 	</sl-tab-group>
 
 	@consume({ context: isMobileContext })
 	isMobile!: boolean;
@@ -254,7 +225,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 							const value = item.value;
 							if (value === 'new_group') {
 								this.dispatchEvent(
-									new CustomEvent('create-group-chat-selected'),
+									new CustomEvent('create-group-chat-clicked'),
 								);
 							} else if (value === 'my_profile') {
 								this.dispatchEvent(new CustomEvent('profile-clicked'));
@@ -292,7 +263,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 						slot="prefix"
 						.src=${wrapPathInSvg(mdiAccountMultiplePlus)}
 					></sl-icon
-					>${msg('Create Group')}
+					>${msg('New group')}
 				</sl-button>
 				<profile-list-item
 					@click=${() =>
@@ -316,6 +287,17 @@ export class HomePage extends SignalWatcher(LitElement) {
 					<span class="title" style="flex: 1">${msg('Messenger Demo')}</span>
 
 					${this.renderActions()}
+					<sl-button
+						circle
+						@click=${() =>
+							this.dispatchEvent(
+								new CustomEvent('new-message-clicked', {
+									bubbles: true,
+									composed: true,
+								}),
+							)}
+						><sl-icon .src=${wrapPathInSvg(mdiMessagePlus)}></sl-icon
+					></sl-button>
 				</div>
 				${this.renderHomePanel()}
 			</div>

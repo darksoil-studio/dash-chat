@@ -101,18 +101,18 @@ importers:
 
   ui:
     dependencies:
-      '@darksoil-studio/file-storage-zome':
-        specifier: 0.400.0-rev.6c851601e203a8927d896b5026b558f61badfb77
-        version: 0.400.0-rev.6c851601e203a8927d896b5026b558f61badfb77(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@darksoil-studio/friends-zome':
+        specifier: 0.400.0-rev.d5afbe23050f64954c2c50efec658dcec166ad43
+        version: 0.400.0-rev.d5afbe23050f64954c2c50efec658dcec166ad43(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/linked-devices-zome':
-        specifier: 0.400.0-rev.23d64f1ce59822d7e1849d75c2d978cb6a0d62c8
-        version: 0.400.0-rev.23d64f1ce59822d7e1849d75c2d978cb6a0d62c8(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+        specifier: 0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23
+        version: 0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/messenger-zome':
-        specifier: 0.400.0-rev.254593f414171842a083317fb8c4a4f33266842d
-        version: 0.400.0-rev.254593f414171842a083317fb8c4a4f33266842d(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
-      '@darksoil-studio/profiles-zome':
-        specifier: 0.400.0-rev.cca82532f957ff1656da8cf2be3d7d6a9c9d4c68
-        version: 0.400.0-rev.cca82532f957ff1656da8cf2be3d7d6a9c9d4c68(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+        specifier: 0.400.0-rev.0bb0e98b2bca731112f002703849740cc045110a
+        version: 0.400.0-rev.0bb0e98b2bca731112f002703849740cc045110a(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@darksoil-studio/profiles-provider':
+        specifier: ^0.400.1
+        version: 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@holochain/client':
         specifier: ^0.18.0
         version: 0.18.0
@@ -271,14 +271,26 @@ packages:
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
 
-  '@darksoil-studio/file-storage-zome@0.400.0-rev.6c851601e203a8927d896b5026b558f61badfb77':
-    resolution: {integrity: sha512-8ydiv7BsWN731NFKO7h/NW80DL8qSTz4oLBp/1BDCtXqnbWGpwc2fb6LBq1ZQJ94DoBKkMi4Lc3wryyJbK2uNw==}
+  '@darksoil-studio/friends-zome@0.400.0-rev.d5afbe23050f64954c2c50efec658dcec166ad43':
+    resolution: {integrity: sha512-ZudQisx7L+EWlJhX6BF1OkewI5onHP7iBL7v2iR44kqVbBFGWyYycONRpGq1Skmb1PviEMNir3rmAdNWOHHjJA==}
 
   '@darksoil-studio/linked-devices-zome@0.400.0-rev.23d64f1ce59822d7e1849d75c2d978cb6a0d62c8':
     resolution: {integrity: sha512-sXJoelDpELCcuuwbeqWOadd55MCJPO70w3obcI5hFgiFovMuAlN1fAI86U0IA9S3DZPkRAJA/ac/86SzCrh6Fg==}
 
-  '@darksoil-studio/messenger-zome@0.400.0-rev.254593f414171842a083317fb8c4a4f33266842d':
-    resolution: {integrity: sha512-iaScIN1eoscPMJjFykWXUNCs/x6z9XYS2SZ6ZZ0sLCnlTxDmsKCQF8YClJrvKPBM2p3Y7TRtpU+1Z0VoTmbZAg==}
+  '@darksoil-studio/linked-devices-zome@0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23':
+    resolution: {integrity: sha512-bczzlqO5LzSQsgECzq0VBPfaDMXGmjplHlCb4QJCllzynBCcUkfwlDUgvug7ZnyAzAy6j7b5I39se5YNcxPIJQ==}
+
+  '@darksoil-studio/messenger-zome@0.400.0-rev.0bb0e98b2bca731112f002703849740cc045110a':
+    resolution: {integrity: sha512-+hZMDGb2l5jmRhVCwBOIuajHd0AvT7+DBNKbDXSic/7yOgbMCSKDzz7m2p8Talq1zjbhasLVqJYEWmsTmJ32LA==}
+
+  '@darksoil-studio/notifications-zome@0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b':
+    resolution: {integrity: sha512-GtrM6WB4l98wXMKTSjqRGowVIEq76Ojsu4mcvQPo9kfY+KKCZjv+qVGxXEXLp+WW6slz0yPYe5Z3OLdGua1u3Q==}
+
+  '@darksoil-studio/private-event-sourcing-zome@0.400.0-rev.6211f22a39ac13f941a43c8a738588d7b4dab7f6':
+    resolution: {integrity: sha512-TToxWutL5HghjcGEqldm8ZLHmltKSgkzxLY+TKqqbvHMFLFTniXOUEBdCQOE4qxu6uJ4Z18rJAIjI26k/+0FbQ==}
+
+  '@darksoil-studio/profiles-provider@0.400.1':
+    resolution: {integrity: sha512-Ja77MAjyVlTAHzEZjW+10vFrGRV6BSzEBSmR/M2Rl7t98geO424N9CgasMPcq1g7knwv6AIsKOo6OC4a/q2Ohg==}
 
   '@darksoil-studio/profiles-zome@0.400.0-rev.cca82532f957ff1656da8cf2be3d7d6a9c9d4c68':
     resolution: {integrity: sha512-S0kiFazqrX4G8Pc2bfwXsfQ3lLMevm+NjIBh0EjBrfqC1SnEoxjqA2F22j/7Qy9T3jeAP9KGAFDi07JqlYofZw==}
@@ -673,9 +685,6 @@ packages:
   '@lit-labs/ssr-dom-shim@1.2.1':
     resolution: {integrity: sha512-wx4aBmgeGvFmOKucFKY+8VFJSYZxs9poN3SDNQFF6lT6NrQUnHiPB2PWz2sc4ieEcAaYYzN+1uWahEeTq2aRIQ==}
 
-  '@lit-labs/task@2.1.2':
-    resolution: {integrity: sha512-pDjPYojmCXnOezT/4BgqxHA2kahmSsCE0y6uPCYyVqigIx9DJav05s0KAtD9IImTY3LvWu5isSlq6nkWagAybA==}
-
   '@lit/context@1.1.3':
     resolution: {integrity: sha512-Auh37F4S0PZM93HTDfZWs97mmzaQ7M3vnTc9YvxAGyP3UItSK/8Fs0vTOGT+njuvOwbKio/l8Cx/zWL4vkutpQ==}
 
@@ -820,9 +829,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@scoped-elements/dropzone@0.2.7':
-    resolution: {integrity: sha512-/3qcTHanOQ7YayikIw2cmmSA0QMEcedadHiIHiUjNtyf9VjwVL50HLt09MKkRQYKbxFbR4EsKRFTFmiJdmiJew==}
-
   '@shoelace-style/animations@1.2.0':
     resolution: {integrity: sha512-avvo1xxkLbv2dgtabdewBbqcJfV0e0zCwFqkPMnHFGbJbBHorRFfMAHh1NG9ymmXn0jW95ibUVH03E1NYXD6Gw==}
 
@@ -940,14 +946,8 @@ packages:
       '@vue/compiler-sfc':
         optional: true
 
-  '@types/dropzone@5.7.9':
-    resolution: {integrity: sha512-c6IlUz+DeQ4gANzJKn8fdP5rO6UyDNOyWLjfPbDRUHCNsXaAVKQOpuOv6LWEyvaK7pLqmoIpvSIlvBgGsk1vGw==}
-
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
-
-  '@types/jquery@3.5.32':
-    resolution: {integrity: sha512-b9Xbf4CkMqS02YH8zACqN1xzdxc3cO735Qe5AbSUFmyOiaWAbcpqh9Wna+Uk0vgACvoQHpWDg2rGdHkYPLmCiQ==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -963,9 +963,6 @@ packages:
 
   '@types/react@18.3.15':
     resolution: {integrity: sha512-XQzbwkCwrsabawgWsvDDwsDTRuH1sf6Uj1fnFYoG03ZXfT54/aBvlylKR9ix70pXAtTn8dFzj358zVcZN4m83w==}
-
-  '@types/sizzle@2.3.9':
-    resolution: {integrity: sha512-xzLEyKB50yqCUPUJkIsrVvoWNfFUbIZI+RspLWt8u+tIW/BetMBZtgV2LY/2o+tYH8dRvQ+eoPf3NdhQCcLE2w==}
 
   '@types/triple-beam@1.3.5':
     resolution: {integrity: sha512-6WaYesThRMCl19iryMYP7/x2OVgCtbIVflDGFpWnb9irXI3UjYE4AzmYuiUKY1AJstGijoY+MgUszMgRxIYTYw==}
@@ -1359,9 +1356,6 @@ packages:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
 
-  dropzone@5.9.3:
-    resolution: {integrity: sha512-Azk8kD/2/nJIuVPK+zQ9sjKMRIpRvNyqn9XwbBHNq+iNuSccbJS6hwm1Woy0pMST0erSo0u4j+KJaodndDk4vA==}
-
   dunder-proto@1.0.0:
     resolution: {integrity: sha512-9+Sj30DIu+4KvHqMfLUGLFYL2PkURSYMVXJyXe92nFRvlYq5hBjLEhblKB+vkd/WVlUYMWigiY07T91Fkk0+4A==}
     engines: {node: '>= 0.4'}
@@ -1660,9 +1654,6 @@ packages:
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
-
-  idb-keyval@6.2.1:
-    resolution: {integrity: sha512-8Sb3veuYCyrZL+VBt9LJfZjLUPWVvqn8tG28VqYNFCo43KHcKuq+b4EiXGeuaLAQWL2YmyDgMp2aSpH9JHsEQg==}
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -2773,20 +2764,22 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@darksoil-studio/file-storage-zome@0.400.0-rev.6c851601e203a8927d896b5026b558f61badfb77(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+  '@darksoil-studio/friends-zome@0.400.0-rev.d5afbe23050f64954c2c50efec658dcec166ad43(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
+      '@darksoil-studio/notifications-zome': 0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@darksoil-studio/private-event-sourcing-zome': 0.400.0-rev.6211f22a39ac13f941a43c8a738588d7b4dab7f6(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@darksoil-studio/profiles-provider': 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@holochain/client': 0.18.0
-      '@lit-labs/task': 2.1.2
       '@lit/context': 1.1.3
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
-      '@scoped-elements/dropzone': 0.2.7(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@msgpack/msgpack': 2.8.0
       '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tnesh-stack/elements': 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/signals': 0.400.0
       '@tnesh-stack/utils': 0.400.0
-      idb-keyval: 6.2.1
-      js-base64: 3.7.7
       lit: 3.2.1
+      lodash-es: 4.17.21
     transitivePeerDependencies:
       - '@floating-ui/utils'
       - '@types/react'
@@ -2813,9 +2806,50 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/messenger-zome@0.400.0-rev.254593f414171842a083317fb8c4a4f33266842d(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+  '@darksoil-studio/linked-devices-zome@0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
-      '@darksoil-studio/file-storage-zome': 0.400.0-rev.6c851601e203a8927d896b5026b558f61badfb77(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@holochain/client': 0.18.0
+      '@lit/context': 1.1.3
+      '@lit/localize': 0.12.2
+      '@mdi/js': 7.4.47
+      '@msgpack/msgpack': 2.8.0
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tauri-apps/plugin-barcode-scanner': 2.2.0
+      '@tnesh-stack/elements': 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/signals': 0.400.0
+      '@tnesh-stack/utils': 0.400.0
+      js-base64: 3.7.7
+      lit: 3.2.1
+    transitivePeerDependencies:
+      - '@floating-ui/utils'
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+
+  '@darksoil-studio/messenger-zome@0.400.0-rev.0bb0e98b2bca731112f002703849740cc045110a(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+    dependencies:
+      '@darksoil-studio/linked-devices-zome': 0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@darksoil-studio/private-event-sourcing-zome': 0.400.0-rev.6211f22a39ac13f941a43c8a738588d7b4dab7f6(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@darksoil-studio/profiles-provider': 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@holochain/client': 0.18.0
+      '@lit/context': 1.1.3
+      '@lit/localize': 0.12.2
+      '@mdi/js': 7.4.47
+      '@msgpack/msgpack': 2.8.0
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/elements': 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/signals': 0.400.0
+      '@tnesh-stack/utils': 0.400.0
+      color-hash: 2.0.2
+      lit: 3.2.1
+    transitivePeerDependencies:
+      - '@floating-ui/utils'
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+
+  '@darksoil-studio/notifications-zome@0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+    dependencies:
       '@darksoil-studio/linked-devices-zome': 0.400.0-rev.23d64f1ce59822d7e1849d75c2d978cb6a0d62c8(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/profiles-zome': 0.400.0-rev.cca82532f957ff1656da8cf2be3d7d6a9c9d4c68(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@holochain/client': 0.18.0
@@ -2827,7 +2861,42 @@ snapshots:
       '@tnesh-stack/elements': 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@tnesh-stack/signals': 0.400.0
       '@tnesh-stack/utils': 0.400.0
-      color-hash: 2.0.2
+      lit: 3.2.1
+    transitivePeerDependencies:
+      - '@floating-ui/utils'
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+
+  '@darksoil-studio/private-event-sourcing-zome@0.400.0-rev.6211f22a39ac13f941a43c8a738588d7b4dab7f6(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+    dependencies:
+      '@holochain/client': 0.18.0
+      '@lit/context': 1.1.3
+      '@lit/localize': 0.12.2
+      '@mdi/js': 7.4.47
+      '@msgpack/msgpack': 2.8.0
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/elements': 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/signals': 0.400.0
+      '@tnesh-stack/utils': 0.400.0
+      lit: 3.2.1
+    transitivePeerDependencies:
+      - '@floating-ui/utils'
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+
+  '@darksoil-studio/profiles-provider@0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+    dependencies:
+      '@holochain/client': 0.18.0
+      '@lit/context': 1.1.3
+      '@lit/localize': 0.12.2
+      '@mdi/js': 7.4.47
+      '@msgpack/msgpack': 2.8.0
+      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/elements': 0.400.1(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+      '@tnesh-stack/signals': 0.400.0
+      '@tnesh-stack/utils': 0.400.0
       lit: 3.2.1
     transitivePeerDependencies:
       - '@floating-ui/utils'
@@ -3149,10 +3218,6 @@ snapshots:
 
   '@lit-labs/ssr-dom-shim@1.2.1': {}
 
-  '@lit-labs/task@2.1.2':
-    dependencies:
-      '@lit/reactive-element': 1.6.3
-
   '@lit/context@1.1.3':
     dependencies:
       '@lit/reactive-element': 2.0.4
@@ -3274,17 +3339,6 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.28.1':
     optional: true
-
-  '@scoped-elements/dropzone@0.2.7(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
-    dependencies:
-      '@mdi/js': 7.4.47
-      '@shoelace-style/shoelace': 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
-      '@types/dropzone': 5.7.9
-      dropzone: 5.9.3
-      lit: 2.8.0
-    transitivePeerDependencies:
-      - '@floating-ui/utils'
-      - '@types/react'
 
   '@shoelace-style/animations@1.2.0': {}
 
@@ -3460,15 +3514,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@types/dropzone@5.7.9':
-    dependencies:
-      '@types/jquery': 3.5.32
-
   '@types/estree@1.0.6': {}
-
-  '@types/jquery@3.5.32':
-    dependencies:
-      '@types/sizzle': 2.3.9
 
   '@types/json-schema@7.0.15': {}
 
@@ -3482,8 +3528,6 @@ snapshots:
     dependencies:
       '@types/prop-types': 15.7.14
       csstype: 3.1.3
-
-  '@types/sizzle@2.3.9': {}
 
   '@types/triple-beam@1.3.5': {}
 
@@ -3955,8 +3999,6 @@ snapshots:
     dependencies:
       path-type: 4.0.0
 
-  dropzone@5.9.3: {}
-
   dunder-proto@1.0.0:
     dependencies:
       call-bind-apply-helpers: 1.0.1
@@ -4320,8 +4362,6 @@ snapshots:
   iconv-lite@0.6.3:
     dependencies:
       safer-buffer: 2.1.2
-
-  idb-keyval@6.2.1: {}
 
   ieee754@1.2.1: {}
 

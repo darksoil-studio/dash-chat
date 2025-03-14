@@ -5,17 +5,12 @@ integrity:
   properties: null
   origin_time: 1733234736326055
   zomes:
-  - name: profiles_integrity
+  - name: friends_integrity
     hash: null
     bundled: <NIX_PACKAGE>
     dependencies: null
     dylib: null
   - name: linked_devices_integrity
-    hash: null
-    bundled: <NIX_PACKAGE>
-    dependencies: null
-    dylib: null
-  - name: file_storage_integrity
     hash: null
     bundled: <NIX_PACKAGE>
     dependencies: null
@@ -27,23 +22,17 @@ integrity:
     dylib: null
 coordinator:
   zomes:
-  - name: profiles
+  - name: friends
     hash: null
     bundled: <NIX_PACKAGE>
     dependencies:
-    - name: profiles_integrity
+    - name: friends_integrity
     dylib: null
   - name: linked_devices
     hash: null
     bundled: <NIX_PACKAGE>
     dependencies:
     - name: linked_devices_integrity
-    dylib: null
-  - name: file_storage
-    hash: null
-    bundled: <NIX_PACKAGE>
-    dependencies:
-    - name: file_storage_integrity
     dylib: null
   - name: messenger
     hash: null
