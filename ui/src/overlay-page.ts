@@ -50,7 +50,7 @@ export class OverlayPage extends SignalWatcher(LitElement) {
 								<div
 									class="column"
 									style=${styleMap({
-										'min-width': this.isMobile ? '100%' : '600px',
+										'min-width': this.isMobile ? '100%' : '500px',
 									})}
 								>
 									<slot></slot>

@@ -23,7 +23,7 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Warn)
+                .level(log::LevelFilter::Info)
                 .build(),
         )
         .plugin(tauri_plugin_process::init())
@@ -179,15 +179,15 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
 }
 
 fn wan_network_config() -> Option<WANNetworkConfig> {
-    // if tauri::is_dev() {
-    //     None
-    // } else {
+    if tauri::is_dev() {
+        None
+    } else {
         Some(WANNetworkConfig {
             signal_url: url2::url2!("{}", SIGNAL_URL),
             bootstrap_url: url2::url2!("{}", BOOTSTRAP_URL),
             ice_servers_urls: vec![],
         })
-    // }
+    }
 }
 
 fn holochain_dir() -> PathBuf {

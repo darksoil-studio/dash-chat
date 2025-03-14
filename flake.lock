@@ -9116,11 +9116,11 @@
         "tnesh-stack": "tnesh-stack_28"
       },
       "locked": {
-        "lastModified": 1741952012,
-        "narHash": "sha256-NynP3I7AaWRJ+cAwWcDkf/S/gel1viYLsVRpg1lC0Hc=",
+        "lastModified": 1741961813,
+        "narHash": "sha256-0fSTD3uC+hvDo2PD+a33EwcHh03fCwUleM3ctikE6C0=",
         "owner": "darksoil-studio",
         "repo": "friends-zome",
-        "rev": "b827e481bb5238f83d4024e048baefe0a0a013e6",
+        "rev": "072644bc82ee42f5cf9ea741b6d651e1fe8669e3",
         "type": "github"
       },
       "original": {

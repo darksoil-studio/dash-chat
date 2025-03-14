@@ -10,7 +10,6 @@ import {
 import '@darksoil-studio/messenger-zome/dist/elements/all-chats.js';
 import '@darksoil-studio/messenger-zome/dist/elements/group-chat.js';
 import '@darksoil-studio/messenger-zome/dist/elements/peer-chat.js';
-import '@darksoil-studio/notifications-zome/dist/elements/my-notifications-icon-button.js';
 import {
 	ProfilesProvider,
 	profilesProviderContext,
@@ -148,7 +147,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 	renderPlaceholder() {
 		return html`<div
 			class="column placeholder"
-			style="flex: 1; align-items: center; justify-content: center; gap: 16px"
+			style="flex: 1; align-items: center; justify-content: center; gap: 8px"
 		>
 			<sl-icon
 				.src=${wrapPathInSvg(mdiChatOutline)}
@@ -191,7 +190,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 								.src=${wrapPathInSvg(mdiAccountGroup)}
 								style="font-size: 24px"
 							></sl-icon>
-							<span> ${msg('My Friends')} </span>
+							<span> ${msg('Friends')} </span>
 						</div>
 						${pendingFriendRequestsCount > 0
 							? html`
@@ -199,7 +198,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 										variant="primary"
 										pill
 										pulse
-										style="align-self: center"
+										style="align-self: center;"
 										>${pendingFriendRequestsCount}</sl-badge
 									>
 								`
@@ -208,7 +207,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 				>
 				<sl-tab-panel name="all_chats">
 					<all-chats
-						style="flex: 1; margin: 8px"
+						style="min-height: 100%; margin: 8px"
 						@group-chat-selected=${(e: CustomEvent) => {
 							this.routes.goto(
 								`group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
@@ -222,7 +221,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 					>
 					</all-chats>
 					<sl-button
-						style="position: absolute; bottom: 16px; right: 16px"
+						style="position: absolute; display: none; bottom: 16px; right: 16px"
 						variant="primary"
 						circle
 						@click=${() =>
@@ -265,8 +264,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 												).hide();
 											} catch (e) {
 												console.error(e);
-												// notifyError(msg('Failed to send friend request.'));
-												notifyError(JSON.stringify(e));
+												notifyError(msg('Failed to send friend request.'));
 											}
 											button.loading = false;
 										}}
@@ -275,7 +273,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 								`
 							: html``}
 					</sl-dialog>
-					<div class="column" style="gap: 16px;">
+					<div class="column" style="gap: 16px; min-height: 100%">
 						${pendingFriendRequestsCount > 0
 							? html`
 									<sl-card>
@@ -288,6 +286,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 							: html``}
 
 						<my-friends
+							style="flex: 1"
 							@friend-clicked=${(e: CustomEvent) =>
 								this.routes.goto(`peer/${e.detail.agents[0]}`)}
 						>
@@ -415,8 +414,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 					>${msg('New Group')}
 				</sl-button>
 
-				<my-notifications-icon-button> </my-notifications-icon-button>
-
 				<agent-avatar
 					@click=${() =>
 						this.dispatchEvent(
@@ -497,6 +494,9 @@ export class HomePage extends SignalWatcher(LitElement) {
 			}
 			sl-tab-panel {
 				position: relative;
+				height: 100%;
+			}
+			sl-tab-panel::part(base) {
 				height: 100%;
 			}
 		`,
