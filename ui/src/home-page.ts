@@ -20,6 +20,8 @@ import { consume } from '@lit/context';
 import { msg, str } from '@lit/localize';
 import {
 	mdiAccount,
+	mdiAccountBadge,
+	mdiAccountGroup,
 	mdiAccountMultiple,
 	mdiAccountMultiplePlus,
 	mdiArrowLeft,
@@ -137,7 +139,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 
 	renderPlaceholder() {
 		return html`<div
-			class="column"
+			class="column placeholder"
 			style="flex: 1; align-items: center; justify-content: center; gap: 24px"
 		>
 			<sl-icon .src=${wrapPathInSvg(mdiChatOutline)} style="font-size: 48px">
@@ -229,6 +231,8 @@ export class HomePage extends SignalWatcher(LitElement) {
 								);
 							} else if (value === 'my_profile') {
 								this.dispatchEvent(new CustomEvent('profile-clicked'));
+							} else if (value === 'my_friends') {
+								this.dispatchEvent(new CustomEvent('my-friends-clicked'));
 							}
 						}}
 					>
@@ -238,6 +242,13 @@ export class HomePage extends SignalWatcher(LitElement) {
 								slot="prefix"
 							></sl-icon>
 							${msg('New Group')}</sl-menu-item
+						>
+						<sl-menu-item value="my_friends">
+							<sl-icon
+								.src=${wrapPathInSvg(mdiAccountGroup)}
+								slot="prefix"
+							></sl-icon>
+							${msg('My Friends')}</sl-menu-item
 						>
 						<sl-menu-item value="my_profile">
 							<sl-icon
@@ -257,15 +268,26 @@ export class HomePage extends SignalWatcher(LitElement) {
 				<sl-button
 					style="font-size: 24px"
 					@click=${() =>
-						this.dispatchEvent(new CustomEvent('create-group-chat-selected'))}
-					variant="text"
+						this.dispatchEvent(new CustomEvent('create-group-chat-clicked'))}
+					outline
 					><sl-icon
 						slot="prefix"
 						.src=${wrapPathInSvg(mdiAccountMultiplePlus)}
 					></sl-icon
-					>${msg('New group')}
+					>${msg('New Group')}
 				</sl-button>
-				<profile-list-item
+				<sl-button
+					style="font-size: 24px"
+					@click=${() =>
+						this.dispatchEvent(new CustomEvent('my-friends-clicked'))}
+					outline
+					><sl-icon
+						slot="prefix"
+						.src=${wrapPathInSvg(mdiAccountGroup)}
+					></sl-icon
+					>${msg('My Friends')}
+				</sl-button>
+				<agent-avatar
 					@click=${() =>
 						this.dispatchEvent(
 							new CustomEvent('profile-clicked', {
@@ -274,7 +296,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 							}),
 						)}
 					.agentPubKey=${this.client.myPubKey}
-				></profile-list-item>
+				></agent-avatar>
 			</div>
 		`;
 	}
@@ -287,7 +309,10 @@ export class HomePage extends SignalWatcher(LitElement) {
 					<span class="title" style="flex: 1">${msg('Messenger Demo')}</span>
 
 					${this.renderActions()}
+
 					<sl-button
+						style="position: fixed; bottom: 16px; right: 16px"
+						size="large"
 						circle
 						@click=${() =>
 							this.dispatchEvent(

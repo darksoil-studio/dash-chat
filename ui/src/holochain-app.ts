@@ -1,5 +1,11 @@
+import { scanQrCodeAndSendFriendRequest } from '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
+import '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
+import '@darksoil-studio/friends-zome/dist/elements/friend-requests.js';
 import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
+import { FriendsContext } from '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
+import '@darksoil-studio/friends-zome/dist/elements/my-friends.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
+import '@darksoil-studio/friends-zome/dist/elements/select-friend.js';
 import '@darksoil-studio/linked-devices-zome/dist/elements/linked-devices-context.js';
 import '@darksoil-studio/messenger-zome/dist/elements/create-group-chat.js';
 import '@darksoil-studio/messenger-zome/dist/elements/messenger-context.js';
@@ -13,9 +19,10 @@ import {
 import { ResizeController } from '@lit-labs/observers/resize-controller.js';
 import { provide } from '@lit/context';
 import { localized, msg } from '@lit/localize';
-import { mdiArrowLeft, mdiLink } from '@mdi/js';
+import { mdiAccountPlus, mdiArrowLeft, mdiLink } from '@mdi/js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+import SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
@@ -38,7 +45,6 @@ import './home-page.js';
 import { LinkDeviceDialog } from './link-device-dialog.js';
 import './link-device-dialog.js';
 import './overlay-page.js';
-import './select-friend.js';
 
 export const MOBILE_WIDTH_PX = 600;
 
@@ -87,8 +93,94 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 					@profile-clicked=${() => this.router.goto('/my-profile')}
 					@create-group-chat-clicked=${() =>
 						this.router.goto('/create-group-chat')}
+					@my-friends-clicked=${() => this.router.goto('/my-friends')}
 					@new-message-clicked=${() => this.router.goto('/new-message')}
 				></home-page>`,
+		},
+		{
+			path: '/friend-requests',
+			enter: () => {
+				// Redirect to "/home/"
+				this.router.goto('/my-friends');
+				return false;
+			},
+		},
+		{
+			path: '/my-friends',
+			render: () => {
+				const friendsStore = (
+					this.shadowRoot!.querySelector('friends-context') as FriendsContext
+				)?.store;
+				const pendingFriendRequests = friendsStore?.pendingFriendRequests.get();
+				return html`
+					<overlay-page
+						.title=${msg('My friends')}
+						icon="back"
+						@close-requested=${() => this.router.goto('/home/')}
+					>
+						<sl-dialog id="add-friend-dialog" .label=${msg('Add friend')}>
+							<div class="column" style="gap: 16px">
+								<span
+									>${msg(
+										'Have your friend scan this QR code to send you a friend request.',
+									)}
+								</span>
+								<friend-request-qr-code style="align-self: center">
+								</friend-request-qr-code>
+							</div>
+							${this._isMobile
+								? html`
+										<sl-button
+											variant="primary"
+											slot="footer"
+											@click=${() =>
+												scanQrCodeAndSendFriendRequest(friendsStore)}
+											>${msg('Scan QR Code')}
+										</sl-button>
+									`
+								: html``}
+						</sl-dialog>
+						<div class="column" style="gap: 16px">
+							${pendingFriendRequests?.status === 'completed' &&
+							Object.keys(pendingFriendRequests.value).length > 0
+								? html`
+										<sl-card>
+											<div class="column" style="gap: 8px; flex: 1">
+												<span class="title">${msg('Friend requests')}</span>
+												<friend-requests> </friend-requests>
+											</div>
+										</sl-card>
+									`
+								: html``}
+							<sl-card>
+								<div class="column" style="gap: 8px; flex: 1">
+									<span class="title">${msg('Friends')}</span>
+									<my-friends> </my-friends>
+								</div>
+							</sl-card>
+
+							<div class="row">
+								<span style="flex: 1"></span>
+								<sl-button
+									variant="primary"
+									@click=${() =>
+										(
+											this.shadowRoot!.getElementById(
+												'add-friend-dialog',
+											) as SlDialog
+										).show()}
+								>
+									<sl-icon
+										slot="prefix"
+										.src=${wrapPathInSvg(mdiAccountPlus)}
+									></sl-icon>
+									${msg('Add Friend')}
+								</sl-button>
+							</div>
+						</div>
+					</overlay-page>
+				`;
+			},
 		},
 		{
 			path: '/my-profile',
@@ -102,17 +194,15 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 					icon="back"
 					@close-requested=${() => this.router.goto('/home/')}
 				>
-					<sl-card>
-						<select-friend
-							style="flex: 1;"
-							@friend-selected=${(e: CustomEvent) => {
-								this.router.goto(
-									`/home/peer/${encodeHashToBase64(e.detail.friend.agents[0])}`,
-								);
-							}}
-						>
-						</select-friend>
-					</sl-card>
+					<select-friend
+						style="flex: 1;"
+						@friend-selected=${(e: CustomEvent) => {
+							this.router.goto(
+								`/home/peer/${encodeHashToBase64(e.detail.friend.agents[0])}`,
+							);
+						}}
+					>
+					</select-friend>
 				</overlay-page>
 			`,
 		},
@@ -169,6 +259,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				@close-requested=${() => this.router.goto('/home/')}
 			>
 				<sl-button
+					outline
 					slot="action"
 					@click=${() => {
 						const dialog = this.shadowRoot!.getElementById(
@@ -181,14 +272,11 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 					${msg('Link Device')}
 				</sl-button>
 
-				<sl-card
-					style=${styleMap({
-						width: this._isMobile ? 'unset' : '600px',
-						margin: '24px',
-						'align-self': this._isMobile ? 'auto' : 'center',
-					})}
-				>
-					<my-profile style="margin: 16px; flex: 1"></my-profile>
+				<sl-card>
+					<div class="column" style=" gap: 32px; flex: 1">
+						<span class="title">${msg('My profile')}</span>
+						<my-profile style="margin: 8px; flex: 1"></my-profile>
+					</div>
 				</sl-card>
 			</overlay-page>
 		`;

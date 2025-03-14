@@ -18,7 +18,7 @@ pub fn happ_bundle() -> AppBundle {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     std::env::set_var("WASM_LOG", "info");
-    let mut config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
+    let config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
     // config.gossip_arc_clamp = None;
 
     let mut builder = tauri::Builder::default()
@@ -83,7 +83,7 @@ pub fn run() {
                 let mut window_builder = app
                     .holochain()?
                     .main_window_builder(
-                        String::from(APP_ID),
+                        String::from("main"),
                         true,
                         Some(String::from(APP_ID)),
                         None,
