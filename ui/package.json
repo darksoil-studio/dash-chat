@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@darksoil-studio/friends-zome": "0.400.0-rev.072644bc82ee42f5cf9ea741b6d651e1fe8669e3",
-    "@darksoil-studio/messenger-zome": "file:/home/guillem/projects/darksoil/messenger-zome/ui",
+    "@darksoil-studio/messenger-zome": "0.400.0-rev.40c459b56da3eadb122902780328c497e9e1603f",
     "@darksoil-studio/linked-devices-zome": "0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23",
     "@darksoil-studio/profiles-provider": "^0.400.1",
     "@holochain/client": "^0.18.0",

@@ -108,8 +108,8 @@ importers:
         specifier: 0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23
         version: 0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/messenger-zome':
-        specifier: file:/home/guillem/projects/darksoil/messenger-zome/ui
-        version: file:../messenger-zome/ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+        specifier: 0.400.0-rev.40c459b56da3eadb122902780328c497e9e1603f
+        version: 0.400.0-rev.40c459b56da3eadb122902780328c497e9e1603f(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/notifications-zome':
         specifier: 0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b
         version: 0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
@@ -283,8 +283,8 @@ packages:
   '@darksoil-studio/linked-devices-zome@0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23':
     resolution: {integrity: sha512-bczzlqO5LzSQsgECzq0VBPfaDMXGmjplHlCb4QJCllzynBCcUkfwlDUgvug7ZnyAzAy6j7b5I39se5YNcxPIJQ==}
 
-  '@darksoil-studio/messenger-zome@file:../messenger-zome/ui':
-    resolution: {directory: ../messenger-zome/ui, type: directory}
+  '@darksoil-studio/messenger-zome@0.400.0-rev.40c459b56da3eadb122902780328c497e9e1603f':
+    resolution: {integrity: sha512-Kfvac5C597IrxSWm/Ow5wKeD0eMDU155/wBH0Ge49doiEsWFqMFBV3mAEfKUraiLfool5niqsMh0S3mP4VGhqg==}
 
   '@darksoil-studio/notifications-zome@0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b':
     resolution: {integrity: sha512-GtrM6WB4l98wXMKTSjqRGowVIEq76Ojsu4mcvQPo9kfY+KKCZjv+qVGxXEXLp+WW6slz0yPYe5Z3OLdGua1u3Q==}
@@ -2829,7 +2829,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/messenger-zome@file:../messenger-zome/ui(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+  '@darksoil-studio/messenger-zome@0.400.0-rev.40c459b56da3eadb122902780328c497e9e1603f(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@darksoil-studio/linked-devices-zome': 0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/private-event-sourcing-zome': 0.400.0-rev.6211f22a39ac13f941a43c8a738588d7b4dab7f6(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
