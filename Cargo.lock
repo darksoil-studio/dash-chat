@@ -3562,7 +3562,7 @@ dependencies = [
 [[package]]
 name = "holochain_runtime"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=wamr#4a137810babaeed726722b2a2d9e76b1daba6802"
+source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.4#6e4bc6b1b052e5cd2edf15588004e67869c9cca0"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -9128,7 +9128,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-holochain"
 version = "0.0.0"
-source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=wamr#4a137810babaeed726722b2a2d9e76b1daba6802"
+source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.4#6e4bc6b1b052e5cd2edf15588004e67869c9cca0"
 dependencies = [
  "anyhow",
  "bzip2 0.4.4",
@@ -10462,7 +10462,6 @@ dependencies = [
  "wasmer-derive",
  "wasmer-types",
  "wasmer-vm",
- "wasmparser 0.216.1",
  "wat",
  "windows-sys 0.59.0",
  "xz",

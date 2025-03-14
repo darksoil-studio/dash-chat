@@ -12,8 +12,8 @@
     "localize:build": "lit-localize build"
   },
   "dependencies": {
-    "@darksoil-studio/friends-zome": "0.400.0-rev.072644bc82ee42f5cf9ea741b6d651e1fe8669e3",
-    "@darksoil-studio/messenger-zome": "0.400.0-rev.40c459b56da3eadb122902780328c497e9e1603f",
+    "@darksoil-studio/friends-zome": "0.400.0-rev.2ef35973ff55ca2e0a8fa8254405d43ddf06f21d",
+    "@darksoil-studio/messenger-zome": "0.400.0-rev.43fa9a45eaa78c14a691ce3b7bce7c1277c80019",
     "@darksoil-studio/linked-devices-zome": "0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23",
     "@darksoil-studio/profiles-provider": "^0.400.1",
     "@holochain/client": "^0.18.0",

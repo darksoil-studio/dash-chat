@@ -11,7 +11,7 @@
     rust-overlay.follows = "holonix/rust-overlay";
 
     tnesh-stack.url = "github:darksoil-studio/tnesh-stack/main-0.4";
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/wamr";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.4";
     playground.url = "github:darksoil-studio/holochain-playground/main-0.4";
 
     messenger-zome.url = "github:darksoil-studio/messenger-zome/main-0.4";
@@ -66,6 +66,9 @@
             inputs'.tnesh-stack.packages.hc-scaffold-happ
             inputs'.playground.packages.hc-playground
           ];
+          shellHook = ''
+            export CARGO_TARGET_DIR=target/android
+          '';
         };
       };
     };

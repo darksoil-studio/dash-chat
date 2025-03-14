@@ -98,7 +98,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 					${this.isMobile
 						? html`
 								<sl-icon-button
-									style="color: black"
+									style="color: var(--sl-neutral-900)"
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
 									@click=${() => this.rootRouter.goto('')}
@@ -114,7 +114,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 					${this.isMobile
 						? html`
 								<sl-icon-button
-									style="color: black"
+									style="color: var(--sl-neutral-900)"
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
 									@click=${() => this.rootRouter.goto('')}
@@ -133,7 +133,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 					${this.isMobile
 						? html`
 								<sl-icon-button
-									style="color: black"
+									style="color: var(--sl-neutral-900)"
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
 									@click=${() => this.rootRouter.goto('')}
@@ -273,7 +273,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 								`
 							: html``}
 					</sl-dialog>
-					<div class="column" style="gap: 16px; min-height: 100%">
+					<div class="column" style="gap: 16px; min-height: 100%; margin: 8px">
 						${pendingFriendRequestsCount > 0
 							? html`
 									<sl-card>
@@ -288,7 +288,9 @@ export class HomePage extends SignalWatcher(LitElement) {
 						<my-friends
 							style="flex: 1"
 							@friend-clicked=${(e: CustomEvent) =>
-								this.routes.goto(`peer/${e.detail.agents[0]}`)}
+								this.routes.goto(
+									`peer/${encodeHashToBase64(e.detail.agents[0])}`,
+								)}
 						>
 						</my-friends>
 
