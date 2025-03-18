@@ -25,7 +25,7 @@ import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
-import { Router, hashState, wrapPathInSvg } from '@tnesh-stack/elements';
+import { Router, wrapPathInSvg } from '@tnesh-stack/elements';
 import '@tnesh-stack/elements/dist/elements/app-client-context.js';
 import '@tnesh-stack/elements/dist/elements/display-error.js';
 import { SignalWatcher } from '@tnesh-stack/signals';
@@ -43,6 +43,7 @@ import './home-page.js';
 import { LinkDeviceDialog } from './link-device-dialog.js';
 import './link-device-dialog.js';
 import './overlay-page.js';
+import './splash-screen.js';
 
 export const MOBILE_WIDTH_PX = 600;
 
@@ -211,7 +212,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 
 		try {
 			this._client = await AppWebsocket.connect({
-				defaultTimeout: 300_000,
+				defaultTimeout: 100_000,
 			});
 			// this._adminWs = await AdminWebsocket.connect();
 		} catch (e: unknown) {
@@ -219,10 +220,6 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		} finally {
 			this._loading = false;
 		}
-	}
-
-	renderMyProfilePage() {
-		return;
 	}
 
 	render() {

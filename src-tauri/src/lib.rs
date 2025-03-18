@@ -77,8 +77,6 @@ pub fn run() {
 
             let handle = app.handle().clone();
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
-                setup(handle).await?;
-
                 // After set up we can be sure our app is installed and up to date, so we can just open it
                 let mut window_builder = app
                     .holochain()?
@@ -98,6 +96,8 @@ pub fn run() {
                 }
 
                 window_builder.build()?;
+                
+                setup(handle).await?;
 
                 Ok(())
             });
