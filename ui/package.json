@@ -12,7 +12,7 @@
     "localize:build": "lit-localize build"
   },
   "dependencies": {
-    "@darksoil-studio/friends-zome": "0.400.0-rev.2ef35973ff55ca2e0a8fa8254405d43ddf06f21d",
+    "@darksoil-studio/friends-zome": "0.400.0-rev.4783683ddf3a08fb73517d88b26472824d5788a3",
     "@darksoil-studio/messenger-zome": "0.400.0-rev.43fa9a45eaa78c14a691ce3b7bce7c1277c80019",
     "@darksoil-studio/linked-devices-zome": "0.400.0-rev.e85058930c86c486390f0e52c932b0c5065c4b23",
     "@darksoil-studio/profiles-provider": "^0.400.1",

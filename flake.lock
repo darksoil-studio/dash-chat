@@ -9083,11 +9083,11 @@
         "tnesh-stack": "tnesh-stack_28"
       },
       "locked": {
-        "lastModified": 1741970406,
-        "narHash": "sha256-HMmJ+3YDNeqjumALyFuyApXp2fhKYDcj3PX4miTxp/E=",
+        "lastModified": 1742067427,
+        "narHash": "sha256-3Hbxrge/WDG4m6cP8MRlWg32EavpONqPYtDGFe6ypeg=",
         "owner": "darksoil-studio",
         "repo": "friends-zome",
-        "rev": "2ef35973ff55ca2e0a8fa8254405d43ddf06f21d",
+        "rev": "4783683ddf3a08fb73517d88b26472824d5788a3",
         "type": "github"
       },
       "original": {
@@ -26584,11 +26584,11 @@
         "nixpkgs": "nixpkgs_174"
       },
       "locked": {
-        "lastModified": 1740947705,
-        "narHash": "sha256-Co2kAD2SZalOm+5zoxmzEVZNvZ17TyafuFsD46BwSdY=",
+        "lastModified": 1742217219,
+        "narHash": "sha256-pLRjj0jTL1TloB0ptEwVF51IJJX8a17dSxg+gqiWb30=",
         "owner": "nix-community",
         "repo": "nixos-generators",
-        "rev": "507911df8c35939050ae324caccc7cf4ffb76565",
+        "rev": "83900d5154d840dfae1e0367c5290f59b9dccf03",
         "type": "github"
       },
       "original": {
@@ -44035,11 +44035,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1741938802,
-        "narHash": "sha256-+qNfni4fMIN0XAUR03/6TP1o9Hee3OahINuyY6+ZOX0=",
+        "lastModified": 1742198745,
+        "narHash": "sha256-dV1/Aj8JMo6+DnaZxB88oJIoWOvErABA13Pu62CwMd0=",
         "owner": "darksoil-studio",
         "repo": "tnesh-stack",
-        "rev": "3c7a0a67b5aede316c61250fef6cb709fb86d5d7",
+        "rev": "e17236ed6b9e2dfd987fe1d5d6bfeaca4915686e",
         "type": "github"
       },
       "original": {

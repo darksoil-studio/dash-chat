@@ -1,11 +1,10 @@
-import { scanQrCodeAndSendFriendRequest } from '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
 import '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
 import '@darksoil-studio/friends-zome/dist/elements/friend-requests.js';
 import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
-import { FriendsContext } from '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
 import '@darksoil-studio/friends-zome/dist/elements/my-friends.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/friends-zome/dist/elements/select-friend.js';
+import '@darksoil-studio/friends-zome/dist/elements/update-profile.js';
 import '@darksoil-studio/linked-devices-zome/dist/elements/linked-devices-context.js';
 import '@darksoil-studio/messenger-zome/dist/elements/create-group-chat.js';
 import '@darksoil-studio/messenger-zome/dist/elements/messenger-context.js';
@@ -20,10 +19,9 @@ import {
 import { ResizeController } from '@lit-labs/observers/resize-controller.js';
 import { provide } from '@lit/context';
 import { localized, msg } from '@lit/localize';
-import { mdiAccountPlus, mdiArrowLeft, mdiLink } from '@mdi/js';
+import { mdiLink } from '@mdi/js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-import SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
@@ -33,7 +31,6 @@ import '@tnesh-stack/elements/dist/elements/display-error.js';
 import { SignalWatcher } from '@tnesh-stack/signals';
 import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
 
 import { appStyles } from './app-styles.js';
 import './automatic-update-dialog.js';
@@ -108,7 +105,55 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		},
 		{
 			path: '/my-profile',
-			render: () => this.renderMyProfilePage(),
+			render: () => html`
+				<link-device-dialog id="link-device-dialog"> </link-device-dialog>
+				<overlay-page
+					.title=${msg('My profile')}
+					icon="back"
+					@close-requested=${() => this.router.goto('/home/')}
+				>
+					<sl-button
+						outline
+						slot="action"
+						@click=${() => {
+							const dialog = this.shadowRoot!.getElementById(
+								'link-device-dialog',
+							) as LinkDeviceDialog;
+							dialog.show();
+						}}
+					>
+						<sl-icon .src=${wrapPathInSvg(mdiLink)}></sl-icon>
+						${msg('Link Device')}
+					</sl-button>
+
+					<sl-card>
+						<div class="column" style=" gap: 32px; flex: 1">
+							<span class="title">${msg('My profile')}</span>
+							<my-profile
+								style="margin: 8px; flex: 1"
+								@edit-profile-clicked=${() =>
+									this.router.goto('/my-profile/edit')}
+							></my-profile>
+						</div>
+					</sl-card>
+				</overlay-page>
+			`,
+		},
+		{
+			path: '/my-profile/edit',
+			render: () => html`
+				<overlay-page
+					.title=${msg('Edit profile')}
+					@close-requested=${() => this.router.goto('/my-profile')}
+				>
+					<sl-card>
+						<div class="column" style="gap: 32px; flex: 1">
+							<span class="title">${msg('Edit profile')}</span>
+							<update-profile style="margin: 8px; flex: 1"></update-profile>
+						</div>
+					</sl-card>
+				</overlay-page>
+			`,
 		},
 		{
 			path: '/new-message',
@@ -177,35 +222,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	}
 
 	renderMyProfilePage() {
-		return html`
-			<link-device-dialog id="link-device-dialog"> </link-device-dialog>
-			<overlay-page
-				.title=${msg('My profile')}
-				icon="back"
-				@close-requested=${() => this.router.goto('/home/')}
-			>
-				<sl-button
-					outline
-					slot="action"
-					@click=${() => {
-						const dialog = this.shadowRoot!.getElementById(
-							'link-device-dialog',
-						) as LinkDeviceDialog;
-						dialog.show();
-					}}
-				>
-					<sl-icon .src=${wrapPathInSvg(mdiLink)}></sl-icon>
-					${msg('Link Device')}
-				</sl-button>
-
-				<sl-card>
-					<div class="column" style=" gap: 32px; flex: 1">
-						<span class="title">${msg('My profile')}</span>
-						<my-profile style="margin: 8px; flex: 1"></my-profile>
-					</div>
-				</sl-card>
-			</overlay-page>
-		`;
+		return;
 	}
 
 	render() {
