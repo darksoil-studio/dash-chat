@@ -21,6 +21,17 @@ pub fn run() {
     let mut config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
     config.gossip_arc_clamp = None;
 
+    let holochain_plugin = match is_first_run() {
+        true => tauri_plugin_holochain::async_init(
+            vec_to_locked(vec![]).expect("Can't build passphrase"),
+            config
+        ),
+        false => tauri_plugin_holochain::init(
+            vec_to_locked(vec![]).expect("Can't build passphrase"),
+            config
+        )
+    };
+
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
@@ -29,10 +40,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_holochain::init(
-            vec_to_locked(vec![]).expect("Can't build passphrase"),
-            config
-        ))
+        .plugin(holochain_plugin)
         .setup(|app| {
             #[cfg(mobile)]
             app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
@@ -212,4 +220,8 @@ fn holochain_dir() -> PathBuf {
         .join("holochain")
         .join(std::env!("CARGO_PKG_VERSION"))
     }
+}
+
+fn is_first_run() -> bool {
+    !holochain_dir().exists()
 }

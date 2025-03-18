@@ -48,6 +48,7 @@ import {
 	Router,
 	Routes,
 	appClientContext,
+	notify,
 	notifyError,
 	wrapPathInSvg,
 } from '@tnesh-stack/elements';
@@ -98,7 +99,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 					${this.isMobile
 						? html`
 								<sl-icon-button
-									style="color: var(--sl-neutral-900)"
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
 									@click=${() => this.rootRouter.goto('')}
@@ -114,7 +114,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 					${this.isMobile
 						? html`
 								<sl-icon-button
-									style="color: var(--sl-neutral-900)"
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
 									@click=${() => this.rootRouter.goto('')}
@@ -171,16 +170,37 @@ export class HomePage extends SignalWatcher(LitElement) {
 									encodeHashToBase64(this.friendsStore.client.client.myPubKey),
 							),
 					).length;
+		const allChats = this.messengerStore.allChats.get();
+		const newChatActivityCount =
+			allChats.status !== 'completed'
+				? 0
+				: allChats.value.reduce(
+						(acc, next) => acc + next.myUnreadMessages.length,
+						0,
+					);
 
 		return html`
 			<sl-tab-group placement="bottom" style="flex: 1; margin: 0 8px">
 				<sl-tab style="flex: 1" slot="nav" panel="all_chats">
-					<div class="column" style="align-items: center; gap: 4px; flex: 1">
-						<sl-icon
-							.src=${wrapPathInSvg(mdiChat)}
-							style="font-size: 24px"
-						></sl-icon>
-						<span> ${msg('Chats')} </span>
+					<div class="row" style="justify-content: center; flex: 1">
+						<div class="column" style="align-items: center; gap: 4px;">
+							<sl-icon
+								.src=${wrapPathInSvg(mdiChat)}
+								style="font-size: 24px"
+							></sl-icon>
+							<span> ${msg('Chats')} </span>
+						</div>
+						${newChatActivityCount > 0
+							? html`
+									<sl-badge
+										variant="primary"
+										pill
+										pulse
+										style="align-self: center;"
+										>${newChatActivityCount}</sl-badge
+									>
+								`
+							: html``}
 					</div>
 				</sl-tab>
 				<sl-tab style="flex: 1" slot="nav" panel="my_friends">
@@ -262,6 +282,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 														'add-friend-dialog',
 													) as SlDialog
 												).hide();
+												notify(msg('Friend request sent.'));
 											} catch (e) {
 												console.error(e);
 												notifyError(msg('Failed to send friend request.'));
@@ -367,7 +388,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 				<sl-dropdown>
 					<sl-icon-button
 						slot="trigger"
-						style="font-size: 24px; color: var(--sl-color-neutral-900)"
+						style="font-size: 24px;"
 						.src=${wrapPathInSvg(mdiDotsVertical)}
 					></sl-icon-button>
 					<sl-menu
@@ -500,6 +521,14 @@ export class HomePage extends SignalWatcher(LitElement) {
 			}
 			sl-tab-panel::part(base) {
 				height: 100%;
+			}
+			group-chat::part(chat) {
+				margin: 8px;
+				margin-top: 0px;
+			}
+			peer-chat::part(chat) {
+				margin: 8px;
+				margin-top: 0px;
 			}
 		`,
 		...appStyles,

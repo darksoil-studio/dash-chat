@@ -9,8 +9,8 @@ import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { appStyles } from './app-styles';
-import { isMobileContext } from './context';
+import { appStyles } from './app-styles.js';
+import { isMobileContext } from './context.js';
 
 @localized()
 @customElement('link-device-dialog')

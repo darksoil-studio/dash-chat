@@ -72,7 +72,7 @@ export class OverlayPage extends SignalWatcher(LitElement) {
 				bottom: 0;
 				left: 0;
 				right: 0;
-				z-index: 1001;
+				z-index: 799;
 				background: var(--background-color);
 			}
 		`,

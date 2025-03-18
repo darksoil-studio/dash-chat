@@ -33,6 +33,7 @@ storybook-static
 
 # cargo
 /target/
+target/android
 /.cargo/
 
 .direnv/

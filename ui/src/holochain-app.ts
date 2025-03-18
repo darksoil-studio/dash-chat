@@ -53,6 +53,8 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	@state()
 	_loading = true;
 	@state()
+	_splashscreen = false;
+	@state()
 	_view = { view: 'main' };
 	@state()
 	_error: unknown | undefined;
@@ -150,43 +152,44 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 					<sl-card>
 						<div class="column" style="gap: 32px; flex: 1">
 							<span class="title">${msg('Edit profile')}</span>
-							<update-profile style="margin: 8px; flex: 1"></update-profile>
+							<update-profile
+								style="margin: 8px; flex: 1"
+								@profile-updated=${() => this.router.goto('/my-profile')}
+							></update-profile>
 						</div>
 					</sl-card>
 				</overlay-page>
 			`,
 		},
-		{
-			path: '/new-message',
-			render: () => html`
-				<overlay-page
-					.title=${msg('New message')}
-					icon="back"
-					@close-requested=${() => this.router.goto('/home/')}
-				>
-					<select-friend
-						style="flex: 1;"
-						@friend-selected=${(e: CustomEvent) => {
-							this.router.goto(
-								`/home/peer/${encodeHashToBase64(e.detail.friend.agents[0])}`,
-							);
-						}}
-					>
-					</select-friend>
-				</overlay-page>
-			`,
-		},
+		// {
+		// 	path: '/new-message',
+		// 	render: () => html`
+		// 		<overlay-page
+		// 			.title=${msg('New message')}
+		// 			icon="back"
+		// 			@close-requested=${() => this.router.goto('/home/')}
+		// 		>
+		// 			<select-friend
+		// 				style="flex: 1;"
+		// 				@friend-selected=${(e: CustomEvent) => {
+		// 					this.router.goto(
+		// 						`/home/peer/${encodeHashToBase64(e.detail.friend.agents[0])}`,
+		// 					);
+		// 				}}
+		// 			>
+		// 			</select-friend>
+		// 		</overlay-page>
+		// 	`,
+		// },
 		{
 			path: '/create-group-chat',
 			render: () => html`
 				<overlay-page
 					.title=${msg('New group chat')}
-					icon="back"
 					@close-requested=${() => this.router.goto('/home/')}
 				>
 					<sl-card>
 						<div class="column" style="gap: 12px; flex: 1">
-							<span class="title">${msg('New group chat')} </span>
 							<create-group-chat
 								style="flex: 1;"
 								@group-chat-created=${(e: CustomEvent) => {
@@ -209,6 +212,8 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				this._isMobile = this.getBoundingClientRect().width < MOBILE_WIDTH_PX;
 			},
 		});
+		this._splashscreen = false;
+		this._loading = true;
 
 		try {
 			this._client = await AppWebsocket.connect({
@@ -216,7 +221,17 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 			});
 			// this._adminWs = await AdminWebsocket.connect();
 		} catch (e: unknown) {
-			this._error = e;
+			if (
+				(e as any)
+					.toString()
+					.includes(
+						'The app your connection token was issued for was not found',
+					)
+			) {
+				this._splashscreen = true;
+			} else {
+				this._error = e;
+			}
 		} finally {
 			this._loading = false;
 		}
@@ -231,6 +246,12 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				<sl-spinner style="font-size: 2rem"></sl-spinner>
 			</div>`;
 		}
+		if (this._splashscreen) {
+			return html`<splash-screen
+				style="flex: 1"
+				@start-app-clicked=${() => this.firstUpdated()}
+			></splash-screen>`;
+		}
 
 		if (this._error) {
 			return html`
@@ -239,7 +260,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				>
 					<display-error
 						.error=${this._error}
-						.headline=${msg('Error connecting to holochain')}
+						.headline=${msg('Error connecting to holochain.')}
 					>
 					</display-error>
 				</div>

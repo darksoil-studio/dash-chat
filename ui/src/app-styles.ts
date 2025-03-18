@@ -12,10 +12,10 @@ export const appStyles = [
 			box-shadow: rgba(149, 157, 165, 0.2) 2px 2px 4px;
 		}
 		group-chat::part(top-bar) {
-			height: 48px;
+			height: 42px;
 		}
 		peer-chat::part(top-bar) {
-			height: 48px;
+			height: 42px;
 		}
 	`,
 	...sharedStyles,
