@@ -270,10 +270,10 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		return html`
 			<automatic-update-dialog> </automatic-update-dialog>
 			<app-client-context .client=${this._client}>
-				<notifications-context role="messenger_demo">
-					<messenger-context role="messenger_demo">
-						<linked-devices-context role="messenger_demo">
-							<friends-context role="messenger_demo">
+				<notifications-context role="main">
+					<messenger-context role="main">
+						<linked-devices-context role="main">
+							<friends-context role="main">
 								<profile-prompt style="flex: 1;">
 									${this.router.outlet()}
 								</profile-prompt>

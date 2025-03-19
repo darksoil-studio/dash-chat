@@ -6,13 +6,13 @@ use tauri::{AppHandle, Manager};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, WANNetworkConfig};
 
-const APP_ID: &'static str = "messenger-demo";
+const APP_ID: &'static str = "dash-chat";
 const SIGNAL_URL: &'static str = "wss://sbd.holo.host";
 const BOOTSTRAP_URL: &'static str = "https://bootstrap.holo.host";
 
 pub fn happ_bundle() -> AppBundle {
-    let bytes = include_bytes!("../../workdir/messenger-demo.happ");
-    AppBundle::decode(bytes).expect("Failed to decode messenger-demo happ")
+    let bytes = include_bytes!("../../workdir/dash-chat.happ");
+    AppBundle::decode(bytes).expect("Failed to decode dash-chat happ")
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -99,7 +99,7 @@ pub fn run() {
                 #[cfg(desktop)]
                 {
                     window_builder = window_builder
-                        .title(String::from("Messenger Demo"))
+                        .title(String::from("Dash Chat"))
                         .inner_size(1400.0, 1000.0);
                 }
 
@@ -201,7 +201,7 @@ fn wan_network_config() -> Option<WANNetworkConfig> {
 
 fn holochain_dir() -> PathBuf {
     if tauri::is_dev() {
-        let tmp_dir = tempdir::TempDir::new("messenger-demo")
+        let tmp_dir = tempdir::TempDir::new("dash-chat")
             .expect("Could not create temporary directory");
 
         // Convert `tmp_dir` into a `Path`, destroying the `TempDir`
@@ -212,7 +212,7 @@ fn holochain_dir() -> PathBuf {
         app_dirs2::app_root(
             app_dirs2::AppDataType::UserData,
             &app_dirs2::AppInfo {
-                name: "messenger-demo",
+                name: "dash-chat",
                 author: std::env!("CARGO_PKG_AUTHORS"),
             },
         )

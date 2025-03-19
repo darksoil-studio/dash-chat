@@ -1,13 +1,13 @@
 manifest_version: '1'
-name: messenger-demo
+name: dash-chat
 description: null
 roles:
-- name: messenger_demo
+- name: main
   provisioning:
     strategy: create
     deferred: false
   dna:
-    bundled: '../dnas/messenger_demo/workdir/messenger_demo.dna'
+    bundled: '../dnas/dash_chat/workdir/dash_chat.dna'
     modifiers:
       network_seed: null
       properties: null

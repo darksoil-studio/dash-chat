@@ -1,7 +1,7 @@
 [package]
-name = "messenger-demo"
+name = "dash-chat"
 version = "0.0.0"
-description = "Messenger Demo"
+description = "Dash Chat"
 authors = ["you"]
 license = ""
 repository = ""

@@ -1,4 +1,4 @@
-# Messenger Demo
+# Dash Chat
 
 ## Environment Setup
 
@@ -46,7 +46,7 @@ To package the web happ:
 pnpm package
 ```
 
-You'll have the `messenger-demo.webhapp` in `workdir`. This is what you should distribute so that the Holochain Launcher can install it.
+You'll have the `dash-chat.webhapp` in `workdir`. This is what you should distribute so that the Holochain Launcher can install it.
 
 ## Documentation
 

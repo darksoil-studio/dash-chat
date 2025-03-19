@@ -34,15 +34,15 @@ jobs:
       - name: 'Setup jq'
         uses: dcarbone/install-jq-action@v2
 
-      - name: Build and cache messenger-demo-happ
+      - name: Build and cache dash-chat-happ
         env:
           CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
         run: |
-          cachix watch-exec darksoil-studio -- nix build --accept-flake-config --no-update-lock-file -L .#messenger_demo_dna.hash
-          cachix watch-exec darksoil-studio -- nix build --accept-flake-config --no-update-lock-file -L .#messenger_demo_happ
-          nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]'
-          cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]')
-          cachix pin darksoil-studio messenger_demo_happ $(nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#messenger_demo_happ | jq -r 'keys[0]')
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config --no-update-lock-file -L .#dash_chat_dna.hash
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config --no-update-lock-file -L .#dash_chat_happ
+          nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#dash_chat_happ | jq -r 'keys[0]'
+          cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#dash_chat_happ | jq -r 'keys[0]')
+          cachix pin darksoil-studio dash_chat_happ $(nix path-info --json --accept-flake-config --no-update-lock-file --no-warn-dirty .#dash_chat_happ | jq -r 'keys[0]')
 
   build-and-cache-nix-tauri-app:
     needs: build-and-cache-release-happ
@@ -72,18 +72,18 @@ jobs:
         with:
           name: darksoil-studio
 
-      - name: Build messenger-demo
+      - name: Build dash-chat
         env:
           CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
         run: |
-          cachix watch-exec darksoil-studio -- nix build -L --accept-flake-config --no-update-lock-file .#messenger-demo
+          cachix watch-exec darksoil-studio -- nix build -L --accept-flake-config --no-update-lock-file .#dash-chat
 
       - name: 'Setup jq'
         uses: dcarbone/install-jq-action@v2
 
-      - name: Pin messenger-demo
+      - name: Pin dash-chat
         if: github.event_name != 'pull_request'
         env:
           CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
         run: |
-          cachix pin darksoil-studio messenger-demo $(nix path-info --json --accept-flake-config --no-warn-dirty .#messenger-demo | jq -r 'keys[0]')
+          cachix pin darksoil-studio dash-chat $(nix path-info --json --accept-flake-config --no-warn-dirty .#dash-chat | jq -r 'keys[0]')

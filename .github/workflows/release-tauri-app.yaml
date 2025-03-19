@@ -34,7 +34,7 @@ jobs:
       - name: Build happ
         run: |
           nix-store --gc
-          nix build -L .#messenger_demo_happ -o workdir/messenger-demo.happ
+          nix build -L .#dash_chat_happ -o workdir/dash-chat.happ
 
       - name: Retrieve version
         run: |
@@ -45,9 +45,9 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "workdir/messenger-demo.happ"
+          artifacts: "workdir/dash-chat.happ"
           body: "See assets below to download and install this version."
-          name: Messenger Demo v${{ steps.version.outputs.APP_VERSION }}
+          name: Dash Chat v${{ steps.version.outputs.APP_VERSION }}
           tag: v${{ steps.version.outputs.APP_VERSION }}
           prerelease: true
           draft: true
@@ -129,7 +129,7 @@ jobs:
         with: 
           token: ${{ secrets.GITHUB_TOKEN }}
           releaseId: ${{ needs.publish-happ.outputs.releaseId }}
-          fileName: 'messenger-demo.happ'
+          fileName: 'dash-chat.happ'
           out-file-path: 'workdir/'
 
       - name: build the app

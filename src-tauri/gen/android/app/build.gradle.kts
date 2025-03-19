@@ -16,10 +16,10 @@ val tauriProperties = Properties().apply {
 
 android {
     compileSdk = 34
-    namespace = "studio.darksoil.messengerdemo"
+    namespace = "studio.darksoil.dashchat"
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "true"
-        applicationId = "studio.darksoil.messengerdemo"
+        applicationId = "studio.darksoil.dashchat"
         minSdk = 24
         targetSdk = 34
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()

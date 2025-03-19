@@ -76,26 +76,26 @@
               --replace-fail '"frontendDist": "../ui/dist"' '"frontendDist": "${ui}/dist"' \
               --replace-fail '"beforeBuildCommand": "pnpm -F ui build",' '"beforeBuildCommand": "",'
             cp ${
-              self.outputs.packages."x86_64-linux".messenger_demo_happ
-            } workdir/messenger-demo.happ
+              self.outputs.packages."x86_64-linux".dash_chat_happ
+            } workdir/dash-chat.happ
             cp ${
-              self.outputs.packages."x86_64-linux".messenger_demo_dna.hash
-            } workdir/messenger_demo_dna-hash
+              self.outputs.packages."x86_64-linux".dash_chat_dna.hash
+            } workdir/dash_chat_dna-hash
           fi
           ${commonArgs.cargoBuildCommand}'';
       });
     in rec {
       packages = {
         inherit ui;
-        messenger-demo = if pkgs.stdenv.isLinux then
-          (pkgs.runCommandNoCC "messenger-demo" {
+        dash-chat = if pkgs.stdenv.isLinux then
+          (pkgs.runCommandNoCC "dash-chat" {
             buildInputs = [ pkgs.makeWrapper ];
 
           } ''
             mkdir $out
             mkdir $out/bin
             # Because we create this ourself, by creating a wrapper
-            makeWrapper ${tauriApp}/bin/messenger-demo $out/bin/messenger-demo \
+            makeWrapper ${tauriApp}/bin/dash-chat $out/bin/dash-chat \
               --set WEBKIT_DISABLE_DMABUF_RENDERER 1
           '')
         else
@@ -104,9 +104,9 @@
 
       apps.default.program = pkgs.writeShellApplication {
         name = "${pname}-${version}";
-        runtimeInputs = [ packages.messenger-demo ];
+        runtimeInputs = [ packages.dash-chat ];
         text = ''
-          messenger-demo
+          dash-chat
         '';
       };
     };

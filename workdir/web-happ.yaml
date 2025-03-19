@@ -1,6 +1,6 @@
 manifest_version: '1'
-name: messenger-demo
+name: dash-chat
 ui:
   bundled: '../ui/dist.zip'
 happ_manifest:
-  bundled: './messenger-demo.happ'
+  bundled: './dash-chat.happ'

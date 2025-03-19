@@ -456,7 +456,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 		return html`
 			<div class="column" style="flex: 1">
 				<div class="row top-bar">
-					<span class="title" style="flex: 1">${msg('Messenger Demo')}</span>
+					<span class="title" style="flex: 1">${msg('Dash Chat')}</span>
 
 					${this.renderActions()}
 				</div>
@@ -469,7 +469,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 		return html`
 			<div class="column" style="flex: 1">
 				<div class="row top-bar">
-					<span class="title" style="flex: 1">${msg('Messenger Demo')}</span>
+					<span class="title" style="flex: 1">${msg('Dash Chat')}</span>
 
 					${this.renderActions()}
 				</div>
