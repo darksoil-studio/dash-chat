@@ -67,7 +67,7 @@
             inputs'.playground.packages.hc-playground
           ];
           shellHook = ''
-            export CARGO_TARGET_DIR=target/android
+            export CARGO_TARGET_DIR=$(pwd)/target/android
           '';
         };
       };
