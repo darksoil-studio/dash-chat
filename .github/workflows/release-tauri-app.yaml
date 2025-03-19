@@ -129,7 +129,7 @@ jobs:
         with: 
           token: ${{ secrets.GITHUB_TOKEN }}
           releaseId: ${{ needs.publish-happ.outputs.releaseId }}
-          fileName: 'dash-chat.happ'
+          fileName: '*'
           out-file-path: 'workdir/'
 
       - name: build the app
