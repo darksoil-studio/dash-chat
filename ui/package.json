@@ -12,7 +12,7 @@
     "localize:build": "lit-localize build"
   },
   "dependencies": {
-    "@darksoil-studio/friends-zome": "0.400.0-rev.7fcb25bf030524ac285e5bb814ce20a71592a86e",
+    "@darksoil-studio/friends-zome": "0.400.0-rev.a16afa71201865b9d468d71332acba6fe219d981",
     "@darksoil-studio/messenger-zome": "0.400.0-rev.611c54e4085cb0b3a09ad51151cfe65cd7f6d097",
     "@darksoil-studio/linked-devices-zome": "0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f",
     "@darksoil-studio/notifications-zome": "0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b",
@@ -27,7 +27,7 @@
     "@tauri-apps/plugin-barcode-scanner": "^2.0.0",
     "@tauri-apps/plugin-process": "^2.2.0",
     "@tauri-apps/plugin-updater": "^2.5.1",
-    "@tnesh-stack/elements": "^0.400.3",
+    "@tnesh-stack/elements": "^0.400.4",
     "@tnesh-stack/signals": "^0.400.0",
     "@tnesh-stack/utils": "^0.400.0",
     "js-base64": "^3.7.7",

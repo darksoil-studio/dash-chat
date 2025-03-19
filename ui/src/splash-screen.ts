@@ -24,7 +24,7 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 	async attemptConnect() {
 		try {
 			const client = await AppWebsocket.connect();
-			client.callZome({
+			await client.callZome({
 				role_name: 'main',
 				zome_name: 'messenger',
 				fn_name: 'init',

@@ -27,7 +27,7 @@ fn app_id() -> String {
 pub fn run() {
     std::env::set_var("WASM_LOG", "info");
     let mut config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
-    config.gossip_arc_clamp = None;
+    // config.gossip_arc_clamp = None;
 
     let holochain_plugin = match is_first_run() {
         true => tauri_plugin_holochain::async_init(

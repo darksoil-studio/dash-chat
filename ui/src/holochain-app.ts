@@ -189,7 +189,8 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 					@close-requested=${() => this.router.goto('/home/')}
 				>
 					<sl-card>
-						<div class="column" style="gap: 12px; flex: 1">
+						<div class="column" style="gap: 16px; flex: 1">
+							<span class="title">${msg('New group chat')}</span>
 							<create-group-chat
 								style="flex: 1;"
 								@group-chat-created=${(e: CustomEvent) => {
