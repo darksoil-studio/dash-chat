@@ -84,8 +84,8 @@ importers:
         specifier: 0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f
         version: 0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/messenger-zome':
-        specifier: 0.400.0-rev.3bcbdffbfba514e79d4abdea53c3ed63167ba245
-        version: 0.400.0-rev.3bcbdffbfba514e79d4abdea53c3ed63167ba245(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+        specifier: 0.400.0-rev.611c54e4085cb0b3a09ad51151cfe65cd7f6d097
+        version: 0.400.0-rev.611c54e4085cb0b3a09ad51151cfe65cd7f6d097(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/notifications-zome':
         specifier: 0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b
         version: 0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
@@ -120,8 +120,8 @@ importers:
         specifier: 0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f
         version: 0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/messenger-zome':
-        specifier: 0.400.0-rev.3bcbdffbfba514e79d4abdea53c3ed63167ba245
-        version: 0.400.0-rev.3bcbdffbfba514e79d4abdea53c3ed63167ba245(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+        specifier: 0.400.0-rev.611c54e4085cb0b3a09ad51151cfe65cd7f6d097
+        version: 0.400.0-rev.611c54e4085cb0b3a09ad51151cfe65cd7f6d097(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/notifications-zome':
         specifier: 0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b
         version: 0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
@@ -298,8 +298,8 @@ packages:
   '@darksoil-studio/linked-devices-zome@0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f':
     resolution: {integrity: sha512-4QOUIs4zvjzydPaoKkihiWjZnqHYnobqA3WIGhiehfE72AOtmDJjDzy1IQKGfyOhdHXKM+jdWJSQ/sMVT/8LmA==}
 
-  '@darksoil-studio/messenger-zome@0.400.0-rev.3bcbdffbfba514e79d4abdea53c3ed63167ba245':
-    resolution: {integrity: sha512-VH7vC4O0sdnGSzhhxcTPjExUNfgGNY64FtaD+gKiJw6V9xtId0qeT2cnttugMlCKxtNQp5cXHf579WGSzHPlkg==}
+  '@darksoil-studio/messenger-zome@0.400.0-rev.611c54e4085cb0b3a09ad51151cfe65cd7f6d097':
+    resolution: {integrity: sha512-+JKPoirlbKz3lMmIwox5gWyDgePQWdVLFHmtC5nt05T/X06BWUNQeBSYGlKu23ompzNk8tAeHGHGE+RzZQr9Yw==}
 
   '@darksoil-studio/notifications-zome@0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b':
     resolution: {integrity: sha512-GtrM6WB4l98wXMKTSjqRGowVIEq76Ojsu4mcvQPo9kfY+KKCZjv+qVGxXEXLp+WW6slz0yPYe5Z3OLdGua1u3Q==}
@@ -2852,7 +2852,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@darksoil-studio/messenger-zome@0.400.0-rev.3bcbdffbfba514e79d4abdea53c3ed63167ba245(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+  '@darksoil-studio/messenger-zome@0.400.0-rev.611c54e4085cb0b3a09ad51151cfe65cd7f6d097(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@darksoil-studio/linked-devices-zome': 0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/private-event-sourcing-zome': 0.400.0-rev.fe5e05c552c255a2eaf426c408ecad7c725dfe7e(@floating-ui/utils@0.2.8)(@types/react@18.3.15)

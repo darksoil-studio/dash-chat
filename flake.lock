@@ -29621,11 +29621,11 @@
         "tnesh-stack": "tnesh-stack_79"
       },
       "locked": {
-        "lastModified": 1742386713,
-        "narHash": "sha256-74WnT8aKt6aGx14UFzIxOmK+49QfZVsCtD3Iqdvgep8=",
+        "lastModified": 1742390779,
+        "narHash": "sha256-Y3AD5wqe772ufTTFeLPDg83XbygbYB8psRGTK3kF9c0=",
         "owner": "darksoil-studio",
         "repo": "messenger-zome",
-        "rev": "3bcbdffbfba514e79d4abdea53c3ed63167ba245",
+        "rev": "611c54e4085cb0b3a09ad51151cfe65cd7f6d097",
         "type": "github"
       },
       "original": {
