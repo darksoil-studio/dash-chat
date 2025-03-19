@@ -7,6 +7,8 @@ import { SignalWatcher } from '@tnesh-stack/signals';
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
+// @ts-ignore
+import imgUrl from '../splashscreen.jpg';
 import { appStyles } from './app-styles';
 
 @localized()
@@ -38,7 +40,7 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 		return html`
 			<div class="column" style="flex: 1">
 				<img
-					src="../splashscreen.jpg"
+					src="${imgUrl}"
 					style="height: 300px; width: 100%; object-fit: cover"
 				/>
 
