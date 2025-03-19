@@ -132,7 +132,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 					${this.isMobile
 						? html`
 								<sl-icon-button
-									style="color: var(--sl-neutral-900)"
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
 									@click=${() => this.rootRouter.goto('')}

@@ -164,7 +164,7 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 				font-size: 24px;
 			}
 			span.title {
-				font-size: 64px;
+				font-size: 48px;
 			}
 			span.smaller-title {
 				font-size: 32px;
