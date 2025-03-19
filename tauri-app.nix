@@ -24,7 +24,7 @@
         pnpmDeps = pkgs.pnpm.fetchDeps {
           inherit (finalAttrs) version pname src;
 
-          hash = "sha256-v8eCilIFjVCx0s/KFZZKY/Ha/Gy/6vrO8oliSI03iRc=";
+          hash = "sha256-v8eCilIFjVCx0s/KFZZiY/Ha/Gy/6vrO8oliSI03iRc=";
           buildInputs = [ pkgs.git ];
         };
         buildPhase = ''
@@ -79,8 +79,8 @@
               self.outputs.packages."x86_64-linux".dash_chat_happ
             } workdir/dash-chat.happ
             cp ${
-              self.outputs.packages."x86_64-linux".dash_chat_dna.hash
-            } workdir/dash_chat_dna-hash
+              self.outputs.packages."x86_64-linux".dash_chat_happ.dna_hashes
+            } workdir/dash-chat-dna_hashes
           fi
           ${commonArgs.cargoBuildCommand}'';
       });

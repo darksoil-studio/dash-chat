@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
 use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
-use std::{collections::HashMap, path::PathBuf};
+use std::{ path::PathBuf};
 use tauri::{AppHandle, Manager};
 #[cfg(not(mobile))]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
@@ -17,7 +17,7 @@ pub fn happ_bundle() -> AppBundle {
 }
 
 const APP_ID_PREFIX: &'static str = "dash-chat";
-const DNA_HASH: &'static str = include_str!("../../workdir/dash_chat-dna_hashes");
+const DNA_HASH: &'static str = include_str!("../../workdir/dash-chat-dna_hashes");
 
 fn app_id() -> String {
     format!("{APP_ID_PREFIX}-{}", DNA_HASH.trim())
