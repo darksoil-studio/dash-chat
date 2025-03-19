@@ -28,6 +28,7 @@ storybook-static
 *.webhapp
 *.zip
 *.dna
+*-dna_hashes
 .hc*
 .hc
 

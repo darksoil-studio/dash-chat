@@ -13,7 +13,7 @@
 	},
 	"dependencies": {
 		"@darksoil-studio/friends-zome": "0.400.0-rev.055bb04501d66dc83348f1d2f4b05d1f412ed2a1",
-		"@darksoil-studio/messenger-zome": "*-rev.*",
+		"@darksoil-studio/messenger-zome": "file:/home/guillem/projects/darksoil/messenger-zome/ui",
 		"@darksoil-studio/linked-devices-zome": "0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f",
 		"@darksoil-studio/notifications-zome": "0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b",
 		"@darksoil-studio/profiles-provider": "^0.400.3",
