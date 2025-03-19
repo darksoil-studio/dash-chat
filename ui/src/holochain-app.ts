@@ -130,7 +130,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 					</sl-button>
 
 					<sl-card>
-						<div class="column" style=" gap: 32px; flex: 1">
+						<div class="column" style="gap: 16px; flex: 1">
 							<span class="title">${msg('My profile')}</span>
 							<my-profile
 								style="margin: 8px; flex: 1"
@@ -150,7 +150,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 					@close-requested=${() => this.router.goto('/my-profile')}
 				>
 					<sl-card>
-						<div class="column" style="gap: 32px; flex: 1">
+						<div class="column" style="gap: 16px; flex: 1">
 							<span class="title">${msg('Edit profile')}</span>
 							<update-profile
 								style="margin: 8px; flex: 1"

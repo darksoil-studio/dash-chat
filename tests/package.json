@@ -5,9 +5,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@darksoil-studio/friends-zome": "0.400.0-rev.a16afa71201865b9d468d71332acba6fe219d981",
-    "@darksoil-studio/messenger-zome": "0.400.0-rev.611c54e4085cb0b3a09ad51151cfe65cd7f6d097",
-    "@darksoil-studio/linked-devices-zome": "0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f",
+    "@darksoil-studio/friends-zome": "0.400.0-rev.3f8f4ab26afc8ed804779813519c4d6c6dd29428",
+    "@darksoil-studio/messenger-zome": "0.400.0-rev.5f687f4a4abb5f1ff37722d3ebec50c36862ea34",
+    "@darksoil-studio/linked-devices-zome": "0.400.0-rev.d8e80faab6453f91bdc58855e13cb7cf9b2fc9f8",
     "@darksoil-studio/notifications-zome": "0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b",
     "@msgpack/msgpack": "^2.8.0",
     "@holochain/client": "^0.18.0",
