@@ -6,7 +6,7 @@
 		"network": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm launch\" \"hc playground\"",
 		"launch": "concurrently-repeat \"pnpm tauri dev --release --no-watch\" $AGENTS",
 		"launch:pilot": "concurrently-repeat \"hc-pilot workdir/dash-chat.happ --ui-port 1420\" $AGENTS",
-		"test": "pnpm package && pnpm -F tests test",
+		"test": "pnpm build:happ && pnpm -F tests test",
 		"build:happ": "echo \"test\" > workdir/dash-chat-dna_hashes && nix build -L .#dash_chat_happ.meta.debug -o workdir/dash-chat.happ",
 		"build:happ-release": "nix build .#dash_chat_happ.dna_hashes -o workdir/dash-chat && nix build -L .#dash_chat_happ -o workdir/dash-chat.happ",
 		"package": "nix build -L .#dash_chat_happ -o workdir/dash-chat.happ && pnpm -F ui package && hc web-app pack workdir",

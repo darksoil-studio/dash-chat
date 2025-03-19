@@ -5,11 +5,15 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@darksoil-studio/friends-zome": "0.400.0-rev.7fcb25bf030524ac285e5bb814ce20a71592a86e",
+    "@darksoil-studio/messenger-zome": "0.400.0-rev.3bcbdffbfba514e79d4abdea53c3ed63167ba245",
+    "@darksoil-studio/linked-devices-zome": "0.400.0-rev.87424a5d279cf9d5840223d2247d66b99f713f5f",
+    "@darksoil-studio/notifications-zome": "0.400.0-rev.2b0f7e8f5748aff8a98952173e1f515f43e4ef8b",
     "@msgpack/msgpack": "^2.8.0",
-    "@holochain/client": "^0.18.0-rc",
-    "@holochain/tryorama": "^0.18.0-dev.0",
-    "@tnesh-stack/signals": "^0.400.0-rc",
-    "@tnesh-stack/utils": "^0.400.0-rc",
+    "@holochain/client": "^0.18.0",
+    "@holochain/tryorama": "^0.17.0",
+    "@tnesh-stack/signals": "^0.400.0",
+    "@tnesh-stack/utils": "^0.400.0",
     "typescript": "^5.4.5",
     "vitest": "^1.4.0"
   },

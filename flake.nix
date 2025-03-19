@@ -16,7 +16,7 @@
 
     linked-devices-zome.follows = "messenger-zome/linked-devices-zome";
     friends-zome.url = "github:darksoil-studio/friends-zome/main-0.4";
-    messenger-zome.url = "github:darksoil-studio/messenger-zome/develop";
+    messenger-zome.url = "github:darksoil-studio/messenger-zome/main-0.4";
 
     aons.url = "github:darksoil-studio/always-online-nodes/main";
     nixos-generators.url = "github:nix-community/nixos-generators";
