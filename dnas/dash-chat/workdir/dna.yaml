@@ -15,6 +15,11 @@ integrity:
     bundled: <NIX_PACKAGE>
     dependencies: null
     dylib: null
+  - name: notifications_integrity
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies: null
+    dylib: null
   - name: messenger_integrity
     hash: null
     bundled: <NIX_PACKAGE>
@@ -33,6 +38,12 @@ coordinator:
     bundled: <NIX_PACKAGE>
     dependencies:
     - name: linked_devices_integrity
+    dylib: null
+  - name: notifications
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies:
+    - name: notifications_integrity
     dylib: null
   - name: messenger
     hash: null

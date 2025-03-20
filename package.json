@@ -2,8 +2,7 @@
 	"name": "dash-chat-dev",
 	"private": true,
 	"scripts": {
-		"start": "AGENTS=2 pnpm network",
-		"network": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm launch\" \"hc playground\"",
+		"start": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"AGENTS=${AGENTS:-2} pnpm launch\" \"hc playground\"",
 		"launch": "concurrently-repeat \"pnpm tauri dev --release --no-watch\" $AGENTS",
 		"launch:pilot": "concurrently-repeat \"hc-pilot workdir/dash-chat.happ --ui-port 1420\" $AGENTS",
 		"test": "pnpm build:happ && pnpm -F tests test",

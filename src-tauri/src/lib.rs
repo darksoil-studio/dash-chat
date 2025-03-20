@@ -43,7 +43,7 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Info)
+                .level(log::LevelFilter::Warn)
                 .build(),
         )
         .plugin(tauri_plugin_process::init())
