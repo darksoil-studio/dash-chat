@@ -3,6 +3,7 @@ import {
 	friendsStoreContext,
 } from '@darksoil-studio/friends-zome';
 import { scanQrCodeAndSendFriendRequest } from '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
+import '@darksoil-studio/friends-zome/dist/elements/friend-requests.js';
 import {
 	MessengerStore,
 	messengerStoreContext,
@@ -157,18 +158,18 @@ export class HomePage extends SignalWatcher(LitElement) {
 	}
 
 	renderHomePanel() {
-		const pendingFriendRequests = this.friendsStore.pendingFriendRequests.get();
-		const pendingFriendRequestsCount =
-			pendingFriendRequests.status !== 'completed'
-				? 0
-				: Object.values(pendingFriendRequests.value).filter(
-						pendingFriendRequest =>
-							pendingFriendRequest.event.content.to_agents.find(
-								a =>
-									encodeHashToBase64(a) ===
-									encodeHashToBase64(this.friendsStore.client.client.myPubKey),
-							),
-					).length;
+		const pendingFriendRequestsResult =
+			this.friendsStore.pendingFriendRequests.get();
+		const pendingFriendRequests =
+			pendingFriendRequestsResult.status !== 'completed'
+				? {}
+				: pendingFriendRequestsResult.value;
+		const incomingFriendRequestsResult =
+			this.friendsStore.incomingFriendRequests.get();
+		const incomingFriendRequests =
+			incomingFriendRequestsResult.status !== 'completed'
+				? {}
+				: incomingFriendRequestsResult.value;
 		const allChats = this.messengerStore.allChats.get();
 		const newChatActivityCount =
 			allChats.status !== 'completed'
@@ -211,14 +212,14 @@ export class HomePage extends SignalWatcher(LitElement) {
 							></sl-icon>
 							<span> ${msg('Friends')} </span>
 						</div>
-						${pendingFriendRequestsCount > 0
+						${Object.keys(incomingFriendRequests).length > 0
 							? html`
 									<sl-badge
 										variant="primary"
 										pill
 										pulse
 										style="align-self: center;"
-										>${pendingFriendRequestsCount}</sl-badge
+										>${Object.keys(incomingFriendRequests).length}</sl-badge
 									>
 								`
 							: html``}
@@ -261,8 +262,18 @@ export class HomePage extends SignalWatcher(LitElement) {
 									'Ask your friend scan this QR code to send you a friend request.',
 								)}
 							</span>
-							<div class="column" style="align-items: center;">
-								<friend-request-qr-code style="align-self: center" size="256">
+							<div class="column" style="align-items: center; padding: 16px">
+								<friend-request-qr-code
+									@friend-request-sent=${() =>
+										(
+											this.shadowRoot!.getElementById(
+												'add-friend-dialog',
+											) as SlDialog
+										).hide()}
+									style="align-self: center; "
+									size="256"
+									show-send-code-fallback
+								>
 								</friend-request-qr-code>
 							</div>
 						</div>
@@ -294,7 +305,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 							: html``}
 					</sl-dialog>
 					<div class="column" style="gap: 16px; min-height: 100%; margin: 8px">
-						${pendingFriendRequestsCount > 0
+						${Object.keys(pendingFriendRequests).length > 0
 							? html`
 									<sl-card>
 										<div class="column" style="gap: 24px; flex: 1">

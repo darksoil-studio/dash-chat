@@ -1,5 +1,4 @@
 import '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
-import '@darksoil-studio/friends-zome/dist/elements/friend-requests.js';
 import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
 import '@darksoil-studio/friends-zome/dist/elements/my-friends.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
