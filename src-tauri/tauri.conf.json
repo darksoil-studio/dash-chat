@@ -1,6 +1,6 @@
 {
 	"productName": "Dash Chat",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"identifier": "studio.darksoil.dashchat",
 	"build": {
 		"beforeBuildCommand": "pnpm -F ui build",

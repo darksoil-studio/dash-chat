@@ -3,7 +3,7 @@ use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
 use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use std::{ path::PathBuf};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Listener, Manager};
 #[cfg(not(mobile))]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, WANNetworkConfig};
@@ -29,7 +29,9 @@ pub fn run() {
     let mut config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
     // config.gossip_arc_clamp = None;
 
-    let holochain_plugin = match is_first_run() {
+    let should_async_init = is_first_run() && cfg!(mobile);
+
+    let holochain_plugin = match should_async_init {
         true => tauri_plugin_holochain::async_init(
             vec_to_locked(vec![]).expect("Can't build passphrase"),
             config
@@ -49,7 +51,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(holochain_plugin)
-        .setup(|app| {
+        .setup(move |app| {
             #[cfg(mobile)]
             app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
             #[cfg(not(mobile))]
@@ -112,8 +114,18 @@ pub fn run() {
                 }
 
                 window_builder.build()?;
-                
-                setup(handle).await?;
+
+                if should_async_init {
+                    app.handle()
+                        .listen("holochain://setup-completed", move |_event| {
+                            let handle = handle.clone();
+                            tauri::async_runtime::spawn(async move {
+                                setup(handle.clone()).await.expect("Failed to setup");
+                                });
+                    });
+                } else {
+                    setup(handle).await?;
+                }
 
                 Ok(())
             });
