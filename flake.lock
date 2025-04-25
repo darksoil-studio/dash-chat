@@ -51735,11 +51735,11 @@
         "scaffolding": "scaffolding_66"
       },
       "locked": {
-        "lastModified": 1745593974,
-        "narHash": "sha256-ixHVpbcoi2Dx6ANuFwDqxOBHU/F9oPj4tYaU4BGboRA=",
+        "lastModified": 1745594529,
+        "narHash": "sha256-JbwfbDNadJM/2r4pfp5uos3bSEVSZREXlKZ/AjfXg2Q=",
         "owner": "darksoil-studio",
         "repo": "messenger-zome",
-        "rev": "3012fbb828551e78c4f4dd9329d50c4817dd0289",
+        "rev": "5751931740dce10addcb7155b090dc570052a5c5",
         "type": "github"
       },
       "original": {
