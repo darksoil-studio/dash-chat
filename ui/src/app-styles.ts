@@ -1,4 +1,4 @@
-import { sharedStyles } from '@tnesh-stack/elements';
+import { sharedStyles } from '@darksoil-studio/holochain-elements';
 import { css } from 'lit';
 
 export const appStyles = [

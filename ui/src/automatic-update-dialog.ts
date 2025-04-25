@@ -3,7 +3,7 @@ import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { Update, check } from '@tauri-apps/plugin-updater';
-import { SignalWatcher } from '@tnesh-stack/signals';
+import { SignalWatcher } from '@darksoil-studio/holochain-signals';
 import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 

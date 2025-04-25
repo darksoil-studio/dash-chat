@@ -17,7 +17,7 @@
         inherit version;
         pname = "${pname}-ui";
         src =
-          (inputs.tnesh-stack.outputs.lib.cleanPnpmDepsSource { inherit lib; })
+          (inputs.scaffolding.outputs.lib.cleanPnpmDepsSource { inherit lib; })
           ./.;
 
         nativeBuildInputs = with pkgs; [ nodejs pnpm.configHook git ];

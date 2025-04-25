@@ -9,7 +9,7 @@ import {
 	requestPermissions,
 	scan,
 } from '@tauri-apps/plugin-barcode-scanner';
-import { SignalWatcher } from '@tnesh-stack/signals';
+import { SignalWatcher } from '@darksoil-studio/holochain-signals';
 import { fromUint8Array, toUint8Array } from 'js-base64';
 import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';

@@ -5,7 +5,7 @@ import {
 } from '@darksoil-studio/messenger-zome';
 import { HoloHashB64 } from '@holochain/client';
 import { Scenario, dhtSync, pause } from '@holochain/tryorama';
-import { Signal, joinAsync } from '@tnesh-stack/signals';
+import { Signal, joinAsync } from '@darksoil-studio/holochain-signals';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 

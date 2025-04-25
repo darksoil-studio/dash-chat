@@ -10,7 +10,7 @@ import {
 	pause,
 	runScenario,
 } from '@holochain/tryorama';
-import { toPromise } from '@tnesh-stack/signals';
+import { toPromise } from '@darksoil-studio/holochain-signals';
 import { assert, test } from 'vitest';
 
 import { appPath, oldAppPath } from './app-path.js';

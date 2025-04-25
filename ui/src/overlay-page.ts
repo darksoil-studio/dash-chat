@@ -1,7 +1,7 @@
 import { consume } from '@lit/context';
 import { mdiArrowLeft, mdiClose } from '@mdi/js';
-import { wrapPathInSvg } from '@tnesh-stack/elements';
-import { SignalWatcher } from '@tnesh-stack/signals';
+import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+import { SignalWatcher } from '@darksoil-studio/holochain-signals';
 import { LitElement, TemplateResult, css, html, render } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';

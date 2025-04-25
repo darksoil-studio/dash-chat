@@ -5,15 +5,15 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@darksoil-studio/friends-zome": "0.400.0-rev.7977732e643b2ad3146332a984d48373bf0ac241",
-    "@darksoil-studio/messenger-zome": "0.400.0-rev.6a405f5750f797f9596d8847da8e978e92e196bd",
-    "@darksoil-studio/linked-devices-zome": "0.400.0-rev.681dfa4183284292d9e40832c517a52f2200ba9f",
-    "@darksoil-studio/notifications-zome": "0.400.0-rev.d15ff75fd4cd747ffa098ce5891189c54c8f3c25",
+    "@darksoil-studio/friends-zome": "0.500.0-rev.7977732e643b2ad3146332a984d48373bf0ac241",
+    "@darksoil-studio/messenger-zome": "0.500.0-rev.6a405f5750f797f9596d8847da8e978e92e196bd",
+    "@darksoil-studio/linked-devices-zome": "0.500.0-rev.681dfa4183284292d9e40832c517a52f2200ba9f",
+    "@darksoil-studio/notifications-zome": "0.500.0-rev.d15ff75fd4cd747ffa098ce5891189c54c8f3c25",
     "@msgpack/msgpack": "^2.8.0",
     "@holochain/client": "^0.18.0",
     "@holochain/tryorama": "^0.17.0",
-    "@tnesh-stack/signals": "^0.400.0",
-    "@tnesh-stack/utils": "^0.400.0",
+    "@darksoil-studio/holochain-signals": "^0.500.0",
+    "@darksoil-studio/holochain-utils": "^0.500.0",
     "typescript": "^5.4.5",
     "vitest": "^1.4.0"
   },
