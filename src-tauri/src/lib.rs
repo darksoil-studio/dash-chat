@@ -2,14 +2,11 @@ use anyhow::anyhow;
 use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
 use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
-use std::{ path::PathBuf};
+use std::path::PathBuf;
 use tauri::{AppHandle, Listener, Manager};
 #[cfg(not(mobile))]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, WANNetworkConfig};
-
-const SIGNAL_URL: &'static str = "wss://sbd.holo.host";
-const BOOTSTRAP_URL: &'static str = "https://bootstrap.holo.host";
+use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, NetworkConfig};
 
 pub fn happ_bundle() -> AppBundle {
     let bytes = include_bytes!("../../workdir/dash-chat.happ");
@@ -26,18 +23,17 @@ fn app_id() -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     std::env::set_var("WASM_LOG", "info");
-    let mut config = HolochainPluginConfig::new(holochain_dir(), wan_network_config());
-    // config.gossip_arc_clamp = None;
+    let config = HolochainPluginConfig::new(holochain_dir(), network_config());
 
     let should_async_init = is_first_run() && cfg!(mobile);
 
     let holochain_plugin = match should_async_init {
         true => tauri_plugin_holochain::async_init(
-            vec_to_locked(vec![]).expect("Can't build passphrase"),
+            vec_to_locked(vec![]),
             config
         ),
         false => tauri_plugin_holochain::init(
-            vec_to_locked(vec![]).expect("Can't build passphrase"),
+            vec_to_locked(vec![]),
             config
         )
     };
@@ -271,16 +267,20 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
     }
 }
 
-fn wan_network_config() -> Option<WANNetworkConfig> {
+fn network_config() -> NetworkConfig {
+    let mut network_config = NetworkConfig::default();
+
+    // Don't use the bootstrap service on tauri dev mode
     if tauri::is_dev() {
-        None
-    } else {
-        Some(WANNetworkConfig {
-            signal_url: url2::url2!("{}", SIGNAL_URL),
-            bootstrap_url: url2::url2!("{}", BOOTSTRAP_URL),
-            ice_servers_urls: vec![],
-        })
+        network_config.bootstrap_url = url2::Url2::parse("http://0.0.0.0:8888");
     }
+
+    // Don't hold any slice of the DHT in mobile
+    if cfg!(mobile) {
+        network_config.target_arc_factor = 0;
+    }
+
+    network_config
 }
 
 fn holochain_dir() -> PathBuf {

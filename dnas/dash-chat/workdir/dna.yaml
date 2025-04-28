@@ -3,7 +3,6 @@ name: dash_chat
 integrity:
   network_seed: null
   properties: null
-  origin_time: 1733234736326055
   zomes:
   - name: friends_integrity
     hash: null
@@ -51,4 +50,3 @@ coordinator:
     dependencies:
     - name: messenger_integrity
     dylib: null
-lineage: []
