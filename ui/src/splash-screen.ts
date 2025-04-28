@@ -27,12 +27,21 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 	async attemptConnect() {
 		try {
 			const client = await AppWebsocket.connect();
-			client.callZome({
-				role_name: 'main',
-				zome_name: 'messenger',
-				fn_name: 'init',
-				payload: undefined,
-			});
+			client
+				.callZome({
+					role_name: 'main',
+					zome_name: 'messenger',
+					fn_name: 'init',
+					payload: undefined,
+				})
+				.catch(() =>
+					client.callZome({
+						role_name: 'main',
+						zome_name: 'messenger',
+						fn_name: 'init',
+						payload: undefined,
+					}),
+				);
 			this.initialized = true;
 		} catch (e: unknown) {
 			setTimeout(() => this.attemptConnect(), 300);
