@@ -60,9 +60,6 @@
             inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
             devShells.default
           ];
-          shellHook = ''
-            export CARGO_TARGET_DIR=$(pwd)/target/android
-          '';
         };
       };
     };

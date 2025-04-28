@@ -48,6 +48,19 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(holochain_plugin)
         .setup(move |app| {
+
+            let handle = app.handle().clone();
+            if should_async_init {
+                let handle = handle.clone();
+                app.handle()
+                    .listen("holochain://setup-completed", move |_event| {
+                        let handle = handle.clone();
+                        tauri::async_runtime::spawn(async move {
+                            setup(handle.clone()).await.expect("Failed to setup");
+                            });
+                });
+            }
+
             #[cfg(mobile)]
             app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
             #[cfg(not(mobile))]
@@ -88,9 +101,8 @@ pub fn run() {
                     }
                     _ => {}
                 });
-
-            let handle = app.handle().clone();
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
+                
                 // After set up we can be sure our app is installed and up to date, so we can just open it
                 let mut window_builder = app
                     .holochain()?
@@ -111,15 +123,7 @@ pub fn run() {
 
                 window_builder.build()?;
 
-                if should_async_init {
-                    app.handle()
-                        .listen("holochain://setup-completed", move |_event| {
-                            let handle = handle.clone();
-                            tauri::async_runtime::spawn(async move {
-                                setup(handle.clone()).await.expect("Failed to setup");
-                                });
-                    });
-                } else {
+                if !should_async_init {
                     setup(handle).await?;
                 }
 
@@ -285,6 +289,15 @@ fn network_config() -> NetworkConfig {
 
 fn holochain_dir() -> PathBuf {
     if tauri::is_dev() {
+        // app_dirs2::app_root(
+        //     app_dirs2::AppDataType::UserCache,
+        //     &app_dirs2::AppInfo {
+        //         name: "dash-chat",
+        //         author: std::env!("CARGO_PKG_AUTHORS"),
+        //     },
+        // )
+        // .expect("Could not get app root")
+        // .join("holochain")
         let tmp_dir = tempdir::TempDir::new("dash-chat")
             .expect("Could not create temporary directory");
 
