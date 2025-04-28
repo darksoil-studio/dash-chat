@@ -49,18 +49,6 @@ pub fn run() {
         .plugin(holochain_plugin)
         .setup(move |app| {
 
-            let handle = app.handle().clone();
-            if should_async_init {
-                let handle = handle.clone();
-                app.handle()
-                    .listen("holochain://setup-completed", move |_event| {
-                        let handle = handle.clone();
-                        tauri::async_runtime::spawn(async move {
-                            setup(handle.clone()).await.expect("Failed to setup");
-                            });
-                });
-            }
-
             #[cfg(mobile)]
             app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
             #[cfg(not(mobile))]
@@ -101,6 +89,7 @@ pub fn run() {
                     }
                     _ => {}
                 });
+            let handle = app.handle().clone();
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
                 
                 // After set up we can be sure our app is installed and up to date, so we can just open it
@@ -123,7 +112,16 @@ pub fn run() {
 
                 window_builder.build()?;
 
-                if !should_async_init {
+                if should_async_init {
+                    let handle = handle.clone();
+                    app.handle()
+                        .listen("holochain://setup-completed", move |_event| {
+                            let handle = handle.clone();
+                            tauri::async_runtime::spawn(async move {
+                                setup(handle.clone()).await.expect("Failed to setup");
+                                });
+                    });
+                } else {
                     setup(handle).await?;
                 }
 
