@@ -3,7 +3,7 @@ use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
 use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use std::path::PathBuf;
-use tauri::{AppHandle, Listener, Manager};
+use tauri::{AppHandle, Manager};
 #[cfg(not(mobile))]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, NetworkConfig};
@@ -25,19 +25,6 @@ pub fn run() {
     std::env::set_var("WASM_LOG", "info");
     let config = HolochainPluginConfig::new(holochain_dir(), network_config());
 
-    let should_async_init = is_first_run() && cfg!(mobile);
-
-    let holochain_plugin = match should_async_init {
-        true => tauri_plugin_holochain::async_init(
-            vec_to_locked(vec![]),
-            config
-        ),
-        false => tauri_plugin_holochain::init(
-            vec_to_locked(vec![]),
-            config
-        )
-    };
-
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
@@ -46,7 +33,10 @@ pub fn run() {
         )
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(holochain_plugin)
+        .plugin(tauri_plugin_holochain::init(
+            vec_to_locked(vec![]),
+            config
+        ))
         .setup(move |app| {
 
             #[cfg(mobile)]
@@ -113,18 +103,7 @@ pub fn run() {
 
                 window_builder.build()?;
 
-                if should_async_init {
-                    let handle = handle.clone();
-                    app.handle()
-                        .listen("holochain://setup-completed", move |_event| {
-                            let handle = handle.clone();
-                            tauri::async_runtime::spawn(async move {
-                                setup(handle.clone()).await.expect("Failed to setup");
-                                });
-                    });
-                } else {
-                    setup(handle).await?;
-                }
+                setup(handle).await?;
 
                 Ok(())
             });
@@ -274,8 +253,12 @@ fn network_config() -> NetworkConfig {
     let mut network_config = NetworkConfig::default();
 
     // Don't use the bootstrap service on tauri dev mode
-    if tauri::is_dev() {
+    if !tauri::is_dev() {
         network_config.bootstrap_url = url2::Url2::parse("http://0.0.0.0:8888");
+        network_config.signal_url = url2::Url2::parse("ws://0.0.0.0:8888");
+    } else {
+        network_config.bootstrap_url = url2::Url2::parse("http://157.180.93.55:8888");
+        network_config.signal_url = url2::Url2::parse("ws://157.180.93.55:8888");
     }
 
     // Don't hold any slice of the DHT in mobile
@@ -322,8 +305,4 @@ fn get_version() -> String {
     }
     let v: Vec<&str> = semver.split(".").collect();
     return format!("{}", v[0]);
-}
-
-fn is_first_run() -> bool {
-    !holochain_dir().exists()
 }
