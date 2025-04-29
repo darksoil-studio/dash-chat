@@ -57,6 +57,7 @@
           chmod -R +w "$TMPDIR/nix-vendor"
           cargoVendorDir="$TMPDIR/nix-vendor"
         '';
+        LIBCLANG_PATH = "${pkgs.llvmPackages_18.libclang.lib}/lib";
 
       };
       # cargoArtifacts = craneLib.buildDepsOnly commonArgs;
