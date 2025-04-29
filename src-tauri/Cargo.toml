@@ -24,6 +24,10 @@ holochain_types = { version = "0.5" }
 
 holochain_client = { version = "0.7" }
 
+# Work around "hyper-tls" not found issue in nix build tauri app
+# TODO: remove this dependency
+hyper-tls = "0.6"
+
 tauri-plugin-dialog = "2"
 tauri-plugin-process = "2"
 opener = { version = "0.7", features = ["reveal"] }
