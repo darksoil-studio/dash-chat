@@ -253,7 +253,7 @@ fn network_config() -> NetworkConfig {
     let mut network_config = NetworkConfig::default();
 
     // Don't use the bootstrap service on tauri dev mode
-    if !tauri::is_dev() {
+    if tauri::is_dev() {
         network_config.bootstrap_url = url2::Url2::parse("http://0.0.0.0:8888");
         network_config.signal_url = url2::Url2::parse("ws://0.0.0.0:8888");
     } else {
