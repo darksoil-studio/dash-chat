@@ -1667,7 +1667,7 @@ checksum = "04d2cd9c18b9f454ed67da600630b021a8a80bf33f8c95896ab33aaf1c26b728"
 
 [[package]]
 name = "dash-chat"
-version = "0.1.5"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "app_dirs2",
@@ -3521,7 +3521,7 @@ dependencies = [
 [[package]]
 name = "holochain_runtime"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.5#c72e2b1369b24463bca9125a8a3ff88086de9e57"
+source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.5#d5fff19f13d2ca7aaa4c3a6c8e1915e4bf2cbed3"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -8686,7 +8686,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-holochain"
 version = "0.0.0"
-source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.5#c72e2b1369b24463bca9125a8a3ff88086de9e57"
+source = "git+https://github.com/darksoil-studio/p2p-shipyard?branch=main-0.5#d5fff19f13d2ca7aaa4c3a6c8e1915e4bf2cbed3"
 dependencies = [
  "anyhow",
  "bzip2 0.4.4",

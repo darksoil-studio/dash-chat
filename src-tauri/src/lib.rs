@@ -52,43 +52,44 @@ pub fn run() {
             #[cfg(mobile)]
             app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
             #[cfg(not(mobile))]
-            app.handle()
-                .plugin(tauri_plugin_updater::Builder::new().build())?;
-
-            #[cfg(not(mobile))]
-            app.handle()
-                .on_menu_event(|app_handle, menu_event| match menu_event.id().as_ref() {
-                    "open-logs-folder" => {
-                        let log_folder = app_handle
-                            .path()
-                            .app_log_dir()
-                            .expect("Could not get app log dir");
-                        if let Err(err) = opener::reveal(log_folder.clone()) {
-                            log::error!("Failed to open log dir at {log_folder:?}: {err:?}");
+            {
+                app.handle()
+                    .plugin(tauri_plugin_updater::Builder::new().build())?;
+                
+                app.handle()
+                    .on_menu_event(|app_handle, menu_event| match menu_event.id().as_ref() {
+                        "open-logs-folder" => {
+                            let log_folder = app_handle
+                                .path()
+                                .app_log_dir()
+                                .expect("Could not get app log dir");
+                            if let Err(err) = opener::reveal(log_folder.clone()) {
+                                log::error!("Failed to open log dir at {log_folder:?}: {err:?}");
+                            }
                         }
-                    }
-                    "factory-reset" => {
-                        let h = app_handle.clone();
-                         app_handle
-                                .dialog()
-                                .message("Are you sure you want to perform a factory reset? All your data will be lost.")
-                                .title("Factory Reset")
-                                .buttons(MessageDialogButtons::OkCancel)
-                                .show(move |result| match result {
-                                    true => {
-                                        if let Err(err) = std::fs::remove_dir_all(holochain_dir()) {
-                                            log::error!("Failed to perform factory reset: {err:?}");
-                                        } else {
-                                            h.restart();
+                        "factory-reset" => {
+                            let h = app_handle.clone();
+                             app_handle
+                                    .dialog()
+                                    .message("Are you sure you want to perform a factory reset? All your data will be lost.")
+                                    .title("Factory Reset")
+                                    .buttons(MessageDialogButtons::OkCancel)
+                                    .show(move |result| match result {
+                                        true => {
+                                            if let Err(err) = std::fs::remove_dir_all(holochain_dir()) {
+                                                log::error!("Failed to perform factory reset: {err:?}");
+                                            } else {
+                                                h.restart();
+                                            }
                                         }
-                                    }
-                                    false => {
+                                        false => {
             
-                                    }
-                                });
-                    }
-                    _ => {}
-                });
+                                        }
+                                    });
+                        }
+                        _ => {}
+                    });
+            }
             let handle = app.handle().clone();
             let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
                 
@@ -287,15 +288,6 @@ fn network_config() -> NetworkConfig {
 
 fn holochain_dir() -> PathBuf {
     if tauri::is_dev() {
-        // app_dirs2::app_root(
-        //     app_dirs2::AppDataType::UserCache,
-        //     &app_dirs2::AppInfo {
-        //         name: "dash-chat",
-        //         author: std::env!("CARGO_PKG_AUTHORS"),
-        //     },
-        // )
-        // .expect("Could not get app root")
-        // .join("holochain")
         let tmp_dir = tempdir::TempDir::new("dash-chat")
             .expect("Could not create temporary directory");
 
@@ -312,8 +304,24 @@ fn holochain_dir() -> PathBuf {
             },
         )
         .expect("Could not get app root")
+        .join(get_version())
         .join("holochain")
     }
+}
+
+fn get_version() -> String {
+    let semver = std::env!("CARGO_PKG_VERSION");
+
+    if semver.starts_with("0.0.") {
+        return semver.to_string();
+    }
+
+    if semver.starts_with("0.") {
+        let v: Vec<&str> = semver.split(".").collect();
+        return format!("{}.{}", v[0], v[1]);
+    }
+    let v: Vec<&str> = semver.split(".").collect();
+    return format!("{}", v[0]);
 }
 
 fn is_first_run() -> bool {
