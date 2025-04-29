@@ -283,14 +283,15 @@ dependencies = [
 
 [[package]]
 name = "async-executor"
-version = "1.13.1"
+version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30ca9a001c1e8ba5149f91a74362376cc6bc5b919d92d988668657bd570bdcec"
+checksum = "bb812ffb58524bdd10860d7d974e2f01cc0950c2438a74ee5ec2e2280c6c4ffa"
 dependencies = [
  "async-task",
  "concurrent-queue",
  "fastrand",
  "futures-lite",
+ "pin-project-lite",
  "slab",
 ]
 
@@ -872,9 +873,9 @@ dependencies = [
 
 [[package]]
 name = "bytemuck"
-version = "1.22.0"
+version = "1.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6b1fc10dbac614ebc03540c9dbd60e83887fda27794998c6528f1782047d540"
+checksum = "9134a6ef01ce4b366b50689c94f82c14bc72bc5d0386829828a2e2752ef7958c"
 
 [[package]]
 name = "byteorder"
@@ -1054,9 +1055,9 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
 name = "chrono"
-version = "0.4.40"
+version = "0.4.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a7964611d71df112cb1730f2ee67324fcf4d0fc6606acbbe9bfe06df124637c"
+checksum = "c469d952047f47f91b68d1cba3f10d63c11d73e4636f24f08daf0278abf01c4d"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
@@ -4653,9 +4654,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune2"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ffbd25536369ff5a6f566d3dc1501337d5897d3d4995b80f691c1e5362f9071"
+checksum = "4a8ff92fa033afc6ab3979ed5bc8884e2f9b06b5dacebf2eae015fb31d953027"
 dependencies = [
  "bytes",
  "kitsune2_api",
@@ -4666,9 +4667,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune2_api"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac29cd5724b3060cdf6a13906c587d290e8b4c3baf9357f03e6a05c4cfd13ca1"
+checksum = "d914870b01903c70b32ac8856ddbd78cdb5b8a856bbce19b659e08999b8357b1"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -4683,9 +4684,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune2_bootstrap_client"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34d41801172987673a7667a924d1deff6724674a7585243fbc508d15cdf624a8"
+checksum = "2a77c80eeb2eff4f0b212119045514a7ca31e899794eafe86bca2b27d96924f2"
 dependencies = [
  "base64 0.22.1",
  "kitsune2_api",
@@ -4696,9 +4697,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune2_core"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3f9e7386cdced094827117da6a00125da72486177f2a2aee2a7ed6e95367074"
+checksum = "7c5865729a92d4a9a23be7f87848d3eaee01bc2a6fe7114db69d5b8c20511e53"
 dependencies = [
  "backon",
  "bytes",
@@ -4718,9 +4719,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune2_dht"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7078fb03bb12b32dfba83828eb3907c647594ea08b71c80ae22491fa1d11257b"
+checksum = "74c1f464642fe5ebb20a3ea4d28d5276cc07e1ab686a6d87137bb6f8dbd104c2"
 dependencies = [
  "bytes",
  "kitsune2_api",
@@ -4729,9 +4730,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune2_gossip"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c86250f29ae2f69ae205ea81d510be6d7f6310b73407931f09cf4e096fa14a42"
+checksum = "849937975941911079e4b5ac56cf356f2ad3edbd437b4bcab92e06fcccc49a26"
 dependencies = [
  "backon",
  "bytes",
@@ -4749,9 +4750,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune2_transport_tx5"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dda807796017c00bf931cfc0c552108fb115682547e3b90b40a918f3f2a9cb29"
+checksum = "12382d7af5238935aaa4f5551567d46e4caceaf5b05567953c88bc30abfef154"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -6410,7 +6411,7 @@ version = "3.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "edce586971a4dfaa28950c6f18ed55e0406c1ab88bbce2c6f6293a7aaba73d35"
 dependencies = [
- "toml_edit 0.22.25",
+ "toml_edit 0.22.26",
 ]
 
 [[package]]
@@ -9165,14 +9166,14 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.21"
+version = "0.8.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "900f6c86a685850b1bc9f6223b20125115ee3f31e01207d81655bbcc0aea9231"
+checksum = "05ae329d1f08c4d17a59bed7ff5b5a769d062e64a62d34a3261b219e62cd5aae"
 dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "toml_edit 0.22.25",
+ "toml_edit 0.22.26",
 ]
 
 [[package]]
@@ -9208,9 +9209,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.22.25"
+version = "0.22.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10558ed0bd2a1562e630926a2d1f0b98c827da99fabd3fe20920a59642504485"
+checksum = "310068873db2c5b3e7659d2cc35d21855dbafa50d1ce336397c666e3cb08137e"
 dependencies = [
  "indexmap 2.9.0",
  "serde",
@@ -9222,9 +9223,9 @@ dependencies = [
 
 [[package]]
 name = "toml_write"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28391a4201ba7eb1984cfeb6862c0b3ea2cfe23332298967c749dddc0d6cd976"
+checksum = "bfb942dfe1d8e29a7ee7fcbde5bd2b9a25fb89aa70caea2eba3bee836ff41076"
 
 [[package]]
 name = "tower"

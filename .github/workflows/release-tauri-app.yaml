@@ -94,7 +94,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           override: true
-          toolchain: 1.81.0
+          toolchain: 1.83.0
     
       - name: install x86_64 target
         if: matrix.args == '--target x86_64-apple-darwin'
