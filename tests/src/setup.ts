@@ -1,18 +1,21 @@
 import { FriendsClient, FriendsStore } from '@darksoil-studio/friends-zome';
+import { Signal, joinAsync } from '@darksoil-studio/holochain-signals';
 import {
 	MessengerClient,
 	MessengerStore,
 } from '@darksoil-studio/messenger-zome';
 import { HoloHashB64 } from '@holochain/client';
 import { Scenario, dhtSync, pause } from '@holochain/tryorama';
-import { Signal, joinAsync } from '@darksoil-studio/holochain-signals';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 import { appPath } from './app-path.js';
 
 async function addPlayer(scenario: Scenario, appPath: string) {
-	const player = await scenario.addPlayerWithApp({ path: appPath });
+	const player = await scenario.addPlayerWithApp({
+		type: 'path',
+		value: appPath,
+	});
 	await player.conductor
 		.adminWs()
 		.authorizeSigningCredentials(player.cells[0].cell_id);

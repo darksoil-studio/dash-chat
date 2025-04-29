@@ -1,8 +1,9 @@
+import { toPromise } from '@darksoil-studio/holochain-signals';
 import {
 	MessengerClient,
 	MessengerStore,
 } from '@darksoil-studio/messenger-zome';
-import { CellId, CellType } from '@holochain/client';
+import { CellId, CellType, ProvisionedCell } from '@holochain/client';
 import {
 	AgentApp,
 	dhtSync,
@@ -10,7 +11,6 @@ import {
 	pause,
 	runScenario,
 } from '@holochain/tryorama';
-import { toPromise } from '@darksoil-studio/holochain-signals';
 import { assert, test } from 'vitest';
 
 import { appPath, oldAppPath } from './app-path.js';
@@ -33,7 +33,8 @@ test('migrate from the previous happ to the new version, assert that the data is
 
 		const appInfo = await alice.player.conductor.installApp(
 			{
-				path: appPath,
+				type: 'path',
+				value: appPath,
 			},
 			{
 				agentPubKey: alice.player.cells[0].cell_id[1],
@@ -53,8 +54,11 @@ test('migrate from the previous happ to the new version, assert that the data is
 		);
 
 		const previousAppInfo = await alice.messengerStore.client.client.appInfo();
-		const previousCellId: CellId =
-			previousAppInfo.cell_info['main'][0][CellType.Provisioned].cell_id;
+
+		assert.equal('provisioned', previousAppInfo.cell_info['main'][0].type);
+		const previousCellId: CellId = (
+			previousAppInfo.cell_info['main'][0].value as ProvisionedCell
+		).cell_id;
 
 		await appWs.callZome({
 			role_name: 'main',

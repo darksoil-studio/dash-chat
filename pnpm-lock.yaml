@@ -96,11 +96,11 @@ importers:
         specifier: 0.500.0-rev.a334a1bdd1ed05afa86dd146a077ddf37f98143a
         version: 0.500.0-rev.a334a1bdd1ed05afa86dd146a077ddf37f98143a(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@holochain/client':
-        specifier: ^0.18.0
-        version: 0.18.0
+        specifier: ^0.19.0
+        version: 0.19.0
       '@holochain/tryorama':
-        specifier: ^0.17.0
-        version: 0.17.1
+        specifier: ^0.18.0-rc
+        version: 0.18.0-rc.1
       '@msgpack/msgpack':
         specifier: ^2.8.0
         version: 2.8.0
@@ -640,20 +640,12 @@ packages:
   '@holo-host/identicon@0.1.0':
     resolution: {integrity: sha512-Dn5pTV/m3XaK1Zvq3liw/vQUt7goM7Y84x2zUyH8cb9CNMs4kPCNHs3kalbJZ/ymzFvwcdiLwwNW8AKk+WWN5A==}
 
-  '@holochain/client@0.18.0':
-    resolution: {integrity: sha512-I+YIJ2ZeDS8HeUdRvV1Ti9O8m3YPHti8mpUoqg9GZ0A77y+3NIihsB1X8vQBRBFKwNUyZ14U/ZgWQ8/2Y0/T5w==}
-    engines: {node: '>=18.0.0 || >=20.0.0'}
-
   '@holochain/client@0.19.0':
     resolution: {integrity: sha512-LAiuQwyAQlLJp5Y0uT7EKuWy2AoCxMLdTECCLOs8ALADZzhNykFi2rmeC9hzskPXMR441bOhHPBWynqzQH95Ew==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
 
-  '@holochain/serialization@0.1.0-beta-rc.3':
-    resolution: {integrity: sha512-DJx4V2KXHVLciyOGjOYKTM/JLBpBEZ3RsPIRCgf7qmwhQdxXvhi2p+oFFRD51yUT5uC1/MzIVeJCl/R60PwFbw==}
-    deprecated: Holochain no longer requires canonical serialization of zome call payloads
-
-  '@holochain/tryorama@0.17.1':
-    resolution: {integrity: sha512-WOpiZ+GGBVUgvwmLRMECleaQHO9fJiFMv+tKro3IwylCuhcR7RweuTJGAxG434+KpkXBWL+cPTul21nF8iD0Ag==}
+  '@holochain/tryorama@0.18.0-rc.1':
+    resolution: {integrity: sha512-uZFpDWor701JmFHPbJ3or7+nfmTKzdIJR2uLq6aB1oSWSeXrKZHC27/sRaSWVWQnWL2gRrbZtDgbTHAvTTS8RQ==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
 
   '@humanfs/core@0.19.1':
@@ -3199,21 +3191,6 @@ snapshots:
 
   '@holo-host/identicon@0.1.0': {}
 
-  '@holochain/client@0.18.0':
-    dependencies:
-      '@bitgo/blake2b': 3.2.4
-      '@holochain/serialization': 0.1.0-beta-rc.3
-      '@msgpack/msgpack': 2.8.0
-      emittery: 1.0.3
-      isomorphic-ws: 5.0.0(ws@8.18.0)
-      js-base64: 3.7.7
-      libsodium-wrappers: 0.7.15
-      lodash-es: 4.17.21
-      ws: 8.18.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
   '@holochain/client@0.19.0':
     dependencies:
       '@bitgo/blake2b': 3.2.4
@@ -3229,12 +3206,11 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@holochain/serialization@0.1.0-beta-rc.3': {}
-
-  '@holochain/tryorama@0.17.1':
+  '@holochain/tryorama@0.18.0-rc.1':
     dependencies:
-      '@holochain/client': 0.18.0
+      '@holochain/client': 0.19.0
       get-port: 6.1.2
+      js-yaml: 4.1.0
       lodash: 4.17.21
       uuid: 8.3.2
       winston: 3.17.0

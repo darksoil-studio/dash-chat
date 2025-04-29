@@ -16,9 +16,7 @@
       ui = pkgs.stdenv.mkDerivation (finalAttrs: {
         inherit version;
         pname = "${pname}-ui";
-        src =
-          (inputs.scaffolding.outputs.lib.cleanPnpmDepsSource { inherit lib; })
-          ./.;
+        src = ./.;
 
         nativeBuildInputs = with pkgs; [ nodejs pnpm.configHook git ];
         pnpmDeps = pkgs.pnpm.fetchDeps {
@@ -47,8 +45,7 @@
         cargoExtraArgs = "";
 
         buildInputs =
-          inputs.p2p-shipyard.outputs.dependencies.${system}.tauriHapp.buildInputs
-          ++ (lib.optionals pkgs.stdenv.isLinux [ pkgs.udev ]);
+          inputs.p2p-shipyard.outputs.dependencies.${system}.tauriHapp.buildInputs;
 
         nativeBuildInputs =
           inputs.p2p-shipyard.outputs.dependencies.${system}.tauriHapp.nativeBuildInputs;
@@ -60,15 +57,11 @@
           chmod -R +w "$TMPDIR/nix-vendor"
           cargoVendorDir="$TMPDIR/nix-vendor"
         '';
-        stdenv = if pkgs.stdenv.isDarwin then
-          pkgs.overrideSDK pkgs.stdenv "11.0"
-        else
-          pkgs.stdenv;
 
       };
-      #cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+      # cargoArtifacts = craneLib.buildDepsOnly commonArgs;
       tauriApp = craneLib.buildPackage (commonArgs // {
-        #inherit cargoArtifacts;
+        # inherit cargoArtifacts;
 
         cargoBuildCommand = ''
           if [ -f "src-tauri/tauri.conf.json" ]; then
