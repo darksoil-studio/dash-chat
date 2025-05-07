@@ -12,3 +12,22 @@ resolver = "2"
 hdi = "0.6"
 hdk = "0.5"
 
+[patch.crates-io]
+holochain = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holochain_types = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holochain_zome_types = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holochain_integrity_types = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holochain_p2p = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holochain_timestamp = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holochain_nonce = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holochain_keystore = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+mr_bundle = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holochain_conductor_api = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+holo_hash = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
+
+kitsune2 = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
+kitsune2_api = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
+kitsune2_core = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
+kitsune2_dht = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
+kitsune2_gossip = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
+kitsune2_bootstrap_client = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
