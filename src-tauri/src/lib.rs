@@ -94,7 +94,12 @@ pub fn run() {
                     )
                     .await?;
 
-                #[cfg(desktop)]
+                #[cfg(target_os = "windows")]
+                {
+                    window_builder = window_builder.disable_drag_drop_handler();
+                }
+
+                #[cfg(not(mobile))]
                 {
                     window_builder = window_builder
                         .title(String::from("Dash Chat"))
