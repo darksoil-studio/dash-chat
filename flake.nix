@@ -11,7 +11,8 @@
     scaffolding.url = "github:darksoil-studio/scaffolding/main-0.5";
     holochain-nix-builders.url =
       "github:darksoil-studio/holochain-nix-builders/main-0.5";
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.5";
+    tauri-plugin-holochain.url =
+      "github:darksoil-studio/tauri-plugin-holochain/main-0.5";
     playground.url = "github:darksoil-studio/holochain-playground/main-0.5";
 
     notifications-zome.url =
@@ -44,20 +45,20 @@
       perSystem = { inputs', config, pkgs, system, ... }: rec {
         devShells.default = pkgs.mkShell {
           inputsFrom = [
-            inputs'.p2p-shipyard.devShells.holochainTauriDev
+            inputs'.tauri-plugin-holochain.devShells.holochainTauriDev
             inputs'.scaffolding.devShells.synchronized-pnpm
             inputs'.holonix.devShells.default
           ];
           packages = [
             inputs'.holochain-nix-builders.packages.holochain
-            inputs'.p2p-shipyard.packages.hc-pilot
+            inputs'.tauri-plugin-holochain.packages.hc-pilot
             inputs'.scaffolding.packages.hc-scaffold-happ
             inputs'.playground.packages.hc-playground
           ];
         };
         devShells.androidDev = pkgs.mkShell {
           inputsFrom = [
-            inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
+            inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
             devShells.default
           ];
           shellHook = ''
