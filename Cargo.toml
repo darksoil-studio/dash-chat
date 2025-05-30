@@ -31,5 +31,3 @@ kitsune2_core = { git = "https://github.com/guillemcordoba/kitsune2", branch = "
 kitsune2_dht = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
 kitsune2_gossip = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
 kitsune2_bootstrap_client = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
-
-tauri = { git = "https://github.com/guillemcordoba/tauri", branch = "dev" }

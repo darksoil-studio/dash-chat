@@ -1,15 +1,19 @@
 import { SignalWatcher } from '@darksoil-studio/holochain-signals';
 import { AppWebsocket } from '@holochain/client';
+import { consume } from '@lit/context';
 import { localized, msg } from '@lit/localize';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/carousel-item/carousel-item.js';
 import '@shoelace-style/shoelace/dist/components/carousel/carousel.js';
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 
 // @ts-ignore
 import imgUrl from '../splashscreen.jpg';
 import { appStyles } from './app-styles';
+import { isMobileContext } from './context';
 
 @localized()
 @customElement('splash-screen')
@@ -19,6 +23,9 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 
 	@state()
 	currentPage = 0;
+
+	@consume({ context: isMobileContext })
+	isMobile!: boolean;
 
 	firstUpdated() {
 		this.attemptConnect();
@@ -158,10 +165,21 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 
 	render() {
 		return html`
-			<div class="column" style="flex: 1">
+			<div
+				class=${classMap({
+					column: this.isMobile,
+					row: !this.isMobile,
+				})}
+				style="flex: 1"
+			>
 				<img
 					src="${imgUrl}"
-					style="height: 300px; width: 100%; object-fit: cover"
+					style=${styleMap({
+						height: this.isMobile ? '300px' : '100%',
+						width: this.isMobile ? '100%' : '50%',
+						flex: this.isMobile ? '0' : '1',
+						'object-fit': 'cover',
+					})}
 				/>
 				<div class="column" style="margin: 24px; flex: 1">
 					${this.renderPage()}

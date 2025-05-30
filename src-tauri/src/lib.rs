@@ -2,8 +2,8 @@ use anyhow::anyhow;
 use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
 use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
-use std::path::PathBuf;
-use tauri::{AppHandle, Manager};
+use std::{path::PathBuf, time::Duration};
+use tauri::{AppHandle, Listener, Manager};
 #[cfg(not(mobile))]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, NetworkConfig};
@@ -33,7 +33,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_holochain::init(
+        .plugin(tauri_plugin_holochain::async_init(
             vec_to_locked(vec![]),
             config
         ))
@@ -81,39 +81,21 @@ pub fn run() {
                     });
             }
             let handle = app.handle().clone();
-            let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
-                
-                // After set up we can be sure our app is installed and up to date, so we can just open it
-                let mut window_builder = app
-                    .holochain()?
-                    .main_window_builder(
-                        String::from("main"),
-                        true,
-                        Some(app_id()),
-                        None,
-                    )
-                    .await?;
 
-                #[cfg(target_os = "windows")]
-                {
-                    window_builder = window_builder.disable_drag_drop_handler();
-                }
-
-                #[cfg(not(mobile))]
-                {
-                    window_builder = window_builder
-                        .title(String::from("Dash Chat"))
-                        .inner_size(1400.0, 1000.0);
-                }
-
-                window_builder.build()?;
-
-                setup(handle).await?;
-
-                Ok(())
+            app.handle().listen("holochain://setup-completed", move |_event| {
+                let handle2 = handle.clone();
+                tauri::async_runtime::spawn(async move {
+                    if let Err(err) = setup(handle2).await {
+                        log::error!("Failed to setup: {err:?}");
+                    }
+                });
+                let handle = handle.clone();
+                tauri::async_runtime::spawn(async move {
+                    if let Err(err) = open_window(handle).await{
+                        log::error!("Failed to setup: {err:?}");
+                    }
+                });
             });
-
-            result?;
 
             Ok(())
         });
@@ -152,6 +134,28 @@ pub fn run() {
     builder
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+async fn open_window(handle: AppHandle) -> anyhow::Result<() > {
+    let mut window_builder = handle
+        .holochain()?
+        .main_window_builder(
+            String::from("main"),
+            true,
+            Some(app_id()),
+            None,
+        )
+        .await?;
+
+    #[cfg(not(mobile))]
+    {
+        window_builder = window_builder
+            .title(String::from("Dash Chat"))
+            .inner_size(1400.0, 1000.0);
+    }
+
+    window_builder.build()?;
+    Ok(())
 }
 
 // Very simple setup for now:

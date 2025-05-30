@@ -1,6 +1,6 @@
 [package]
 name = "dash-chat"
-version = "0.2.5"
+version = "0.2.6"
 description = "Dash Chat"
 authors = ["you"]
 license = ""
@@ -19,7 +19,7 @@ tauri-build = { version = "2.0.0", default-features = false , features = [] }
 
 [dependencies]
 tauri = { version = "2.0.0", features = ["devtools"] }
-tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/p2p-shipyard", branch = "main-0.5" }
+tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main-0.5" }
 holochain_types = { version = "0.5" }
 
 holochain_client = { version = "0.7" }
