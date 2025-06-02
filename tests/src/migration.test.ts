@@ -3,10 +3,9 @@ import {
 	MessengerClient,
 	MessengerStore,
 } from '@darksoil-studio/messenger-zome';
-import { CellId, CellType, ProvisionedCell } from '@holochain/client';
+import { CellId, ProvisionedCell } from '@holochain/client';
 import {
 	AgentApp,
-	dhtSync,
 	enableAndGetAgentApp,
 	pause,
 	runScenario,
@@ -31,15 +30,15 @@ test('migrate from the previous happ to the new version, assert that the data is
 
 		await pause(5000);
 
-		const appInfo = await alice.player.conductor.installApp(
-			{
+		const appInfo = await alice.player.conductor.installApp({
+			appBundleSource: {
 				type: 'path',
 				value: appPath,
 			},
-			{
+			options: {
 				agentPubKey: alice.player.cells[0].cell_id[1],
 			},
-		);
+		});
 		const port = await alice.player.conductor.attachAppInterface();
 		const issued = await alice.player.conductor
 			.adminWs()

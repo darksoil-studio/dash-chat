@@ -1,21 +1,21 @@
 {
-  "name": "tests",
-  "private": true,
-  "scripts": {
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@darksoil-studio/friends-zome": "0.500.0-rev.0f927d93ece3a1a93487ec3cbb6c1cbfc339c00a",
-    "@darksoil-studio/messenger-zome": "0.500.0-rev.27b25c34017e40aaad3009dd18607b6fd56e976e",
-    "@darksoil-studio/linked-devices-zome": "0.500.0-rev.f90fab7ba99d5d9b56db028a1fa6047b83e7a9bc",
-    "@darksoil-studio/notifications-zome": "0.500.0-rev.0f9d7bf645a6c3754b7304800016d3155bd0a266",
-    "@msgpack/msgpack": "^2.8.0",
-    "@holochain/client": "^0.19.0",
-    "@holochain/tryorama": "^0.18.0",
-    "@darksoil-studio/holochain-signals": "^0.500.0",
-    "@darksoil-studio/holochain-utils": "^0.500.0",
-    "typescript": "^5.4.5",
-    "vitest": "^1.4.0"
-  },
-  "type": "module"
+	"name": "tests",
+	"private": true,
+	"scripts": {
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@darksoil-studio/friends-zome": "0.500.0-rev.0f927d93ece3a1a93487ec3cbb6c1cbfc339c00a",
+		"@darksoil-studio/messenger-zome": "0.500.0-rev.27b25c34017e40aaad3009dd18607b6fd56e976e",
+		"@darksoil-studio/linked-devices-zome": "0.500.0-rev.f90fab7ba99d5d9b56db028a1fa6047b83e7a9bc",
+		"@darksoil-studio/notifications-zome": "0.500.0-rev.0f9d7bf645a6c3754b7304800016d3155bd0a266",
+		"@msgpack/msgpack": "^2.8.0",
+		"@holochain/client": "^0.19.0",
+		"@holochain/tryorama": "^0.18.2",
+		"@darksoil-studio/holochain-signals": "^0.500.0",
+		"@darksoil-studio/holochain-utils": "^0.500.0",
+		"typescript": "^5.4.5",
+		"vitest": "^1.4.0"
+	},
+	"type": "module"
 }

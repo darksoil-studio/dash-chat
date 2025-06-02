@@ -13,8 +13,10 @@ import { appPath } from './app-path.js';
 
 async function addPlayer(scenario: Scenario, appPath: string) {
 	const player = await scenario.addPlayerWithApp({
-		type: 'path',
-		value: appPath,
+		appBundleSource: {
+			type: 'path',
+			value: appPath,
+		},
 	});
 	await player.conductor
 		.adminWs()
