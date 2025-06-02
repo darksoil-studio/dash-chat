@@ -191,7 +191,7 @@ jobs:
         with: 
           token: ${{ secrets.GITHUB_TOKEN }}
           releaseId: ${{ needs.publish-happ.outputs.releaseId }}
-          fileName: '*'
+          fileName: 'dash-chat-dna_hashes,dash-chat.happ'
           out-file-path: 'workdir/'
 
       - name: setup Android signing
