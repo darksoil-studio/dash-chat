@@ -3305,12 +3305,6 @@ dependencies = [
 
 [[package]]
 name = "hermit-abi"
-version = "0.3.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
-
-[[package]]
-name = "hermit-abi"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f154ce46856750ed433c8649605bf7ed2de3bc35fd9d2a9f30cddd873c80cb08"
@@ -3557,7 +3551,7 @@ dependencies = [
  "must_future",
  "one_err",
  "parking_lot",
- "reqwest 0.12.18",
+ "reqwest 0.12.19",
  "serde",
  "serde_bytes",
  "serde_json",
@@ -3774,7 +3768,7 @@ dependencies = [
 [[package]]
 name = "holochain_runtime"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#56113985abe298dda393334e3670f28f642062bf"
+source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#54829c8a2fa419064d2facdcc438a33853fff7e6"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -4689,7 +4683,7 @@ dependencies = [
  "hex",
  "hex-literal",
  "influxive-core",
- "reqwest 0.12.18",
+ "reqwest 0.12.19",
  "sha2",
  "tar",
  "tempfile",
@@ -4806,7 +4800,7 @@ dependencies = [
  "portmapper",
  "rand 0.8.5",
  "rcgen 0.13.2",
- "reqwest 0.12.18",
+ "reqwest 0.12.19",
  "ring 0.17.14",
  "rustls 0.23.27",
  "rustls-webpki 0.102.8",
@@ -4939,7 +4933,7 @@ dependencies = [
  "pkarr",
  "postcard",
  "rand 0.8.5",
- "reqwest 0.12.18",
+ "reqwest 0.12.19",
  "rustls 0.23.27",
  "rustls-webpki 0.102.8",
  "serde",
@@ -5829,7 +5823,7 @@ dependencies = [
  "flate2",
  "futures",
  "holochain_util",
- "reqwest 0.12.18",
+ "reqwest 0.12.19",
  "rmp-serde",
  "serde",
  "serde_bytes",
@@ -6303,11 +6297,11 @@ dependencies = [
 
 [[package]]
 name = "num_cpus"
-version = "1.16.0"
+version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4161fcb6d602d4d2081af7c3a45852d875a03dd337a6bfdd6e06407b61342a43"
+checksum = "91df4bbde75afed763b708b7eee1e8e7651e02d97f6d5dd763e89367e957b23b"
 dependencies = [
- "hermit-abi 0.3.9",
+ "hermit-abi 0.5.1",
  "libc",
 ]
 
@@ -7430,9 +7424,9 @@ dependencies = [
 
 [[package]]
 name = "prettyplease"
-version = "0.2.32"
+version = "0.2.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "664ec5419c51e34154eec046ebcba56312d5a2fc3b09a06da188e1ad21afadf6"
+checksum = "9dee91521343f4c5c6a63edd65e54f31f5c92fe8978c40a4282f8372194c6a7d"
 dependencies = [
  "proc-macro2",
  "syn 2.0.101",
@@ -8217,9 +8211,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.18"
+version = "0.12.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e98ff6b0dbbe4d5a37318f433d4fc82babd21631f194d370409ceb2e40b2f0b5"
+checksum = "a2f8e5513d63f2e5b386eb5106dc67eaf3f84e95258e210489136b8b92ad6119"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -9874,7 +9868,7 @@ dependencies = [
  "percent-encoding",
  "plist",
  "raw-window-handle",
- "reqwest 0.12.18",
+ "reqwest 0.12.19",
  "serde",
  "serde_json",
  "serde_repr",
@@ -10033,7 +10027,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-holochain"
 version = "0.0.0"
-source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#56113985abe298dda393334e3670f28f642062bf"
+source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#54829c8a2fa419064d2facdcc438a33853fff7e6"
 dependencies = [
  "anyhow",
  "bzip2 0.4.4",
@@ -10109,7 +10103,7 @@ dependencies = [
  "minisign-verify",
  "osakit",
  "percent-encoding",
- "reqwest 0.12.18",
+ "reqwest 0.12.19",
  "semver",
  "serde",
  "serde_json",
@@ -10633,9 +10627,9 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.6.4"
+version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fdb0c213ca27a9f57ab69ddb290fd80d970922355b83ae380b395d3986b8a2e"
+checksum = "5cc2d9e086a412a451384326f521c8123a99a466b329941a9403696bff9b0da2"
 dependencies = [
  "bitflags 2.9.1",
  "bytes",
