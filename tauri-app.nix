@@ -10,8 +10,9 @@
       version = tauriConfig.version;
       craneLib = (inputs.holonix.inputs.crane.mkLib pkgs).overrideToolchain
         inputs'.holonix.packages.rust;
-      src = inputs.p2p-shipyard.outputs.lib.cleanTauriSource { inherit lib; }
-        (craneLib.path ./.);
+      src = inputs.tauri-plugin-holochain.outputs.lib.cleanTauriSource {
+        inherit lib;
+      } (craneLib.path ./.);
 
       ui = pkgs.stdenv.mkDerivation (finalAttrs: {
         inherit version;
@@ -22,7 +23,7 @@
         pnpmDeps = pkgs.pnpm.fetchDeps {
           inherit (finalAttrs) version pname src;
 
-          hash = "sha256-YtSopN00o1MtgFkaD62ifClXj8X2CJOK/PfuxDVM8X4=";
+          hash = "sha256-yo1JBtzkAfrtSHdYt2yn8KkstEt/7zIm+3ns/CKyNXY=";
           buildInputs = [ pkgs.git ];
         };
         buildPhase = ''
@@ -45,10 +46,10 @@
         cargoExtraArgs = "";
 
         buildInputs =
-          inputs.p2p-shipyard.outputs.dependencies.${system}.tauriHapp.buildInputs;
+          inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.buildInputs;
 
         nativeBuildInputs =
-          inputs.p2p-shipyard.outputs.dependencies.${system}.tauriHapp.nativeBuildInputs;
+          inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.nativeBuildInputs;
 
         postPatch = ''
           mkdir -p "$TMPDIR/nix-vendor"
