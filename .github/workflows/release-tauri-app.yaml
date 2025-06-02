@@ -158,13 +158,15 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Maximize build space
-        uses: easimon/maximize-build-space@master
+        uses: AdityaGarg8/remove-unwanted-software@v5
         with:
-          remove-dotnet: 'true'
           remove-android: 'true'
+          remove-dotnet: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       # Checks out a copy of your repository on the ubuntu-latest machine
