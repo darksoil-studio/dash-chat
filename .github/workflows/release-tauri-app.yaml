@@ -150,3 +150,58 @@ jobs:
           updaterJsonPreferNsis: true
           prerelease: true
           args: ${{ matrix.args }}
+
+  release-tauri-android-app:
+    needs: publish-happ
+    permissions: write-all
+
+    runs-on: ubuntu-22.04
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - uses: actions/checkout@v3
+
+      - name: Extend space
+        uses: ./.github/actions/extend-space
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-24.05
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: darksoil-studio
+
+      - name: Download release of the .happ
+        uses: robinraju/release-downloader@v1.10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with: 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          releaseId: ${{ needs.publish-happ.outputs.releaseId }}
+          fileName: 'happ-store.webhapp'
+          out-file-path: '.'
+
+      - name: setup Android signing
+        run: |
+          cd src-tauri/gen/android
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > keystore.properties
+          echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> keystore.properties
+          base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > $RUNNER_TEMP/keystore.jks
+          echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
+
+      - name: Install and Build 🔧 
+        run: |
+          nix develop --accept-flake-config .#androidDev --command bash -c "pnpm install && pnpm tauri android build"
+ 
+      - uses: AButler/upload-release-assets@v3.0
+        with:
+          files: "src-tauri/gen/android/app/build/outputs/bundle/**/*.aab"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-id: ${{ needs.publish-happ.outputs.releaseId }}
