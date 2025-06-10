@@ -2,7 +2,7 @@
 	"name": "dash-chat-dev",
 	"private": true,
 	"scripts": {
-		"start": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm launch\" \"hc playground\" \"pnpm push-notifications-service\" -p command -l 20",
+		"start": "pnpm build:happ && concurrently -k \"UI_PORT=1420 pnpm -F ui start\" \"pnpm launch\" \"hc playground\" -p command -l 20",
 		"launch": "concurrently-repeat \"pnpm tauri dev --release --no-watch\" ${AGENTS:-2}",
 		"launch:pilot": "concurrently-repeat \"hc-pilot workdir/dash-chat.happ --ui-port 1420\" $AGENTS",
 		"push-notifications-service": "test-push-notifications-service ./service-account-key.json somesecretnetworkseed",

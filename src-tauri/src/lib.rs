@@ -93,6 +93,7 @@ pub fn run() {
                 tauri::async_runtime::spawn(async move {
                     if let Err(err) = setup(handle2.clone()).await {
                         log::error!("Failed to setup: {err:?}");
+                        return;
                     }
 
                     #[cfg(mobile)]

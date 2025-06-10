@@ -4992,7 +4992,7 @@ dependencies = [
  "once_cell",
  "socket2 0.5.10",
  "tracing",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -7726,7 +7726,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#9488d73bbdf967d1fd14ab9eb78ea0ca1e3ce20a"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#3e68bb4e4a6dfed80e35899eb3c5674e48400c25"
 dependencies = [
  "hc_zome_traits",
  "hdk 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -7736,7 +7736,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#9488d73bbdf967d1fd14ab9eb78ea0ca1e3ce20a"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#3e68bb4e4a6dfed80e35899eb3c5674e48400c25"
 dependencies = [
  "hdi 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",

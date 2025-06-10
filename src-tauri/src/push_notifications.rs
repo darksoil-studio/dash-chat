@@ -20,14 +20,6 @@ pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
         }
     });
 
-    match handle.notification().permission_state().unwrap() {
-        PermissionState::Prompt | PermissionState::PromptWithRationale => {
-            handle.notification().request_permission().unwrap();
-        }
-        _ => {}
-    }
-
-    #[cfg(mobile)]
     handle.listen("notification://action-performed", move |event| {
         if let Ok(notification_action_performed_payload) = serde_json::from_str::<
             tauri_plugin_notification::NotificationActionPerformedPayload,
@@ -36,6 +28,13 @@ pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
             println!("onlistener{:?}", notification_action_performed_payload);
         }
     });
+
+    match handle.notification().permission_state().unwrap() {
+        PermissionState::Prompt | PermissionState::PromptWithRationale => {
+            handle.notification().request_permission().unwrap();
+        }
+        _ => {}
+    }
 
     handle.notification().register_for_push_notifications()?;
 
