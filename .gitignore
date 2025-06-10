@@ -40,3 +40,5 @@ target
 .direnv/
 .hc*
 result*
+**/*/google-services.json
+service-account-key.json

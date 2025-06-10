@@ -15,12 +15,17 @@
       "github:darksoil-studio/tauri-plugin-holochain/main-0.5";
     playground.url = "github:darksoil-studio/holochain-playground/main-0.5";
 
-    notifications-zome.url =
-      "github:darksoil-studio/notifications-zome/main-0.5";
+    # notifications-zome.url =
+    #   "github:darksoil-studio/notifications-zome/main-0.5";
     linked-devices-zome.url =
       "github:darksoil-studio/linked-devices-zome/main-0.5";
     friends-zome.url = "github:darksoil-studio/friends-zome/main-0.5";
     messenger-zome.url = "github:darksoil-studio/messenger-zome/main-0.5";
+
+    service-providers.url = "github:darksoil-studio/service-providers/main-0.5";
+
+    push-notifications-service.url =
+      "github:darksoil-studio/push-notifications-service/main-0.5";
 
     aons.url = "github:darksoil-studio/always-online-nodes/main";
     nixos-generators.url = "github:nix-community/nixos-generators";
@@ -39,7 +44,12 @@
 
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ ./happ.nix ./tauri-app.nix ./aon/raspberry-pi.nix ];
+      imports = [
+        ./happ.nix
+        ./tauri-app.nix
+        ./aon/raspberry-pi.nix
+        inputs.holochain-nix-builders.outputs.flakeModules.builders
+      ];
 
       systems = builtins.attrNames inputs.holonix.devShells;
       perSystem = { inputs', config, pkgs, system, ... }: rec {
@@ -54,8 +64,10 @@
             inputs'.tauri-plugin-holochain.packages.hc-pilot
             inputs'.scaffolding.packages.hc-scaffold-happ
             inputs'.playground.packages.hc-playground
+            inputs'.push-notifications-service.packages.test-push-notifications-service
           ];
         };
+
         devShells.androidDev = pkgs.mkShell {
           inputsFrom = [
             inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev

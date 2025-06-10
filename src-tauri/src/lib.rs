@@ -2,11 +2,16 @@ use anyhow::anyhow;
 use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
 use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
-use std::{path::PathBuf, time::Duration};
+use std::path::PathBuf;
 use tauri::{AppHandle, Listener, Manager};
 #[cfg(not(mobile))]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri_plugin_holochain::{vec_to_locked, HolochainExt, HolochainPluginConfig, NetworkConfig};
+use tauri_plugin_holochain::{vec_to_locked, DnaModifiersOpt, HolochainExt, HolochainPluginConfig, NetworkConfig, RoleSettings, RoleSettingsMap};
+
+#[cfg(mobile)]
+mod modify_notification;
+#[cfg(mobile)]
+mod push_notifications;
 
 pub fn happ_bundle() -> AppBundle {
     let bytes = include_bytes!("../../workdir/dash-chat.happ");
@@ -31,6 +36,7 @@ pub fn run() {
                 .level(log::LevelFilter::Warn)
                 .build(),
         )
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_holochain::async_init(
@@ -85,16 +91,22 @@ pub fn run() {
             app.handle().listen("holochain://setup-completed", move |_event| {
                 let handle2 = handle.clone();
                 tauri::async_runtime::spawn(async move {
-                    if let Err(err) = setup(handle2).await {
+                    if let Err(err) = setup(handle2.clone()).await {
                         log::error!("Failed to setup: {err:?}");
+                    }
+
+                    #[cfg(mobile)]
+                    if let Err(err) = push_notifications::setup_push_notifications(handle2.clone()) {
+                        log::error!("Failed to setup push notifications: {err:?}");
                     }
                 });
                 let handle = handle.clone();
                 tauri::async_runtime::spawn(async move {
-                    if let Err(err) = open_window(handle).await{
+                    if let Err(err) = open_window(handle.clone()).await{
                         log::error!("Failed to setup: {err:?}");
                     }
                 });
+
             });
 
             Ok(())
@@ -185,12 +197,23 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
 
         let agent_key = previous_app.map(|app| app.agent_pub_key.clone());
 
+        let service_providers_network_seed = String::from("somesecretnetworkseed");
+
+        let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
+        roles_settings.insert(
+            String::from("service_providers"),
+            RoleSettings::Provisioned { membrane_proof: None, modifiers: Some(DnaModifiersOpt {
+                network_seed: Some(service_providers_network_seed),
+                ..Default::default()
+            })
+        });
+        
         handle
             .holochain()?
             .install_app(
                 String::from(app_id()),
                 happ_bundle(),
-                None,
+                Some(roles_settings),
                 agent_key,
                 None,
             )
