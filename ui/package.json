@@ -16,7 +16,7 @@
     "@darksoil-studio/holochain-elements": "^0.500.0",
     "@darksoil-studio/holochain-signals": "^0.500.0",
     "@darksoil-studio/holochain-utils": "^0.500.0",
-    "@darksoil-studio/linked-devices-zome": "0.500.0-rev.f90fab7ba99d5d9b56db028a1fa6047b83e7a9bc",
+    "@darksoil-studio/linked-devices-zome": "0.500.0-rev.704b36ed3a672354446909c5ff77a347cf0edeac",
     "@darksoil-studio/messenger-zome": "0.500.0-rev.27b25c34017e40aaad3009dd18607b6fd56e976e",
     "@darksoil-studio/notifications-zome": "0.500.0-rev.0f9d7bf645a6c3754b7304800016d3155bd0a266",
     "@darksoil-studio/profiles-provider": "^0.500.0",
