@@ -9,6 +9,11 @@ integrity:
     bundled: <NIX_PACKAGE>
     dependencies: null
     dylib: null
+  - name: encrypted_messages_integrity
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies: null
+    dylib: null
   - name: linked_devices_integrity
     hash: null
     bundled: <NIX_PACKAGE>
@@ -27,6 +32,12 @@ coordinator:
     dependencies:
     - name: friends_integrity
     dylib: null
+  - name: encrypted_messages
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies:
+    - name: encrypted_messages_integrity
+    dylib: null
   - name: linked_devices
     hash: null
     bundled: <NIX_PACKAGE>
@@ -38,4 +49,9 @@ coordinator:
     bundled: <NIX_PACKAGE>
     dependencies:
     - name: messenger_integrity
+    dylib: null
+  - name: locker_async_messages
+    hash: null
+    bundled: <NIX_PACKAGE>
+    dependencies: []
     dylib: null

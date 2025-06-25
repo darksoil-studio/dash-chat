@@ -5,12 +5,13 @@ opt-level = "z"
 opt-level = "z"
 
 [workspace]
-members = ["src-tauri"]
+members = ["src-tauri", "dnas/*/zomes/coordinator/*"]
 resolver = "2"
 
 [workspace.dependencies]
 hdi = "0.6"
 hdk = "0.5"
+serde = "1"
 
 [patch.crates-io]
 holochain = { git = "https://github.com/guillemcordoba/holochain", branch = "develop-0.5" }
