@@ -28,7 +28,6 @@ fn app_id() -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     std::env::set_var("WASM_LOG", "info");
-    let config = HolochainPluginConfig::new(holochain_dir(), network_config());
 
     let mut builder = tauri::Builder::default()
         .plugin(
@@ -41,7 +40,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_holochain::async_init(
             vec_to_locked(vec![]),
-            config
+         HolochainPluginConfig::new(holochain_dir(), network_config())
         ))
         .setup(move |app| {
 

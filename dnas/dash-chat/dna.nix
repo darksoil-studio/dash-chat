@@ -16,7 +16,11 @@
           # notifications = inputs'.notifications-zome.packages.notifications;
           messenger_integrity =
             inputs'.messenger-zome.packages.messenger_integrity;
-          messenger = inputs'.messenger-zome.packages.messenger;
+          messenger = inputs'.messenger-zome.builders.messenger {
+            linked_devices_coordinator_zome_name = "linked_devices";
+            async_message_zome_name = "locker_async_messages";
+
+          };
 
           linked_devices_integrity =
             inputs'.linked-devices-zome.packages.linked_devices_integrity;

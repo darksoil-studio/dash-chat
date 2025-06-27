@@ -1,3 +1,5 @@
+use jni::objects::JClass;
+use jni::JNIEnv;
 use push_notifications_service_trait::*;
 use service_providers_utils::make_service_request;
 use tauri::{AppHandle, Listener};
@@ -57,4 +59,18 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
     .await?;
 
     Ok(())
+}
+
+// Entry point to receive notifications
+#[tauri_plugin_notification::modify_push_notification]
+pub fn modify_push_notification(notification: NotificationData) -> NotificationData {
+    tauri::async_runtime::block_on(async move {
+        let runtime = tauri_plugin_holochain::launch_holochain_runtime(
+            vec_to_locked(vec![]),
+            HolochainPluginConfig::new(holochain_dir(), network_config()),
+        )
+        .await?;
+
+        notification
+    })
 }

@@ -20,6 +20,7 @@ tauri-build = { version = "2.0.0", default-features = false , features = [] }
 [dependencies]
 tauri = { version = "2.0.0", features = ["devtools"] }
 tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main-0.5" }
+holochain = "0.5.3"
 holochain_types = { version = "0.5" }
 
 holochain_client = { version = "0.7" }
@@ -35,7 +36,7 @@ tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-w
 tauri-plugin-dialog = "2"
 tauri-plugin-process = "2"
 opener = { version = "0.7", features = ["reveal"] }
-log = "=0.4.22"
+log = "0.4"
 tauri-plugin-log = "2.0.0"
 url2 = "0.0.6"
 app_dirs2 = "2.5.5"

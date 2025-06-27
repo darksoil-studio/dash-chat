@@ -10,6 +10,7 @@ name = "locker_async_messages"
 [dependencies]
 hdk = { workspace = true }
 
+holochain_serialized_bytes = { workspace = true }
 serde = { workspace = true }
 
 hc_zome_traits = { git = "https://github.com/holochain-open-dev/zome-traits", branch = "main" }
