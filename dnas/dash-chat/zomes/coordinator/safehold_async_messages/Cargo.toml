@@ -1,0 +1,24 @@
+[package]
+name = "safehold_async_messages"
+version = "0.0.1"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "safehold_async_messages"
+
+[dependencies]
+hdk = { workspace = true }
+
+holochain_serialized_bytes = { workspace = true }
+serde = { workspace = true }
+
+hc_zome_traits = { git = "https://github.com/holochain-open-dev/zome-traits", branch = "main" }
+
+service_providers_types = { git = "https://github.com/darksoil-studio/service-providers", branch = "main-0.5" }
+
+send_async_message_zome_trait = { git = "https://github.com/darksoil-studio/private-event-sourcing-zome", branch = "develop" }
+private_event_sourcing_types = { git = "https://github.com/darksoil-studio/private-event-sourcing-zome", branch = "develop" }
+
+safehold_service_trait = { git = "https://github.com/darksoil-studio/safehold", branch = "main-0.5" }
+safehold_types = { git = "https://github.com/darksoil-studio/safehold", branch = "main-0.5" }

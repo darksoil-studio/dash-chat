@@ -8,8 +8,8 @@ use tauri::{AppHandle, Listener, Manager};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri_plugin_holochain::{vec_to_locked, DnaModifiersOpt, HolochainExt, HolochainPluginConfig, NetworkConfig, RoleSettings, RoleSettingsMap};
 
-#[cfg(mobile)]
-mod modify_notification;
+mod utils;
+
 #[cfg(mobile)]
 mod push_notifications;
 
@@ -208,7 +208,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
             })
         });
         
-        handle
+        let app_info = handle
             .holochain()?
             .install_app(
                 String::from(app_id()),
@@ -218,6 +218,8 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
                 None,
             )
             .await?;
+
+        log::error!("appinfo {app_info:?}");
 
         if let Some(previous_app) = previous_app {
             log::warn!("Migrating from old app {}", previous_app.installed_app_id);
@@ -286,8 +288,8 @@ fn network_config() -> NetworkConfig {
 
     // Don't use the bootstrap service on tauri dev mode
     if tauri::is_dev() {
-        network_config.bootstrap_url = url2::Url2::parse("http://0.0.0.0:8888");
-        network_config.signal_url = url2::Url2::parse("ws://0.0.0.0:8888");
+        network_config.bootstrap_url = url2::Url2::parse("http://bad");
+        network_config.signal_url = url2::Url2::parse("ws://bad");
     } else {
         network_config.bootstrap_url = url2::Url2::parse("http://157.180.93.55:8888");
         network_config.signal_url = url2::Url2::parse("ws://157.180.93.55:8888");

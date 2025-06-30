@@ -26,7 +26,7 @@
 
     push-notifications-service.url =
       "github:darksoil-studio/push-notifications-service/main-0.5";
-    locker.url = "github:darksoil-studio/locker/main-0.5";
+    safehold.url = "github:darksoil-studio/safehold/main-0.5";
 
     aons.url = "github:darksoil-studio/always-online-nodes/main";
     nixos-generators.url = "github:nix-community/nixos-generators";
@@ -66,7 +66,7 @@
             inputs'.scaffolding.packages.hc-scaffold-happ
             inputs'.playground.packages.hc-playground
             inputs'.push-notifications-service.packages.test-push-notifications-service
-            inputs'.locker.packages.test-locker-service
+            inputs'.safehold.packages.test-safehold-service
           ];
         };
 

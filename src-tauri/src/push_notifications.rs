@@ -3,10 +3,10 @@ use jni::JNIEnv;
 use push_notifications_service_trait::*;
 use service_providers_utils::make_service_request;
 use tauri::{AppHandle, Listener};
-use tauri_plugin_holochain::HolochainExt;
-use tauri_plugin_notification::{NotificationExt, PermissionState};
+use tauri_plugin_holochain::*;
+use tauri_plugin_notification::{NotificationData, NotificationExt, PermissionState};
 
-use crate::app_id;
+use crate::{app_id, holochain_dir, network_config, utils::with_retries};
 
 pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
     let h = handle.clone();
@@ -15,8 +15,10 @@ pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
             log::warn!("New FCM token: {:?}. Registering it in with the push notifications service_providers.", token);
             let h = h.clone();
             tauri::async_runtime::spawn(async move {
-                if let Err(err) = register_fcm_token(h, token).await {
+                if let Err(err) = register_fcm_token(h, token.clone()).await {
                     log::error!("Error registering FCM token: {:?}", err);
+                } else {
+                    log::info!("Successfully registered FCM token.");
                 }
             });
         }
@@ -47,14 +49,21 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
     let app_ws = handle.holochain()?.app_websocket(app_id()).await?;
     let fcm_project_id = handle.notification().fcm_project_id()?;
 
-    let _r: () = make_service_request(
-        &app_ws,
-        PUSH_NOTIFICATIONS_SERVICE_HASH.to_vec(),
-        "register_fcm_token".into(),
-        RegisterFcmTokenInput {
-            fcm_project_id,
-            token,
+    with_retries(
+        async move || {
+            let _r: () = make_service_request(
+                &app_ws,
+                PUSH_NOTIFICATIONS_SERVICE_HASH.to_vec(),
+                "register_fcm_token".into(),
+                RegisterFcmTokenInput {
+                    fcm_project_id: fcm_project_id.clone(),
+                    token: token.clone(),
+                },
+            )
+            .await?;
+            Ok(())
         },
+        60,
     )
     .await?;
 
@@ -65,12 +74,19 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
 #[tauri_plugin_notification::modify_push_notification]
 pub fn modify_push_notification(notification: NotificationData) -> NotificationData {
     tauri::async_runtime::block_on(async move {
-        let runtime = tauri_plugin_holochain::launch_holochain_runtime(
-            vec_to_locked(vec![]),
-            HolochainPluginConfig::new(holochain_dir(), network_config()),
-        )
-        .await?;
-
+        let Ok(notifications) = get_notifications().await else {
+            log::error!("Failed to get notifications.");
+            return notification;
+        };
         notification
     })
+}
+
+async fn get_notifications() -> anyhow::Result<Vec<NotificationData>> {
+    let runtime = tauri_plugin_holochain::launch_holochain_runtime(
+        vec_to_locked(vec![]),
+        HolochainPluginConfig::new(holochain_dir(), network_config()),
+    )
+    .await?;
+    Ok(vec![])
 }

@@ -18,7 +18,7 @@
             inputs'.messenger-zome.packages.messenger_integrity;
           messenger = inputs'.messenger-zome.builders.messenger {
             linked_devices_coordinator_zome_name = "linked_devices";
-            async_message_zome_name = "locker_async_messages";
+            async_message_zome_name = "safehold_async_messages";
 
           };
 
@@ -29,11 +29,11 @@
           friends_integrity = inputs'.friends-zome.packages.friends_integrity;
           friends = inputs'.friends-zome.packages.friends;
 
-          encrypted_messages = inputs'.locker.packages.encrypted_messages;
+          encrypted_messages = inputs'.safehold.packages.encrypted_messages;
           encrypted_messages_integrity =
-            inputs'.locker.packages.encrypted_messages_integrity;
+            inputs'.safehold.packages.encrypted_messages_integrity;
 
-          locker_async_messages = self'.packages.locker_async_messages;
+          safehold_async_messages = self'.packages.safehold_async_messages;
         };
       };
   };

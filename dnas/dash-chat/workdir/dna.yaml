@@ -50,7 +50,7 @@ coordinator:
     dependencies:
     - name: messenger_integrity
     dylib: null
-  - name: locker_async_messages
+  - name: safehold_async_messages
     hash: null
     bundled: <NIX_PACKAGE>
     dependencies: []
