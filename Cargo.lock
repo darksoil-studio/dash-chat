@@ -7758,7 +7758,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#83c8717eac5f39a51cd03c22f1bf3162c469f19d"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#9738c25b7a2fe5c1736a459f0a585855fb4f0cda"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -7768,7 +7768,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#83c8717eac5f39a51cd03c22f1bf3162c469f19d"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#9738c25b7a2fe5c1736a459f0a585855fb4f0cda"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -10277,7 +10277,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification"
 version = "2.2.2"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#b8c7352900674d3526cc120d52db3ce3077b4e4e"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#a16d8d3555d27596d05a3169fd564d1d3be5f241"
 dependencies = [
  "log",
  "notify-rust",
@@ -10298,7 +10298,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-macros"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#b8c7352900674d3526cc120d52db3ce3077b4e4e"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#a16d8d3555d27596d05a3169fd564d1d3be5f241"
 dependencies = [
  "jni",
  "libc",
@@ -10312,7 +10312,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-models"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#b8c7352900674d3526cc120d52db3ce3077b4e4e"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=v2#a16d8d3555d27596d05a3169fd564d1d3be5f241"
 dependencies = [
  "rand 0.8.5",
  "serde",

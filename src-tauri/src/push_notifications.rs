@@ -72,13 +72,13 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
 
 // Entry point to receive notifications
 #[tauri_plugin_notification::modify_push_notification]
-pub fn modify_push_notification(notification: NotificationData) -> NotificationData {
+pub fn modify_push_notification(notification: NotificationData) -> Vec<NotificationData> {
     tauri::async_runtime::block_on(async move {
-        let Ok(notifications) = get_notifications().await else {
-            log::error!("Failed to get notifications.");
-            return notification;
-        };
-        notification
+        // let Ok(notifications) = get_notifications().await else {
+        //     log::error!("Failed to get notifications.");
+        //     return vec![notification];
+        // };
+        vec![notification]
     })
 }
 

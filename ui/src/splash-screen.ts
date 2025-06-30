@@ -57,7 +57,7 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 
 	renderBackButton() {
 		return html`
-			<sl-button style="flex: 1" @click=${() => this.currentPage--}
+			<sl-button size="large" style="flex: 1" @click=${() => this.currentPage--}
 				>${msg('Back')}</sl-button
 			>
 		`;
@@ -66,6 +66,7 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 	renderNextButton() {
 		return html`
 			<sl-button
+				size="large"
 				style="flex: 1"
 				variant="primary"
 				@click=${() => this.currentPage++}
