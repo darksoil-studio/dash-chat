@@ -5,6 +5,16 @@ import {
 import { scanQrCodeAndSendFriendRequest } from '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
 import '@darksoil-studio/friends-zome/dist/elements/friend-requests.js';
 import {
+	Router,
+	Routes,
+	appClientContext,
+	notify,
+	notifyError,
+	wrapPathInSvg,
+} from '@darksoil-studio/holochain-elements';
+import '@darksoil-studio/holochain-elements/dist/elements/display-error.js';
+import { SignalWatcher } from '@darksoil-studio/holochain-signals';
+import {
 	MessengerStore,
 	messengerStoreContext,
 } from '@darksoil-studio/messenger-zome';
@@ -45,16 +55,6 @@ import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab-panel/tab-panel.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
-import {
-	Router,
-	Routes,
-	appClientContext,
-	notify,
-	notifyError,
-	wrapPathInSvg,
-} from '@darksoil-studio/holochain-elements';
-import '@darksoil-studio/holochain-elements/dist/elements/display-error.js';
-import { SignalWatcher } from '@darksoil-studio/holochain-signals';
 import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 

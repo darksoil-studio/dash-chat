@@ -147,6 +147,7 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 							`}
 
 					<sl-button
+						size="large"
 						variant="primary"
 						.disabled=${!this.initialized}
 						.loading=${!this.initialized}

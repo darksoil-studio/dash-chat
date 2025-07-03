@@ -3,6 +3,7 @@ use hdk::prelude::*;
 use hc_zome_traits::*;
 
 use private_event_sourcing_types::{Message, ReceiveMessageInput};
+use push_notifications_types::{PushNotification, SendPushNotificationToAgentInput};
 use safehold_service_trait::MessageOutput;
 use safehold_types::*;
 use send_async_message_zome_trait::SendAsyncMessage;
@@ -22,7 +23,7 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
             FunctionName::from("encrypt_message"),
             None,
             EncryptMessageInput {
-                recipients: input.recipients.into_iter().collect(),
+                recipients: input.recipients.iter().cloned().collect(),
                 message: input.message,
             },
         )?;
@@ -37,6 +38,24 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
             safehold_service_trait::SAFEHOLD_SERVICE_HASH.to_vec(),
             FunctionName::from("store_messages"),
             payload,
+        )?;
+
+        let send_push_notifications_input: Vec<SendPushNotificationToAgentInput> = input
+            .recipients
+            .into_iter()
+            .map(|r| SendPushNotificationToAgentInput {
+                agent: r,
+                notification: PushNotification {
+                    title: input.zome_name.clone().to_string(),
+                    body: input.message_id.clone(),
+                },
+            })
+            .collect();
+
+        let () = make_service_request(
+            push_notifications_service_trait::PUSH_NOTIFICATIONS_SERVICE_HASH.to_vec(),
+            FunctionName::from("send_push_notifications"),
+            send_push_notifications_input,
         )?;
 
         Ok(())

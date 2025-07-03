@@ -67,6 +67,7 @@
             inputs'.playground.packages.hc-playground
             inputs'.push-notifications-service.packages.test-push-notifications-service
             inputs'.safehold.packages.test-safehold-service
+            pkgs.mprocs
           ];
         };
 

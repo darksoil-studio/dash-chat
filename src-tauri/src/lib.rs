@@ -3,7 +3,7 @@ use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
 use holochain_types::app::AppBundle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use std::path::PathBuf;
-use tauri::{AppHandle, Listener, Manager};
+use tauri::{AppHandle, Listener, Manager, WebviewWindow};
 #[cfg(not(mobile))]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri_plugin_holochain::{vec_to_locked, DnaModifiersOpt, HolochainExt, HolochainPluginConfig, NetworkConfig, RoleSettings, RoleSettingsMap};
@@ -148,7 +148,7 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-async fn open_window(handle: AppHandle) -> anyhow::Result<() > {
+async fn open_window(handle: AppHandle) -> anyhow::Result<WebviewWindow> {
     let mut window_builder = handle
         .holochain()?
         .main_window_builder(
@@ -166,8 +166,8 @@ async fn open_window(handle: AppHandle) -> anyhow::Result<() > {
             .inner_size(1400.0, 1000.0);
     }
 
-    window_builder.build()?;
-    Ok(())
+    let window = window_builder.build()?;
+    Ok(window)
 }
 
 // Very simple setup for now:
@@ -208,7 +208,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
             })
         });
         
-        let app_info = handle
+        handle
             .holochain()?
             .install_app(
                 String::from(app_id()),
@@ -218,8 +218,6 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
                 None,
             )
             .await?;
-
-        log::error!("appinfo {app_info:?}");
 
         if let Some(previous_app) = previous_app {
             log::warn!("Migrating from old app {}", previous_app.installed_app_id);

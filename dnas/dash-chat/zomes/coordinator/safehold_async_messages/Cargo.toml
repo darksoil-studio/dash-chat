@@ -22,3 +22,5 @@ private_event_sourcing_types = { git = "https://github.com/darksoil-studio/priva
 
 safehold_service_trait = { git = "https://github.com/darksoil-studio/safehold", branch = "main-0.5" }
 safehold_types = { git = "https://github.com/darksoil-studio/safehold", branch = "main-0.5" }
+push_notifications_service_trait = { git = "https://github.com/darksoil-studio/push-notifications-service", branch = "main-0.5" }
+push_notifications_types = { git = "https://github.com/darksoil-studio/push-notifications-service", branch = "main-0.5" }

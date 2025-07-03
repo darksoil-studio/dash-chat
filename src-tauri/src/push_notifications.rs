@@ -1,12 +1,16 @@
+use std::collections::HashMap;
+
+use holochain_client::ZomeCallTarget;
+use holochain_types::prelude::ZomeName;
 use jni::objects::JClass;
 use jni::JNIEnv;
 use push_notifications_service_trait::*;
 use service_providers_utils::make_service_request;
-use tauri::{AppHandle, Listener};
+use tauri::{AppHandle, Listener, Manager};
 use tauri_plugin_holochain::*;
 use tauri_plugin_notification::{NotificationData, NotificationExt, PermissionState};
 
-use crate::{app_id, holochain_dir, network_config, utils::with_retries};
+use crate::{app_id, holochain_dir, network_config, open_window, utils::with_retries};
 
 pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
     let h = handle.clone();
@@ -29,7 +33,38 @@ pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
             tauri_plugin_notification::NotificationActionPerformedPayload,
         >(event.payload())
         {
-            println!("onlistener{:?}", notification_action_performed_payload);
+            tauri::async_runtime::spawn(async move {
+                println!("onlistener{:?}", notification_action_performed_payload);
+                let window = match handle.get_webview_window("main") {
+                    Some(w) => w,
+                    None => open_window(handle.clone())
+                        .await
+                        .expect("Failed to open window"),
+                };
+
+                let extra: HashMap<String, serde_json::Value> = notification_action_performed_payload.notification.extra;
+                let Some(url_to_navigate_to_on_click) = extra.get("url_path_to_navigate_to_on_click") else {
+                    log::error!("Notification did not have the url_path_to_navigate_to_on_click extra.");
+                    return;
+                };
+
+                let Ok(url_to_navigate_to_on_click)  = serde_json::from_value::<Option<String>>(url_to_navigate_to_on_click) else {
+                    log::error!("Notification's url_path_to_navigate_to_on_click extra failed to deserialize.");
+                    return;
+                };
+
+                let Some(url) = url_to_navigate_to_on_click else {
+                    return;
+                };
+                let Ok(url) = tauri::Url::parse(url.as_str()) else {
+                    log::error!("Failed to parse url for notification.");
+                    return;
+                };
+
+                if let Err(err) = window.navigate(url) {
+                    log::error!("Failed to navigate to url: {err:?}");
+                }
+            });
         }
     });
 
@@ -71,22 +106,65 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
 }
 
 // Entry point to receive notifications
-#[tauri_plugin_notification::modify_push_notification]
-pub fn modify_push_notification(notification: NotificationData) -> Vec<NotificationData> {
+#[tauri_plugin_notification::receive_push_notification]
+pub fn receive_push_notification(notification: NotificationData) -> Option<NotificationData> {
     tauri::async_runtime::block_on(async move {
-        // let Ok(notifications) = get_notifications().await else {
-        //     log::error!("Failed to get notifications.");
-        //     return vec![notification];
-        // };
-        vec![notification]
+        let (Some(title), Some(body)) = (notification.title.clone(), notification.body.clone())
+        else {
+            log::warn!("Received a push notification without title or body: {notification:?}.");
+            return None;
+        };
+        let zome_name = ZomeName::from(title);
+        let notification_id = body;
+        let Ok(notification) = get_notification(zome_name, notification_id).await else {
+            log::error!("Failed to get notifications.");
+            return None;
+        };
+        notification
     })
 }
 
-async fn get_notifications() -> anyhow::Result<Vec<NotificationData>> {
+async fn get_notification(
+    zome_name: ZomeName,
+    notification_id: String,
+) -> anyhow::Result<Option<NotificationData>> {
     let runtime = tauri_plugin_holochain::launch_holochain_runtime(
         vec_to_locked(vec![]),
         HolochainPluginConfig::new(holochain_dir(), network_config()),
     )
     .await?;
-    Ok(vec![])
+
+    let app_ws = runtime.app_websocket(app_id(), AllowedOrigins::Any).await?;
+
+    app_ws
+        .call_zome(
+            ZomeCallTarget::RoleName("main".into()),
+            "safehold_async_messages".into(),
+            "receive_messages".into(),
+            ExternIO::encode(())?,
+        )
+        .await?;
+
+    let notification: notifications_zome_trait::Notification = app_ws
+        .call_zome(
+            ZomeCallTarget::RoleName("main".into()),
+            zome_name,
+            "get_notification".into(),
+            ExternIO::encode(notification_id)?,
+        )
+        .await?
+        .decode()?;
+
+    Ok(Some(NotificationData {
+        title: Some(notification.title),
+        body: Some(notification.body),
+        group: notification.group,
+        extra: vec![(
+            String::from("url_path_to_navigate_to_on_click"),
+            serde_json::to_value(notification.url_path_to_navigate_to_on_click)?,
+        )]
+        .into_iter()
+        .collect(),
+        ..Default::default()
+    }))
 }
