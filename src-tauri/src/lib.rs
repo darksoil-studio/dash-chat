@@ -1,15 +1,17 @@
 use anyhow::anyhow;
 use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
 use holochain_types::app::AppBundle;
-use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use std::path::PathBuf;
-use tauri::{AppHandle, Listener, Manager, WebviewWindow};
-#[cfg(not(mobile))]
-use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri_plugin_holochain::{vec_to_locked, DnaModifiersOpt, HolochainExt, HolochainPluginConfig, NetworkConfig, RoleSettings, RoleSettingsMap};
+use tauri::{AppHandle, Listener, WebviewWindow};
+use tauri_plugin_holochain::{
+    vec_to_locked, DnaModifiersOpt, HolochainExt, HolochainPluginConfig, NetworkConfig,
+    RoleSettings, RoleSettingsMap,
+};
 
 mod utils;
 
+#[cfg(not(mobile))]
+mod menu;
 #[cfg(mobile)]
 mod push_notifications;
 
@@ -32,7 +34,12 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Warn)
+                .level(log::LevelFilter::Info)
+                .level_for("tracing::span", log::LevelFilter::Off)
+                .level_for("iroh", log::LevelFilter::Info)
+                .level_for("holochain", log::LevelFilter::Warn)
+                .level_for("kitsune2", log::LevelFilter::Warn)
+                .level_for("kitsune2_gossip", log::LevelFilter::Warn)
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())
@@ -40,107 +47,48 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_holochain::async_init(
             vec_to_locked(vec![]),
-         HolochainPluginConfig::new(holochain_dir(), network_config())
+            HolochainPluginConfig::new(holochain_dir(), network_config()),
         ))
         .setup(move |app| {
-
             #[cfg(mobile)]
             app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
             #[cfg(not(mobile))]
             {
                 app.handle()
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
-                
-                app.handle()
-                    .on_menu_event(|app_handle, menu_event| match menu_event.id().as_ref() {
-                        "open-logs-folder" => {
-                            let log_folder = app_handle
-                                .path()
-                                .app_log_dir()
-                                .expect("Could not get app log dir");
-                            if let Err(err) = opener::reveal(log_folder.clone()) {
-                                log::error!("Failed to open log dir at {log_folder:?}: {err:?}");
-                            }
-                        }
-                        "factory-reset" => {
-                            let h = app_handle.clone();
-                             app_handle
-                                    .dialog()
-                                    .message("Are you sure you want to perform a factory reset? All your data will be lost.")
-                                    .title("Factory Reset")
-                                    .buttons(MessageDialogButtons::OkCancel)
-                                    .show(move |result| match result {
-                                        true => {
-                                            if let Err(err) = std::fs::remove_dir_all(holochain_dir()) {
-                                                log::error!("Failed to perform factory reset: {err:?}");
-                                            } else {
-                                                h.restart();
-                                            }
-                                        }
-                                        false => {
-            
-                                        }
-                                    });
-                        }
-                        _ => {}
-                    });
             }
             let handle = app.handle().clone();
 
-            app.handle().listen("holochain://setup-completed", move |_event| {
-                let handle2 = handle.clone();
-                tauri::async_runtime::spawn(async move {
-                    if let Err(err) = setup(handle2.clone()).await {
-                        log::error!("Failed to setup: {err:?}");
-                        return;
-                    }
+            app.handle()
+                .listen("holochain://setup-completed", move |_event| {
+                    let handle2 = handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        if let Err(err) = setup(handle2.clone()).await {
+                            log::error!("Failed to setup: {err:?}");
+                            return;
+                        }
 
-                    #[cfg(mobile)]
-                    if let Err(err) = push_notifications::setup_push_notifications(handle2.clone()) {
-                        log::error!("Failed to setup push notifications: {err:?}");
-                    }
+                        #[cfg(mobile)]
+                        if let Err(err) =
+                            push_notifications::setup_push_notifications(handle2.clone())
+                        {
+                            log::error!("Failed to setup push notifications: {err:?}");
+                        }
+                    });
+                    let handle = handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        if let Err(err) = open_window(handle.clone()).await {
+                            log::error!("Failed to setup: {err:?}");
+                        }
+                    });
                 });
-                let handle = handle.clone();
-                tauri::async_runtime::spawn(async move {
-                    if let Err(err) = open_window(handle.clone()).await{
-                        log::error!("Failed to setup: {err:?}");
-                    }
-                });
-
-            });
 
             Ok(())
         });
 
     #[cfg(not(mobile))]
     {
-        builder = builder.menu(|handle| {
-            Menu::with_items(
-                handle,
-                &[&Submenu::with_items(
-                    handle,
-                    "File",
-                    true,
-                    &[
-                        &MenuItem::with_id(
-                            handle,
-                            "open-logs-folder",
-                            "Open Logs Folder",
-                            true,
-                            None::<&str>,
-                        )?,
-                        &MenuItem::with_id(
-                            handle,
-                            "factory-reset",
-                            "Factory Reset",
-                            true,
-                            None::<&str>,
-                        )?,
-                        &PredefinedMenuItem::close_window(handle, None)?,
-                    ],
-                )?],
-            )
-        });
+        builder = builder.menu(|handle| menu::build_menu(handle));
     }
 
     builder
@@ -151,12 +99,7 @@ pub fn run() {
 async fn open_window(handle: AppHandle) -> anyhow::Result<WebviewWindow> {
     let mut window_builder = handle
         .holochain()?
-        .main_window_builder(
-            String::from("main"),
-            true,
-            Some(app_id()),
-            None,
-        )
+        .main_window_builder(String::from("main"), true, Some(app_id()), None)
         .await?;
 
     #[cfg(not(mobile))]
@@ -202,12 +145,15 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
         let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
         roles_settings.insert(
             String::from("service_providers"),
-            RoleSettings::Provisioned { membrane_proof: None, modifiers: Some(DnaModifiersOpt {
-                network_seed: Some(service_providers_network_seed),
-                ..Default::default()
-            })
-        });
-        
+            RoleSettings::Provisioned {
+                membrane_proof: None,
+                modifiers: Some(DnaModifiersOpt {
+                    network_seed: Some(service_providers_network_seed),
+                    ..Default::default()
+                }),
+            },
+        );
+
         handle
             .holochain()?
             .install_app(
@@ -221,10 +167,8 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
 
         if let Some(previous_app) = previous_app {
             log::warn!("Migrating from old app {}", previous_app.installed_app_id);
-            let Some(Some(CellInfo::Provisioned(previous_cell_info))) = previous_app
-                .cell_info
-                .get("main")
-                .map(|c| c.first())
+            let Some(Some(CellInfo::Provisioned(previous_cell_info))) =
+                previous_app.cell_info.get("main").map(|c| c.first())
             else {
                 log::error!(
                     "'main' cell was not found in previous app {}",
@@ -303,8 +247,8 @@ fn network_config() -> NetworkConfig {
 
 fn holochain_dir() -> PathBuf {
     if tauri::is_dev() {
-        let tmp_dir = tempdir::TempDir::new("dash-chat")
-            .expect("Could not create temporary directory");
+        let tmp_dir =
+            tempdir::TempDir::new("dash-chat").expect("Could not create temporary directory");
 
         // Convert `tmp_dir` into a `Path`, destroying the `TempDir`
         // without deleting the directory.

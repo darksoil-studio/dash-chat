@@ -15,6 +15,8 @@ holochain_serialized_bytes = "*"
 serde = "1"
 
 [patch.crates-io]
+# wasmer-vm = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
+# wasmer-types = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
 kitsune2 = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
 kitsune2_api = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
 kitsune2_core = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }

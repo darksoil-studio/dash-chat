@@ -12,6 +12,11 @@ use service_providers_types::*;
 
 pub struct SafeholdAsyncMessages;
 
+#[implemented_zome_traits]
+pub enum ZomeTraits {
+    SendAsyncMessage(SafeholdAsyncMessages),
+}
+
 #[implement_zome_trait_as_externs]
 impl SendAsyncMessage for SafeholdAsyncMessages {
     fn send_async_message(
@@ -34,11 +39,13 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
         let payload: Vec<MessageWithProvenance> = result
             .decode()
             .map_err(|err| wasm_error!("Invalid encrypt_messages result type: {:?}", err))?;
+
         let () = make_service_request(
             safehold_service_trait::SAFEHOLD_SERVICE_HASH.to_vec(),
             FunctionName::from("store_messages"),
             payload,
         )?;
+        info!("Stored messages in the safehold service.");
 
         let send_push_notifications_input: Vec<SendPushNotificationToAgentInput> = input
             .recipients

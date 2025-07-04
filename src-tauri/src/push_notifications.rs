@@ -28,7 +28,9 @@ pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
         }
     });
 
+    let h = handle.clone();
     handle.listen("notification://action-performed", move |event| {
+        let handle = h.clone();
         if let Ok(notification_action_performed_payload) = serde_json::from_str::<
             tauri_plugin_notification::NotificationActionPerformedPayload,
         >(event.payload())
@@ -48,7 +50,7 @@ pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
                     return;
                 };
 
-                let Ok(url_to_navigate_to_on_click)  = serde_json::from_value::<Option<String>>(url_to_navigate_to_on_click) else {
+                let Ok(url_to_navigate_to_on_click)  = serde_json::from_value::<Option<String>>(url_to_navigate_to_on_click.clone()) else {
                     log::error!("Notification's url_path_to_navigate_to_on_click extra failed to deserialize.");
                     return;
                 };

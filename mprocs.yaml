@@ -8,5 +8,5 @@ procs:
     shell: "pnpm -F ./ui start"
     env:
       UI_PORT: "1420"
-  android: nix develop .#androidDev --command bash -c "adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev --release"
-  logcat: nix develop .#androidDev -c adb logcat | grep -F "`adb shell ps | grep studio.darksoil.dashchat | tr -s [:space:] ' ' | cut -d' ' -f2`"
+  # android: nix develop .#androidDev --command bash -c "adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev --release"
+  # logcat: nix develop .#androidDev -c adb logcat | grep -F "`adb shell ps | grep studio.darksoil.dashchat | tr -s [:space:] ' ' | cut -d' ' -f2`"
