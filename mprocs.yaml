@@ -1,12 +1,9 @@
 procs:
-  agent1: "pnpm tauri dev --release --no-watch"
-  agent2: "pnpm tauri dev --release --no-watch"
-  push-notifications-service: "test-push-notifications-service ./service-account-key.json somesecretnetworkseed"
-  safehold-service: "test-safehold-service somesecretnetworkseed"
-  playground: "hc playground"
-  ui:
-    shell: "pnpm -F ./ui start"
-    env:
-      UI_PORT: "1420"
-  # android: nix develop .#androidDev --command bash -c "adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev --release"
-  # logcat: nix develop .#androidDev -c adb logcat | grep -F "`adb shell ps | grep studio.darksoil.dashchat | tr -s [:space:] ' ' | cut -d' ' -f2`"
+  agent1: pnpm tauri dev --release --no-watch
+  agent2: pnpm tauri dev --release --no-watch
+  push-notifications-service: test-push-notifications-service ./service-account-key.json somesecretnetworkseed
+  safehold-service: test-safehold-service somesecretnetworkseed
+  playground: hc playground
+  ui: pnpm -F ./ui start
+  android: adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev --release
+  logcat: adb logcat | grep -F "`adb shell ps | grep studio.darksoil.dashchat | tr -s [:space:] ' ' | cut -d' ' -f2`"

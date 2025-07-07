@@ -17,6 +17,12 @@ serde = "1"
 [patch.crates-io]
 # wasmer-vm = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
 # wasmer-types = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
+# kitsune2 = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/kitsune2"}
+# kitsune2_api = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/api"}
+# kitsune2_core = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/core"}
+# kitsune2_dht = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/dht"}
+# kitsune2_gossip = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/gossip"}
+# kitsune2_bootstrap_client = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/bootstrap_client"}
 kitsune2 = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
 kitsune2_api = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
 kitsune2_core = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }

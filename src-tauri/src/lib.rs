@@ -36,10 +36,11 @@ pub fn run() {
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Info)
                 .level_for("tracing::span", log::LevelFilter::Off)
-                .level_for("iroh", log::LevelFilter::Info)
+                .level_for("iroh", log::LevelFilter::Warn)
                 .level_for("holochain", log::LevelFilter::Warn)
                 .level_for("kitsune2", log::LevelFilter::Warn)
                 .level_for("kitsune2_gossip", log::LevelFilter::Warn)
+                // .level_for("holochain_runtime", log::LevelFilter::Debug)
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())
@@ -230,8 +231,8 @@ fn network_config() -> NetworkConfig {
 
     // Don't use the bootstrap service on tauri dev mode
     if tauri::is_dev() {
-        network_config.bootstrap_url = url2::Url2::parse("http://bad");
-        network_config.signal_url = url2::Url2::parse("ws://bad");
+        network_config.bootstrap_url = url2::Url2::parse("http://0.0.0.0:8888");
+        // network_config.signal_url = url2::Url2::parse("ws://bad.bad");
     } else {
         network_config.bootstrap_url = url2::Url2::parse("http://157.180.93.55:8888");
         network_config.signal_url = url2::Url2::parse("ws://157.180.93.55:8888");

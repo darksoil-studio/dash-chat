@@ -41,16 +41,18 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 					fn_name: 'init',
 					payload: undefined,
 				})
-				.catch(() =>
+				.catch(e => {
+					console.error('error calling init', e);
 					client.callZome({
 						role_name: 'main',
 						zome_name: 'messenger',
 						fn_name: 'init',
 						payload: undefined,
-					}),
-				);
+					});
+				});
 			this.initialized = true;
 		} catch (e: unknown) {
+			console.error('error calling init', e);
 			setTimeout(() => this.attemptConnect(), 300);
 		}
 	}
