@@ -69,10 +69,14 @@
             inputs'.safehold.packages.test-safehold-service
             pkgs.mprocs
           ];
+        };
 
-          shellHook = ''
-            export RUSTFLAGS="-Ctarget-cpu=native"
-          '';
+        devShells.ci = pkgs.mkShell {
+          inputsFrom = [
+            inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
+            inputs'.scaffolding.devShells.synchronized-pnpm
+            inputs'.holonix.devShells.default
+          ];
         };
 
         devShells.androidDev = pkgs.mkShell {

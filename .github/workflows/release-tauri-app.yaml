@@ -45,7 +45,7 @@ jobs:
       - name: Build happ
         run: |
           nix-store --gc
-          nix develop --accept-flake-config --no-update-lock-file --command bash -c "pnpm build:happ-release"
+          nix develop .#ci --accept-flake-config --no-update-lock-file --command bash -c "pnpm build:happ-release"
 
       - name: Retrieve version
         run: |
@@ -227,7 +227,7 @@ jobs:
 
       - name: Install and Build 🔧 
         run: |
-          nix develop --accept-flake-config .#androidDev --command bash -c "pnpm install && pnpm tauri android build"
+          nix develop --accept-flake-config .#ci --command bash -c "pnpm install && pnpm tauri android build"
  
       - uses: AButler/upload-release-assets@v3.0
         with:
