@@ -2320,18 +2320,18 @@ dependencies = [
 
 [[package]]
 name = "enumset"
-version = "1.1.6"
+version = "1.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11a6b7c3d347de0a9f7bfd2f853be43fe32fa6fac30c70f6d6d67a1e936b87ee"
+checksum = "d6ee17054f550fd7400e1906e2f9356c7672643ed34008a9e8abe147ccd2d821"
 dependencies = [
  "enumset_derive",
 ]
 
 [[package]]
 name = "enumset_derive"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6da3ea9e1d1a3b1593e15781f930120e72aa7501610b2f82e5b6739c72e8eac5"
+checksum = "76d07902c93376f1e96c34abc4d507c0911df3816cef50b01f5a2ff3ad8c370d"
 dependencies = [
  "darling 0.20.11",
  "proc-macro2",
@@ -3838,7 +3838,7 @@ dependencies = [
 [[package]]
 name = "holochain_runtime"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=develop#252247e7128de26e7d3a84e524fac4bcbb3f80d3"
+source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=develop#45d782de9eb9f8beda6a028dec0e43ad2a3bdfba"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -4426,9 +4426,9 @@ dependencies = [
 
 [[package]]
 name = "hyper-util"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc2fdfdbff08affe55bb779f33b053aa1fe5dd5b54c257343c17edfa55711bdb"
+checksum = "7f66d5bd4c6f02bf0542fad85d626775bab9258cf795a4256dcaf3161114d1df"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -4443,9 +4443,11 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "socket2 0.5.10",
+ "system-configuration 0.6.1",
  "tokio",
  "tower-service",
  "tracing",
+ "windows-registry",
 ]
 
 [[package]]
@@ -5248,7 +5250,7 @@ dependencies = [
 [[package]]
 name = "kitsune2"
 version = "0.1.9"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#60159815c69e70925a10544d25c00ac7b4ea729f"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#11f73ee9917082661e86143dbca46ac1ea63dc3b"
 dependencies = [
  "bytes",
  "kitsune2_api",
@@ -5260,7 +5262,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_api"
 version = "0.1.9"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#60159815c69e70925a10544d25c00ac7b4ea729f"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#11f73ee9917082661e86143dbca46ac1ea63dc3b"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -5276,7 +5278,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_bootstrap_client"
 version = "0.1.9"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#60159815c69e70925a10544d25c00ac7b4ea729f"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#11f73ee9917082661e86143dbca46ac1ea63dc3b"
 dependencies = [
  "base64 0.22.1",
  "kitsune2_api",
@@ -5288,7 +5290,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_core"
 version = "0.1.9"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#60159815c69e70925a10544d25c00ac7b4ea729f"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#11f73ee9917082661e86143dbca46ac1ea63dc3b"
 dependencies = [
  "backon",
  "bytes",
@@ -5309,7 +5311,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_dht"
 version = "0.1.9"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#60159815c69e70925a10544d25c00ac7b4ea729f"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#11f73ee9917082661e86143dbca46ac1ea63dc3b"
 dependencies = [
  "bytes",
  "kitsune2_api",
@@ -5319,7 +5321,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_gossip"
 version = "0.1.9"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#60159815c69e70925a10544d25c00ac7b4ea729f"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#11f73ee9917082661e86143dbca46ac1ea63dc3b"
 dependencies = [
  "bytes",
  "futures",
@@ -5338,7 +5340,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_transport_iroh"
 version = "0.1.9"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#60159815c69e70925a10544d25c00ac7b4ea729f"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport#11f73ee9917082661e86143dbca46ac1ea63dc3b"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -5729,9 +5731,9 @@ checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
 
 [[package]]
 name = "mac-notification-sys"
-version = "0.6.5"
+version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1280f4ec61016b4960075c5c090085129647807a77a964bdb352c14903450589"
+checksum = "0b95dfb34071d1592b45622bf93e315e3a72d414b6782aca9a015c12bec367ef"
 dependencies = [
  "cc",
  "objc2 0.6.1",
@@ -7354,13 +7356,13 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
 name = "plist"
-version = "1.7.3"
+version = "1.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "546b279bf0638ee811d9e47de2ca5b66575a543035d79fdf83959dd2f5c3b4c3"
+checksum = "3af6b589e163c5a788fab00ce0c0366f6efbb9959c2f9874b224936af7fce7e1"
 dependencies = [
  "base64 0.22.1",
  "indexmap 2.10.0",
- "quick-xml 0.37.5",
+ "quick-xml 0.38.0",
  "serde",
  "time",
 ]
@@ -7624,7 +7626,7 @@ dependencies = [
 [[package]]
 name = "private_event_sourcing_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#4f8c1fe7d0b8650daa4da92790db8f05c5626884"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#b4977993ccf7cbb28859f94f1a95605b5c93515b"
 dependencies = [
  "hdk",
  "holochain_serialized_bytes",
@@ -7786,7 +7788,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#90234ceb86355a8205d2b68ff91a831bee10ff8f"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#caab3fd9e75670279bbcd0d18210604ba8f6fc9c"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -7796,7 +7798,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#90234ceb86355a8205d2b68ff91a831bee10ff8f"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#caab3fd9e75670279bbcd0d18210604ba8f6fc9c"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -7823,6 +7825,15 @@ name = "quick-xml"
 version = "0.37.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "331e97a1af0bf59823e6eadffe373d7b27f485be8748f71471c662c1f269b7fb"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.38.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8927b0664f5c5a98265138b7e3f90aa19a6b21353182469ace36d4ac527b7b1b"
 dependencies = [
  "memchr",
 ]
@@ -8875,7 +8886,7 @@ dependencies = [
 [[package]]
 name = "safehold_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#0c716167459803bd7ed72ebf4151c35f11d8cb89"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#87b06652739679a469fad346187398b16b093616"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -8887,7 +8898,7 @@ dependencies = [
 [[package]]
 name = "safehold_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#0c716167459803bd7ed72ebf4151c35f11d8cb89"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#87b06652739679a469fad346187398b16b093616"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9143,7 +9154,7 @@ dependencies = [
 [[package]]
 name = "send_async_message_zome_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#4f8c1fe7d0b8650daa4da92790db8f05c5626884"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#b4977993ccf7cbb28859f94f1a95605b5c93515b"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -10282,7 +10293,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-holochain"
 version = "0.0.0"
-source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=develop#252247e7128de26e7d3a84e524fac4bcbb3f80d3"
+source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=develop#45d782de9eb9f8beda6a028dec0e43ad2a3bdfba"
 dependencies = [
  "anyhow",
  "bzip2 0.4.4",
@@ -10336,7 +10347,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification"
 version = "2.3.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#914fe446f1450c0344e5abf9d7682ee348675c31"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#900781f38d64328dddbb56f98c90fc2f694bee21"
 dependencies = [
  "log",
  "notify-rust",
@@ -10357,7 +10368,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-macros"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#914fe446f1450c0344e5abf9d7682ee348675c31"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#900781f38d64328dddbb56f98c90fc2f694bee21"
 dependencies = [
  "jni",
  "libc",
@@ -10371,7 +10382,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-models"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#914fe446f1450c0344e5abf9d7682ee348675c31"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#900781f38d64328dddbb56f98c90fc2f694bee21"
 dependencies = [
  "rand 0.8.5",
  "serde",
@@ -11722,8 +11733,7 @@ dependencies = [
 [[package]]
 name = "wasmer-types"
 version = "6.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b8424d15f5c19a8df972fc9367d75ba3b87af63b279208d50a32e9a298d944b"
+source = "git+https://github.com/guillemcordoba/wasmer?branch=fix-x86#b235daff7165470b94e0d89d6b791b0428b87439"
 dependencies = [
  "bytecheck 0.6.12",
  "enum-iterator",
@@ -11742,8 +11752,7 @@ dependencies = [
 [[package]]
 name = "wasmer-vm"
 version = "6.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "faabfffefc6fc350bb5b07301f05ba604a18c3d2d97c6354183f15792577056d"
+source = "git+https://github.com/guillemcordoba/wasmer?branch=fix-x86#b235daff7165470b94e0d89d6b791b0428b87439"
 dependencies = [
  "backtrace",
  "cc",
@@ -12112,6 +12121,17 @@ checksum = "9150af68066c4c5c07ddc0ce30421554771e528bde427614c61038bc2c92c2b1"
 dependencies = [
  "windows-core 0.61.2",
  "windows-link",
+]
+
+[[package]]
+name = "windows-registry"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b8a9ed28765efc97bbc954883f4e6796c33a06546ebafacbabee9696967499e"
+dependencies = [
+ "windows-link",
+ "windows-result",
+ "windows-strings 0.4.2",
 ]
 
 [[package]]
@@ -12732,9 +12752,9 @@ checksum = "2164e798d9e3d84ee2c91139ace54638059a3b23e361f5c11781c2c6459bde0f"
 
 [[package]]
 name = "zbus"
-version = "5.7.1"
+version = "5.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3a7c7cee313d044fca3f48fa782cb750c79e4ca76ba7bc7718cd4024cdf6f68"
+checksum = "597f45e98bc7e6f0988276012797855613cd8269e23b5be62cc4e5d28b7e515d"
 dependencies = [
  "async-broadcast",
  "async-executor",
@@ -12766,9 +12786,9 @@ dependencies = [
 
 [[package]]
 name = "zbus_macros"
-version = "5.7.1"
+version = "5.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a17e7e5eec1550f747e71a058df81a9a83813ba0f6a95f39c4e218bdc7ba366a"
+checksum = "e5c8e4e14dcdd9d97a98b189cd1220f30e8394ad271e8c987da84f73693862c2"
 dependencies = [
  "proc-macro-crate 3.3.0",
  "proc-macro2",
@@ -12985,9 +13005,9 @@ dependencies = [
 
 [[package]]
 name = "zvariant"
-version = "5.5.3"
+version = "5.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d30786f75e393ee63a21de4f9074d4c038d52c5b1bb4471f955db249f9dffb1"
+checksum = "d91b3680bb339216abd84714172b5138a4edac677e641ef17e1d8cb1b3ca6e6f"
 dependencies = [
  "endi",
  "enumflags2",
@@ -13000,9 +13020,9 @@ dependencies = [
 
 [[package]]
 name = "zvariant_derive"
-version = "5.5.3"
+version = "5.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75fda702cd42d735ccd48117b1630432219c0e9616bf6cb0f8350844ee4d9580"
+checksum = "3a8c68501be459a8dbfffbe5d792acdd23b4959940fc87785fb013b32edbc208"
 dependencies = [
  "proc-macro-crate 3.3.0",
  "proc-macro2",

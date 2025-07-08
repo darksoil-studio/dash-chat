@@ -69,6 +69,10 @@
             inputs'.safehold.packages.test-safehold-service
             pkgs.mprocs
           ];
+
+          shellHook = ''
+            export RUSTFLAGS="-Ctarget-cpu=native"
+          '';
         };
 
         devShells.androidDev = pkgs.mkShell {
@@ -76,9 +80,6 @@
             inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
             devShells.default
           ];
-          shellHook = ''
-            export CARGO_TARGET_DIR=$(pwd)/target/android
-          '';
         };
       };
     };

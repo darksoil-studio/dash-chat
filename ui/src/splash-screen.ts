@@ -1,3 +1,4 @@
+import { notify, notifyError } from '@darksoil-studio/holochain-elements';
 import { SignalWatcher } from '@darksoil-studio/holochain-signals';
 import { AppWebsocket } from '@holochain/client';
 import { consume } from '@lit/context';
@@ -5,6 +6,8 @@ import { localized, msg } from '@lit/localize';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/carousel-item/carousel-item.js';
 import '@shoelace-style/shoelace/dist/components/carousel/carousel.js';
+import '@tauri-apps/api';
+import { requestPermission } from '@tauri-apps/plugin-notification';
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -14,6 +17,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import imgUrl from '../splashscreen.jpg';
 import { appStyles } from './app-styles';
 import { isMobileContext } from './context';
+import { isMobileOs } from './utils';
 
 @localized()
 @customElement('splash-screen')
@@ -34,7 +38,8 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 	async attemptConnect() {
 		try {
 			const client = await AppWebsocket.connect();
-			client
+			this.initialized = true;
+			await client
 				.callZome({
 					role_name: 'main',
 					zome_name: 'messenger',
@@ -42,15 +47,13 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 					payload: undefined,
 				})
 				.catch(e => {
-					console.error('error calling init', e);
-					client.callZome({
+					return client.callZome({
 						role_name: 'main',
 						zome_name: 'messenger',
 						fn_name: 'init',
 						payload: undefined,
 					});
 				});
-			this.initialized = true;
 		} catch (e: unknown) {
 			console.error('error calling init', e);
 			setTimeout(() => this.attemptConnect(), 300);
@@ -153,13 +156,23 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 						variant="primary"
 						.disabled=${!this.initialized}
 						.loading=${!this.initialized}
-						@click=${() =>
-							this.dispatchEvent(
-								new CustomEvent('start-app-clicked', {
-									bubbles: true,
-									composed: true,
-								}),
-							)}
+						@click=${async () => {
+							try {
+								if (isMobileOs()) {
+									await requestPermission();
+								}
+
+								this.dispatchEvent(
+									new CustomEvent('start-app-clicked', {
+										bubbles: true,
+										composed: true,
+									}),
+								);
+							} catch (e) {
+								console.error(e);
+								notifyError(msg('Failed to start app.'));
+							}
+						}}
 						>${msg('Start app')}</sl-button
 					>
 				</div>

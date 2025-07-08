@@ -1,7 +1,7 @@
-import path from 'path';
+import localIpAddress from 'local-ip-address';
 import { defineConfig } from 'vite';
 
-const host = process.env.TAURI_DEV_HOST;
+const host = localIpAddress();
 
 export default defineConfig({
 	clearScreen: false,
@@ -9,7 +9,7 @@ export default defineConfig({
 	server: {
 		port: 1420,
 		strictPort: true,
-		host: '0.0.0.0',
+		host: true,
 		hmr: host
 			? {
 					protocol: 'ws',

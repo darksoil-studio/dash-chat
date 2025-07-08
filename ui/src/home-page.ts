@@ -2,6 +2,7 @@ import {
 	FriendsStore,
 	friendsStoreContext,
 } from '@darksoil-studio/friends-zome';
+import '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
 import { scanQrCodeAndSendFriendRequest } from '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
 import '@darksoil-studio/friends-zome/dist/elements/friend-requests.js';
 import {
@@ -43,27 +44,29 @@ import {
 	mdiChat,
 	mdiChatOutline,
 	mdiDotsVertical,
+	mdiLink,
 	mdiMessagePlus,
 } from '@mdi/js';
 import { SlButton, SlDialog } from '@shoelace-style/shoelace';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import SlMenuItem from '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
-import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
-import '@shoelace-style/shoelace/dist/components/tab-panel/tab-panel.js';
-import '@shoelace-style/shoelace/dist/components/tab/tab.js';
+import {
+	checkPermissions,
+	openAppSettings,
+	requestPermissions,
+} from '@tauri-apps/plugin-barcode-scanner';
 import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { appStyles } from './app-styles.js';
-import {
-	adminWebsocketContext,
-	isMobileContext,
-	rootRouterContext,
-} from './context.js';
+import { adminWebsocketContext, isMobileContext } from './context.js';
+import { LinkDeviceDialog } from './link-device-dialog.js';
 
 @customElement('home-page')
 export class HomePage extends SignalWatcher(LitElement) {
@@ -82,16 +85,165 @@ export class HomePage extends SignalWatcher(LitElement) {
 	@consume({ context: friendsStoreContext, subscribe: true })
 	friendsStore!: FriendsStore;
 
-	@consume({ context: rootRouterContext, subscribe: true })
-	rootRouter!: Router;
-
-	routes = new Routes(this, [
+	router = new Router(this, [
 		{
-			path: '',
+			path: '/',
 			render: () => this.renderPlaceholder(),
 		},
 		{
-			path: 'peer-chat/:peerChatHash',
+			path: '/my-profile',
+			render: () => html`
+				<link-device-dialog id="link-device-dialog"> </link-device-dialog>
+				<overlay-page
+					.title=${msg('My profile')}
+					icon="back"
+					@close-requested=${() => this.router.goto('/')}
+				>
+					<sl-button
+						outline
+						slot="action"
+						@click=${() => {
+							const dialog = this.shadowRoot!.getElementById(
+								'link-device-dialog',
+							) as LinkDeviceDialog;
+							dialog.show();
+						}}
+					>
+						<sl-icon .src=${wrapPathInSvg(mdiLink)}></sl-icon>
+						${msg('Link Device')}
+					</sl-button>
+
+					<sl-card>
+						<div class="column" style="gap: 16px; flex: 1">
+							<span class="title">${msg('My profile')}</span>
+							<my-profile
+								style="margin: 8px; flex: 1"
+								@edit-profile-clicked=${() =>
+									this.router.goto('/my-profile/edit')}
+							></my-profile>
+						</div>
+					</sl-card>
+				</overlay-page>
+			`,
+		},
+		{
+			path: '/my-profile/edit',
+			render: () => html`
+				<overlay-page
+					.title=${msg('Edit profile')}
+					@close-requested=${() => this.router.goto('/my-profile')}
+				>
+					<sl-card>
+						<div class="column" style="gap: 16px; flex: 1">
+							<span class="title">${msg('Edit profile')}</span>
+							<update-profile
+								style="margin: 8px; flex: 1"
+								@profile-updated=${() => this.router.goto('/my-profile')}
+							></update-profile>
+						</div>
+					</sl-card>
+				</overlay-page>
+			`,
+		},
+		{
+			path: '/friend-requests',
+			enter: () => {
+				// Redirect to "/home/"
+				this.router.goto('/my-friends');
+				return false;
+			},
+		},
+		{
+			path: '/my-friends',
+			render: () => this.renderFriends(),
+		},
+		{
+			path: '/new-message',
+			render: () => html`
+				<overlay-page
+					.title=${msg('New message')}
+					icon="back"
+					@close-requested=${() => this.router.goto('/')}
+				>
+					<div class="column" style="gap: 16px">
+						${this.renderAddFriendDialog()}
+						<sl-button
+							variant="neutral"
+							size="large"
+							@click=${() =>
+								(
+									this.shadowRoot!.getElementById(
+										'add-friend-dialog',
+									) as SlDialog
+								).show()}
+						>
+							<sl-icon
+								style="font-size: 1.4rem"
+								slot="prefix"
+								.src=${wrapPathInSvg(mdiAccountPlus)}
+							>
+							</sl-icon
+							>${msg('Add friend')}
+						</sl-button>
+
+						<sl-button
+							variant="neutral"
+							size="large"
+							@click=${() => this.router.goto('/create-group-chat')}
+						>
+							<sl-icon
+								slot="prefix"
+								.src=${wrapPathInSvg(mdiAccountGroup)}
+								style="font-size: 1.4rem"
+							>
+							</sl-icon
+							>${msg('New group')}
+						</sl-button>
+
+						<sl-divider> </sl-divider>
+
+						<span style="font-size: 20px">${msg('Friends')}</span>
+
+						<select-friend
+							style="flex: 1;"
+							@friend-selected=${(e: CustomEvent) => {
+								this.router.goto(
+									`/peer/${encodeHashToBase64(e.detail.agents[0])}`,
+								);
+							}}
+						>
+						</select-friend>
+					</div>
+				</overlay-page>
+			`,
+		},
+		{
+			path: '/create-group-chat',
+			render: () => html`
+				<overlay-page
+					.title=${msg('New group chat')}
+					icon="back"
+					@close-requested=${() => this.router.goto('/new-message')}
+				>
+					<sl-card>
+						<div class="column" style="gap: 16px; flex: 1">
+							<span class="title">${msg('New group chat')}</span>
+							<create-group-chat
+								style="flex: 1;"
+								@group-chat-created=${(e: CustomEvent) => {
+									this.router.goto(
+										`/group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
+									);
+								}}
+							>
+							</create-group-chat>
+						</div>
+					</sl-card>
+				</overlay-page>
+			`,
+		},
+		{
+			path: '/peer-chat/:peerChatHash',
 			render: ({ peerChatHash }) =>
 				html`<peer-chat
 					.peerChatHash=${decodeHashFromBase64(peerChatHash!)}
@@ -102,14 +254,14 @@ export class HomePage extends SignalWatcher(LitElement) {
 								<sl-icon-button
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
-									@click=${() => this.rootRouter.goto('')}
+									@click=${() => this.router.goto('/')}
 								></sl-icon-button>
 							`
 						: html``}
 				</peer-chat>`,
 		},
 		{
-			path: 'peer/:peer',
+			path: '/peer/:peer',
 			render: ({ peer }) =>
 				html`<peer-chat .peer=${decodeHashFromBase64(peer!)} style="flex: 1;">
 					${this.isMobile
@@ -117,14 +269,14 @@ export class HomePage extends SignalWatcher(LitElement) {
 								<sl-icon-button
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
-									@click=${() => this.rootRouter.goto('')}
+									@click=${() => this.router.goto('/')}
 								></sl-icon-button>
 							`
 						: html``}
 				</peer-chat>`,
 		},
 		{
-			path: 'group-chat/:groupChatHash',
+			path: '/group-chat/:groupChatHash',
 			render: ({ groupChatHash }) =>
 				html`<group-chat
 					.groupChatHash=${decodeHashFromBase64(groupChatHash!)}
@@ -135,7 +287,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 								<sl-icon-button
 									slot="top-bar-left-action"
 									.src=${wrapPathInSvg(mdiArrowLeft)}
-									@click=${() => this.rootRouter.goto('')}
+									@click=${() => this.router.goto('/')}
 								></sl-icon-button>
 							`
 						: html``}
@@ -157,237 +309,186 @@ export class HomePage extends SignalWatcher(LitElement) {
 		</div>`;
 	}
 
-	renderHomePanel() {
-		const pendingFriendRequestsResult =
-			this.friendsStore.pendingFriendRequests.get();
-		const pendingFriendRequests =
-			pendingFriendRequestsResult.status !== 'completed'
-				? {}
-				: pendingFriendRequestsResult.value;
+	renderFriendsIcon() {
 		const incomingFriendRequestsResult =
 			this.friendsStore.incomingFriendRequests.get();
 		const incomingFriendRequests =
 			incomingFriendRequestsResult.status !== 'completed'
 				? {}
 				: incomingFriendRequestsResult.value;
-		const allChats = this.messengerStore.allChats.get();
-		const newChatActivityCount =
-			allChats.status !== 'completed'
-				? 0
-				: allChats.value.reduce(
-						(acc, next) => acc + next.myUnreadMessages.length,
-						0,
-					);
-
 		return html`
-			<sl-tab-group placement="bottom" style="flex: 1; margin: 0 8px">
-				<sl-tab style="flex: 1" slot="nav" panel="all_chats">
-					<div class="row" style="justify-content: center; flex: 1">
-						<div class="column" style="align-items: center; gap: 4px;">
-							<sl-icon
-								.src=${wrapPathInSvg(mdiChat)}
-								style="font-size: 24px"
-							></sl-icon>
-							<span> ${msg('Chats')} </span>
-						</div>
-						${newChatActivityCount > 0
-							? html`
-									<sl-badge
-										variant="primary"
-										pill
-										pulse
-										style="align-self: center;"
-										>${newChatActivityCount}</sl-badge
-									>
-								`
-							: html``}
-					</div>
-				</sl-tab>
-				<sl-tab style="flex: 1" slot="nav" panel="my_friends">
-					<div class="row" style="justify-content: center; flex: 1">
-						<div class="column" style="align-items: center; gap: 4px;">
-							<sl-icon
-								.src=${wrapPathInSvg(mdiAccountGroup)}
-								style="font-size: 24px"
-							></sl-icon>
-							<span> ${msg('Friends')} </span>
-						</div>
-						${Object.keys(incomingFriendRequests).length > 0
-							? html`
-									<sl-badge
-										variant="primary"
-										pill
-										pulse
-										style="align-self: center;"
-										>${Object.keys(incomingFriendRequests).length}</sl-badge
-									>
-								`
-							: html``}
-					</div></sl-tab
+			<div style="position: relative">
+				<sl-icon-button
+					.src=${wrapPathInSvg(mdiAccountGroup)}
+					@click=${() => this.router.goto('/my-friends')}
+					style="font-size: 1.5rem"
 				>
-				<sl-tab-panel name="all_chats">
-					<all-chats
-						style="min-height: 100%; margin: 8px"
-						@group-chat-selected=${(e: CustomEvent) => {
-							this.routes.goto(
-								`group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
-							);
-						}}
-						@peer-chat-selected=${(e: CustomEvent) => {
-							this.routes.goto(
-								`peer-chat/${encodeHashToBase64(e.detail.peerChatHash)}`,
-							);
-						}}
-					>
-					</all-chats>
-					<sl-button
-						style="position: absolute; display: none; bottom: 16px; right: 16px"
-						variant="primary"
-						circle
-						@click=${() =>
-							this.dispatchEvent(
-								new CustomEvent('new-message-clicked', {
-									bubbles: true,
-									composed: true,
-								}),
-							)}
-						><sl-icon .src=${wrapPathInSvg(mdiMessagePlus)}></sl-icon
-					></sl-button>
-				</sl-tab-panel>
-				<sl-tab-panel name="my_friends">
-					<sl-dialog id="add-friend-dialog" .label=${msg('Add friend')}>
-						<div class="column" style="gap: 16px">
-							<span
-								>${msg(
-									'Ask your friend scan this QR code to send you a friend request.',
-								)}
-							</span>
-							<div class="column" style="align-items: center; padding: 16px">
-								<friend-request-qr-code
-									@friend-request-sent=${() =>
-										(
-											this.shadowRoot!.getElementById(
-												'add-friend-dialog',
-											) as SlDialog
-										).hide()}
-									style="align-self: center; "
-									size="256"
-									show-send-code-fallback
-								>
-								</friend-request-qr-code>
-							</div>
-						</div>
-						${this.isMobile
-							? html`
-									<sl-button
-										variant="primary"
-										slot="footer"
-										@click=${async (e: CustomEvent) => {
-											const button = e.target as SlButton;
-											button.loading = true;
-											try {
-												await scanQrCodeAndSendFriendRequest(this.friendsStore);
-												(
-													this.shadowRoot!.getElementById(
-														'add-friend-dialog',
-													) as SlDialog
-												).hide();
-												notify(msg('Friend request sent.'));
-											} catch (e) {
-												console.error(e);
-												notifyError(msg('Failed to send friend request.'));
-											}
-											button.loading = false;
-										}}
-										>${msg('Scan QR Code')}
-									</sl-button>
-								`
-							: html``}
-					</sl-dialog>
-					<div class="column" style="gap: 16px; min-height: 100%; margin: 8px">
-						${Object.keys(pendingFriendRequests).length > 0
-							? html`
-									<sl-card>
-										<div class="column" style="gap: 24px; flex: 1">
-											<span class="title">${msg('Friend requests')}</span>
-											<friend-requests> </friend-requests>
-										</div>
-									</sl-card>
-								`
-							: html``}
+				</sl-icon-button>
+				${Object.keys(incomingFriendRequests).length > 0
+					? html`
+							<sl-badge
+								variant="primary"
+								pill
+								pulse
+								style="position: absolute; right: -8px; bottom: -4px"
+								>${Object.keys(incomingFriendRequests).length}</sl-badge
+							>
+						`
+					: html``}
+			</div>
+		`;
+	}
 
-						<my-friends
-							style="flex: 1"
-							@friend-clicked=${(e: CustomEvent) =>
-								this.routes.goto(
-									`peer/${encodeHashToBase64(e.detail.agents[0])}`,
-								)}
-						>
-						</my-friends>
-
-						<sl-button
-							pill
-							variant="primary"
-							style="position: absolute; right: 16px; bottom: 16px"
-							@click=${() =>
+	renderAddFriendDialog() {
+		return html`
+			<sl-dialog id="add-friend-dialog" .label=${msg('Add friend')}>
+				<div class="column" style="gap: 16px">
+					<span
+						>${msg(
+							'Ask your friend scan this QR code to send you a friend request.',
+						)}
+					</span>
+					<div class="column" style="align-items: center; padding: 16px">
+						<friend-request-qr-code
+							@friend-request-sent=${() => {
 								(
 									this.shadowRoot!.getElementById(
 										'add-friend-dialog',
 									) as SlDialog
-								).show()}
+								).hide();
+								this.router.goto('/my-friends');
+							}}
+							style="align-self: center; "
+							size="256"
+							show-send-code-fallback
 						>
-							<sl-icon
-								slot="prefix"
-								.src=${wrapPathInSvg(mdiAccountPlus)}
-							></sl-icon>
-							${msg('Add Friend')}
-						</sl-button>
+						</friend-request-qr-code>
 					</div>
-				</sl-tab-panel>
-			</sl-tab-group>
+				</div>
+				${this.isMobile
+					? html`
+							<sl-button
+								variant="primary"
+								slot="footer"
+								@click=${async (e: CustomEvent) => {
+									const button = e.target as SlButton;
+									button.loading = true;
+									await this.scan();
+									button.loading = false;
+								}}
+								>${msg('Scan QR Code')}
+							</sl-button>
+						`
+					: html``}
+			</sl-dialog>
 		`;
 	}
 
-	// 		</sl-tab-panel>
-	// 		<sl-tab-panel name="all_profiles">
-	// 			<all-profiles
-	// 				.excludedProfiles=${this.myProfile.status === 'completed' &&
-	// 				this.myProfile.value
-	// 					? [this.myProfile.value.profileHash]
-	// 					: []}
-	// 				style="flex: 1; margin: 8px"
-	// 				@profile-selected=${async (e: CustomEvent) => {
-	// 					const agents = await toPromise(
-	// 						this.profilesStore.agentsForProfile.get(e.detail.profileHash),
-	// 					);
+	renderFriends() {
+		const pendingFriendRequestsResult =
+			this.friendsStore.pendingFriendRequests.get();
+		const pendingFriendRequests =
+			pendingFriendRequestsResult.status !== 'completed'
+				? {}
+				: pendingFriendRequestsResult.value;
+		return html`
+			<overlay-page
+				.title=${msg('My friends')}
+				icon="back"
+				@close-requested=${() => this.router.goto('/')}
+			>
+				<div class="column" style="gap: 16px; min-height: 100%; margin: 8px">
+					${Object.keys(pendingFriendRequests).length > 0
+						? html`
+								<sl-card>
+									<div class="column" style="gap: 24px; flex: 1">
+										<span class="title">${msg('Friend requests')}</span>
+										<friend-requests> </friend-requests>
+									</div>
+								</sl-card>
+							`
+						: html``}
 
-	// 					if (agents.length > 0) {
-	// 						this.routes.goto(`peer/${encodeHashToBase64(agents[0])}`);
-	// 					} else {
-	// 						const profile = await toPromise(
-	// 							this.profilesStore.profiles.get(e.detail.profileHash)
-	// 								.original,
-	// 						);
+					<my-friends style="flex: 1"> </my-friends>
 
-	// 						if (profile) {
-	// 							this.routes.goto(
-	// 								`peer/${encodeHashToBase64(profile.action.author)}`,
-	// 							);
-	// 						} else {
-	// 							const profile = await toPromise(
-	// 								this.profilesStore.profiles.get(e.detail.profileHash)
-	// 									.latestVersion,
-	// 							);
-	// 							this.routes.goto(
-	// 								`peer/${encodeHashToBase64(profile.action.author)}`,
-	// 							);
-	// 						}
-	// 					}
-	// 				}}
-	// 			>
-	// 			</all-profiles>
-	// 		</sl-tab-panel>
-	// 	</sl-tab-group>
+					<sl-button
+						pill
+						variant="primary"
+						size="large"
+						style="position: absolute; right: 16px; bottom: 16px;"
+						@click=${() =>
+							(
+								this.shadowRoot!.getElementById('add-friend-dialog') as SlDialog
+							).show()}
+					>
+						<sl-icon
+							slot="prefix"
+							.src=${wrapPathInSvg(mdiAccountPlus)}
+							style="font-size: 1.4rem"
+						></sl-icon>
+						${msg('Add friend')}
+					</sl-button>
+				</div>
+				${this.renderAddFriendDialog()}
+			</overlay-page>
+		`;
+	}
+
+	renderChats() {
+		return html`
+			<div style="display: flex; flex: 1; position: relative">
+				<all-chats
+					style="flex: 1; margin: 24px"
+					@group-chat-selected=${(e: CustomEvent) => {
+						this.router.goto(
+							`/group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
+						);
+					}}
+					@peer-chat-selected=${(e: CustomEvent) => {
+						this.router.goto(
+							`/peer-chat/${encodeHashToBase64(e.detail.peerChatHash)}`,
+						);
+					}}
+				>
+				</all-chats>
+				<sl-button
+					style="position: absolute; bottom: 16px; right: 16px;"
+					variant="primary"
+					size="large"
+					pill
+					@click=${() => this.router.goto('/new-message')}
+					><sl-icon
+						slot="prefix"
+						.src=${wrapPathInSvg(mdiMessagePlus)}
+						style="font-size: 1.4rem"
+					></sl-icon
+					>${this.isMobile ? '' : msg('New message')}</sl-button
+				>
+			</div>
+		`;
+	}
+
+	async scan() {
+		try {
+			const permission = await checkPermissions();
+			if (permission === 'prompt') {
+				await requestPermissions();
+			} else if (permission === 'denied') {
+				await openAppSettings();
+			}
+			await scanQrCodeAndSendFriendRequest(this.friendsStore);
+			(this.shadowRoot!.getElementById('add-friend-dialog') as SlDialog).hide();
+			notify(msg('Friend request sent.'));
+		} catch (e) {
+			if ((e as any).message && (e as any).message.includes('permission')) {
+				await openAppSettings();
+				await this.scan();
+			} else {
+				console.error(e);
+				notifyError(msg('Failed to send friend request.'));
+			}
+		}
+	}
 
 	@consume({ context: isMobileContext })
 	isMobile!: boolean;
@@ -395,66 +496,41 @@ export class HomePage extends SignalWatcher(LitElement) {
 	renderActions() {
 		if (this.isMobile) {
 			return html`
-				<sl-dropdown>
-					<sl-icon-button
-						slot="trigger"
-						style="font-size: 24px;"
-						.src=${wrapPathInSvg(mdiDotsVertical)}
-					></sl-icon-button>
-					<sl-menu
-						@sl-select=${async (e: CustomEvent) => {
-							const item = e.detail.item as SlMenuItem;
-							const value = item.value;
-							if (value === 'new_group') {
-								this.dispatchEvent(
-									new CustomEvent('create-group-chat-clicked'),
-								);
-							} else if (value === 'my_profile') {
-								this.dispatchEvent(new CustomEvent('profile-clicked'));
-							}
-						}}
-					>
-						<sl-menu-item value="new_group">
-							<sl-icon
-								.src=${wrapPathInSvg(mdiAccountMultiplePlus)}
-								slot="prefix"
-							></sl-icon>
-							${msg('New Group')}</sl-menu-item
+				<div class="row" style="gap: 8px; align-items: center">
+					${this.renderFriendsIcon()}
+					<sl-dropdown>
+						<sl-icon-button
+							slot="trigger"
+							style="font-size: 24px;"
+							.src=${wrapPathInSvg(mdiDotsVertical)}
+						></sl-icon-button>
+						<sl-menu
+							@sl-select=${async (e: CustomEvent) => {
+								const item = e.detail.item as SlMenuItem;
+								const value = item.value;
+								if (value === 'my_profile') {
+									this.router.goto('/my-profile');
+								}
+							}}
 						>
-						<sl-menu-item value="my_profile">
-							<sl-icon
-								.src=${wrapPathInSvg(mdiAccount)}
-								slot="prefix"
-							></sl-icon>
-							${msg('My Profile')}</sl-menu-item
-						>
-					</sl-menu>
-				</sl-dropdown>
+							<sl-menu-item value="my_profile">
+								<sl-icon
+									.src=${wrapPathInSvg(mdiAccount)}
+									slot="prefix"
+								></sl-icon>
+								${msg('My Profile')}</sl-menu-item
+							>
+						</sl-menu>
+					</sl-dropdown>
+				</div>
 			`;
 		}
 
 		return html`
 			<div class="row" style="gap: 16px; align-items: center">
-				<sl-button
-					style="font-size: 24px"
-					@click=${() =>
-						this.dispatchEvent(new CustomEvent('create-group-chat-clicked'))}
-					outline
-					><sl-icon
-						slot="prefix"
-						.src=${wrapPathInSvg(mdiAccountMultiplePlus)}
-					></sl-icon
-					>${msg('New Group')}
-				</sl-button>
-
+				${this.renderFriendsIcon()}
 				<agent-avatar
-					@click=${() =>
-						this.dispatchEvent(
-							new CustomEvent('profile-clicked', {
-								detail: true,
-								composed: true,
-							}),
-						)}
+					@click=${() => this.router.goto('/my-profile')}
 					.agentPubKey=${this.client.myPubKey}
 				></agent-avatar>
 			</div>
@@ -462,7 +538,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 	}
 
 	renderMobile() {
-		if (this.routes.currentPathname() !== '') return this.routes.outlet();
+		if (this.router.currentPathname() !== '/') return this.router.outlet();
 		return html`
 			<div class="column" style="flex: 1">
 				<div class="row top-bar">
@@ -470,7 +546,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 
 					${this.renderActions()}
 				</div>
-				${this.renderHomePanel()}
+				${this.renderChats()}
 			</div>
 		`;
 	}
@@ -485,12 +561,12 @@ export class HomePage extends SignalWatcher(LitElement) {
 				</div>
 				<div class="row" style="flex: 1">
 					<div class="column" style="flex-basis: 400px">
-						${this.renderHomePanel()}
+						${this.renderChats()}
 					</div>
 
 					<sl-divider vertical style="--spacing: 0"> </sl-divider>
 
-					${this.routes.outlet()}
+					${this.router.outlet()}
 				</div>
 			</div>
 		`;
@@ -507,30 +583,8 @@ export class HomePage extends SignalWatcher(LitElement) {
 				display: flex;
 				flex: 1;
 			}
-			sl-tab-group {
-				display: flex;
-			}
-			sl-tab-group::part(base) {
-				flex: 1;
-			}
-			sl-tab-group::part(body) {
-				flex: 1;
-			}
-			sl-tab {
-				display: flex;
-			}
-			sl-tab::part(base) {
-				flex: 1;
-			}
 			sl-divider {
 				margin-right: 0;
-			}
-			sl-tab-panel {
-				position: relative;
-				height: 100%;
-			}
-			sl-tab-panel::part(base) {
-				height: 100%;
 			}
 			group-chat::part(chat) {
 				margin: 8px;

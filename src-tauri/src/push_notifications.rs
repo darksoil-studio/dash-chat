@@ -70,15 +70,6 @@ pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
         }
     });
 
-    match handle.notification().permission_state().unwrap() {
-        PermissionState::Prompt | PermissionState::PromptWithRationale => {
-            handle.notification().request_permission().unwrap();
-        }
-        _ => {}
-    }
-
-    handle.notification().register_for_push_notifications()?;
-
     Ok(())
 }
 

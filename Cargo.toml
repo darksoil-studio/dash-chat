@@ -2,7 +2,9 @@
 opt-level = "z"
 
 [profile.release]
-opt-level = "z"
+opt-level = 3
+lto = true
+panic = "abort"
 
 [workspace]
 members = ["src-tauri", "dnas/*/zomes/coordinator/*"]
@@ -15,8 +17,8 @@ holochain_serialized_bytes = "*"
 serde = "1"
 
 [patch.crates-io]
-# wasmer-vm = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
-# wasmer-types = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
+wasmer-vm = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
+wasmer-types = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
 # kitsune2 = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/kitsune2"}
 # kitsune2_api = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/api"}
 # kitsune2_core = { path  ="/home/guillem/projects/holochain/core/kitsune2-fork/kitsune2/crates/core"}

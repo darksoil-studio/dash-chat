@@ -167,6 +167,6 @@ where
     }
 
     Err(wasm_error!(
-        "No providers were able to service the request."
+        "No providers were able to service the request for function {}.", fn_name
     ))
 }

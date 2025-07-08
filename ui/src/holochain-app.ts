@@ -1,4 +1,3 @@
-import '@darksoil-studio/friends-zome/dist/elements/friend-request-qr-code.js';
 import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
 import '@darksoil-studio/friends-zome/dist/elements/my-friends.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
@@ -67,144 +66,6 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	@provide({ context: isMobileContext })
 	@property()
 	_isMobile: boolean = false;
-
-	@provide({ context: rootRouterContext })
-	router = new Router(this, [
-		{
-			path: '',
-			enter: () => {
-				// Redirect to "/home/"
-				this.router.goto('/home/');
-				return false;
-			},
-		},
-		{
-			path: '/',
-			enter: () => {
-				// Redirect to "/home/"
-				this.router.goto('/home/');
-				return false;
-			},
-		},
-		{
-			path: '/home/*',
-			render: () =>
-				html`<home-page
-					@profile-clicked=${() => this.router.goto('/my-profile')}
-					@create-group-chat-clicked=${() =>
-						this.router.goto('/create-group-chat')}
-					@my-friends-clicked=${() => this.router.goto('/my-friends')}
-					@new-message-clicked=${() => this.router.goto('/new-message')}
-				></home-page>`,
-		},
-		{
-			path: '/friend-requests',
-			enter: () => {
-				// Redirect to "/home/"
-				this.router.goto('/my-friends');
-				return false;
-			},
-		},
-		{
-			path: '/my-profile',
-			render: () => html`
-				<link-device-dialog id="link-device-dialog"> </link-device-dialog>
-				<overlay-page
-					.title=${msg('My profile')}
-					icon="back"
-					@close-requested=${() => this.router.goto('/home/')}
-				>
-					<sl-button
-						outline
-						slot="action"
-						@click=${() => {
-							const dialog = this.shadowRoot!.getElementById(
-								'link-device-dialog',
-							) as LinkDeviceDialog;
-							dialog.show();
-						}}
-					>
-						<sl-icon .src=${wrapPathInSvg(mdiLink)}></sl-icon>
-						${msg('Link Device')}
-					</sl-button>
-
-					<sl-card>
-						<div class="column" style="gap: 16px; flex: 1">
-							<span class="title">${msg('My profile')}</span>
-							<my-profile
-								style="margin: 8px; flex: 1"
-								@edit-profile-clicked=${() =>
-									this.router.goto('/my-profile/edit')}
-							></my-profile>
-						</div>
-					</sl-card>
-				</overlay-page>
-			`,
-		},
-		{
-			path: '/my-profile/edit',
-			render: () => html`
-				<overlay-page
-					.title=${msg('Edit profile')}
-					@close-requested=${() => this.router.goto('/my-profile')}
-				>
-					<sl-card>
-						<div class="column" style="gap: 16px; flex: 1">
-							<span class="title">${msg('Edit profile')}</span>
-							<update-profile
-								style="margin: 8px; flex: 1"
-								@profile-updated=${() => this.router.goto('/my-profile')}
-							></update-profile>
-						</div>
-					</sl-card>
-				</overlay-page>
-			`,
-		},
-		// {
-		// 	path: '/new-message',
-		// 	render: () => html`
-		// 		<overlay-page
-		// 			.title=${msg('New message')}
-		// 			icon="back"
-		// 			@close-requested=${() => this.router.goto('/home/')}
-		// 		>
-		// 			<select-friend
-		// 				style="flex: 1;"
-		// 				@friend-selected=${(e: CustomEvent) => {
-		// 					this.router.goto(
-		// 						`/home/peer/${encodeHashToBase64(e.detail.friend.agents[0])}`,
-		// 					);
-		// 				}}
-		// 			>
-		// 			</select-friend>
-		// 		</overlay-page>
-		// 	`,
-		// },
-		{
-			path: '/create-group-chat',
-			render: () => html`
-				<overlay-page
-					.title=${msg('New group chat')}
-					@close-requested=${() => this.router.goto('/home/')}
-				>
-					<sl-card>
-						<div class="column" style="gap: 16px; flex: 1">
-							<span class="title">${msg('New group chat')}</span>
-							<create-group-chat
-								style="flex: 1;"
-								@group-chat-created=${(e: CustomEvent) => {
-									this.router.goto(
-										`/home/group-chat/${encodeHashToBase64(e.detail.groupChatHash)}`,
-									);
-								}}
-							>
-							</create-group-chat>
-						</div>
-					</sl-card>
-				</overlay-page>
-			`,
-		},
-	]);
 
 	async firstUpdated() {
 		new ResizeController(this, {
@@ -275,7 +136,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 						<linked-devices-context role="main">
 							<friends-context role="main">
 								<profile-prompt style="flex: 1;">
-									${this.router.outlet()}
+									<home-page> </home-page>
 								</profile-prompt>
 							</friends-context>
 						</linked-devices-context>
