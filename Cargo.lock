@@ -11733,7 +11733,7 @@ dependencies = [
 [[package]]
 name = "wasmer-types"
 version = "6.0.1"
-source = "git+https://github.com/guillemcordoba/wasmer?branch=fix-x86#b235daff7165470b94e0d89d6b791b0428b87439"
+source = "git+https://github.com/guillemcordoba/wasmer?branch=fix-x86#4231daf3abd3ddc36d7de97a76433fb92d94a9b5"
 dependencies = [
  "bytecheck 0.6.12",
  "enum-iterator",
@@ -11752,7 +11752,7 @@ dependencies = [
 [[package]]
 name = "wasmer-vm"
 version = "6.0.1"
-source = "git+https://github.com/guillemcordoba/wasmer?branch=fix-x86#b235daff7165470b94e0d89d6b791b0428b87439"
+source = "git+https://github.com/guillemcordoba/wasmer?branch=fix-x86#4231daf3abd3ddc36d7de97a76433fb92d94a9b5"
 dependencies = [
  "backtrace",
  "cc",
