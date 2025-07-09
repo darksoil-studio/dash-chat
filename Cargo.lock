@@ -10356,7 +10356,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification"
 version = "2.3.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e07fe16e8d8b1f9056184e414d83de0c429c3f70"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#ea27b67ac81c5c5ad0400d7856a8440bef4c3a34"
 dependencies = [
  "log",
  "notify-rust",
@@ -10377,7 +10377,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-macros"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e07fe16e8d8b1f9056184e414d83de0c429c3f70"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#ea27b67ac81c5c5ad0400d7856a8440bef4c3a34"
 dependencies = [
  "jni",
  "libc",
@@ -10391,7 +10391,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-models"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e07fe16e8d8b1f9056184e414d83de0c429c3f70"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#ea27b67ac81c5c5ad0400d7856a8440bef4c3a34"
 dependencies = [
  "rand 0.8.5",
  "serde",
