@@ -29,4 +29,4 @@ jobs:
 
       - name: Install and test
         run: |
-          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm i && pnpm test"
+          nix develop .#ci --no-update-lock-file --accept-flake-config --command bash -c "pnpm i && pnpm test"
