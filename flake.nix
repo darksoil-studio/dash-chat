@@ -71,18 +71,18 @@
           ];
         };
 
+        devShells.androidDev = pkgs.mkShell {
+          inputsFrom = [
+            inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
+            devShells.default
+          ];
+        };
+
         devShells.ci = pkgs.mkShell {
           inputsFrom = [
             inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
             inputs'.scaffolding.devShells.synchronized-pnpm
             inputs'.holonix.devShells.default
-          ];
-        };
-
-        devShells.androidDev = pkgs.mkShell {
-          inputsFrom = [
-            inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
-            devShells.default
           ];
         };
       };
