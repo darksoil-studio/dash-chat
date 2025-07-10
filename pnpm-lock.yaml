@@ -75,8 +75,8 @@ importers:
   tests:
     dependencies:
       '@darksoil-studio/friends-zome':
-        specifier: 0.501.0-rev.37e3b0e32aed700ad04b02d1505f2a20c284dc5d
-        version: 0.501.0-rev.37e3b0e32aed700ad04b02d1505f2a20c284dc5d(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+        specifier: 0.501.0-rev.58bcb6ac1128185b323f30017a3d089596771e1d
+        version: 0.501.0-rev.58bcb6ac1128185b323f30017a3d089596771e1d(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/holochain-signals':
         specifier: ^0.500.0
         version: 0.500.0
@@ -111,8 +111,8 @@ importers:
   ui:
     dependencies:
       '@darksoil-studio/friends-zome':
-        specifier: 0.501.0-rev.37e3b0e32aed700ad04b02d1505f2a20c284dc5d
-        version: 0.501.0-rev.37e3b0e32aed700ad04b02d1505f2a20c284dc5d(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+        specifier: 0.501.0-rev.58bcb6ac1128185b323f30017a3d089596771e1d
+        version: 0.501.0-rev.58bcb6ac1128185b323f30017a3d089596771e1d(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/holochain-elements':
         specifier: ^0.500.0
         version: 0.500.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
@@ -286,8 +286,8 @@ packages:
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
 
-  '@darksoil-studio/friends-zome@0.501.0-rev.37e3b0e32aed700ad04b02d1505f2a20c284dc5d':
-    resolution: {integrity: sha512-ca2XfhvOFJ7xzJHKNFfiARl9BDoqVR19vg9n7aL5yMQ+VIqp2krBSL3utQfw1pow7L7l1SWDx35EIcgOyEraUw==}
+  '@darksoil-studio/friends-zome@0.501.0-rev.58bcb6ac1128185b323f30017a3d089596771e1d':
+    resolution: {integrity: sha512-6wG75Hgdvo7uEmQb45l/1V25sw55shx51IGNmLbOlBahwHzVc42yPWwlCJorT4PRKImMuNcoxbkwKIoy4j77eg==}
 
   '@darksoil-studio/holochain-elements@0.500.0':
     resolution: {integrity: sha512-ByatMh1LW6je5Ne27UP8JvnZBjzBm0RJuXjqi7Jvm0CoGLbYXIqtTso0A6n7sPeIM+Qu/IHx1uRFfDj4MoYWIA==}
@@ -2619,7 +2619,7 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@darksoil-studio/friends-zome@0.501.0-rev.37e3b0e32aed700ad04b02d1505f2a20c284dc5d(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+  '@darksoil-studio/friends-zome@0.501.0-rev.58bcb6ac1128185b323f30017a3d089596771e1d(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@darksoil-studio/holochain-elements': 0.500.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/holochain-signals': 0.500.0
