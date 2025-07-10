@@ -6,8 +6,8 @@
     "build:old-happ": "nix build github:darksoil-studio/dash-chat/v0.3.0#dash_chat_happ -o old-dash-chat.happ"
   },
   "dependencies": {
-    "@darksoil-studio/friends-zome": "0.501.0-rev.58bcb6ac1128185b323f30017a3d089596771e1d",
-    "@darksoil-studio/messenger-zome": "0.501.0-rev.c740f4a379ca851f446a5ce205eb2fee85e0b7e0",
+    "@darksoil-studio/friends-zome": "0.501.0-rev.2a47e5f1ce1aa8669071196ba99085c05b51c458",
+    "@darksoil-studio/messenger-zome": "0.501.0-rev.58d5844b134f606d42ddbe2a041d71a686499746",
     "@darksoil-studio/linked-devices-zome": "0.500.0-rev.8180713ce1e0569ee151602c1dfa0e29d7f593f1",
     "@darksoil-studio/notifications-zome": "0.500.0-rev.0f9d7bf645a6c3754b7304800016d3155bd0a266",
     "@msgpack/msgpack": "^2.8.0",
