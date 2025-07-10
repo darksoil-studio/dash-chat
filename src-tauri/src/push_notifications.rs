@@ -101,6 +101,8 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
 // Entry point to receive notifications
 #[tauri_plugin_notification::receive_push_notification]
 pub fn receive_push_notification(notification: NotificationData) -> Option<NotificationData> {
+    log::info!("Received push notification: {:?}.", notification);
+
     tauri::async_runtime::block_on(async move {
         let (Some(title), Some(body)) = (notification.title.clone(), notification.body.clone())
         else {

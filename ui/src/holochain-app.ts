@@ -1,5 +1,4 @@
 import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
-import '@darksoil-studio/friends-zome/dist/elements/my-friends.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/friends-zome/dist/elements/select-friend.js';
 import '@darksoil-studio/friends-zome/dist/elements/update-profile.js';
@@ -80,6 +79,14 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 			this._client = await AppWebsocket.connect({
 				defaultTimeout: 100_000,
 			});
+
+			setInterval(() => {
+				this._client.callZome({
+					role_name: 'main',
+					zome_name: 'safehold_async_messages',
+					fn_name: 'receive_messages',
+				});
+			}, 10000);
 			// this._adminWs = await AdminWebsocket.connect();
 		} catch (e: unknown) {
 			if (

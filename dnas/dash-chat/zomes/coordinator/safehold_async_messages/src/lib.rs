@@ -40,12 +40,16 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
             .decode()
             .map_err(|err| wasm_error!("Invalid encrypt_messages result type: {:?}", err))?;
 
+        info!(
+            "Storing {} messages in the safehold service.",
+            payload.len()
+        );
         let () = make_service_request(
             safehold_service_trait::SAFEHOLD_SERVICE_HASH.to_vec(),
             FunctionName::from("store_messages"),
             payload,
         )?;
-        info!("Stored messages in the safehold service.");
+        info!("Successfully stored messages.");
 
         let send_push_notifications_input: Vec<SendPushNotificationToAgentInput> = input
             .recipients
@@ -59,6 +63,8 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
             })
             .collect();
 
+        info!("Sending push notification.");
+
         let () = make_service_request(
             push_notifications_service_trait::PUSH_NOTIFICATIONS_SERVICE_HASH.to_vec(),
             FunctionName::from("send_push_notifications"),
@@ -71,11 +77,23 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
 
 #[hdk_extern]
 pub fn receive_messages() -> ExternResult<()> {
+    debug!("[receive_messages] start");
     let encrypted_messages: Vec<MessageOutput> = make_service_request(
         safehold_service_trait::SAFEHOLD_SERVICE_HASH.to_vec(),
         FunctionName::from("get_messages"),
         (),
     )?;
+
+    if encrypted_messages.is_empty() {
+        debug!("[receive_messages] no messages for me.",);
+        return Ok(());
+    }
+
+    debug!(
+        "[receive_messages] received {} messages, decrypting.",
+        encrypted_messages.len()
+    );
+
     let response = call(
         CallTargetCell::Local,
         ZomeName::from("encrypted_messages"),
@@ -89,6 +107,8 @@ pub fn receive_messages() -> ExternResult<()> {
     let decrypted_messages: Vec<DecryptedMessageOutput> = result
         .decode()
         .map_err(|err| wasm_error!("Failed to parse decrypt_message result: {:?}.", err))?;
+
+    debug!("[receive_messages] Successfully decrypted messages.",);
 
     for decrypted_message in decrypted_messages {
         let bytes = SerializedBytes::from(UnsafeBytes::from(decrypted_message.contents));
@@ -108,6 +128,8 @@ pub fn receive_messages() -> ExternResult<()> {
             return Err(wasm_error!("Failed to receive messages: {:?}.", response));
         };
     }
+
+    debug!("[receive_messages] Successfully stored decrypted messages.",);
 
     Ok(())
 }
@@ -157,16 +179,36 @@ where
             },
         )?;
         let ZomeCallResponse::Ok(result) = response else {
-            continue;
-        };
-        let Ok(deserialized_result): Result<R, SerializedBytesError> = result.decode() else {
+            warn!(
+                "Error calling make_service_request with function: {}.",
+                fn_name
+            );
             continue;
         };
 
-        return Ok(deserialized_result);
+        match result.decode::<ExternIO>() {
+            Ok(deserialized_result) => match deserialized_result.decode::<R>() {
+                Ok(deserialized_result) => {
+                    return Ok(deserialized_result);
+                }
+                Err(err) => {
+                    error!(
+                        "Error deserializing result for function {}: {:?}.",
+                        fn_name, err
+                    );
+                }
+            },
+            Err(err) => {
+                error!(
+                    "Error deserializing result for function {}: {:?}.",
+                    fn_name, err
+                );
+            }
+        }
     }
 
     Err(wasm_error!(
-        "No providers were able to service the request for function {}.", fn_name
+        "No providers were able to service the request for function {}.",
+        fn_name
     ))
 }

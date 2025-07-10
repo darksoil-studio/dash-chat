@@ -1,7 +1,7 @@
-import { consume } from '@lit/context';
-import { mdiArrowLeft, mdiClose } from '@mdi/js';
 import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 import { SignalWatcher } from '@darksoil-studio/holochain-signals';
+import { consume } from '@lit/context';
+import { mdiArrowLeft, mdiClose } from '@mdi/js';
 import { LitElement, TemplateResult, css, html, render } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -51,6 +51,7 @@ export class OverlayPage extends SignalWatcher(LitElement) {
 									class="column"
 									style=${styleMap({
 										'min-width': this.isMobile ? '100%' : '500px',
+										flex: '1',
 									})}
 								>
 									<slot></slot>

@@ -29,7 +29,7 @@ fn app_id() -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    std::env::set_var("WASM_LOG", "info");
+    std::env::set_var("WASM_LOG", "debug");
 
     let mut builder = tauri::Builder::default()
         .plugin(
@@ -44,7 +44,7 @@ pub fn run() {
                 .level_for("holochain", log::LevelFilter::Warn)
                 .level_for("kitsune2", log::LevelFilter::Warn)
                 .level_for("kitsune2_gossip", log::LevelFilter::Warn)
-                // .level_for("holochain_runtime", log::LevelFilter::Debug)
+                .level_for("holochain_runtime", log::LevelFilter::Warn)
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())
@@ -147,17 +147,25 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
 
         let service_providers_network_seed = String::from("somesecretnetworkseed");
 
-        let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
-        roles_settings.insert(
-            String::from("service_providers"),
-            RoleSettings::Provisioned {
+        let services_role_settings = match previous_app {
+            Some(app_info) => RoleSettings::Provisioned {
                 membrane_proof: None,
                 modifiers: Some(DnaModifiersOpt {
                     network_seed: Some(service_providers_network_seed),
                     ..Default::default()
                 }),
             },
-        );
+            None => RoleSettings::Provisioned {
+                membrane_proof: None,
+                modifiers: Some(DnaModifiersOpt {
+                    network_seed: Some(service_providers_network_seed),
+                    ..Default::default()
+                }),
+            },
+        };
+
+        let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
+        roles_settings.insert(String::from("service_providers"), services_role_settings);
 
         handle
             .holochain()?

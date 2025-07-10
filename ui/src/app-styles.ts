@@ -21,6 +21,9 @@ export const appStyles = [
 			border: 1px solid var(--sl-color-gray-300, lightgrey);
 			box-shadow: rgba(149, 157, 165, 0.2) 2px 2px 4px;
 		}
+		sl-button.no-border::part(base) {
+			border: none;
+		}
 	`,
 	...sharedStyles,
 ];

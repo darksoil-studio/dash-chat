@@ -7,7 +7,10 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/carousel-item/carousel-item.js';
 import '@shoelace-style/shoelace/dist/components/carousel/carousel.js';
 import '@tauri-apps/api';
-import { requestPermission } from '@tauri-apps/plugin-notification';
+import {
+	isPermissionGranted,
+	requestPermission,
+} from '@tauri-apps/plugin-notification';
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -159,19 +162,22 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 						@click=${async () => {
 							try {
 								if (isMobileOs()) {
-									await requestPermission();
+									let permissionGranted = await isPermissionGranted();
+									if (!permissionGranted) {
+										const permission = await requestPermission();
+										permissionGranted = permission === 'granted';
+									}
 								}
-
-								this.dispatchEvent(
-									new CustomEvent('start-app-clicked', {
-										bubbles: true,
-										composed: true,
-									}),
-								);
 							} catch (e) {
 								console.error(e);
-								notifyError(msg('Failed to start app.'));
+								notifyError(msg('Failed to grant permissions.'));
 							}
+							this.dispatchEvent(
+								new CustomEvent('start-app-clicked', {
+									bubbles: true,
+									composed: true,
+								}),
+							);
 						}}
 						>${msg('Start app')}</sl-button
 					>
