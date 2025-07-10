@@ -7,6 +7,7 @@ use tauri_plugin_holochain::{
     vec_to_locked, DnaModifiersOpt, HolochainExt, HolochainPluginConfig, NetworkConfig,
     RoleSettings, RoleSettingsMap,
 };
+use utils::migrate_app;
 
 mod utils;
 
@@ -143,43 +144,30 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
             .iter()
             .find(|app| app.installed_app_id.as_str().starts_with(APP_ID_PREFIX));
 
-        let agent_key = previous_app.map(|app| app.agent_pub_key.clone());
-
         let service_providers_network_seed = String::from("somesecretnetworkseed");
 
-        let services_role_settings = match previous_app {
-            Some(app_info) => RoleSettings::Provisioned {
-                membrane_proof: None,
-                modifiers: Some(DnaModifiersOpt {
-                    network_seed: Some(service_providers_network_seed),
-                    ..Default::default()
-                }),
-            },
-            None => RoleSettings::Provisioned {
-                membrane_proof: None,
-                modifiers: Some(DnaModifiersOpt {
-                    network_seed: Some(service_providers_network_seed),
-                    ..Default::default()
-                }),
-            },
-        };
-
         let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
-        roles_settings.insert(String::from("service_providers"), services_role_settings);
-
-        handle
-            .holochain()?
-            .install_app(
-                String::from(app_id()),
-                happ_bundle(),
-                Some(roles_settings),
-                agent_key,
-                None,
-            )
-            .await?;
+        roles_settings.insert(
+            String::from("service_providers"),
+            RoleSettings::Provisioned {
+                membrane_proof: None,
+                modifiers: Some(DnaModifiersOpt {
+                    network_seed: Some(service_providers_network_seed),
+                    ..Default::default()
+                }),
+            },
+        );
 
         if let Some(previous_app) = previous_app {
             log::warn!("Migrating from old app {}", previous_app.installed_app_id);
+            migrate_app(
+                &handle.holochain()?.admin_websocket().await?,
+                previous_app.installed_app_id.clone(),
+                app_id(),
+                happ_bundle(),
+                Some(roles_settings),
+            )
+            .await?;
             let Some(Some(CellInfo::Provisioned(previous_cell_info))) =
                 previous_app.cell_info.get("main").map(|c| c.first())
             else {
@@ -217,7 +205,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
                 .await;
 
             if let Err(err) = migration_result {
-                log::error!("Error migrating data from the previous version of the app: {err:?}",);
+                log::error!("Error migrating data from the previous version of the app: {err:?}");
                 return Ok(());
             }
 
@@ -225,6 +213,17 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
                 .disable_app(previous_app.installed_app_id.clone())
                 .await
                 .map_err(|err| anyhow!("{err:?}"))?;
+        } else {
+            handle
+                .holochain()?
+                .install_app(
+                    String::from(app_id()),
+                    happ_bundle(),
+                    Some(roles_settings),
+                    None,
+                    None,
+                )
+                .await?;
         }
 
         Ok(())
