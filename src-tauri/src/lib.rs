@@ -142,7 +142,8 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
     if !app_is_already_installed {
         let previous_app = installed_apps
             .iter()
-            .find(|app| app.installed_app_id.as_str().starts_with(APP_ID_PREFIX));
+            .filter(|app| app.installed_app_id.as_str().starts_with(APP_ID_PREFIX))
+            .min_by_key(|app_info| app_info.installed_at);
 
         let service_providers_network_seed = String::from("somesecretnetworkseed");
 
@@ -161,7 +162,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
         if let Some(previous_app) = previous_app {
             log::warn!("Migrating from old app {}", previous_app.installed_app_id);
             migrate_app(
-                &handle.holochain()?.admin_websocket().await?,
+                &handle.holochain()?.holochain_runtime,
                 previous_app.installed_app_id.clone(),
                 app_id(),
                 happ_bundle(),

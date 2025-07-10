@@ -1,6 +1,6 @@
 use anyhow::anyhow;
-use holochain_client::{AdminWebsocket, AppInfo, CellInfo};
-use std::time::Duration;
+use holochain_client::{AdminWebsocket, AppInfo, AppWebsocket, CellInfo, ZomeCallTarget};
+use std::{collections::HashMap, time::Duration};
 use tauri_plugin_holochain::*;
 
 pub async fn with_retries<T>(
@@ -29,12 +29,13 @@ pub async fn with_retries<T>(
 }
 
 pub async fn migrate_app(
-    admin_ws: &AdminWebsocket,
+    holochain_runtime: &HolochainRuntime,
     existing_app_id: InstalledAppId,
     new_app_id: InstalledAppId,
     new_app_bundle: AppBundle,
     new_roles_settings: Option<RoleSettingsMap>,
 ) -> anyhow::Result<AppInfo> {
+    let admin_ws = holochain_runtime.admin_websocket().await?;
     let apps = admin_ws.list_apps(None).await?;
 
     let Some(existing_app_info) = apps
@@ -47,6 +48,8 @@ pub async fn migrate_app(
     let mut new_roles_settings = new_roles_settings.unwrap_or_default();
 
     let mut roles_settings = RoleSettingsMap::new();
+
+    let mut migrated_roles_from_cells: HashMap<RoleName, CellId> = HashMap::new();
 
     // For every new role
     // - Check if there was an existing provisioned cell
@@ -118,9 +121,12 @@ pub async fn migrate_app(
                     cell_id: existing_cell.cell_id,
                 },
             );
-        } else if let Some(role_settings) = new_role_settings {
-            roles_settings.insert(new_role.name, role_settings);
-        };
+        } else {
+            if let Some(role_settings) = new_role_settings {
+                roles_settings.insert(new_role.name.clone(), role_settings);
+            };
+            migrated_roles_from_cells.insert(new_role.name, existing_cell.cell_id);
+        }
     }
 
     let roles_settings = if roles_settings.is_empty() {
@@ -140,6 +146,44 @@ pub async fn migrate_app(
             allow_throwaway_random_agent_key: false,
         })
         .await?;
+    let app_ws = holochain_runtime
+        .app_websocket(app_info.installed_app_id.clone(), AllowedOrigins::Any)
+        .await?;
+
+    for (migrated_role, old_cell_id) in migrated_roles_from_cells {
+        let Some(CellInfo::Provisioned(provisioned_cell)) = app_info
+            .cell_info
+            .get(&migrated_role)
+            .cloned()
+            .unwrap_or_default()
+            .first()
+            .cloned()
+        else {
+            log::info!(
+                "Role {migrated_role} was marked for migration but was not created upon app installation."
+            );
+            continue;
+        };
+
+        let zomes = find_zomes_with_zome_trait(
+            &admin_ws,
+            &app_ws,
+            &provisioned_cell.cell_id,
+            migration_zome_trait::MIGRATION_ZOME_TRAIT_HASH,
+        )
+        .await?;
+
+        for zome in zomes {
+            app_ws
+                .call_zome(
+                    ZomeCallTarget::CellId(provisioned_cell.cell_id.clone()),
+                    zome,
+                    "migrate".into(),
+                    ExternIO::encode(old_cell_id.clone())?,
+                )
+                .await?;
+        }
+    }
 
     Ok(app_info)
 }
@@ -179,4 +223,53 @@ pub async fn dna_hash_for_app_bundle_role(
     };
 
     Ok(Some(DnaHash::with_data_sync(&dna_def)))
+}
+
+pub async fn find_zomes_with_zome_trait(
+    admin_ws: &AdminWebsocket,
+    app_ws: &AppWebsocket,
+    cell_id: &CellId,
+    zome_trait_hash: [u8; 32],
+) -> anyhow::Result<Vec<ZomeName>> {
+    let dna_def = admin_ws
+        .get_dna_definition(cell_id.dna_hash().clone())
+        .await?;
+
+    let mut zomes = vec![];
+
+    for (coordinator_zome, _) in dna_def.coordinator_zomes {
+        let traits = get_implemented_traits(
+            app_ws,
+            ZomeCallTarget::CellId(cell_id.clone()),
+            coordinator_zome.clone(),
+        )
+        .await?;
+
+        if traits.iter().any(|t| t.eq(&zome_trait_hash)) {
+            zomes.push(coordinator_zome);
+        }
+    }
+
+    Ok(zomes)
+}
+
+pub async fn get_implemented_traits(
+    app_ws: &AppWebsocket,
+    cell: ZomeCallTarget,
+    zome_name: ZomeName,
+) -> anyhow::Result<Vec<[u8; 32]>> {
+    let Ok(response) = app_ws
+        .call_zome(
+            cell,
+            zome_name,
+            "__implemented_zome_traits".into(),
+            ExternIO::encode(()).unwrap(),
+        )
+        .await
+    else {
+        return Ok(vec![]);
+    };
+    let implemented_zome_traits: Vec<[u8; 32]> = response.decode()?;
+
+    Ok(implemented_zome_traits)
 }

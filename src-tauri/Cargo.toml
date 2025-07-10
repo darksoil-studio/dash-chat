@@ -32,6 +32,7 @@ hyper-tls = "0.6"
 service_providers_utils = { git = "https://github.com/darksoil-studio/service-providers", branch = "main-0.5" }
 push_notifications_service_trait = { git = "https://github.com/darksoil-studio/push-notifications-service", branch = "main-0.5" }
 notifications_zome_trait = { git = "https://github.com/darksoil-studio/notifications-zome-trait", branch = "main-0.5" }
+migration_zome_trait = { git = "https://github.com/darksoil-studio/migration-zome-trait", branch = "main-0.5" }
 
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "push-notifications", features = ["push-notifications-fcm"] }
 tauri-plugin-dialog = "2"

@@ -1822,6 +1822,7 @@ dependencies = [
  "hyper-tls",
  "jni",
  "log",
+ "migration_zome_trait",
  "notifications_zome_trait",
  "opener",
  "push_notifications_service_trait",
@@ -5852,6 +5853,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a"
 dependencies = [
  "autocfg 1.5.0",
+]
+
+[[package]]
+name = "migration_zome_trait"
+version = "0.1.0"
+source = "git+https://github.com/darksoil-studio/migration-zome-trait?branch=main-0.5#3878bc57d81258915b1f3aa5c30dba42f247959e"
+dependencies = [
+ "hc_zome_traits",
+ "hdk",
+ "holochain_serialized_bytes",
+ "serde",
 ]
 
 [[package]]
