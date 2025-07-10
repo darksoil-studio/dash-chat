@@ -174,14 +174,16 @@ pub async fn migrate_app(
         .await?;
 
         for zome in zomes {
+            log::debug!("Migrating zome {zome} in role {migrated_role}...");
             app_ws
                 .call_zome(
                     ZomeCallTarget::CellId(provisioned_cell.cell_id.clone()),
-                    zome,
+                    zome.clone(),
                     "migrate".into(),
                     ExternIO::encode(old_cell_id.clone())?,
                 )
                 .await?;
+            log::info!("Successfully migrated zome {zome} in role {migrated_role}.");
         }
     }
 

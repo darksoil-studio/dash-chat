@@ -169,46 +169,6 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
                 Some(roles_settings),
             )
             .await?;
-            let Some(Some(CellInfo::Provisioned(previous_cell_info))) =
-                previous_app.cell_info.get("main").map(|c| c.first())
-            else {
-                log::error!(
-                    "'main' cell was not found in previous app {}",
-                    previous_app.installed_app_id
-                );
-                return Ok(());
-            };
-
-            let previous_cell_id = previous_cell_info.cell_id.clone();
-
-            let app_ws = handle.holochain()?.app_websocket(app_id()).await?;
-            let migration_result = app_ws
-                .call_zome(
-                    ZomeCallTarget::RoleName("main".into()),
-                    "messenger".into(),
-                    "migrate_from_old_cell".into(),
-                    ExternIO::encode(previous_cell_id.clone())?,
-                )
-                .await;
-
-            if let Err(err) = migration_result {
-                log::error!("Error migrating data from the previous version of the app: {err:?}",);
-                return Ok(());
-            }
-
-            let migration_result = app_ws
-                .call_zome(
-                    ZomeCallTarget::RoleName("main".into()),
-                    "friends".into(),
-                    "migrate_from_old_cell".into(),
-                    ExternIO::encode(previous_cell_id)?,
-                )
-                .await;
-
-            if let Err(err) = migration_result {
-                log::error!("Error migrating data from the previous version of the app: {err:?}");
-                return Ok(());
-            }
 
             admin_ws
                 .disable_app(previous_app.installed_app_id.clone())
