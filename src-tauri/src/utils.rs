@@ -35,6 +35,11 @@ pub async fn migrate_app(
     new_app_bundle: AppBundle,
     new_roles_settings: Option<RoleSettingsMap>,
 ) -> anyhow::Result<AppInfo> {
+    log::info!(
+        "Migrating from old app {} to new app {}.",
+        existing_app_id,
+        new_app_id
+    );
     let admin_ws = holochain_runtime.admin_websocket().await?;
     let apps = admin_ws.list_apps(None).await?;
 
@@ -115,6 +120,8 @@ pub async fn migrate_app(
         };
 
         if new_dna_hash.eq(&existing_cell.cell_id.dna_hash()) {
+            log::info!("Reusing role {}.", new_role.name);
+
             roles_settings.insert(
                 new_role.name,
                 RoleSettings::UseExisting {

@@ -160,7 +160,6 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
         );
 
         if let Some(previous_app) = previous_app {
-            log::warn!("Migrating from old app {}", previous_app.installed_app_id);
             migrate_app(
                 &handle.holochain()?.holochain_runtime,
                 previous_app.installed_app_id.clone(),
