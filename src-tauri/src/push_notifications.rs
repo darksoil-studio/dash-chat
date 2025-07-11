@@ -29,48 +29,6 @@ pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
         }
     });
 
-    let h = handle.clone();
-    handle.listen("notification://action-performed", move |event| {
-        let handle = h.clone();
-        if let Ok(notification_action_performed_payload) = serde_json::from_str::<
-            tauri_plugin_notification::NotificationActionPerformedPayload,
-        >(event.payload())
-        {
-            tauri::async_runtime::spawn(async move {
-                println!("onlistener{:?}", notification_action_performed_payload);
-                let window = match handle.get_webview_window("main") {
-                    Some(w) => w,
-                    None => open_window(handle.clone())
-                        .await
-                        .expect("Failed to open window"),
-                };
-
-                let extra: HashMap<String, serde_json::Value> = notification_action_performed_payload.notification.extra;
-                let Some(url_to_navigate_to_on_click) = extra.get("url_path_to_navigate_to_on_click") else {
-                    log::error!("Notification did not have the url_path_to_navigate_to_on_click extra.");
-                    return;
-                };
-
-                let Ok(url_to_navigate_to_on_click)  = serde_json::from_value::<Option<String>>(url_to_navigate_to_on_click.clone()) else {
-                    log::error!("Notification's url_path_to_navigate_to_on_click extra failed to deserialize.");
-                    return;
-                };
-
-                let Some(url) = url_to_navigate_to_on_click else {
-                    return;
-                };
-                let Ok(url) = tauri::Url::parse(url.as_str()) else {
-                    log::error!("Failed to parse url for notification.");
-                    return;
-                };
-
-                if let Err(err) = window.navigate(url) {
-                    log::error!("Failed to navigate to url: {err:?}");
-                }
-            });
-        }
-    });
-
     Ok(())
 }
 
@@ -167,21 +125,13 @@ async fn get_notification(
         return Ok(None);
     };
 
-    let extra = match notification.url_path_to_navigate_to_on_click {
-        Some(url) => vec![(
-            String::from("url_path_to_navigate_to_on_click"),
-            serde_json::to_value(url)?,
-        )]
-        .into_iter()
-        .collect(),
-        None => HashMap::new(),
-    };
-
     Ok(Some(NotificationData {
         title: Some(notification.title),
         body: Some(notification.body),
         group: notification.group,
-        extra,
+        summary: notification.summary,
+        large_body: notification.large_body,
+        group_summary: notification.group_summary,
         ..Default::default()
     }))
 }

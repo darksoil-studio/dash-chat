@@ -23,3 +23,7 @@ export function getOS() {
 export function isMobileOs() {
 	return getOS() === 'Android' || getOS() === 'iOS';
 }
+
+export function onNotificationClicked(
+	handler: (notification: Notification) => void,
+) {}

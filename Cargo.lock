@@ -1825,6 +1825,7 @@ dependencies = [
  "migration_zome_trait",
  "notifications_zome_trait",
  "opener",
+ "profiles_provider_zome_trait",
  "push_notifications_service_trait",
  "serde",
  "serde_json",
@@ -3108,9 +3109,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.3.26"
+version = "0.3.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81fe527a889e1532da5c525686d96d4c2e74cdd345badf8dfef9f6b39dd5f5e8"
+checksum = "0beca50380b1fc32983fc1cb4587bfa4bb9e78fc259aad4a0032d2080309222d"
 dependencies = [
  "bytes",
  "fnv",
@@ -4330,7 +4331,7 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-util",
- "h2 0.3.26",
+ "h2 0.3.27",
  "http 0.2.12",
  "http-body 0.4.6",
  "httparse",
@@ -6372,7 +6373,7 @@ dependencies = [
 [[package]]
 name = "notifications_zome_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/notifications-zome-trait?branch=main-0.5#15501f2d42bf7f833811f9c418d8bc06ca809b8c"
+source = "git+https://github.com/darksoil-studio/notifications-zome-trait?branch=main-0.5#c90799b5ae4910b08e335ddbbc8231dbee93e1a6"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -7722,6 +7723,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "profiles_provider_zome_trait"
+version = "0.1.0"
+source = "git+https://github.com/darksoil-studio/profiles-zome?branch=main-0.5#90038e84a498a060c4fb76ea845ccface938a5a6"
+dependencies = [
+ "hc_zome_traits",
+ "hdk",
+ "holochain_serialized_bytes",
+ "serde",
+]
+
+[[package]]
 name = "prost"
 version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8404,7 +8416,7 @@ dependencies = [
  "encoding_rs",
  "futures-core",
  "futures-util",
- "h2 0.3.26",
+ "h2 0.3.27",
  "http 0.2.12",
  "http-body 0.4.6",
  "hyper 0.14.32",

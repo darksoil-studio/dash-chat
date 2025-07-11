@@ -142,17 +142,16 @@ pub async fn migrate_app(
         Some(roles_settings)
     };
 
-    let app_info = admin_ws
-        .install_app(InstallAppPayload {
-            source: AppBundleSource::Bytes(new_app_bundle.encode()?),
-            agent_key: Some(existing_app_info.agent_pub_key),
-            installed_app_id: Some(new_app_id),
+    let app_info = holochain_runtime
+        .install_app(
+            new_app_id,
+            new_app_bundle,
             roles_settings,
-            network_seed: None,
-            ignore_genesis_failure: false,
-            allow_throwaway_random_agent_key: false,
-        })
+            Some(existing_app_info.agent_pub_key),
+            None,
+        )
         .await?;
+
     let app_ws = holochain_runtime
         .app_websocket(app_info.installed_app_id.clone(), AllowedOrigins::Any)
         .await?;

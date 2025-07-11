@@ -2,9 +2,9 @@
 opt-level = "z"
 
 [profile.release]
-opt-level = 3
-lto = true
-panic = "abort"
+# opt-level = 3
+# lto = true
+# panic = "abort"
 
 [workspace]
 members = ["src-tauri", "dnas/*/zomes/coordinator/*"]
