@@ -4,11 +4,12 @@ use holochain_client::ZomeCallTarget;
 use holochain_types::prelude::ZomeName;
 use jni::objects::JClass;
 use jni::JNIEnv;
+use notifications_zome_trait::GetNotificationInput;
 use push_notifications_service_trait::*;
 use service_providers_utils::make_service_request;
 use tauri::{AppHandle, Listener, Manager};
 use tauri_plugin_holochain::*;
-use tauri_plugin_notification::{NotificationData, NotificationExt, PermissionState};
+use tauri_plugin_notification::{NotificationData, NotificationExt};
 
 use crate::{app_id, holochain_dir, network_config, open_window, utils::with_retries};
 
@@ -115,6 +116,11 @@ pub fn receive_push_notification(notification: NotificationData) -> Option<Notif
             log::error!("Failed to get notifications.");
             return None;
         };
+        if let Some(n) = &notification {
+            log::info!("Showing notification: {:?}.", n);
+        } else {
+            log::info!("Notification was not necessary to display.");
+        }
         notification
     })
 }
@@ -131,6 +137,8 @@ async fn get_notification(
 
     let app_ws = runtime.app_websocket(app_id(), AllowedOrigins::Any).await?;
 
+    log::debug!("[receive_push_notification] Calling receive messages.");
+
     app_ws
         .call_zome(
             ZomeCallTarget::RoleName("main".into()),
@@ -140,26 +148,40 @@ async fn get_notification(
         )
         .await?;
 
-    let notification: notifications_zome_trait::Notification = app_ws
+    log::debug!("[receive_push_notification] Calling get_notification.");
+
+    let notification: Option<notifications_zome_trait::Notification> = app_ws
         .call_zome(
             ZomeCallTarget::RoleName("main".into()),
             zome_name,
             "get_notification".into(),
-            ExternIO::encode(notification_id)?,
+            ExternIO::encode(GetNotificationInput {
+                notification_id,
+                locale: String::from("en-US"),
+            })?,
         )
         .await?
         .decode()?;
+
+    let Some(notification) = notification else {
+        return Ok(None);
+    };
+
+    let extra = match notification.url_path_to_navigate_to_on_click {
+        Some(url) => vec![(
+            String::from("url_path_to_navigate_to_on_click"),
+            serde_json::to_value(url)?,
+        )]
+        .into_iter()
+        .collect(),
+        None => HashMap::new(),
+    };
 
     Ok(Some(NotificationData {
         title: Some(notification.title),
         body: Some(notification.body),
         group: notification.group,
-        extra: vec![(
-            String::from("url_path_to_navigate_to_on_click"),
-            serde_json::to_value(notification.url_path_to_navigate_to_on_click)?,
-        )]
-        .into_iter()
-        .collect(),
+        extra,
         ..Default::default()
     }))
 }

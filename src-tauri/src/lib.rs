@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use holochain_client::{AppStatusFilter, CellInfo, ExternIO, ZomeCallTarget};
+use holochain_client::AppStatusFilter;
 use holochain_types::app::AppBundle;
 use std::path::PathBuf;
 use tauri::{AppHandle, Listener, WebviewWindow};
@@ -7,9 +7,9 @@ use tauri_plugin_holochain::{
     vec_to_locked, DnaModifiersOpt, HolochainExt, HolochainPluginConfig, NetworkConfig,
     RoleSettings, RoleSettingsMap,
 };
-use utils::migrate_app;
 
 mod utils;
+pub use utils::migrate_app;
 
 #[cfg(not(mobile))]
 mod menu;
@@ -46,6 +46,7 @@ pub fn run() {
                 .level_for("kitsune2", log::LevelFilter::Warn)
                 .level_for("kitsune2_gossip", log::LevelFilter::Warn)
                 .level_for("holochain_runtime", log::LevelFilter::Warn)
+                .level_for("dash-chat", log::LevelFilter::Debug)
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())
@@ -206,7 +207,6 @@ fn network_config() -> NetworkConfig {
         // network_config.signal_url = url2::Url2::parse("ws://bad.bad");
     } else {
         network_config.bootstrap_url = url2::Url2::parse("http://157.180.93.55:8888");
-        network_config.signal_url = url2::Url2::parse("ws://157.180.93.55:8888");
     }
 
     // Don't hold any slice of the DHT in mobile

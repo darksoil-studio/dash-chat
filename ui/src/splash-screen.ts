@@ -4,6 +4,7 @@ import { AppWebsocket } from '@holochain/client';
 import { consume } from '@lit/context';
 import { localized, msg } from '@lit/localize';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
+import SlButton from '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/carousel-item/carousel-item.js';
 import '@shoelace-style/shoelace/dist/components/carousel/carousel.js';
 import '@tauri-apps/api';
@@ -159,11 +160,14 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 						variant="primary"
 						.disabled=${!this.initialized}
 						.loading=${!this.initialized}
-						@click=${async () => {
+						@click=${async (e: CustomEvent) => {
+							const button = e.target as SlButton;
+							button.disabled = true;
 							try {
 								if (isMobileOs()) {
 									let permissionGranted = await isPermissionGranted();
 									if (!permissionGranted) {
+										button.loading = true;
 										const permission = await requestPermission();
 										permissionGranted = permission === 'granted';
 									}
@@ -172,6 +176,8 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 								console.error(e);
 								notifyError(msg('Failed to grant permissions.'));
 							}
+							button.loading = false;
+							button.disabled = false;
 							this.dispatchEvent(
 								new CustomEvent('start-app-clicked', {
 									bubbles: true,

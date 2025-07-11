@@ -2,7 +2,11 @@ import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/friends-zome/dist/elements/select-friend.js';
 import '@darksoil-studio/friends-zome/dist/elements/update-profile.js';
-import { Router, wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+import {
+	Router,
+	notify,
+	wrapPathInSvg,
+} from '@darksoil-studio/holochain-elements';
 import '@darksoil-studio/holochain-elements/dist/elements/app-client-context.js';
 import '@darksoil-studio/holochain-elements/dist/elements/display-error.js';
 import { SignalWatcher } from '@darksoil-studio/holochain-signals';
@@ -26,6 +30,7 @@ import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import { listen } from '@tauri-apps/api/event';
 import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -37,6 +42,7 @@ import {
 	rootRouterContext,
 } from './context.js';
 import './home-page.js';
+import { HomePage } from './home-page.js';
 import { LinkDeviceDialog } from './link-device-dialog.js';
 import './link-device-dialog.js';
 import './overlay-page.js';
@@ -74,6 +80,35 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		});
 		this._splashscreen = false;
 		this._loading = true;
+
+		listen('notification://action-performed', e => {
+			const group = (e.payload as any).notification.group;
+			const split = group.split('/');
+			if (split.length !== 2) {
+				console.warn('Received a notification with a malformed group.');
+				return;
+			}
+
+			const notificationType = split[0];
+			const homePage = this.shadowRoot?.querySelector('home-page') as HomePage;
+
+			if (!homePage) return;
+			notify(split[1]);
+
+			switch (notificationType) {
+				case 'group-chat':
+					homePage.router.goto(`/group-chat/${split[1]}`);
+					return;
+				case 'peer-chat':
+					homePage.router.goto(`/peer-chat/${split[1]}`);
+					return;
+				default:
+					console.warn(
+						'Received a notification with an invalid group notification type: ',
+						notificationType,
+					);
+			}
+		});
 
 		try {
 			this._client = await AppWebsocket.connect({

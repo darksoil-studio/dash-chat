@@ -5,5 +5,5 @@ procs:
   safehold-service: test-safehold-service somesecretnetworkseed
   playground: hc playground
   ui: pnpm -F ./ui start
-  android: adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev 
+  android: adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev --release 
   logcat: adb logcat | grep -F "`adb shell ps | grep studio.darksoil.dashchat | tr -s [:space:] ' ' | cut -d' ' -f2`"

@@ -608,9 +608,9 @@ dependencies = [
 
 [[package]]
 name = "aws-lc-rs"
-version = "1.13.1"
+version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93fcc8f365936c834db5514fc45aee5b1202d677e6b40e48468aaaa8183ca8c7"
+checksum = "08b5d4e069cbc868041a64bd68dc8cb39a0d79585cd6c5a24caa8c2d622121be"
 dependencies = [
  "aws-lc-sys",
  "zeroize",
@@ -618,9 +618,9 @@ dependencies = [
 
 [[package]]
 name = "aws-lc-sys"
-version = "0.29.0"
+version = "0.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61b1d86e7705efe1be1b569bab41d4fa1e14e220b60a160f78de2db687add079"
+checksum = "dbfd150b5dbdb988bcc8fb1fe787eb6b7ee6180ca24da683b61ea5405f3d43ff"
 dependencies = [
  "bindgen 0.69.5",
  "cc",
@@ -1839,6 +1839,7 @@ dependencies = [
  "tauri-plugin-process",
  "tauri-plugin-updater",
  "tempdir",
+ "tokio",
  "url2",
  "uuid 1.17.0",
 ]
@@ -2228,7 +2229,7 @@ dependencies = [
  "cc",
  "memchr",
  "rustc_version",
- "toml 0.9.0",
+ "toml 0.9.1",
  "vswhom",
  "winreg 0.55.0",
 ]
@@ -3825,7 +3826,7 @@ dependencies = [
 [[package]]
 name = "holochain_runtime"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=develop#941b6886f57ee24ed9390f3e79020801f0902ff5"
+source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#cb0163f3c92945ae295c3ea9bed15ee12f0573c4"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -4315,7 +4316,7 @@ dependencies = [
  "os_info",
  "serde",
  "serde_derive",
- "toml 0.9.0",
+ "toml 0.9.1",
  "uuid 1.17.0",
 ]
 
@@ -10300,7 +10301,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-holochain"
 version = "0.0.0"
-source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=develop#941b6886f57ee24ed9390f3e79020801f0902ff5"
+source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#cb0163f3c92945ae295c3ea9bed15ee12f0573c4"
 dependencies = [
  "anyhow",
  "bzip2 0.4.4",
@@ -10354,7 +10355,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification"
 version = "2.3.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#ea27b67ac81c5c5ad0400d7856a8440bef4c3a34"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#61ca9e8e9287bcc8f353695471041adbad005661"
 dependencies = [
  "log",
  "notify-rust",
@@ -10375,7 +10376,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-macros"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#ea27b67ac81c5c5ad0400d7856a8440bef4c3a34"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#61ca9e8e9287bcc8f353695471041adbad005661"
 dependencies = [
  "jni",
  "libc",
@@ -10389,7 +10390,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-models"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#ea27b67ac81c5c5ad0400d7856a8440bef4c3a34"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#61ca9e8e9287bcc8f353695471041adbad005661"
 dependencies = [
  "rand 0.8.5",
  "serde",
@@ -10882,9 +10883,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f271e09bde39ab52250160a67e88577e0559ad77e9085de6e9051a2c4353f8f8"
+checksum = "0207d6ed1852c2a124c1fbec61621acb8330d2bf969a5d0643131e9affd985a5"
 dependencies = [
  "indexmap 2.10.0",
  "serde",

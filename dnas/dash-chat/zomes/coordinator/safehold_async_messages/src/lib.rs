@@ -17,11 +17,24 @@ pub enum ZomeTraits {
     SendAsyncMessage(SafeholdAsyncMessages),
 }
 
+#[derive(Serialize, Deserialize, Debug, SerializedBytes)]
+pub struct MessageWithZome {
+    zome_name: ZomeName,
+    message: Vec<u8>,
+}
+
 #[implement_zome_trait_as_externs]
 impl SendAsyncMessage for SafeholdAsyncMessages {
     fn send_async_message(
         input: send_async_message_zome_trait::SendAsyncMessageInput,
     ) -> ExternResult<()> {
+        let m = MessageWithZome {
+            zome_name: input.zome_name.clone(),
+            message: input.message,
+        };
+        let sb = SerializedBytes::try_from(m).map_err(|err| wasm_error!(err))?;
+        let bytes = sb.bytes().to_vec();
+
         let response = call(
             CallTargetCell::Local,
             ZomeName::from("encrypted_messages"),
@@ -29,7 +42,7 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
             None,
             EncryptMessageInput {
                 recipients: input.recipients.iter().cloned().collect(),
-                message: input.message,
+                message: bytes,
             },
         )?;
         let ZomeCallResponse::Ok(result) = response else {
@@ -77,7 +90,7 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
 
 #[hdk_extern]
 pub fn receive_messages() -> ExternResult<()> {
-    debug!("[receive_messages] start");
+    debug!("[receive_messages] start.");
     let encrypted_messages: Vec<MessageOutput> = make_service_request(
         safehold_service_trait::SAFEHOLD_SERVICE_HASH.to_vec(),
         FunctionName::from("get_messages"),
@@ -112,11 +125,14 @@ pub fn receive_messages() -> ExternResult<()> {
 
     for decrypted_message in decrypted_messages {
         let bytes = SerializedBytes::from(UnsafeBytes::from(decrypted_message.contents));
+        let message_with_zome = MessageWithZome::try_from(bytes)
+            .map_err(|err| wasm_error!("Failed to deserialize Message bytes: {:?}.", err))?;
+        let bytes = SerializedBytes::from(UnsafeBytes::from(message_with_zome.message));
         let message = Message::try_from(bytes)
             .map_err(|err| wasm_error!("Failed to deserialize Message bytes: {:?}.", err))?;
         let response = call(
             CallTargetCell::Local,
-            ZomeName::from("messenger"),
+            message_with_zome.zome_name,
             FunctionName::from("receive_message"),
             None,
             ReceiveMessageInput {
@@ -158,7 +174,7 @@ where
     };
     let providers: Vec<AgentPubKey> = result
         .decode()
-        .map_err(|err| wasm_error!("Invalid get_providers_for_service response: {:?}", err))?;
+        .map_err(|err| wasm_error!("Invalid get_providers_for_service response: {:?}.", err))?;
 
     if providers.is_empty() {
         return Err(wasm_error!("There are no providers for this service."));
