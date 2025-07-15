@@ -47,6 +47,8 @@ import { LinkDeviceDialog } from './link-device-dialog.js';
 import './link-device-dialog.js';
 import './overlay-page.js';
 import './splash-screen.js';
+import { splascreenCompleted } from './splash-screen.js';
+import { sleep } from './utils.js';
 
 export const MOBILE_WIDTH_PX = 600;
 
@@ -73,12 +75,13 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	_isMobile: boolean = false;
 
 	async firstUpdated() {
+		this._isMobile = this.getBoundingClientRect().width < MOBILE_WIDTH_PX;
 		new ResizeController(this, {
 			callback: () => {
 				this._isMobile = this.getBoundingClientRect().width < MOBILE_WIDTH_PX;
 			},
 		});
-		this._splashscreen = false;
+		this._splashscreen = splascreenCompleted();
 		this._loading = true;
 
 		listen('notification://action-performed', e => {
@@ -93,9 +96,11 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 			const homePage = this.shadowRoot?.querySelector('home-page') as HomePage;
 
 			if (!homePage) return;
-			notify(split[1]);
 
 			switch (notificationType) {
+				case 'friend-request':
+					homePage.router.goto(`/my-friends`);
+					return;
 				case 'group-chat':
 					homePage.router.goto(`/group-chat/${split[1]}`);
 					return;
@@ -115,32 +120,44 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				defaultTimeout: 100_000,
 			});
 
-			setInterval(() => {
-				this._client.callZome({
-					role_name: 'main',
-					zome_name: 'safehold_async_messages',
-					fn_name: 'receive_messages',
-				});
-			}, 10000);
 			// this._adminWs = await AdminWebsocket.connect();
 		} catch (e: unknown) {
-			if (
-				(e as any)
-					.toString()
-					.includes(
-						'The app your connection token was issued for was not found',
-					)
-			) {
-				this._splashscreen = true;
-			} else {
-				this._error = e;
-			}
+			this._error = e;
 		} finally {
 			this._loading = false;
 		}
+		await sleep(100);
+		await this._client
+			.callZome({
+				role_name: 'main',
+				zome_name: 'safehold_async_messages',
+				fn_name: 'receive_messages',
+			})
+			.catch(console.warn);
+		await sleep(1000);
+		await this._client
+			.callZome({
+				role_name: 'main',
+				zome_name: 'safehold_async_messages',
+				fn_name: 'receive_messages',
+			})
+			.catch(console.warn);
+		setInterval(() => {
+			this._client.callZome({
+				role_name: 'main',
+				zome_name: 'safehold_async_messages',
+				fn_name: 'receive_messages',
+			});
+		}, 10000);
 	}
 
 	render() {
+		if (this._splashscreen) {
+			return html`<splash-screen
+				style="flex: 1"
+				@start-app-clicked=${() => this.firstUpdated()}
+			></splash-screen>`;
+		}
 		if (this._loading) {
 			return html`<div
 				class="row"
@@ -148,12 +165,6 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 			>
 				<sl-spinner style="font-size: 2rem"></sl-spinner>
 			</div>`;
-		}
-		if (this._splashscreen) {
-			return html`<splash-screen
-				style="flex: 1"
-				@start-app-clicked=${() => this.firstUpdated()}
-			></splash-screen>`;
 		}
 
 		if (this._error) {

@@ -25,15 +25,13 @@ holochain_types = { version = "0.5" }
 
 holochain_client = { version = "0.7" }
 
-# Work around "hyper-tls" not found issue in nix build tauri app
-# TODO: remove this dependency
-hyper-tls = "0.6"
-
 service_providers_utils = { git = "https://github.com/darksoil-studio/service-providers", branch = "main-0.5" }
 push_notifications_service_trait = { git = "https://github.com/darksoil-studio/push-notifications-service", branch = "main-0.5" }
 notifications_zome_trait = { git = "https://github.com/darksoil-studio/notifications-zome-trait", branch = "main-0.5" }
 profiles_provider_zome_trait = { git = "https://github.com/darksoil-studio/profiles-zome", branch = "main-0.5" }
 migration_zome_trait = { git = "https://github.com/darksoil-studio/migration-zome-trait", branch = "main-0.5" }
+
+image = "0.25"
 
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "push-notifications", features = ["push-notifications-fcm"] }
 tauri-plugin-dialog = "2"
@@ -49,6 +47,10 @@ uuid = "1"
 serde = "1"
 serde_json = "1"
 jni = "0.21"
+
+# Work around "hyper-tls" not found issue in nix build tauri app
+# TODO: remove this dependency
+hyper-tls = "0.6"
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 tauri-plugin-barcode-scanner = "2.3"

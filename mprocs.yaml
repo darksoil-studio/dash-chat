@@ -1,6 +1,6 @@
 procs:
   agent1: pnpm tauri dev --no-watch
-  agent2: pnpm tauri dev --no-watch
+  # agent2: pnpm tauri dev --no-watch
   push-notifications-service: test-push-notifications-service ./service-account-key.json somesecretnetworkseed
   safehold-service: test-safehold-service somesecretnetworkseed
   playground: hc playground

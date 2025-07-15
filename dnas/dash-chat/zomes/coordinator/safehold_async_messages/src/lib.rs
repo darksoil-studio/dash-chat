@@ -130,8 +130,8 @@ pub fn receive_messages() -> ExternResult<()> {
         let bytes = SerializedBytes::from(UnsafeBytes::from(message_with_zome.message));
         let message = Message::try_from(bytes)
             .map_err(|err| wasm_error!("Failed to deserialize Message bytes: {:?}.", err))?;
-        let response = call(
-            CallTargetCell::Local,
+        let response = call_remote(
+            agent_info()?.agent_initial_pubkey, // Move to call when https://github.com/holochain/holochain/issues/5123 is solved
             message_with_zome.zome_name,
             FunctionName::from("receive_message"),
             None,
@@ -160,7 +160,7 @@ where
     P: Serialize + DeserializeOwned + std::fmt::Debug,
 {
     let response = call(
-        CallTargetCell::OtherRole("service_providers".into()),
+        CallTargetCell::OtherRole("services".into()),
         ZomeName::from("service_providers"),
         FunctionName::from("get_providers_for_service"),
         None,
@@ -182,7 +182,7 @@ where
 
     for service_provider in providers {
         let response = call(
-            CallTargetCell::OtherRole("service_providers".into()),
+            CallTargetCell::OtherRole("services".into()),
             ZomeName::from("service_providers"),
             FunctionName::from("make_service_request"),
             None,
@@ -193,8 +193,8 @@ where
                 payload: ExternIO::encode(&payload)
                     .map_err(|err| wasm_error!("Failed to serialize payload: {:?}.", err))?,
             },
-        )?;
-        let ZomeCallResponse::Ok(result) = response else {
+        );
+        let Ok(ZomeCallResponse::Ok(result)) = response else {
             warn!(
                 "Error calling make_service_request with function: {}.",
                 fn_name

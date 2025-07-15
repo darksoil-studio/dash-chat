@@ -14,8 +14,7 @@
           # my_dna = inputs'.some_input.packages.my_dna;
           # This overrides all the "bundled" properties for the hApp manifest
           main = self'.packages.dash_chat_dna;
-          service_providers =
-            inputs'.service-providers.packages.service_providers_dna;
+          services = inputs'.service-providers.packages.services_dna;
         };
       };
   };

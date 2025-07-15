@@ -23,6 +23,15 @@ import { appStyles } from './app-styles';
 import { isMobileContext } from './context';
 import { isMobileOs } from './utils';
 
+const SPLASHSCREEN_KEY = 'splashcreencompleted';
+
+export function splascreenCompleted() {
+	return !localStorage.getItem(SPLASHSCREEN_KEY);
+}
+export function completeSplascreen() {
+	localStorage.setItem(SPLASHSCREEN_KEY, 'true');
+}
+
 @localized()
 @customElement('splash-screen')
 export class SplashScreen extends SignalWatcher(LitElement) {
@@ -178,6 +187,7 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 							}
 							button.loading = false;
 							button.disabled = false;
+							completeSplascreen();
 							this.dispatchEvent(
 								new CustomEvent('start-app-clicked', {
 									bubbles: true,

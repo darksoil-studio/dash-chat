@@ -35,11 +35,7 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(if tauri::is_dev() {
-                    log::LevelFilter::Info
-                } else {
-                    log::LevelFilter::Warn
-                })
+                .level(log::LevelFilter::Warn)
                 .level_for("tracing::span", log::LevelFilter::Off)
                 .level_for("iroh", log::LevelFilter::Warn)
                 .level_for("holochain", log::LevelFilter::Warn)
@@ -146,15 +142,15 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
             .filter(|app| app.installed_app_id.as_str().starts_with(APP_ID_PREFIX))
             .min_by_key(|app_info| app_info.installed_at);
 
-        let service_providers_network_seed = String::from("somesecretnetworkseed");
+        let services_network_seed = String::from("somesecretnetworkseed");
 
         let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
         roles_settings.insert(
-            String::from("service_providers"),
+            String::from("services"),
             RoleSettings::Provisioned {
                 membrane_proof: None,
                 modifiers: Some(DnaModifiersOpt {
-                    network_seed: Some(service_providers_network_seed),
+                    network_seed: Some(services_network_seed),
                     ..Default::default()
                 }),
             },

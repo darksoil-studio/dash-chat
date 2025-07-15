@@ -13,7 +13,7 @@ roles:
       properties: null
     installed_hash: null
     clone_limit: 0
-- name: service_providers
+- name: services
   provisioning:
     strategy: create
     deferred: false

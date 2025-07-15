@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use holochain_client::ZomeCallTarget;
 use holochain_types::prelude::ZomeName;
 use jni::objects::JClass;
@@ -11,7 +9,7 @@ use tauri::{AppHandle, Listener, Manager};
 use tauri_plugin_holochain::*;
 use tauri_plugin_notification::{NotificationData, NotificationExt};
 
-use crate::{app_id, holochain_dir, network_config, open_window, utils::with_retries};
+use crate::{app_id, holochain_dir, network_config, utils::with_retries};
 
 pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
     let h = handle.clone();
@@ -70,7 +68,12 @@ pub fn receive_push_notification(notification: NotificationData) -> Option<Notif
         };
         let zome_name = ZomeName::from(title);
         let notification_id = body;
-        let Ok(notification) = get_notification(zome_name, notification_id).await else {
+        let Ok(notification) = with_retries(
+            async || Ok(get_notification(zome_name.clone(), notification_id.clone()).await?),
+            5,
+        )
+        .await
+        else {
             log::error!("Failed to get notifications.");
             return None;
         };
@@ -125,6 +128,21 @@ async fn get_notification(
         return Ok(None);
     };
 
+    // let large_icon = match notification.large_icon {
+    //     None => None,
+    //     Some(large_icon) => {
+    //         let image_bytes = large_icon.as_bytes().to_vec();
+    //         let img = image::ImageReader::new(image::Cursor::new(image_bytes))
+    //             .with_guessed_format()?
+    //             .decode()?;
+
+    //         let mut bytes: Vec<u8> = Vec::new();
+    //         img.write_to(&mut image::Cursor::new(&mut bytes), image::ImageFormat::Bmp)?;
+
+    //         Some()
+    //     }
+    // };
+
     Ok(Some(NotificationData {
         title: Some(notification.title),
         body: Some(notification.body),
@@ -132,6 +150,9 @@ async fn get_notification(
         summary: notification.summary,
         large_body: notification.large_body,
         group_summary: notification.group_summary,
+        icon: notification.icon,
+        icon_color: notification.icon_color,
+        large_icon: notification.large_icon,
         ..Default::default()
     }))
 }
