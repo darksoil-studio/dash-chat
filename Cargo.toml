@@ -2,17 +2,17 @@
 opt-level = "z"
 
 [profile.release]
-# opt-level = 3
-# lto = true
-# panic = "abort"
+opt-level = 3
+lto = true
+panic = "abort"
 
 [workspace]
 members = ["src-tauri", "dnas/*/zomes/coordinator/*"]
 resolver = "2"
 
 [workspace.dependencies]
-hdi = "0.6.3"
-hdk = "0.5.3"
+hdi = "0.6.4"
+hdk = "0.5.4"
 holochain_serialized_bytes = "*"
 serde = "1"
 

@@ -30,3 +30,14 @@ export function isMobileOs() {
 export function onNotificationClicked(
 	handler: (notification: Notification) => void,
 ) {}
+
+export async function withRetries<T>(task: () => Promise<T>, retries = 10) {
+	try {
+		const r = await task();
+		return r;
+	} catch (e) {
+		if (retries - 1 == 0) throw new Error(`Timeout. Last error: ${e}`);
+		await sleep(1000);
+		return withRetries(task, retries - 1);
+	}
+}

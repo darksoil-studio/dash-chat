@@ -8080,7 +8080,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#3a385adeaffa4f9ef98e2b510634fa6b2e29167b"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#a0a887bf00837f3460897133b3b51cdaa8d8e162"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -8090,7 +8090,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#3a385adeaffa4f9ef98e2b510634fa6b2e29167b"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#a0a887bf00837f3460897133b3b51cdaa8d8e162"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9243,7 +9243,7 @@ dependencies = [
 [[package]]
 name = "safehold_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#d2fd47c84925046aa87bfb57ae1785e1c47b6637"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#bcde57decdeab89f6cb9cafe96f7ecc084d50044"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -9255,7 +9255,7 @@ dependencies = [
 [[package]]
 name = "safehold_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#d2fd47c84925046aa87bfb57ae1785e1c47b6637"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#bcde57decdeab89f6cb9cafe96f7ecc084d50044"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",

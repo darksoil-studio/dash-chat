@@ -48,7 +48,7 @@ import './link-device-dialog.js';
 import './overlay-page.js';
 import './splash-screen.js';
 import { splascreenCompleted } from './splash-screen.js';
-import { sleep } from './utils.js';
+import { sleep, withRetries } from './utils.js';
 
 export const MOBILE_WIDTH_PX = 600;
 
@@ -83,6 +83,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		});
 		this._splashscreen = splascreenCompleted();
 		this._loading = true;
+		this._error = undefined;
 
 		listen('notification://action-performed', e => {
 			const group = (e.payload as any).notification.group;
@@ -116,11 +117,11 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		});
 
 		try {
-			this._client = await AppWebsocket.connect({
-				defaultTimeout: 100_000,
-			});
-
-			// this._adminWs = await AdminWebsocket.connect();
+			this._client = await withRetries(() =>
+				AppWebsocket.connect({
+					defaultTimeout: 100_000,
+				}),
+			);
 		} catch (e: unknown) {
 			this._error = e;
 		} finally {
