@@ -63,20 +63,6 @@ in {
           }
         ];
       };
-      aon2 = inputs.nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          inputs.garnix-lib.nixosModules.garnix
-          sshModule
-          always_online_module
-          {
-            garnix.server.persistence.name = "aon2";
-            system.stateVersion = "25.05";
-            garnix.server.enable = true;
-            garnix.server.persistence.enable = true;
-          }
-        ];
-      };
     };
   };
 }

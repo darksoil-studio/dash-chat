@@ -22,6 +22,7 @@
   outputs = inputs:
     inputs.p2p-shipyard.inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
+        ./servers.nix
         ./happ.nix
         ./tauri-app.nix
         ./aon/raspberry-pi.nix

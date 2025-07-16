@@ -7888,7 +7888,7 @@ dependencies = [
 [[package]]
 name = "private_event_sourcing_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#75836faf92ea67ef10c3ce1a05e99305c347c51c"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#23b12f4ccdaf18b47995ed05d580f09538899c5b"
 dependencies = [
  "hdk",
  "holochain_serialized_bytes",
@@ -7987,7 +7987,7 @@ dependencies = [
 [[package]]
 name = "profiles_provider_zome_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/profiles-zome?branch=main-0.5#7ac0ee79b4b4a63e725d22f7606776f2fafee03b"
+source = "git+https://github.com/darksoil-studio/profiles-zome?branch=main-0.5#f8cdf6f37bafbc44c888e9dbc95f31854d27e048"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -8080,7 +8080,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#77e5dc8f01fd133b35eb33ce757707f6db3927fb"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#bbff5f87ee518c4ceea3ffbaddac6c4d617b1a58"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -8090,7 +8090,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#77e5dc8f01fd133b35eb33ce757707f6db3927fb"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#bbff5f87ee518c4ceea3ffbaddac6c4d617b1a58"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9243,7 +9243,7 @@ dependencies = [
 [[package]]
 name = "safehold_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#09d3a80d88c05223581660e2d0b7d0fe562ff30f"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#11cef92a0e3396dec5d3fdb76c89fd0191c6538b"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -9255,7 +9255,7 @@ dependencies = [
 [[package]]
 name = "safehold_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#09d3a80d88c05223581660e2d0b7d0fe562ff30f"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#11cef92a0e3396dec5d3fdb76c89fd0191c6538b"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9511,7 +9511,7 @@ dependencies = [
 [[package]]
 name = "send_async_message_zome_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#75836faf92ea67ef10c3ce1a05e99305c347c51c"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#23b12f4ccdaf18b47995ed05d580f09538899c5b"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -9730,7 +9730,7 @@ dependencies = [
 [[package]]
 name = "service_providers_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/service-providers?branch=main-0.5#1f6d959ba9c13c3f8bfb9458dcfa5bd6520fcdb9"
+source = "git+https://github.com/darksoil-studio/service-providers?branch=main-0.5#6cac02e19ce79cb8a0f66b31193f6d8575fb8508"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9740,7 +9740,7 @@ dependencies = [
 [[package]]
 name = "service_providers_utils"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/service-providers?branch=main-0.5#1f6d959ba9c13c3f8bfb9458dcfa5bd6520fcdb9"
+source = "git+https://github.com/darksoil-studio/service-providers?branch=main-0.5#6cac02e19ce79cb8a0f66b31193f6d8575fb8508"
 dependencies = [
  "anyhow",
  "futures",
