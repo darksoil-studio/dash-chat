@@ -5,6 +5,11 @@
     p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.5";
     nixpkgs.follows = "p2p-shipyard/nixpkgs";
 
+    garnix-lib = {
+      url = "github:garnix-io/garnix-lib";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-generators.url = "github:nix-community/nixos-generators";
   };
 
