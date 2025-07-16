@@ -8,7 +8,7 @@
   #   (builtins.attrNames (builtins.readDir ./zomes/integrity)));
   perSystem = { inputs', self', lib, system, ... }: {
     packages.dash_chat_dna =
-      inputs.holochain-nix-builders.outputs.builders.${system}.dna {
+      inputs.p2p-shipyard.outputs.builders.${system}.dna {
         dnaManifest = ./workdir/dna.yaml;
         zomes = {
           messenger_integrity =

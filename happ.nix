@@ -7,7 +7,7 @@
 
   perSystem = { inputs', lib, self', system, ... }: {
     packages.dash_chat_happ =
-      inputs.holochain-nix-builders.outputs.builders.${system}.happ {
+      inputs.p2p-shipyard.outputs.builders.${system}.happ {
         happManifest = ./workdir/happ.yaml;
         dnas = {
           # Include here the DNA packages for this hApp, e.g.:

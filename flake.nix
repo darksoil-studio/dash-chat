@@ -2,33 +2,9 @@
   description = "Template for Holochain app development";
 
   inputs = {
-    holonix.url = "github:holochain/holonix/main-0.5";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.5";
+    nixpkgs.follows = "p2p-shipyard/nixpkgs";
 
-    nixpkgs.follows = "holonix/nixpkgs";
-    flake-parts.follows = "holonix/flake-parts";
-    rust-overlay.follows = "holonix/rust-overlay";
-
-    scaffolding.url = "github:darksoil-studio/scaffolding/main-0.5";
-    holochain-nix-builders.url =
-      "github:darksoil-studio/holochain-nix-builders/main-0.5";
-    tauri-plugin-holochain.url =
-      "github:darksoil-studio/tauri-plugin-holochain/main-0.5";
-    playground.url = "github:darksoil-studio/holochain-playground/main-0.5";
-
-    # notifications-zome.url =
-    #   "github:darksoil-studio/notifications-zome/main-0.5";
-    linked-devices-zome.url =
-      "github:darksoil-studio/linked-devices-zome/main-0.5";
-    friends-zome.url = "github:darksoil-studio/friends-zome/main-0.5";
-    messenger-zome.url = "github:darksoil-studio/messenger-zome/main-0.5";
-
-    service-providers.url = "github:darksoil-studio/service-providers/main-0.5";
-
-    push-notifications-service.url =
-      "github:darksoil-studio/push-notifications-service/main-0.5";
-    safehold.url = "github:darksoil-studio/safehold/main-0.5";
-
-    aons.url = "github:darksoil-studio/always-online-nodes/main";
     nixos-generators.url = "github:nix-community/nixos-generators";
   };
 
@@ -44,45 +20,45 @@
   };
 
   outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    inputs.p2p-shipyard.inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         ./happ.nix
         ./tauri-app.nix
         ./aon/raspberry-pi.nix
-        inputs.holochain-nix-builders.outputs.flakeModules.builders
+        inputs.p2p-shipyard.outputs.flakeModules.builders
       ];
 
-      systems = builtins.attrNames inputs.holonix.devShells;
+      systems = builtins.attrNames inputs.p2p-shipyard.devShells;
       perSystem = { inputs', config, pkgs, system, ... }: rec {
         devShells.default = pkgs.mkShell {
           inputsFrom = [
-            inputs'.tauri-plugin-holochain.devShells.holochainTauriDev
-            inputs'.scaffolding.devShells.synchronized-pnpm
-            inputs'.holonix.devShells.default
+            inputs'.p2p-shipyard.devShells.holochainTauriDev
+            inputs'.p2p-shipyard.devShells.synchronized-pnpm
+            inputs'.p2p-shipyard.devShells.default
           ];
           packages = [
-            inputs'.holochain-nix-builders.packages.holochain
-            inputs'.tauri-plugin-holochain.packages.hc-pilot
-            inputs'.scaffolding.packages.hc-scaffold-happ
-            inputs'.playground.packages.hc-playground
-            inputs'.push-notifications-service.packages.test-push-notifications-service
-            inputs'.safehold.packages.test-safehold-service
+            inputs'.p2p-shipyard.packages.holochain
+            inputs'.p2p-shipyard.packages.hc-pilot
+            inputs'.p2p-shipyard.packages.hc-scaffold-happ
+            inputs'.p2p-shipyard.packages.hc-playground
+            inputs'.p2p-shipyard.packages.test-push-notifications-service
+            inputs'.p2p-shipyard.packages.test-safehold-service
             pkgs.mprocs
           ];
         };
 
         devShells.androidDev = pkgs.mkShell {
           inputsFrom = [
-            inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
+            inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
             devShells.default
           ];
         };
 
         devShells.ci = pkgs.mkShell {
           inputsFrom = [
-            inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
-            inputs'.scaffolding.devShells.synchronized-pnpm
-            inputs'.holonix.devShells.default
+            inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
+            inputs'.p2p-shipyard.devShells.synchronized-pnpm
+            inputs'.p2p-shipyard.devShells.default
           ];
         };
       };
