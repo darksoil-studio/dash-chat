@@ -8,11 +8,12 @@
       cargoToml = builtins.fromTOML (builtins.readFile ./src-tauri/Cargo.toml);
       pname = cargoToml.package.name;
       version = tauriConfig.version;
-      craneLib = (inputs.holonix.inputs.crane.mkLib pkgs).overrideToolchain
-        inputs'.holonix.packages.rust;
-      src = inputs.tauri-plugin-holochain.outputs.lib.cleanTauriSource {
-        inherit lib;
-      } (craneLib.path ./.);
+      craneLib = (inputs.p2p-shipyard.inputs.crane.mkLib pkgs).overrideToolchain
+        inputs.p2p-shipyard.inputs.holochain-utils.inputs.holonix.packages.${system}.rust;
+      src =
+        inputs.p2p-shipyard.inputs.holochain-utils.inputs.tauri-plugin-holochain.outputs.lib.cleanTauriSource {
+          inherit lib;
+        } (craneLib.path ./.);
 
       ui = pkgs.stdenv.mkDerivation (finalAttrs: {
         inherit version;
@@ -46,10 +47,10 @@
         cargoExtraArgs = "";
 
         buildInputs =
-          inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.buildInputs;
+          inputs.p2p-shipyard.inputs.holochain-utils.inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.buildInputs;
 
         nativeBuildInputs =
-          inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.nativeBuildInputs;
+          inputs.p2p-shipyard.inputs.holochain-utils.inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.nativeBuildInputs;
 
         postPatch = ''
           mkdir -p "$TMPDIR/nix-vendor"

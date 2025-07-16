@@ -2008,6 +2008,11 @@
     "p2p-shipyard": {
       "inputs": {
         "always-online-nodes": "always-online-nodes",
+        "crane": [
+          "p2p-shipyard",
+          "holochain-utils",
+          "crane"
+        ],
         "file-storage": "file-storage",
         "flake-parts": [
           "p2p-shipyard",
@@ -2031,11 +2036,11 @@
         "safehold": "safehold"
       },
       "locked": {
-        "lastModified": 1752667852,
-        "narHash": "sha256-Yf980eQ0DReFS9CZSac2fLCXii5/RcWxHP0yD81DQGQ=",
+        "lastModified": 1752669940,
+        "narHash": "sha256-bp3JWOapDWbKACDDrN/cGoIb+M1vRV327ZYlD+KFYDI=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "0733434798f526316e4c42987a735ffeff20bccb",
+        "rev": "202b44a7498085aab2cb3e532978374c6d7dd37e",
         "type": "github"
       },
       "original": {
