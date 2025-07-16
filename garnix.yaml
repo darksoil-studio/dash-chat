@@ -1,0 +1,5 @@
+servers:
+  - configuration: server
+    deployment:
+      type: on-branch
+      branch: production-v0-3-x

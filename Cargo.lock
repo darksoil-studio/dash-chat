@@ -409,7 +409,7 @@ dependencies = [
  "futures-lite",
  "parking",
  "polling",
- "rustix 1.0.7",
+ "rustix 1.0.8",
  "slab",
  "tracing",
  "windows-sys 0.59.0",
@@ -441,7 +441,7 @@ dependencies = [
  "cfg-if 1.0.1",
  "event-listener 5.4.0",
  "futures-lite",
- "rustix 1.0.7",
+ "rustix 1.0.8",
  "tracing",
 ]
 
@@ -468,7 +468,7 @@ dependencies = [
  "cfg-if 1.0.1",
  "futures-core",
  "futures-io",
- "rustix 1.0.7",
+ "rustix 1.0.8",
  "signal-hook-registry",
  "slab",
  "windows-sys 0.59.0",
@@ -3970,7 +3970,7 @@ dependencies = [
 [[package]]
 name = "holochain_runtime"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#f8bb39cfa03561960a3cbc88cf7faab079a7f617"
+source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#d4d80b5d0ff94cd4aceff20b27d45699fa3ce5b4"
 dependencies = [
  "anyhow",
  "arbitrary",
@@ -7694,7 +7694,7 @@ dependencies = [
  "concurrent-queue",
  "hermit-abi 0.5.2",
  "pin-project-lite",
- "rustix 1.0.7",
+ "rustix 1.0.8",
  "tracing",
  "windows-sys 0.59.0",
 ]
@@ -7888,7 +7888,7 @@ dependencies = [
 [[package]]
 name = "private_event_sourcing_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#499ed1f84d7100199eab95ba5ceba0e802394f9f"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#75836faf92ea67ef10c3ce1a05e99305c347c51c"
 dependencies = [
  "hdk",
  "holochain_serialized_bytes",
@@ -7987,7 +7987,7 @@ dependencies = [
 [[package]]
 name = "profiles_provider_zome_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/profiles-zome?branch=main-0.5#ac55e39f56dc633238fc57fc139774763cdc6654"
+source = "git+https://github.com/darksoil-studio/profiles-zome?branch=main-0.5#7ac0ee79b4b4a63e725d22f7606776f2fafee03b"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -8080,7 +8080,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#a0a887bf00837f3460897133b3b51cdaa8d8e162"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#77e5dc8f01fd133b35eb33ce757707f6db3927fb"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -8090,7 +8090,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#a0a887bf00837f3460897133b3b51cdaa8d8e162"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#77e5dc8f01fd133b35eb33ce757707f6db3927fb"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9088,15 +9088,15 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "1.0.7"
+version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c71e83d6afe7ff64890ec6b71d6a69bb8a610ab78ce364b3352876bb4c801266"
+checksum = "11181fbabf243db407ef8df94a6ce0b2f9a733bd8be4ad02b4eda9602296cac8"
 dependencies = [
  "bitflags 2.9.1",
  "errno",
  "libc",
  "linux-raw-sys 0.9.4",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -9243,7 +9243,7 @@ dependencies = [
 [[package]]
 name = "safehold_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#bcde57decdeab89f6cb9cafe96f7ecc084d50044"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#09d3a80d88c05223581660e2d0b7d0fe562ff30f"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -9255,7 +9255,7 @@ dependencies = [
 [[package]]
 name = "safehold_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#bcde57decdeab89f6cb9cafe96f7ecc084d50044"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#09d3a80d88c05223581660e2d0b7d0fe562ff30f"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9511,7 +9511,7 @@ dependencies = [
 [[package]]
 name = "send_async_message_zome_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#499ed1f84d7100199eab95ba5ceba0e802394f9f"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#75836faf92ea67ef10c3ce1a05e99305c347c51c"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -9730,7 +9730,7 @@ dependencies = [
 [[package]]
 name = "service_providers_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/service-providers?branch=main-0.5#22f414407ec6cd4e287306cd301a222c8d9e63df"
+source = "git+https://github.com/darksoil-studio/service-providers?branch=main-0.5#1f6d959ba9c13c3f8bfb9458dcfa5bd6520fcdb9"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9740,7 +9740,7 @@ dependencies = [
 [[package]]
 name = "service_providers_utils"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/service-providers?branch=main-0.5#22f414407ec6cd4e287306cd301a222c8d9e63df"
+source = "git+https://github.com/darksoil-studio/service-providers?branch=main-0.5#1f6d959ba9c13c3f8bfb9458dcfa5bd6520fcdb9"
 dependencies = [
  "anyhow",
  "futures",
@@ -10668,7 +10668,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-holochain"
 version = "0.0.0"
-source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#f8bb39cfa03561960a3cbc88cf7faab079a7f617"
+source = "git+https://github.com/darksoil-studio/tauri-plugin-holochain?branch=main-0.5#d4d80b5d0ff94cd4aceff20b27d45699fa3ce5b4"
 dependencies = [
  "anyhow",
  "bzip2 0.4.4",
@@ -10938,7 +10938,7 @@ dependencies = [
  "fastrand",
  "getrandom 0.3.3",
  "once_cell",
- "rustix 1.0.7",
+ "rustix 1.0.8",
  "windows-sys 0.59.0",
 ]
 
@@ -10959,7 +10959,7 @@ version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "45c6481c4829e4cc63825e62c49186a34538b7b2750b73b266581ffb612fb5ed"
 dependencies = [
- "rustix 1.0.7",
+ "rustix 1.0.8",
  "windows-sys 0.59.0",
 ]
 
@@ -13168,7 +13168,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af3a19837351dc82ba89f8a125e22a3c475f05aba604acc023d62b2739ae2909"
 dependencies = [
  "libc",
- "rustix 1.0.7",
+ "rustix 1.0.8",
 ]
 
 [[package]]
