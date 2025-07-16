@@ -93,9 +93,11 @@
 
             systemd.services.dash_chat_aon = let
               homeDir = config.users.users.${user}.home;
-              aon = inputs.aons.outputs.builders."aarch64-linux".aon-for-happs {
-                happs = [ self.outputs.packages."x86_64-linux".dash_chat_happ ];
-              };
+              aon =
+                inputs.p2p-shipyard.inputs.always-online-nodes.outputs.builders."aarch64-linux".aon-for-happs {
+                  happs =
+                    [ self.outputs.packages."x86_64-linux".dash_chat_happ ];
+                };
             in {
               enable = true;
               path = [ aon ];
