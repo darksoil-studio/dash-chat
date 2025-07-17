@@ -227,8 +227,8 @@ jobs:
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
 
       - name: Install and Build 🔧
-        env:
-          RUSTFLAGS: "-Ctarget-cpu=native"
+        # env:
+        #   RUSTFLAGS: "-Ctarget-cpu=native"
         run: |
           nix develop --accept-flake-config .#ci --command bash -c "pnpm install && pnpm tauri android build"
  
