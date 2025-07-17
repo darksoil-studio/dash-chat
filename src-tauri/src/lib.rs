@@ -35,14 +35,12 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Warn)
+                .level(log::LevelFilter::Debug)
                 .level_for("tracing::span", log::LevelFilter::Off)
                 .level_for("iroh", log::LevelFilter::Warn)
                 .level_for("holochain", log::LevelFilter::Warn)
                 .level_for("kitsune2", log::LevelFilter::Warn)
                 .level_for("kitsune2_gossip", log::LevelFilter::Warn)
-                .level_for("holochain_runtime", log::LevelFilter::Warn)
-                .level_for("dash-chat", log::LevelFilter::Debug)
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())

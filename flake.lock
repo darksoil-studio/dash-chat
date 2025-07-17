@@ -428,6 +428,28 @@
         "type": "github"
       }
     },
+    "garnix-lib_3": {
+      "inputs": {
+        "nixpkgs": [
+          "p2p-shipyard",
+          "safehold",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1746387091,
+        "narHash": "sha256-YivN7BL4XkZIJpUTdDJRQpYX/JORVdbZTQbSnULgRnY=",
+        "owner": "garnix-io",
+        "repo": "garnix-lib",
+        "rev": "4cc103317aef34dd99617ed9ff12c44d659d86d0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "garnix-io",
+        "repo": "garnix-lib",
+        "type": "github"
+      }
+    },
     "hc-launch": {
       "flake": false,
       "locked": {
@@ -713,11 +735,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1752590070,
-        "narHash": "sha256-T/xge1i2FL0tnKNCATivs3JF/nchQ0pL2STqSYxseq0=",
+        "lastModified": 1752747268,
+        "narHash": "sha256-X9Xq07nCRCZQPO36WUYc0CE7Tj2gmWAdi98MbmyxhYw=",
         "owner": "darksoil-studio",
         "repo": "holochain-nix-builders",
-        "rev": "1c8ee29ee1a4e14536714bcdbe1d314de0d9026e",
+        "rev": "a18c48667b67066324ee217d6b2e2c2d8a5e3e61",
         "type": "github"
       },
       "original": {
@@ -748,11 +770,11 @@
         "tauri-plugin-holochain": "tauri-plugin-holochain"
       },
       "locked": {
-        "lastModified": 1752667835,
-        "narHash": "sha256-RFUkOn0RU+3O6djN04S095fx4GaOE83+vCoip9UQq5s=",
+        "lastModified": 1752747299,
+        "narHash": "sha256-fd6fY3Af5AYIQXSSYfntXDbPB/auIVTJROzWJi0A9cE=",
         "owner": "darksoil-studio",
         "repo": "holochain-utils",
-        "rev": "d6e7928c154a4888ff42dfa5bbea3246fe88229a",
+        "rev": "f066b31b4d7dc1520c1fba805d73f1a5e8e28d42",
         "type": "github"
       },
       "original": {
@@ -2056,11 +2078,11 @@
         "safehold": "safehold"
       },
       "locked": {
-        "lastModified": 1752669940,
-        "narHash": "sha256-bp3JWOapDWbKACDDrN/cGoIb+M1vRV327ZYlD+KFYDI=",
+        "lastModified": 1752747333,
+        "narHash": "sha256-C78K6hIPi6bKJgR9Qx5XLqbX9JZuuBD2ZIscKpzr490=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "202b44a7498085aab2cb3e532978374c6d7dd37e",
+        "rev": "97197cf9920f22d86ab27ad2abaf5b654067a6ca",
         "type": "github"
       },
       "original": {
@@ -2485,11 +2507,11 @@
         "service-providers": "service-providers"
       },
       "locked": {
-        "lastModified": 1752665623,
-        "narHash": "sha256-7W1KYa6uXjoqnORZ+kCeGGTKyVMH6PmmyV3uTgmHEO8=",
+        "lastModified": 1752679930,
+        "narHash": "sha256-Dc4/yG9NC/aSq4lGQFnts+e3OKsDtV233GPlsylCndg=",
         "owner": "darksoil-studio",
         "repo": "push-notifications-service",
-        "rev": "007cda3f63c06d77483207125df260931f100343",
+        "rev": "f2d760ee397c01fdfd9f8f32fa538c5f91645358",
         "type": "github"
       },
       "original": {
@@ -2821,6 +2843,7 @@
           "holochain-utils",
           "crane"
         ],
+        "garnix-lib": "garnix-lib_3",
         "holochain-utils": [
           "p2p-shipyard",
           "holochain-utils"
@@ -2834,11 +2857,11 @@
         "service-providers": "service-providers_2"
       },
       "locked": {
-        "lastModified": 1752665539,
-        "narHash": "sha256-yykQoh77+flx2pqfoB5XcDttr3EGKByBDvJEbDFkMTY=",
+        "lastModified": 1752738482,
+        "narHash": "sha256-7i5GmdZUXQm0zst8NJRfFVtJjMKkAMLw7GQ3TS7N5xw=",
         "owner": "darksoil-studio",
         "repo": "safehold",
-        "rev": "32f543728e919f6cd26923fd45a635be4d9bfeb7",
+        "rev": "41e099e66f08501366dbc5f290cb33c10aae1400",
         "type": "github"
       },
       "original": {

@@ -146,6 +146,7 @@ jobs:
       - name: build the app
         uses: tauri-apps/tauri-action@v0
         env:
+          RUSTFLAGS: "-Ctarget-cpu=native"
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
@@ -225,7 +226,9 @@ jobs:
           base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > $RUNNER_TEMP/keystore.jks
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
 
-      - name: Install and Build 🔧 
+      - name: Install and Build 🔧
+        env:
+          RUSTFLAGS: "-Ctarget-cpu=native"
         run: |
           nix develop --accept-flake-config .#ci --command bash -c "pnpm install && pnpm tauri android build"
  
