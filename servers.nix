@@ -11,6 +11,8 @@ let
     services.openssh.settings.PermitRootLogin = "without-password";
   };
 
+  bootstrapUrl = "http://157.180.93.55:8888";
+
   path = "/root/dash-chat/v0.3.x";
 
   always_online_module = {
@@ -25,7 +27,8 @@ let
       path = [ aon ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        ExecStart = "${aon}/bin/always-online-node --data-dir ${path}/aon1";
+        ExecStart =
+          "${aon}/bin/always-online-node --data-dir ${path}/aon --bootstrap-url ${bootstrapUrl}";
         Restart = "always";
         RestartSec = 10;
       };
@@ -58,7 +61,21 @@ in {
           sshModule
           always_online_module
           {
-            garnix.server.persistence.name = "aon1";
+            garnix.server.persistence.name = "dash-chat-aon-v0-3-x-1";
+            system.stateVersion = "25.05";
+            garnix.server.enable = true;
+            garnix.server.persistence.enable = true;
+          }
+        ];
+      };
+      aon2 = inputs.nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          inputs.garnix-lib.nixosModules.garnix
+          sshModule
+          always_online_module
+          {
+            garnix.server.persistence.name = "dash-chat-aon-v0-3-x-2";
             system.stateVersion = "25.05";
             garnix.server.enable = true;
             garnix.server.persistence.enable = true;

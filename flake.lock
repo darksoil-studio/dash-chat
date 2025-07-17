@@ -20,11 +20,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1752667096,
-        "narHash": "sha256-sdpMxg3U24DpweoGvBvsMaiVOrhbth+fNVKUtKNKI/E=",
+        "lastModified": 1752776515,
+        "narHash": "sha256-5pEqwADYOZ/S36sIavzcwgsjppW3Mejz9DXTPqzMgHI=",
         "owner": "darksoil-studio",
         "repo": "always-online-nodes",
-        "rev": "7f1d85c88bff94b43548efb665a5fd0c68dd8c59",
+        "rev": "a26a32d7c0c265b44ee3796c5ba8f0b7a924e000",
         "type": "github"
       },
       "original": {
@@ -2078,11 +2078,11 @@
         "safehold": "safehold"
       },
       "locked": {
-        "lastModified": 1752775297,
-        "narHash": "sha256-w1tuKI+RgYNempH5/x+koJKU+yEXQfAaC0IqM5rp79Y=",
+        "lastModified": 1752776544,
+        "narHash": "sha256-eVgTQHa9XxkJfITgXLyDfkWvtv947EPMi1z2b3vM97A=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "1f3d4924faa5bc0368a31fc22ec1454da1fe645a",
+        "rev": "c1bde95ea825fefab748945e4c2d3c2b4311ecb3",
         "type": "github"
       },
       "original": {
