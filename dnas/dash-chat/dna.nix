@@ -8,29 +8,31 @@
   #   (builtins.attrNames (builtins.readDir ./zomes/integrity)));
   perSystem = { inputs', self', lib, system, ... }: {
     packages.dash_chat_dna =
-      inputs.holochain-nix-builders.outputs.builders.${system}.dna {
+      inputs.p2p-shipyard.outputs.builders.${system}.dna {
         dnaManifest = ./workdir/dna.yaml;
         zomes = {
           messenger_integrity =
-            inputs'.messenger-zome.packages.messenger_integrity;
-          messenger = inputs'.messenger-zome.builders.messenger {
-            linked_devices_coordinator_zome_name = "linked_devices";
-            async_message_zome_name = "safehold_async_messages";
-          };
+            inputs'.p2p-shipyard.packages.messenger_integrity;
+          messenger =
+            inputs.p2p-shipyard.inputs.messenger-zome.builders.${system}.messenger {
+              linked_devices_coordinator_zome_name = "linked_devices";
+              async_message_zome_name = "safehold_async_messages";
+            };
 
           linked_devices_integrity =
-            inputs'.linked-devices-zome.packages.linked_devices_integrity;
-          linked_devices = inputs'.linked-devices-zome.packages.linked_devices;
+            inputs'.p2p-shipyard.packages.linked_devices_integrity;
+          linked_devices = inputs'.p2p-shipyard.packages.linked_devices;
 
-          friends_integrity = inputs'.friends-zome.packages.friends_integrity;
-          friends = inputs'.friends-zome.builders.friends {
-            linked_devices_coordinator_zome_name = "linked_devices";
-            async_message_zome_name = "safehold_async_messages";
-          };
+          friends_integrity = inputs'.p2p-shipyard.packages.friends_integrity;
+          friends =
+            inputs.p2p-shipyard.inputs.friends-zome.builders.${system}.friends {
+              linked_devices_coordinator_zome_name = "linked_devices";
+              async_message_zome_name = "safehold_async_messages";
+            };
 
-          encrypted_messages = inputs'.safehold.packages.encrypted_messages;
+          encrypted_messages = inputs'.p2p-shipyard.packages.encrypted_messages;
           encrypted_messages_integrity =
-            inputs'.safehold.packages.encrypted_messages_integrity;
+            inputs'.p2p-shipyard.packages.encrypted_messages_integrity;
 
           safehold_async_messages = self'.packages.safehold_async_messages;
         };

@@ -41,8 +41,6 @@ pub fn run() {
                 .level_for("holochain", log::LevelFilter::Warn)
                 .level_for("kitsune2", log::LevelFilter::Warn)
                 .level_for("kitsune2_gossip", log::LevelFilter::Warn)
-                .level_for("holochain_runtime", log::LevelFilter::Warn)
-                .level_for("dash-chat", log::LevelFilter::Debug)
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())

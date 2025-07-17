@@ -3,7 +3,7 @@
 	"private": true,
 	"scripts": {
 		"start": "hc s clean && pnpm build:happ && mprocs",
-		"test": "pnpm build:old-happ && cargo test",
+		"test": "pnpm build:happ && pnpm build:old-happ && cargo test",
 		"build:happ": "echo \"test\" > workdir/dash-chat-dna_hashes && nix build -L .#dash_chat_happ.meta.debug -o workdir/dash-chat.happ",
 		"build:happ-release": "nix build .#dash_chat_happ.dna_hashes -o workdir/dash-chat && nix build -L .#dash_chat_happ -o workdir/dash-chat.happ",
 		"build:old-happ": "nix build github:darksoil-studio/dash-chat/v0.3.0#dash_chat_happ -o workdir/old-dash-chat.happ",
