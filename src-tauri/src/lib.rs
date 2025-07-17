@@ -35,7 +35,7 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Debug)
+                .level(log::LevelFilter::Warn)
                 .level_for("tracing::span", log::LevelFilter::Off)
                 .level_for("iroh", log::LevelFilter::Warn)
                 .level_for("holochain", log::LevelFilter::Warn)
