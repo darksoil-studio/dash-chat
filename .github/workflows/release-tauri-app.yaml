@@ -225,6 +225,11 @@ jobs:
           base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > $RUNNER_TEMP/keystore.jks
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
 
+      - name: setup google-services.json
+        run: |
+          cd src-tauri/gen/android
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > google-services.json
+
       - name: Install and Build 🔧
         run: |
           nix develop --accept-flake-config .#ci --command bash -c "pnpm install && pnpm tauri android build"

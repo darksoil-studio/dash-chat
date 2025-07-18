@@ -1,3 +1,11 @@
+import {
+	attachConsole,
+	error,
+	info,
+	trace,
+	warn,
+} from '@tauri-apps/plugin-log';
+
 export const sleep = (ms: number) =>
 	new Promise(r => setTimeout(() => r(undefined), ms));
 
@@ -40,4 +48,22 @@ export async function withRetries<T>(task: () => Promise<T>, retries = 10) {
 		await sleep(1000);
 		return withRetries(task, retries - 1);
 	}
+}
+
+export function connectConsoleToLogs() {
+	const l = console.log;
+	console.log = d => {
+		info(d);
+		l(d);
+	};
+	const w = console.warn;
+	console.log = d => {
+		warn(d);
+		w(d);
+	};
+	const e = console.error;
+	console.log = d => {
+		error(d);
+		e(d);
+	};
 }

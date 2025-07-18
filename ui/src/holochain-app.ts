@@ -2,6 +2,7 @@ import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/friends-zome/dist/elements/select-friend.js';
 import '@darksoil-studio/friends-zome/dist/elements/update-profile.js';
+
 import {
 	Router,
 	notify,
@@ -48,7 +49,7 @@ import './link-device-dialog.js';
 import './overlay-page.js';
 import './splash-screen.js';
 import { splascreenCompleted } from './splash-screen.js';
-import { sleep, withRetries } from './utils.js';
+import { connectConsoleToLogs, sleep, withRetries } from './utils.js';
 
 export const MOBILE_WIDTH_PX = 600;
 
@@ -75,6 +76,8 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	_isMobile: boolean = false;
 
 	async firstUpdated() {
+		connectConsoleToLogs()
+
 		this._isMobile = this.getBoundingClientRect().width < MOBILE_WIDTH_PX;
 		new ResizeController(this, {
 			callback: () => {
