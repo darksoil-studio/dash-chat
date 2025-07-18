@@ -15,7 +15,7 @@ let
   always_online_module = {
     systemd.services.dash_chat_aon = let
       aon =
-        inputs.p2p-shipyard.inputs.always-online-nodes.outputs.builders."aarch64-linux".aon-for-happs {
+        inputs.p2p-shipyard.inputs.always-online-nodes.outputs.builders."x86_64-linux".aon-for-happs {
           happs =
             [ inputs.self.outputs.packages."x86_64-linux".dash_chat_happ ];
         };
