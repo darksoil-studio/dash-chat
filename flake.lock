@@ -20,11 +20,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1752827689,
-        "narHash": "sha256-xKAzTDdiZ2Km2m9FMMh3iRn32Qnojn7du3O+sAF59dU=",
+        "lastModified": 1752956167,
+        "narHash": "sha256-0HUJVfw5dnzgUMLzm48M5aOROeWP4UrOa0NGp8ttpkY=",
         "owner": "darksoil-studio",
         "repo": "always-online-nodes",
-        "rev": "b7a4555b079f461c6a875c76edb157d7e8102920",
+        "rev": "2b22b26a1264eaa04ee53560619240e01122582d",
         "type": "github"
       },
       "original": {
@@ -1881,11 +1881,11 @@
         "service-providers": "service-providers_3"
       },
       "locked": {
-        "lastModified": 1752832199,
-        "narHash": "sha256-uGGUST09NDs+HeAq3ZvrU4UXEhAFANPOnmG1EeRmq5Y=",
+        "lastModified": 1752956265,
+        "narHash": "sha256-cadJ27vPuADEJTzkyV35Y5lhdWU/jcCC8DNifC48uWc=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "4924826e00593a0dbcc9042e0b35b0aaa43e14c7",
+        "rev": "97a07c36226d61f3149cc3f86d43d92d2ddfc4ba",
         "type": "github"
       },
       "original": {
@@ -2268,11 +2268,11 @@
         "service-providers": "service-providers"
       },
       "locked": {
-        "lastModified": 1752831905,
-        "narHash": "sha256-ZpVpQ/6N2PNn3RUx/oqLEst+NllP7t56DjPDqZPF6Tw=",
+        "lastModified": 1752956227,
+        "narHash": "sha256-Cc29vAGfMnEm+psw02hmXBguirt2BbzMpvOJrPJuNV8=",
         "owner": "darksoil-studio",
         "repo": "push-notifications-service",
-        "rev": "b860d2b482880ab4fbc0bacba574483cad95fd79",
+        "rev": "24bd2c59a259a9dcb9a39156d8bbf662d901697a",
         "type": "github"
       },
       "original": {
@@ -2598,11 +2598,11 @@
         "service-providers": "service-providers_2"
       },
       "locked": {
-        "lastModified": 1752831835,
-        "narHash": "sha256-hBdYnuwIzafNxqHCwqVcNULdx6vvEkvLhwqAbN9FVHs=",
+        "lastModified": 1752956235,
+        "narHash": "sha256-9w6swdth5H9S47GHOBId15IQZj7K+bhMdJujow3xaxw=",
         "owner": "darksoil-studio",
         "repo": "safehold",
-        "rev": "886b50d8c53d268bbadd928a1d72bc83409826d2",
+        "rev": "bc79bd7687ccf84f4ddf542dd90e63521aa46067",
         "type": "github"
       },
       "original": {
