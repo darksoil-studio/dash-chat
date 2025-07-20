@@ -12,12 +12,12 @@
     "localize:build": "lit-localize build"
   },
   "dependencies": {
-    "@darksoil-studio/friends-zome": "0.501.0-rev.9d554463da66af49e7dff5546d8887eb86aca07a",
+    "@darksoil-studio/friends-zome": "0.501.0-rev.32244bc8e1b2650b154bad6032eb74db50e4075b",
     "@darksoil-studio/holochain-elements": "^0.500.0",
     "@darksoil-studio/holochain-signals": "^0.500.0",
     "@darksoil-studio/holochain-utils": "^0.500.0",
     "@darksoil-studio/linked-devices-zome": "0.500.0-rev.32ccd54fd917e9d9713c2e924b156d49fd1ceb00",
-    "@darksoil-studio/messenger-zome": "0.501.0-rev.a1fc725c7f24d559e2687621967a3f6ceb42e6e7",
+    "@darksoil-studio/messenger-zome": "0.501.0-rev.333965bcddd73a575cae6b01fbfb2f85b258afcf",
     "@darksoil-studio/notifications-zome": "0.500.0-rev.0f9d7bf645a6c3754b7304800016d3155bd0a266",
     "@darksoil-studio/profiles-provider": "^0.500.0",
     "@holochain/client": "^0.19.0",

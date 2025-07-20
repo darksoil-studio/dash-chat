@@ -17,8 +17,8 @@ hc_zome_traits = { git = "https://github.com/holochain-open-dev/zome-traits", br
 
 service_providers_types = { git = "https://github.com/darksoil-studio/service-providers", branch = "main-0.5" }
 
-send_async_message_zome_trait = { git = "https://github.com/darksoil-studio/private-event-sourcing-zome", branch = "develop" }
-private_event_sourcing_types = { git = "https://github.com/darksoil-studio/private-event-sourcing-zome", branch = "develop" }
+send_async_message_zome_trait = { git = "https://github.com/darksoil-studio/private-event-sourcing-zome", branch = "main-0.5" }
+private_event_sourcing_types = { git = "https://github.com/darksoil-studio/private-event-sourcing-zome", branch = "main-0.5" }
 
 safehold_service_trait = { git = "https://github.com/darksoil-studio/safehold", branch = "main-0.5" }
 safehold_types = { git = "https://github.com/darksoil-studio/safehold", branch = "main-0.5" }

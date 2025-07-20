@@ -49,6 +49,7 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
             Ok(())
         },
         60,
+        1000
     )
     .await?;
 
@@ -68,11 +69,7 @@ pub fn receive_push_notification(notification: NotificationData) -> Option<Notif
         };
         let zome_name = ZomeName::from(title);
         let notification_id = body;
-        let Ok(notification) = with_retries(
-            async || Ok(get_notification(zome_name.clone(), notification_id.clone()).await?),
-            5,
-        )
-        .await
+        let Ok(notification) = get_notification(zome_name.clone(), notification_id.clone()).await
         else {
             log::error!("Failed to get notifications.");
             return None;
@@ -90,43 +87,55 @@ async fn get_notification(
     zome_name: ZomeName,
     notification_id: String,
 ) -> anyhow::Result<Option<NotificationData>> {
+    println!("haaaaa");
     let runtime = tauri_plugin_holochain::launch_holochain_runtime(
         vec_to_locked(vec![]),
         HolochainPluginConfig::new(holochain_dir(), network_config()),
     )
     .await?;
+    println!("haaaaa1");
 
     let app_ws = runtime.app_websocket(app_id(), AllowedOrigins::Any).await?;
 
     log::debug!("[receive_push_notification] Calling receive messages.");
 
-    app_ws
-        .call_zome(
-            ZomeCallTarget::RoleName("main".into()),
-            "safehold_async_messages".into(),
-            "receive_messages".into(),
-            ExternIO::encode(())?,
-        )
-        .await?;
+    let notification: Option<notifications_zome_trait::Notification> = with_retries(async || {
+        println!("haaaaa2");
+        app_ws
+            .call_zome(
+                ZomeCallTarget::RoleName("main".into()),
+                "safehold_async_messages".into(),
+                "receive_messages".into(),
+                ExternIO::encode(())?,
+            )
+            .await?;
+        println!("haaaaa3");
 
-    log::debug!("[receive_push_notification] Calling get_notification.");
+        log::debug!("[receive_push_notification] Calling get_notification.");
 
-    let notification: Option<notifications_zome_trait::Notification> = app_ws
-        .call_zome(
-            ZomeCallTarget::RoleName("main".into()),
-            zome_name,
-            "get_notification".into(),
-            ExternIO::encode(GetNotificationInput {
-                notification_id,
-                locale: String::from("en-US"),
-            })?,
-        )
-        .await?
-        .decode()?;
+        let notification: Option<notifications_zome_trait::Notification> = app_ws
+            .call_zome(
+                ZomeCallTarget::RoleName("main".into()),
+                zome_name.clone(),
+                "get_notification".into(),
+                ExternIO::encode(GetNotificationInput {
+                    notification_id: notification_id.clone(),
+                    locale: String::from("en-US"),
+                })?,
+            )
+            .await?
+            .decode()?;
+
+        println!("haaaaa4");
+        Ok(notification)
+    }, 10, 500)
+    .await?;
 
     let Some(notification) = notification else {
         return Ok(None);
     };
+
+    log::info!("Received push notification");
 
     // let large_icon = match notification.large_icon {
     //     None => None,

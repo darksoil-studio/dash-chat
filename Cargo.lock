@@ -1904,6 +1904,7 @@ dependencies = [
  "jni",
  "log",
  "migration_zome_trait",
+ "ndk-context",
  "notifications_zome_trait",
  "opener",
  "profiles_provider_zome_trait",
@@ -7885,7 +7886,7 @@ dependencies = [
 [[package]]
 name = "private_event_sourcing_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#23b12f4ccdaf18b47995ed05d580f09538899c5b"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=main-0.5#b69d3550b86c9535d0bc81bc3353a67fcbe5ef08"
 dependencies = [
  "hdk",
  "holochain_serialized_bytes",
@@ -8608,9 +8609,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.5.13"
+version = "0.5.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d04b7d0ee6b4a0207a0a7adb104d23ecb0b47d6beae7152d0fa34b692b29fd6"
+checksum = "de3a5d9f0aba1dbcec1cc47f0ff94a4b778fe55bca98a6dfa92e4e094e57b1c4"
 dependencies = [
  "bitflags 2.9.1",
 ]
@@ -9508,7 +9509,7 @@ dependencies = [
 [[package]]
 name = "send_async_message_zome_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=develop#23b12f4ccdaf18b47995ed05d580f09538899c5b"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=main-0.5#b69d3550b86c9535d0bc81bc3353a67fcbe5ef08"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -10719,7 +10720,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification"
 version = "2.3.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e5292e6b4134b30a7e4f0e8182191fd8cdd97f60"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e46a83e1541310c04896593a7cd94b8bd20d84e9"
 dependencies = [
  "log",
  "notify-rust",
@@ -10740,7 +10741,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-macros"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e5292e6b4134b30a7e4f0e8182191fd8cdd97f60"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e46a83e1541310c04896593a7cd94b8bd20d84e9"
 dependencies = [
  "jni",
  "libc",
@@ -10754,7 +10755,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-models"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e5292e6b4134b30a7e4f0e8182191fd8cdd97f60"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e46a83e1541310c04896593a7cd94b8bd20d84e9"
 dependencies = [
  "rand 0.8.5",
  "serde",

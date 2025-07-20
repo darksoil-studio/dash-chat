@@ -41,6 +41,8 @@ pub fn run() {
                 .level_for("holochain", log::LevelFilter::Warn)
                 .level_for("kitsune2", log::LevelFilter::Warn)
                 .level_for("kitsune2_gossip", log::LevelFilter::Warn)
+                .level_for("kitsune2_transport_iroh", log::LevelFilter::Debug)
+                .level_for("dash-chat", log::LevelFilter::Debug)
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())
@@ -212,7 +214,7 @@ fn network_config() -> NetworkConfig {
 }
 
 fn holochain_dir() -> PathBuf {
-    if tauri::is_dev() {
+    if tauri::is_dev() && cfg!(desktop) {
         let tmp_dir =
             tempdir::TempDir::new("dash-chat").expect("Could not create temporary directory");
 

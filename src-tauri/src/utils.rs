@@ -6,6 +6,7 @@ use tauri_plugin_holochain::*;
 pub async fn with_retries<T>(
     condition: impl AsyncFn() -> anyhow::Result<T>,
     retries: usize,
+    sleep_ms: u64,
 ) -> anyhow::Result<T> {
     let mut retry_count = 0;
     loop {
@@ -16,8 +17,8 @@ pub async fn with_retries<T>(
                 return Ok(r);
             }
             Err(err) => {
-                log::warn!("Condition not met yet: {err:?} Retrying in 1s.");
-                std::thread::sleep(Duration::from_secs(1));
+                log::warn!("Condition not met yet: {err:?} Retrying in {}ms.", sleep_ms);
+                std::thread::sleep(Duration::from_millis(sleep_ms));
 
                 retry_count += 1;
                 if retry_count == retries {
