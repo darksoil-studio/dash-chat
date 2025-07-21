@@ -17,8 +17,6 @@ import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-// @ts-ignore
-import imgUrl from '../splashscreen.jpg';
 import { appStyles } from './app-styles';
 import { isMobileContext } from './context';
 import { isMobileOs } from './utils';
@@ -209,18 +207,9 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 					column: this.isMobile,
 					row: !this.isMobile,
 				})}
-				style="flex: 1"
+				style="flex: 1;"
 			>
-				<img
-					src="${imgUrl}"
-					style=${styleMap({
-						height: this.isMobile ? '300px' : '100%',
-						width: this.isMobile ? '100%' : '50%',
-						flex: this.isMobile ? '0' : '1',
-						'object-fit': 'cover',
-					})}
-				/>
-				<div class="column" style="margin: 24px; flex: 1">
+				<div class="column" style="margin: 24px; flex: 1; max-width: 600px">
 					${this.renderPage()}
 				</div>
 			</div>

@@ -31,11 +31,11 @@ fn app_id() -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     std::env::set_var("WASM_LOG", "debug");
-
+    
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Warn)
+                .level(log::LevelFilter::Info)
                 .level_for("tracing::span", log::LevelFilter::Off)
                 .level_for("iroh", log::LevelFilter::Warn)
                 .level_for("holochain", log::LevelFilter::Warn)
@@ -214,7 +214,7 @@ fn network_config() -> NetworkConfig {
 }
 
 fn holochain_dir() -> PathBuf {
-    if tauri::is_dev() && cfg!(desktop) {
+    if tauri::is_dev() {
         let tmp_dir =
             tempdir::TempDir::new("dash-chat").expect("Could not create temporary directory");
 

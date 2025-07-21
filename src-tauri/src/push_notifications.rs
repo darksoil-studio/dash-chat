@@ -7,7 +7,7 @@ use push_notifications_service_trait::*;
 use service_providers_utils::make_service_request;
 use tauri::{AppHandle, Listener, Manager};
 use tauri_plugin_holochain::*;
-use tauri_plugin_notification::{NotificationData, NotificationExt};
+use tauri_plugin_notification::*;
 
 use crate::{app_id, holochain_dir, network_config, utils::with_retries};
 
@@ -58,7 +58,7 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
 
 // Entry point to receive notifications
 #[tauri_plugin_notification::receive_push_notification]
-pub fn receive_push_notification(notification: NotificationData) -> Option<NotificationData> {
+pub fn receive_push_notification(notification: NotificationData, context: ReceivePushNotificationContext) -> Option<NotificationData> {
     log::info!("Received push notification: {:?}.", notification);
 
     tauri::async_runtime::block_on(async move {
@@ -69,7 +69,7 @@ pub fn receive_push_notification(notification: NotificationData) -> Option<Notif
         };
         let zome_name = ZomeName::from(title);
         let notification_id = body;
-        let Ok(notification) = get_notification(zome_name.clone(), notification_id.clone()).await
+        let Ok(notification) = get_notification(context.data_dir, zome_name.clone(), notification_id.clone()).await
         else {
             log::error!("Failed to get notifications.");
             return None;
@@ -84,23 +84,38 @@ pub fn receive_push_notification(notification: NotificationData) -> Option<Notif
 }
 
 async fn get_notification(
+    data_dir: std::path::PathBuf,
     zome_name: ZomeName,
     notification_id: String,
 ) -> anyhow::Result<Option<NotificationData>> {
-    println!("haaaaa");
+    let tag = std::ffi::CStr::from_bytes_with_nul(b"RustStdoutStderr\0").unwrap();
+
+    let holochain_dir = data_dir.join("files").join("dash-chat").join(crate::get_version()).join("holochain");
+
+    unsafe {
+        ndk_sys::__android_log_write(ndk_sys::android_LogPriority::ANDROID_LOG_INFO.0 as _, tag.as_ptr(), "Attempting to fetch notification".as_ptr());
+    }
+    
     let runtime = tauri_plugin_holochain::launch_holochain_runtime(
         vec_to_locked(vec![]),
-        HolochainPluginConfig::new(holochain_dir(), network_config()),
+        HolochainPluginConfig::new(holochain_dir, network_config()),
     )
     .await?;
-    println!("haaaaa1");
 
     let app_ws = runtime.app_websocket(app_id(), AllowedOrigins::Any).await?;
+   
 
-    log::debug!("[receive_push_notification] Calling receive messages.");
+    unsafe {
+        ndk_sys::__android_log_write(ndk_sys::android_LogPriority::ANDROID_LOG_INFO.0 as _, tag.as_ptr(), "Holochain runtime launched.".as_ptr());
+    }
 
     let notification: Option<notifications_zome_trait::Notification> = with_retries(async || {
-        println!("haaaaa2");
+        log::debug!("[receive_push_notification] Calling receive messages.");
+
+        unsafe {
+            ndk_sys::__android_log_write(ndk_sys::android_LogPriority::ANDROID_LOG_INFO.0 as _, tag.as_ptr(), "Calling receive messages.".as_ptr());
+        }
+    
         app_ws
             .call_zome(
                 ZomeCallTarget::RoleName("main".into()),
@@ -109,8 +124,11 @@ async fn get_notification(
                 ExternIO::encode(())?,
             )
             .await?;
-        println!("haaaaa3");
 
+        unsafe {
+            ndk_sys::__android_log_write(ndk_sys::android_LogPriority::ANDROID_LOG_INFO.0 as _, tag.as_ptr(), "Calling get notification.".as_ptr());
+        }
+    
         log::debug!("[receive_push_notification] Calling get_notification.");
 
         let notification: Option<notifications_zome_trait::Notification> = app_ws
@@ -126,9 +144,8 @@ async fn get_notification(
             .await?
             .decode()?;
 
-        println!("haaaaa4");
         Ok(notification)
-    }, 10, 500)
+    }, 10, 400)
     .await?;
 
     let Some(notification) = notification else {

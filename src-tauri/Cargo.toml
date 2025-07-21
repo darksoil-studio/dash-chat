@@ -1,6 +1,6 @@
 [package]
 name = "dash-chat"
-version = "0.3.3"
+version = "0.3.4"
 description = "Dash Chat"
 authors = ["you"]
 license = ""
@@ -55,6 +55,7 @@ hyper-tls = "0.6"
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 tauri-plugin-barcode-scanner = "2.3"
+ndk-sys = "0.6"
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 tauri-plugin-updater = "2"

@@ -1892,7 +1892,7 @@ checksum = "04d2cd9c18b9f454ed67da600630b021a8a80bf33f8c95896ab33aaf1c26b728"
 
 [[package]]
 name = "dash-chat"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "anyhow",
  "app_dirs2",
@@ -1905,6 +1905,7 @@ dependencies = [
  "log",
  "migration_zome_trait",
  "ndk-context",
+ "ndk-sys",
  "notifications_zome_trait",
  "opener",
  "profiles_provider_zome_trait",
@@ -5203,7 +5204,7 @@ dependencies = [
  "once_cell",
  "socket2 0.5.10",
  "tracing",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -9941,7 +9942,7 @@ version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1961e2ef424c1424204d3a5d6975f934f56b6d50ff5732382d84ebf460e147f7"
 dependencies = [
- "heck 0.5.0",
+ "heck 0.4.1",
  "proc-macro2",
  "quote",
  "syn 2.0.104",
@@ -10720,7 +10721,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification"
 version = "2.3.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e46a83e1541310c04896593a7cd94b8bd20d84e9"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#10340f9700df0ef585251d080b8baf991cdfdf01"
 dependencies = [
  "log",
  "notify-rust",
@@ -10741,7 +10742,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-macros"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e46a83e1541310c04896593a7cd94b8bd20d84e9"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#10340f9700df0ef585251d080b8baf991cdfdf01"
 dependencies = [
  "jni",
  "libc",
@@ -10755,7 +10756,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-notification-models"
 version = "0.1.0"
-source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#e46a83e1541310c04896593a7cd94b8bd20d84e9"
+source = "git+https://github.com/guillemcordoba/plugins-workspace?branch=push-notifications#10340f9700df0ef585251d080b8baf991cdfdf01"
 dependencies = [
  "rand 0.8.5",
  "serde",
