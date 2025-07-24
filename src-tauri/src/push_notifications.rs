@@ -189,7 +189,7 @@ async fn get_notification(
         summary: notification.summary,
         large_body: notification.large_body,
         group_summary: notification.group_summary,
-        icon: notification.icon,
+        icon: Some(notification.icon.unwrap_or("ic_stat_icon".to_string())),
         icon_color: notification.icon_color,
         large_icon: notification.large_icon,
         ..Default::default()
