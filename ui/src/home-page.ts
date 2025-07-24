@@ -301,24 +301,24 @@ export class HomePage extends SignalWatcher(LitElement) {
 	]);
 
 	async firstUpdated() {
-		console.warn('heyi');
 		if (!isMobileOs()) return;
-		console.warn('hey2');
 
 		listen('notification://action-performed', e => {
 			const notification = (e.payload as any).notification as Options;
 			this.handleNotificationClicked(notification);
 		});
 
-		console.warn(`before`)
 		// If the app was launched from a notification, redirect to the appropriate URL
-		const n: { notification: Options } | undefined = await invoke(
-			'get_launching_notification_action',
-		);
-		console.warn(`aaa${n}`)
+		try {
+			const n: { notification: Options } | undefined = await invoke(
+				'plugin:notification|get_launching_notification_action',
+			);
 
-		if (n) {
-			this.handleNotificationClicked(n.notification);
+			if (n) {
+				this.handleNotificationClicked(n.notification);
+			}
+		} catch (e) {
+			console.error(e);
 		}
 	}
 
