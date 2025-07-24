@@ -1,5 +1,4 @@
-use holochain_client::ZomeCallTarget;
-use holochain_types::prelude::ZomeName;
+use std::io::Write;
 use jni::objects::JClass;
 use jni::JNIEnv;
 use notifications_zome_trait::GetNotificationInput;
@@ -10,6 +9,8 @@ use tauri_plugin_holochain::*;
 use tauri_plugin_notification::*;
 
 use crate::{app_id, holochain_dir, network_config, utils::with_retries};
+
+mod android_logs;
 
 pub fn setup_push_notifications(handle: AppHandle) -> anyhow::Result<()> {
     let h = handle.clone();
@@ -49,7 +50,7 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
             Ok(())
         },
         60,
-        1000
+        1000,
     )
     .await?;
 
@@ -58,7 +59,25 @@ async fn register_fcm_token(handle: AppHandle, token: String) -> anyhow::Result<
 
 // Entry point to receive notifications
 #[tauri_plugin_notification::receive_push_notification]
-pub fn receive_push_notification(notification: NotificationData, context: ReceivePushNotificationContext) -> Option<NotificationData> {
+pub fn receive_push_notification(
+    notification: NotificationData,
+    context: ReceivePushNotificationContext,
+) -> Option<NotificationData> {
+    
+    // env_logger::Builder::new()
+    //     .format(|buf, record| writeln!(buf, "[{}] {}", record.level(), record.args()))
+    //     .target(env_logger::Target::Stdout)
+    //     .filter(None, log::LevelFilter::Info)
+    //     .filter_module("holochain_sqlite", log::LevelFilter::Off)
+    //     .filter_module("tracing::span", log::LevelFilter::Off)
+    //     .filter_module("iroh", log::LevelFilter::Warn)
+    //     .filter_module("holochain_runtime", log::LevelFilter::Debug)
+    //     .filter_module("dash-chat", log::LevelFilter::Debug)
+    //     .try_init();
+
+    unsafe {
+        android_logs::setup_android_logs();
+    }
     log::info!("Received push notification: {:?}.", notification);
 
     tauri::async_runtime::block_on(async move {
@@ -69,7 +88,8 @@ pub fn receive_push_notification(notification: NotificationData, context: Receiv
         };
         let zome_name = ZomeName::from(title);
         let notification_id = body;
-        let Ok(notification) = get_notification(context.data_dir, zome_name.clone(), notification_id.clone()).await
+        let Ok(notification) =
+            get_notification(context.data_dir, zome_name.clone(), notification_id.clone()).await
         else {
             log::error!("Failed to get notifications.");
             return None;
@@ -88,14 +108,14 @@ async fn get_notification(
     zome_name: ZomeName,
     notification_id: String,
 ) -> anyhow::Result<Option<NotificationData>> {
-    let tag = std::ffi::CStr::from_bytes_with_nul(b"RustStdoutStderr\0").unwrap();
+    let holochain_dir = data_dir
+        .join("files")
+        .join("dash-chat")
+        .join(crate::get_version())
+        .join("holochain");
 
-    let holochain_dir = data_dir.join("files").join("dash-chat").join(crate::get_version()).join("holochain");
+    log::info!("Attempting to fetch notification");
 
-    unsafe {
-        ndk_sys::__android_log_write(ndk_sys::android_LogPriority::ANDROID_LOG_INFO.0 as _, tag.as_ptr(), "Attempting to fetch notification".as_ptr());
-    }
-    
     let runtime = tauri_plugin_holochain::launch_holochain_runtime(
         vec_to_locked(vec![]),
         HolochainPluginConfig::new(holochain_dir, network_config()),
@@ -103,49 +123,42 @@ async fn get_notification(
     .await?;
 
     let app_ws = runtime.app_websocket(app_id(), AllowedOrigins::Any).await?;
-   
 
-    unsafe {
-        ndk_sys::__android_log_write(ndk_sys::android_LogPriority::ANDROID_LOG_INFO.0 as _, tag.as_ptr(), "Holochain runtime launched.".as_ptr());
-    }
+    log::info!("Holochain runtime launched.");
 
-    let notification: Option<notifications_zome_trait::Notification> = with_retries(async || {
-        log::debug!("[receive_push_notification] Calling receive messages.");
+    let notification: Option<notifications_zome_trait::Notification> = with_retries(
+        async || {
+            log::debug!("[receive_push_notification] Calling receive messages.");
 
-        unsafe {
-            ndk_sys::__android_log_write(ndk_sys::android_LogPriority::ANDROID_LOG_INFO.0 as _, tag.as_ptr(), "Calling receive messages.".as_ptr());
-        }
-    
-        app_ws
-            .call_zome(
-                ZomeCallTarget::RoleName("main".into()),
-                "safehold_async_messages".into(),
-                "receive_messages".into(),
-                ExternIO::encode(())?,
-            )
-            .await?;
+            app_ws
+                .call_zome(
+                    ZomeCallTarget::RoleName("main".into()),
+                    "safehold_async_messages".into(),
+                    "receive_messages".into(),
+                    ExternIO::encode(())?,
+                )
+                .await?;
 
-        unsafe {
-            ndk_sys::__android_log_write(ndk_sys::android_LogPriority::ANDROID_LOG_INFO.0 as _, tag.as_ptr(), "Calling get notification.".as_ptr());
-        }
-    
-        log::debug!("[receive_push_notification] Calling get_notification.");
+            log::debug!("[receive_push_notification] Calling get_notification.");
 
-        let notification: Option<notifications_zome_trait::Notification> = app_ws
-            .call_zome(
-                ZomeCallTarget::RoleName("main".into()),
-                zome_name.clone(),
-                "get_notification".into(),
-                ExternIO::encode(GetNotificationInput {
-                    notification_id: notification_id.clone(),
-                    locale: String::from("en-US"),
-                })?,
-            )
-            .await?
-            .decode()?;
+            let notification: Option<notifications_zome_trait::Notification> = app_ws
+                .call_zome(
+                    ZomeCallTarget::RoleName("main".into()),
+                    zome_name.clone(),
+                    "get_notification".into(),
+                    ExternIO::encode(GetNotificationInput {
+                        notification_id: notification_id.clone(),
+                        locale: String::from("en-US"),
+                    })?,
+                )
+                .await?
+                .decode()?;
 
-        Ok(notification)
-    }, 10, 400)
+            Ok(notification)
+        },
+        10,
+        400,
+    )
     .await?;
 
     let Some(notification) = notification else {
@@ -182,3 +195,4 @@ async fn get_notification(
         ..Default::default()
     }))
 }
+

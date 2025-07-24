@@ -2,7 +2,6 @@ import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/friends-zome/dist/elements/select-friend.js';
 import '@darksoil-studio/friends-zome/dist/elements/update-profile.js';
-
 import {
 	Router,
 	notify,
@@ -32,6 +31,7 @@ import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import { listen } from '@tauri-apps/api/event';
+import { Options, onAction } from '@tauri-apps/plugin-notification';
 import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -49,7 +49,7 @@ import './link-device-dialog.js';
 import './overlay-page.js';
 import './splash-screen.js';
 import { splascreenCompleted } from './splash-screen.js';
-import { connectConsoleToLogs, sleep, withRetries } from './utils.js';
+import { connectConsoleToTauriLogs, sleep, withRetries } from './utils.js';
 
 export const MOBILE_WIDTH_PX = 600;
 
@@ -76,7 +76,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	_isMobile: boolean = false;
 
 	async firstUpdated() {
-		connectConsoleToLogs()
+		connectConsoleToTauriLogs();
 
 		this._isMobile = this.getBoundingClientRect().width < MOBILE_WIDTH_PX;
 		new ResizeController(this, {
@@ -87,37 +87,6 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		this._splashscreen = splascreenCompleted();
 		this._loading = true;
 		this._error = undefined;
-
-		listen('notification://action-performed', e => {
-			const group = (e.payload as any).notification.group;
-			const split = group.split('/');
-			if (split.length !== 2) {
-				console.warn('Received a notification with a malformed group.');
-				return;
-			}
-
-			const notificationType = split[0];
-			const homePage = this.shadowRoot?.querySelector('home-page') as HomePage;
-
-			if (!homePage) return;
-
-			switch (notificationType) {
-				case 'friend-request':
-					homePage.router.goto(`/my-friends`);
-					return;
-				case 'group-chat':
-					homePage.router.goto(`/group-chat/${split[1]}`);
-					return;
-				case 'peer-chat':
-					homePage.router.goto(`/peer-chat/${split[1]}`);
-					return;
-				default:
-					console.warn(
-						'Received a notification with an invalid group notification type: ',
-						notificationType,
-					);
-			}
-		});
 
 		try {
 			this._client = await withRetries(() =>

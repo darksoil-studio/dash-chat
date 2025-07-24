@@ -57,18 +57,21 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import SlMenuItem from '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import {
 	checkPermissions,
 	openAppSettings,
 	requestPermissions,
 } from '@tauri-apps/plugin-barcode-scanner';
+import { Options, onAction } from '@tauri-apps/plugin-notification';
 import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
 
 import { appStyles } from './app-styles.js';
 import { adminWebsocketContext, isMobileContext } from './context.js';
 import { LinkDeviceDialog } from './link-device-dialog.js';
+import { isMobileOs } from './utils.js';
 
 @customElement('home-page')
 export class HomePage extends SignalWatcher(LitElement) {
@@ -296,6 +299,62 @@ export class HomePage extends SignalWatcher(LitElement) {
 				</group-chat>`,
 		},
 	]);
+
+	async firstUpdated() {
+		console.warn('heyi');
+		if (!isMobileOs()) return;
+		console.warn('hey2');
+
+		listen('notification://action-performed', e => {
+			const notification = (e.payload as any).notification as Options;
+			this.handleNotificationClicked(notification);
+		});
+
+		console.warn(`before`)
+		// If the app was launched from a notification, redirect to the appropriate URL
+		const n: { notification: Options } | undefined = await invoke(
+			'get_launching_notification_action',
+		);
+		console.warn(`aaa${n}`)
+
+		if (n) {
+			this.handleNotificationClicked(n.notification);
+		}
+	}
+
+	handleNotificationClicked(notification: Options) {
+		const group = notification.group;
+
+		if (!group) {
+			console.warn('Received a notification with no group.');
+			return;
+		}
+
+		const split = group.split('/');
+		if (split.length !== 2) {
+			console.warn('Received a notification with a malformed group.');
+			return;
+		}
+
+		const notificationType = split[0];
+
+		switch (notificationType) {
+			case 'friend-request':
+				this.router.goto(`/my-friends`);
+				return;
+			case 'group-chat':
+				this.router.goto(`/group-chat/${split[1]}`);
+				return;
+			case 'peer-chat':
+				this.router.goto(`/peer-chat/${split[1]}`);
+				return;
+			default:
+				console.warn(
+					'Received a notification with an invalid group notification type: ',
+					notificationType,
+				);
+		}
+	}
 
 	renderPlaceholder() {
 		return html`<div

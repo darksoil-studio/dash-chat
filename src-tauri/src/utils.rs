@@ -1,5 +1,4 @@
 use anyhow::anyhow;
-use holochain_client::{AdminWebsocket, AppInfo, AppWebsocket, CellInfo, ZomeCallTarget};
 use std::{collections::HashMap, time::Duration};
 use tauri_plugin_holochain::*;
 

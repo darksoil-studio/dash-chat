@@ -1,11 +1,9 @@
 use anyhow::anyhow;
-use holochain_client::AppStatusFilter;
-use holochain_types::app::AppBundle;
 use std::path::PathBuf;
 use tauri::{AppHandle, Listener, WebviewWindow};
 use tauri_plugin_holochain::{
-    vec_to_locked, DnaModifiersOpt, HolochainExt, HolochainPluginConfig, NetworkConfig,
-    RoleSettings, RoleSettingsMap,
+    vec_to_locked, AppBundle, AppStatusFilter, DnaModifiersOpt, HolochainExt,
+    HolochainPluginConfig, NetworkConfig, RoleSettings, RoleSettingsMap,
 };
 
 mod utils;
@@ -31,17 +29,18 @@ fn app_id() -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     std::env::set_var("WASM_LOG", "debug");
-    
+
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Info)
+                .level(log::LevelFilter::Warn)
                 .level_for("tracing::span", log::LevelFilter::Off)
                 .level_for("iroh", log::LevelFilter::Warn)
                 .level_for("holochain", log::LevelFilter::Warn)
                 .level_for("kitsune2", log::LevelFilter::Warn)
                 .level_for("kitsune2_gossip", log::LevelFilter::Warn)
                 .level_for("kitsune2_transport_iroh", log::LevelFilter::Debug)
+                .level_for("holochain_runtime", log::LevelFilter::Info)
                 .level_for("dash-chat", log::LevelFilter::Debug)
                 .build(),
         )
@@ -200,7 +199,6 @@ fn network_config() -> NetworkConfig {
     // Don't use the bootstrap service on tauri dev mode
     if tauri::is_dev() {
         network_config.bootstrap_url = url2::Url2::parse("http://0.0.0.0:8888");
-        // network_config.signal_url = url2::Url2::parse("ws://bad.bad");
     } else {
         network_config.bootstrap_url = url2::Url2::parse("http://157.180.93.55:8888");
     }
@@ -214,7 +212,7 @@ fn network_config() -> NetworkConfig {
 }
 
 fn holochain_dir() -> PathBuf {
-    if tauri::is_dev() {
+    if tauri::is_dev() && cfg!(not(mobile)) {
         let tmp_dir =
             tempdir::TempDir::new("dash-chat").expect("Could not create temporary directory");
 

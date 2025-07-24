@@ -19,7 +19,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 
 import { appStyles } from './app-styles';
 import { isMobileContext } from './context';
-import { isMobileOs } from './utils';
+import { isMobileOs, sleep, withRetries, withTimeout } from './utils';
 
 const SPLASHSCREEN_KEY = 'splashcreencompleted';
 
@@ -49,24 +49,27 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 	async attemptConnect() {
 		try {
 			const client = await AppWebsocket.connect();
+
+			await sleep(200);
+
+			await withRetries(
+				async () =>
+					withTimeout(
+						() =>
+							client.callZome({
+								role_name: 'main',
+								zome_name: 'messenger',
+								fn_name: 'entry_defs',
+								payload: undefined,
+							}),
+						1000,
+					),
+				10,
+			);
+
 			this.initialized = true;
-			await client
-				.callZome({
-					role_name: 'main',
-					zome_name: 'messenger',
-					fn_name: 'init',
-					payload: undefined,
-				})
-				.catch(e => {
-					return client.callZome({
-						role_name: 'main',
-						zome_name: 'messenger',
-						fn_name: 'init',
-						payload: undefined,
-					});
-				});
 		} catch (e: unknown) {
-			console.error('error calling init', e);
+			console.error('Error calling init', e);
 			setTimeout(() => this.attemptConnect(), 300);
 		}
 	}
@@ -200,20 +203,25 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 		}
 	}
 
-	render() {
+	renderDesktop() {
 		return html`
 			<div
-				class=${classMap({
-					column: this.isMobile,
-					row: !this.isMobile,
-				})}
-				style="flex: 1;"
+				class="row"
+				style="flex: 1; align-items: center; justify-content: center"
 			>
-				<div class="column" style="margin: 24px; flex: 1; max-width: 600px">
-					${this.renderPage()}
-				</div>
+				<sl-card style="height: 350px; width: 600px"> ${this.renderPage()} </sl-card>
 			</div>
 		`;
+	}
+	renderMobile() {
+		return html`
+			<div class="row" style="flex: 1; margin: 24px">${this.renderPage()}</div>
+		`;
+	}
+
+	render() {
+		if (this.isMobile) return this.renderMobile();
+		return this.renderDesktop();
 	}
 
 	static styles = [

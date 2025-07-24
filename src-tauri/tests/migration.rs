@@ -1,8 +1,7 @@
-use holochain_client::ExternIO;
 use profiles_provider_zome_trait::Profile;
 use tauri_app_lib::{happ_bundle, migrate_app};
 use tauri_plugin_holochain::{
-    vec_to_locked, AppBundle, HolochainRuntime, HolochainRuntimeConfig, NetworkConfig,
+    vec_to_locked, AllowedOrigins, AppBundle, ExternIO, HolochainRuntime, HolochainRuntimeConfig, NetworkConfig
 };
 use tempdir::TempDir;
 
@@ -35,13 +34,13 @@ async fn migrate_app_test() {
         .unwrap();
 
     let app_ws = runtime
-        .app_websocket(old_app_id.clone(), holochain_client::AllowedOrigins::Any)
+        .app_websocket(old_app_id.clone(), AllowedOrigins::Any)
         .await
         .unwrap();
 
     app_ws
         .call_zome(
-            holochain_client::ZomeCallTarget::RoleName("main".into()),
+            ZomeCallTarget::RoleName("main".into()),
             "friends".into(),
             "set_my_profile".into(),
             ExternIO::encode(Profile {
@@ -65,13 +64,13 @@ async fn migrate_app_test() {
     .unwrap();
 
     let app_ws = runtime
-        .app_websocket(new_app_id.clone(), holochain_client::AllowedOrigins::Any)
+        .app_websocket(new_app_id.clone(), AllowedOrigins::Any)
         .await
         .unwrap();
 
     let profile: Option<Profile> = app_ws
         .call_zome(
-            holochain_client::ZomeCallTarget::RoleName("main".into()),
+            ZomeCallTarget::RoleName("main".into()),
             "friends".into(),
             "get_profile".into(),
             ExternIO::encode(app_ws.my_pub_key.clone()).unwrap(),
