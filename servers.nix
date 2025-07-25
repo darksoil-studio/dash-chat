@@ -1,6 +1,5 @@
 { inputs, ... }:
 let
-
   sshPubKeys = {
     guillem =
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDTE+RwRfcG3UNTOZwGmQOKd5R+9jN0adH4BIaZvmWjO guillem.cordoba@gmail.com";
