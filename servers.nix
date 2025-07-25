@@ -4,6 +4,8 @@ let
   sshPubKeys = {
     guillem =
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDTE+RwRfcG3UNTOZwGmQOKd5R+9jN0adH4BIaZvmWjO guillem.cordoba@gmail.com";
+    guillemslaptop =
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO8DVpvRgQ90MyMyiuNdvyMNAio9n2o/+57MyhZS2A5A guillem.cordoba@gmail.com";
   };
   sshModule = {
     users.users.root.openssh.authorizedKeys.keys =
@@ -24,12 +26,13 @@ let
       enable = true;
       path = [ aon ];
       wantedBy = [ "multi-user.target" ];
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
       serviceConfig = {
         ExecStart =
           "${aon}/bin/always-online-node --data-dir /root/aon --bootstrap-url ${bootstrapUrl}";
         RuntimeMaxSec = "3600"; # Restart every hour
         Restart = "always";
-        RestartSec = 10;
       };
     };
   };

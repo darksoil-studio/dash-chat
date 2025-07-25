@@ -230,7 +230,7 @@ fn holochain_dir() -> PathBuf {
         )
         .expect("Could not get app root")
         .join(get_version())
-        .join("holochain")
+        .join("holochain2")
     }
 }
 

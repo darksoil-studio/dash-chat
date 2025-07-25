@@ -112,7 +112,7 @@ async fn get_notification(
         .join("files")
         .join("dash-chat")
         .join(crate::get_version())
-        .join("holochain");
+        .join("holochain2");
 
     log::info!("Attempting to fetch notification");
 
