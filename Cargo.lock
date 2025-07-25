@@ -1882,7 +1882,7 @@ checksum = "04d2cd9c18b9f454ed67da600630b021a8a80bf33f8c95896ab33aaf1c26b728"
 
 [[package]]
 name = "dash-chat"
-version = "0.3.5"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "app_dirs2",
