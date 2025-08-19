@@ -7918,7 +7918,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#e2fecb29ada225682048ebe4273e87d97c8a2838"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#ac045705dbac9d39769046e7ca99375ad90d2f5c"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -7928,7 +7928,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#e2fecb29ada225682048ebe4273e87d97c8a2838"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.5#ac045705dbac9d39769046e7ca99375ad90d2f5c"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -8988,7 +8988,7 @@ dependencies = [
 [[package]]
 name = "safehold_service_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#4e9f1d6feb2fb2ac9c71a4b4e94a146136a17f42"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#aba645bacb4a6ed7b16e82667c968ea5df28e4c1"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -9000,7 +9000,7 @@ dependencies = [
 [[package]]
 name = "safehold_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#4e9f1d6feb2fb2ac9c71a4b4e94a146136a17f42"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.5#aba645bacb4a6ed7b16e82667c968ea5df28e4c1"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -10136,9 +10136,9 @@ dependencies = [
 
 [[package]]
 name = "tauri"
-version = "2.8.1"
+version = "2.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2a95cd68dd3e97bfe689ed6076ea16c68389feabc51ec4a63138bbe4892c8d7"
+checksum = "a54629607ea3084a8b455c1ebe888cbdfc4de02fa5edb2e40db0dc97091007e3"
 dependencies = [
  "anyhow",
  "bytes",
