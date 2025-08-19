@@ -49,7 +49,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_holochain::async_init(
             vec_to_locked(vec![]),
-            HolochainPluginConfig::new(holochain_dir(), network_config()),
+            HolochainPluginConfig::new(holochain_dir(), network_config()).enable_mdns_discovery(),
         ))
         .setup(move |app| {
             #[cfg(mobile)]
@@ -200,7 +200,8 @@ fn network_config() -> NetworkConfig {
     if tauri::is_dev() {
         network_config.bootstrap_url = url2::Url2::parse("http://0.0.0.0:8888");
     } else {
-        network_config.bootstrap_url = url2::Url2::parse("http://157.180.93.55:8888");
+        network_config.bootstrap_url =
+            url2::Url2::parse("https://bootstrap.kitsune-v0-1.kitsune.darksoil-studio.garnix.me");
     }
 
     // Don't hold any slice of the DHT in mobile
