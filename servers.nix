@@ -9,10 +9,12 @@ let
   sshModule = {
     users.users.root.openssh.authorizedKeys.keys =
       builtins.attrValues sshPubKeys;
+    services.openssh.enable = true;
     services.openssh.settings.PermitRootLogin = "without-password";
   };
 
-  bootstrapUrl = "http://157.180.93.55:8888";
+  bootstrapUrl =
+    "https://bootstrap.kitsune-v0-1.kitsune.darksoil-studio.garnix.me";
 
   always_online_module = {
     systemd.services.dash_chat_aon = let
