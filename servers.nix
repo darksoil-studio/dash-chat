@@ -6,6 +6,7 @@ let
     guillemslaptop =
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO8DVpvRgQ90MyMyiuNdvyMNAio9n2o/+57MyhZS2A5A guillem.cordoba@gmail.com";
   };
+
   sshModule = {
     users.users.root.openssh.authorizedKeys.keys =
       builtins.attrValues sshPubKeys;
