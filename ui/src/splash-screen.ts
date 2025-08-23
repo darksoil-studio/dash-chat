@@ -26,6 +26,7 @@ const SPLASHSCREEN_KEY = 'splashcreencompleted';
 export function splascreenCompleted() {
 	return !localStorage.getItem(SPLASHSCREEN_KEY);
 }
+
 export function completeSplascreen() {
 	localStorage.setItem(SPLASHSCREEN_KEY, 'true');
 }

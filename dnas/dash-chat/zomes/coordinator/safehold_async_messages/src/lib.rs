@@ -84,6 +84,8 @@ impl SendAsyncMessage for SafeholdAsyncMessages {
             send_push_notifications_input,
         )?;
 
+        info!("Successfully sent push notification.");
+
         Ok(())
     }
 }
