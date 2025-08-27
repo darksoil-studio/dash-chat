@@ -5,9 +5,11 @@ import { mdiArrowLeft, mdiClose } from '@mdi/js';
 import { LitElement, TemplateResult, css, html, render } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { M3 } from 'tauri-plugin-m3';
 
 import { appStyles } from './app-styles.js';
 import { isMobileContext } from './context.js';
+import { getOS } from './utils.js';
 
 @customElement('overlay-page')
 export class OverlayPage extends SignalWatcher(LitElement) {
@@ -29,7 +31,7 @@ export class OverlayPage extends SignalWatcher(LitElement) {
 	render() {
 		return html`
 			<div class="column fill">
-				<div class="row top-bar" style="gap: 8px">
+				<div class="row top-bar" id="top-bar" style="gap: 8px">
 					<sl-icon-button
 						@click=${() =>
 							this.dispatchEvent(new CustomEvent('close-requested'))}
@@ -70,7 +72,7 @@ export class OverlayPage extends SignalWatcher(LitElement) {
 			:host {
 				position: fixed;
 				top: 0;
-				bottom: 0;
+				bottom: var(--safe-area-inset-bottom, 0);
 				left: 0;
 				right: 0;
 				z-index: 799;

@@ -20,11 +20,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1755769298,
-        "narHash": "sha256-HrDq/K9JkP+ze3L07QWn7+HoSnfv2zpYMso/jP6MjPc=",
+        "lastModified": 1756282799,
+        "narHash": "sha256-JP8dYjhM5JpQlnbkxtZ7mDpc5wnixvzBcjamUJrhTjM=",
         "owner": "darksoil-studio",
         "repo": "always-online-nodes",
-        "rev": "c4295058bd2d91dda15a3771a5054c573b38a18f",
+        "rev": "b719636b6d025b5fdbe67f1fc3a48cbeee1cf15f",
         "type": "github"
       },
       "original": {
@@ -1167,11 +1167,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1755947949,
-        "narHash": "sha256-A2qAka+r38sX9XUdu6XeapG/yQTrOvQSiDJz9Af2ksI=",
+        "lastModified": 1756105970,
+        "narHash": "sha256-F00Mz2iREdxlR9OvROHFvflbdB9fre8mYMDYG2Nsn1w=",
         "owner": "darksoil-studio",
         "repo": "messenger-zome",
-        "rev": "f7d6db1a254aff53227d4bd6ef47cb025e1ef779",
+        "rev": "04773b6d00efa6fcaf5c70374b60fbdcc3b14e03",
         "type": "github"
       },
       "original": {
@@ -1515,11 +1515,11 @@
         "service-providers": "service-providers_3"
       },
       "locked": {
-        "lastModified": 1755949788,
-        "narHash": "sha256-n+8GO42FNxjMWQ3k2bE3wHXr4OC1JIU7fR9HIFjsdLE=",
+        "lastModified": 1756283019,
+        "narHash": "sha256-RYHm9Yw6bAvGgl4sSix9FMO/p0ZPMFGS3GRefx/lc70=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "37eb645b41a4e9dde3cc8366799871fd428878a8",
+        "rev": "d77828af2575f48603fa0b12d778265363facad7",
         "type": "github"
       },
       "original": {
@@ -1866,11 +1866,11 @@
         "service-providers": "service-providers"
       },
       "locked": {
-        "lastModified": 1755770350,
-        "narHash": "sha256-0IRQEvUPx7hIOo4kL7AOQ4FdXXWScbBjBcLY57ow9Zc=",
+        "lastModified": 1756282831,
+        "narHash": "sha256-hpsh8QcgCkDoMyHnYoeFARDLHsH6+hHtSurD5i3gOa0=",
         "owner": "darksoil-studio",
         "repo": "push-notifications-service",
-        "rev": "5ff3b39e1747c9b17d241b0c3e2b8cc96446ac74",
+        "rev": "dfbb3152e7640ce8040e99cbefe0400394341fb3",
         "type": "github"
       },
       "original": {
@@ -2148,11 +2148,11 @@
         "service-providers": "service-providers_2"
       },
       "locked": {
-        "lastModified": 1755770330,
-        "narHash": "sha256-DX3jXL86xOQwR910X3SnwXonX686imNxJ6KnId1h//o=",
+        "lastModified": 1756282963,
+        "narHash": "sha256-4E/0XfiK6jHY4MgiV5/+8c3U8+OMJJwyOc97Q0tqm+Y=",
         "owner": "darksoil-studio",
         "repo": "safehold",
-        "rev": "7484c2f51ab9f2b8a85ac6c8a5889f6292b0c351",
+        "rev": "a235a17345f01badbdc242b1e3ca94621b5e051f",
         "type": "github"
       },
       "original": {

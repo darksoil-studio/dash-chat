@@ -13,7 +13,7 @@ build
 .externalNativeBuild
 .cxx
 local.properties
-keystore.properties
+key.properties
 
 /.tauri
 /tauri.settings.gradle

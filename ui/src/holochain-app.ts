@@ -34,6 +34,7 @@ import { listen } from '@tauri-apps/api/event';
 import { Options, onAction } from '@tauri-apps/plugin-notification';
 import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { InsetsScheme, M3 } from 'tauri-plugin-m3';
 
 import { appStyles } from './app-styles.js';
 import './automatic-update-dialog.js';
@@ -49,7 +50,12 @@ import './link-device-dialog.js';
 import './overlay-page.js';
 import './splash-screen.js';
 import { splascreenCompleted } from './splash-screen.js';
-import { connectConsoleToTauriLogs, sleep, withRetries } from './utils.js';
+import {
+	connectConsoleToTauriLogs,
+	getOS,
+	sleep,
+	withRetries,
+} from './utils.js';
 
 export const MOBILE_WIDTH_PX = 600;
 
@@ -77,6 +83,15 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 
 	async firstUpdated() {
 		connectConsoleToTauriLogs();
+
+		if (getOS() === 'Android') {
+			// get insets for compensating EdgeToEdge display
+			// either already scale compensated or raw
+			let deviceInsets = await M3.getInsets();
+			if (deviceInsets) {
+				document.documentElement.style.cssText = `--safe-area-inset-top: ${deviceInsets.adjustedInsetTop}px; --safe-area-inset-bottom: ${deviceInsets.adjustedInsetBottom}px;`;
+			}
+		}
 
 		this._isMobile = this.getBoundingClientRect().width < MOBILE_WIDTH_PX;
 		new ResizeController(this, {
@@ -127,7 +142,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	render() {
 		if (this._splashscreen) {
 			return html`<splash-screen
-				style="flex: 1"
+				style="flex: 1; margin-top: var(--safe-area-inset-top)"
 				@start-app-clicked=${() => this.firstUpdated()}
 			></splash-screen>`;
 		}
@@ -177,6 +192,7 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 			:host {
 				display: flex;
 				flex: 1;
+				padding-bottom: var(--safe-area-inset-bottom);
 			}
 		`,
 		...appStyles,

@@ -71,7 +71,8 @@ import { customElement } from 'lit/decorators.js';
 import { appStyles } from './app-styles.js';
 import { adminWebsocketContext, isMobileContext } from './context.js';
 import { LinkDeviceDialog } from './link-device-dialog.js';
-import { isMobileOs } from './utils.js';
+import { getOS, isMobileOs } from './utils.js';
+import { M3 } from 'tauri-plugin-m3';
 
 @customElement('home-page')
 export class HomePage extends SignalWatcher(LitElement) {

@@ -2307,6 +2307,48 @@
           "markdownDescription": "Denies the log command without any pre-configured scope."
         },
         {
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-colors`\n- `allow-insets`\n- `allow-bar-color`",
+          "type": "string",
+          "const": "m3:default",
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-colors`\n- `allow-insets`\n- `allow-bar-color`"
+        },
+        {
+          "description": "Enables the bar_color command without any pre-configured scope.",
+          "type": "string",
+          "const": "m3:allow-bar-color",
+          "markdownDescription": "Enables the bar_color command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the colors command without any pre-configured scope.",
+          "type": "string",
+          "const": "m3:allow-colors",
+          "markdownDescription": "Enables the colors command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the insets command without any pre-configured scope.",
+          "type": "string",
+          "const": "m3:allow-insets",
+          "markdownDescription": "Enables the insets command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the bar_color command without any pre-configured scope.",
+          "type": "string",
+          "const": "m3:deny-bar-color",
+          "markdownDescription": "Denies the bar_color command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the colors command without any pre-configured scope.",
+          "type": "string",
+          "const": "m3:deny-colors",
+          "markdownDescription": "Denies the colors command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the insets command without any pre-configured scope.",
+          "type": "string",
+          "const": "m3:deny-insets",
+          "markdownDescription": "Denies the insets command without any pre-configured scope."
+        },
+        {
           "description": "This permission set configures which\nnotification features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all notification related features.\n\n\n#### This default permission set includes:\n\n- `allow-is-permission-granted`\n- `allow-request-permission`\n- `allow-notify`\n- `allow-register-action-types`\n- `allow-register-listener`\n- `allow-cancel`\n- `allow-get-pending`\n- `allow-remove-active`\n- `allow-get-active`\n- `allow-check-permissions`\n- `allow-show`\n- `allow-batch`\n- `allow-list-channels`\n- `allow-delete-channel`\n- `allow-create-channel`\n- `allow-permission-state`\n- `allow-get-launching-notification-action`",
           "type": "string",
           "const": "notification:default",

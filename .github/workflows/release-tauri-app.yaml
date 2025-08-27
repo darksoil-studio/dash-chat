@@ -232,7 +232,7 @@ jobs:
 
       - name: Install and Build 🔧
         run: |
-          nix develop --accept-flake-config .#ci --command bash -c "pnpm install && pnpm tauri android build"
+          nix develop --accept-flake-config .#ci --command bash -c "pnpm install && pnpm tauri android build -t aarch64 -t i686 -t x86_64"
  
       - uses: AButler/upload-release-assets@v3.0
         with:

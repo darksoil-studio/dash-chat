@@ -14,8 +14,6 @@ import {
 } from '@tauri-apps/plugin-notification';
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
-import { styleMap } from 'lit/directives/style-map.js';
 
 import { appStyles } from './app-styles';
 import { isMobileContext } from './context';
