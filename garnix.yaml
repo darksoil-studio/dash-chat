@@ -2,8 +2,8 @@ servers:
   - configuration: aon1
     deployment:
       type: on-branch
-      branch: production-v0-4-x
+      branch: production-v0-4-2
   - configuration: aon2
     deployment:
       type: on-branch
-      branch: production-v0-4-x
+      branch: production-v0-4-2

@@ -49,7 +49,7 @@ in {
           sshModule
           always_online_module
           {
-            garnix.server.persistence.name = "dash-chat-aon-v0-3-x-1";
+            garnix.server.persistence.name = "dash-chat-aon-v0-4-2-1";
             system.stateVersion = "25.05";
             garnix.server.enable = true;
             garnix.server.persistence.enable = true;
@@ -63,7 +63,7 @@ in {
           sshModule
           always_online_module
           {
-            garnix.server.persistence.name = "dash-chat-aon-v0-3-x-2";
+            garnix.server.persistence.name = "dash-chat-aon-v0-4-2-2";
             system.stateVersion = "25.05";
             garnix.server.enable = true;
             garnix.server.persistence.enable = true;
