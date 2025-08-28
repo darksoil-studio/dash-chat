@@ -143,7 +143,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
             .filter(|app| app.installed_app_id.as_str().starts_with(APP_ID_PREFIX))
             .min_by_key(|app_info| app_info.installed_at);
 
-        let services_network_seed = String::from("somesecretnetworkseedv0.4.2");
+        let services_network_seed = String::from("somesecretnetworkseedv0.5.0");
 
         let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
         roles_settings.insert(
@@ -239,16 +239,15 @@ fn holochain_dir() -> PathBuf {
 
 fn get_version() -> String {
     let semver = std::env!("CARGO_PKG_VERSION");
-    return semver.into();
 
-    // if semver.starts_with("0.0.") {
-    //     return semver.to_string();
-    // }
+    if semver.starts_with("0.0.") {
+        return semver.to_string();
+    }
 
-    // if semver.starts_with("0.") {
-    //     let v: Vec<&str> = semver.split(".").collect();
-    //     return format!("{}.{}", v[0], v[1]);
-    // }
-    // let v: Vec<&str> = semver.split(".").collect();
-    // return format!("{}", v[0]);
+    if semver.starts_with("0.") {
+        let v: Vec<&str> = semver.split(".").collect();
+        return format!("{}.{}", v[0], v[1]);
+    }
+    let v: Vec<&str> = semver.split(".").collect();
+    return format!("{}", v[0]);
 }

@@ -2,11 +2,11 @@ procs:
   agent1: pnpm tauri dev --no-watch
   agent2: pnpm tauri dev --no-watch
   push-notifications-service:
-    shell: test-push-notifications-service ./service-account-key.json somesecretnetworkseedv0.4.2
+    shell: test-push-notifications-service ./service-account-key.json somesecretnetworkseedv0.5.0
     # env:
     #   BOOTSTRAP_URL: http://157.180.93.55:8888
   safehold-service:
-    shell: test-safehold-service somesecretnetworkseedv0.4.2
+    shell: test-safehold-service somesecretnetworkseedv0.5.0
     # env:
     #   BOOTSTRAP_URL: http://157.180.93.55:8888
   playground: hc playground

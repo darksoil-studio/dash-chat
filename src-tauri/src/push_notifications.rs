@@ -1,4 +1,3 @@
-use std::io::Write;
 use jni::objects::JClass;
 use jni::JNIEnv;
 use notifications_zome_trait::GetNotificationInput;

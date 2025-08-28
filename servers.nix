@@ -1,5 +1,15 @@
 { inputs, ... }:
 let
+  dash_chat_happ = inputs.p2p-shipyard.outputs.builders."x86_64-linux".happ {
+    happManifest = ./workdir/happ.yaml;
+    dnas = {
+      # Include here the DNA packages for this hApp, e.g.:
+      # my_dna = inputs'.some_input.packages.my_dna;
+      # This overrides all the "bundled" properties for the hApp manifest
+      main = inputs.self.outputs.packages."x86_64-linux".packages.dash_chat_dna;
+    };
+  };
+
   sshPubKeys = {
     guillem =
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDTE+RwRfcG3UNTOZwGmQOKd5R+9jN0adH4BIaZvmWjO guillem.cordoba@gmail.com";
@@ -21,8 +31,7 @@ let
     systemd.services.dash_chat_aon = let
       aon =
         inputs.p2p-shipyard.inputs.always-online-nodes.outputs.builders."x86_64-linux".aon-for-happs {
-          happs =
-            [ inputs.self.outputs.packages."x86_64-linux".dash_chat_happ ];
+          happs = [ dash_chat_happ ];
         };
     in {
       enable = true;
@@ -49,7 +58,7 @@ in {
           sshModule
           always_online_module
           {
-            garnix.server.persistence.name = "dash-chat-aon-v0-4-2-1";
+            garnix.server.persistence.name = "dash-chat-aon-v0-5-0-1";
             system.stateVersion = "25.05";
             garnix.server.enable = true;
             garnix.server.persistence.enable = true;
@@ -63,7 +72,7 @@ in {
           sshModule
           always_online_module
           {
-            garnix.server.persistence.name = "dash-chat-aon-v0-4-2-2";
+            garnix.server.persistence.name = "dash-chat-aon-v0-5-0-2";
             system.stateVersion = "25.05";
             garnix.server.enable = true;
             garnix.server.persistence.enable = true;
