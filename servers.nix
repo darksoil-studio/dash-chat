@@ -1,5 +1,6 @@
 { inputs, ... }:
 let
+
   dash_chat_happ = inputs.p2p-shipyard.outputs.builders."x86_64-linux".happ {
     happManifest = ./workdir/happ.yaml;
     dnas = {
