@@ -20,7 +20,7 @@ roles:
   dna:
     bundled: 'NIX_BUNDLED'
     modifiers:
-      network_seed: null
+      network_seed: somesecretnetworkseedv0.5.0
       properties: null
     installed_hash: null
     clone_limit: 0

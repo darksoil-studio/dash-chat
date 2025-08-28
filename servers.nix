@@ -1,16 +1,6 @@
 { inputs, ... }:
 let
 
-  dash_chat_happ = inputs.p2p-shipyard.outputs.builders."x86_64-linux".happ {
-    happManifest = ./workdir/happ.yaml;
-    dnas = {
-      # Include here the DNA packages for this hApp, e.g.:
-      # my_dna = inputs'.some_input.packages.my_dna;
-      # This overrides all the "bundled" properties for the hApp manifest
-      main = inputs.self.outputs.packages."x86_64-linux".dash_chat_dna;
-    };
-  };
-
   sshPubKeys = {
     guillem =
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDTE+RwRfcG3UNTOZwGmQOKd5R+9jN0adH4BIaZvmWjO guillem.cordoba@gmail.com";
@@ -32,7 +22,7 @@ let
     systemd.services.dash_chat_aon = let
       aon =
         inputs.p2p-shipyard.inputs.always-online-nodes.outputs.builders."x86_64-linux".aon-for-happs {
-          happs = [ dash_chat_happ ];
+          happs = [ inputs.self.outputs.packages."x86_64-linux".dash_chat_happ ];
         };
     in {
       enable = true;
