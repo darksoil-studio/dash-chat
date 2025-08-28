@@ -7,7 +7,7 @@ let
       # Include here the DNA packages for this hApp, e.g.:
       # my_dna = inputs'.some_input.packages.my_dna;
       # This overrides all the "bundled" properties for the hApp manifest
-      main = inputs.self.outputs.packages."x86_64-linux".packages.dash_chat_dna;
+      main = inputs.self.outputs.packages."x86_64-linux".dash_chat_dna;
     };
   };
 
