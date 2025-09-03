@@ -1,12 +1,9 @@
+import { DeepLinkApi } from '@darksoil-studio/friends-zome';
+import '@darksoil-studio/friends-zome/dist/elements/deep-link-api-context.js';
 import '@darksoil-studio/friends-zome/dist/elements/friends-context.js';
 import '@darksoil-studio/friends-zome/dist/elements/profile-prompt.js';
 import '@darksoil-studio/friends-zome/dist/elements/select-friend.js';
 import '@darksoil-studio/friends-zome/dist/elements/update-profile.js';
-import {
-	Router,
-	notify,
-	wrapPathInSvg,
-} from '@darksoil-studio/holochain-elements';
 import '@darksoil-studio/holochain-elements/dist/elements/app-client-context.js';
 import '@darksoil-studio/holochain-elements/dist/elements/display-error.js';
 import { SignalWatcher } from '@darksoil-studio/holochain-signals';
@@ -25,27 +22,27 @@ import { ResizeController } from '@lit-labs/observers/resize-controller.js';
 import { provide } from '@lit/context';
 import { localized, msg } from '@lit/localize';
 import { mdiLink } from '@mdi/js';
+import '@saurl/tauri-plugin-safe-area-insets-css-api';
+import {
+	getBottomInset,
+	getTopInset,
+	onKeyboardHidden,
+	onKeyboardShown,
+} from '@saurl/tauri-plugin-safe-area-insets-css-api';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
-import { listen } from '@tauri-apps/api/event';
-import { Options, onAction } from '@tauri-apps/plugin-notification';
+import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
+import Emittery from 'emittery';
 import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { InsetsScheme, M3 } from 'tauri-plugin-m3';
 
 import { appStyles } from './app-styles.js';
 import './automatic-update-dialog.js';
-import {
-	adminWebsocketContext,
-	isMobileContext,
-	rootRouterContext,
-} from './context.js';
+import { adminWebsocketContext, isMobileContext } from './context.js';
 import './home-page.js';
-import { HomePage } from './home-page.js';
-import { LinkDeviceDialog } from './link-device-dialog.js';
 import './link-device-dialog.js';
 import './overlay-page.js';
 import './splash-screen.js';
@@ -81,17 +78,35 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 	@property()
 	_isMobile: boolean = false;
 
+	// emitter = new Emittery();
+	// deepLinkApi: DeepLinkApi = {
+	// 	buildDeepLink: code => `dash-chat://${code}`,
+	// 	onDeepLinkClicked: handler => {
+	// 		this.emitter.on('deep-link', (deepLinkUrl: string) => {
+	// 			if (!deepLinkUrl.startsWith('dash-chat://')) {
+	// 				console.warn('Received an unknown deep link: ', deepLinkUrl);
+	// 				return;
+	// 			}
+	// 			const split = deepLinkUrl.split('dash-chat://');
+	// 			handler(split[1]);
+	// 		});
+	// 	},
+	// };
+
 	async firstUpdated() {
 		connectConsoleToTauriLogs();
+		onKeyboardShown(async () => {
+			const bi = await getBottomInset();
+			const top = await getTopInset();
+			document.documentElement.style = `--safe-area-inset-bottom: ${bi?.inset}px; --safe-area-inset-top: ${top?.inset}px`;
+		});
 
-		if (getOS() === 'Android') {
-			// get insets for compensating EdgeToEdge display
-			// either already scale compensated or raw
-			let deviceInsets = await M3.getInsets();
-			if (deviceInsets) {
-				document.documentElement.style.cssText = `--safe-area-inset-top: ${deviceInsets.adjustedInsetTop}px; --safe-area-inset-bottom: ${deviceInsets.adjustedInsetBottom}px;`;
+		await onOpenUrl(urls => {
+			console.log('Received deep links:', urls);
+			for (const url of urls) {
+				this.emitter.emit('deep-link', url);
 			}
-		}
+		});
 
 		this._isMobile = this.getBoundingClientRect().width < MOBILE_WIDTH_PX;
 		new ResizeController(this, {
@@ -130,13 +145,24 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				fn_name: 'receive_messages',
 			})
 			.catch(console.warn);
-		setInterval(() => {
-			this._client.callZome({
+
+		this.receiveMessages();
+	}
+
+	async receiveMessages() {
+		try {
+			await this._client.callZome({
 				role_name: 'main',
 				zome_name: 'safehold_async_messages',
 				fn_name: 'receive_messages',
 			});
-		}, 10000);
+		} catch (e) {
+			console.error('Failed to receive_messages', e);
+		} finally {
+			setTimeout(() => {
+				this.receiveMessages();
+			}, 10_000);
+		}
 	}
 
 	render() {
@@ -175,11 +201,11 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				<notifications-context role="main">
 					<messenger-context role="main">
 						<linked-devices-context role="main">
-							<friends-context role="main">
-								<profile-prompt style="flex: 1;">
-									<home-page> </home-page>
-								</profile-prompt>
-							</friends-context>
+								<friends-context role="main">
+									<profile-prompt style="flex: 1;">
+										<home-page> </home-page>
+									</profile-prompt>
+								</friends-context>
 						</linked-devices-context>
 					</messenger-context>
 				</notifications-context>
@@ -191,8 +217,11 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 		css`
 			:host {
 				display: flex;
-				flex: 1;
-				padding-bottom: var(--safe-area-inset-bottom);
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: calc(100vh - var(--safe-area-inset-bottom, 0px));
 			}
 		`,
 		...appStyles,

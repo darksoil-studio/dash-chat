@@ -3,13 +3,13 @@ import { SignalWatcher } from '@darksoil-studio/holochain-signals';
 import { consume } from '@lit/context';
 import { mdiArrowLeft, mdiClose } from '@mdi/js';
 import { LitElement, TemplateResult, css, html, render } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { M3 } from 'tauri-plugin-m3';
 
 import { appStyles } from './app-styles.js';
 import { isMobileContext } from './context.js';
 import { getOS } from './utils.js';
+import { getBottomInset, onKeyboardShown } from '@saurl/tauri-plugin-safe-area-insets-css-api';
 
 @customElement('overlay-page')
 export class OverlayPage extends SignalWatcher(LitElement) {
@@ -72,7 +72,7 @@ export class OverlayPage extends SignalWatcher(LitElement) {
 			:host {
 				position: fixed;
 				top: 0;
-				bottom: var(--safe-area-inset-bottom, 0);
+				height: calc(100vh - var(--safe-area-inset-bottom, 0px));
 				left: 0;
 				right: 0;
 				z-index: 799;

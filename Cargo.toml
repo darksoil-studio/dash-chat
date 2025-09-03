@@ -1,10 +1,12 @@
 [profile.dev]
-opt-level = "z"
+opt-level = 3
 
 [profile.release]
 opt-level = 3
-lto = true
 panic = "abort"
+lto = "fat"
+codegen-units = 1
+# inherits = "release"
 
 [workspace]
 members = ["src-tauri", "dnas/*/zomes/coordinator/*"]

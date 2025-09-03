@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use std::path::PathBuf;
-use tauri::{AppHandle, Listener, WebviewWindow};
+use tauri::{AppHandle, Emitter, Listener, Manager, WebviewWindow};
 use tauri_plugin_holochain::{
     vec_to_locked, AppBundle, AppStatusFilter, DnaModifiersOpt, HolochainExt,
     HolochainPluginConfig, NetworkConfig, RoleSettings, RoleSettingsMap,
@@ -44,6 +44,7 @@ pub fn run() {
                 .level_for("dash-chat", log::LevelFilter::Debug)
                 .build(),
         )
+        // .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
@@ -53,11 +54,23 @@ pub fn run() {
         ))
         .setup(move |app| {
             #[cfg(mobile)]
-            app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
-            #[cfg(mobile)]
-            app.handle().plugin(tauri_plugin_m3::init())?;
+            {
+                app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
+                app.handle()
+                    .plugin(tauri_plugin_safe_area_insets_css::init())?;
+            }
             #[cfg(not(mobile))]
             {
+                let h = app.handle();
+                // app.handle()
+                //     .plugin(tauri_plugin_single_instance::init(move |app, argv, cwd| {
+                //         // h.emit(
+                //         //     "single-instance",
+                //         //     Payload { args: argv, cwd },
+                //         // )
+                //         // .unwrap();
+                //     }))?;
+
                 app.handle()
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
             }

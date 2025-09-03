@@ -38,6 +38,12 @@
 			"endpoints": [
 				"https://github.com/darksoil-studio/dash-chat/releases/latest/download/latest.json"
 			]
+		},
+		"deep-link": {
+			"mobile": [{ "scheme": ["dash-chat"] }],
+			"desktop": {
+				"schemes": ["dash-chat"]
+			}
 		}
 	}
 }

@@ -75,8 +75,8 @@ importers:
   ui:
     dependencies:
       '@darksoil-studio/friends-zome':
-        specifier: 0.501.0-rev.10f63c7d08b23ef9ac6f561da33f7413bef4762b
-        version: 0.501.0-rev.10f63c7d08b23ef9ac6f561da33f7413bef4762b(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
+        specifier: 0.501.0-rev.a13d10ee721b8fb94d1fedf032d80807037f9beb
+        version: 0.501.0-rev.a13d10ee721b8fb94d1fedf032d80807037f9beb(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/holochain-elements':
         specifier: ^0.500.0
         version: 0.500.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
@@ -113,6 +113,9 @@ importers:
       '@msgpack/msgpack':
         specifier: ^2.8.0
         version: 2.8.0
+      '@saurl/tauri-plugin-safe-area-insets-css-api':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@shoelace-style/shoelace':
         specifier: ^2.11.0
         version: 2.19.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
@@ -122,6 +125,9 @@ importers:
       '@tauri-apps/plugin-barcode-scanner':
         specifier: ^2.3.0
         version: 2.3.0
+      '@tauri-apps/plugin-deep-link':
+        specifier: ^2.4.2
+        version: 2.4.2
       '@tauri-apps/plugin-log':
         specifier: ^2.6.0
         version: 2.6.0
@@ -134,15 +140,15 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: ^2.9.0
         version: 2.9.0
+      emittery:
+        specifier: ^1.2.0
+        version: 1.2.0
       js-base64:
         specifier: ^3.7.7
         version: 3.7.7
       lit:
         specifier: ^3.0.0
         version: 3.2.1
-      tauri-plugin-m3:
-        specifier: ^0.2.2
-        version: 0.2.2
       urlpattern-polyfill:
         specifier: ^10.0.0
         version: 10.0.0
@@ -249,8 +255,8 @@ packages:
   '@custom-elements-manifest/find-dependencies@0.0.5':
     resolution: {integrity: sha512-fKIMMZCDFSoL2ySUoz8knWgpV4jpb0lUXgLOvdZQMQFHxgxz1PqOJpUIypwvEVyKk3nEHRY4f10gNol02HjeCg==}
 
-  '@darksoil-studio/friends-zome@0.501.0-rev.10f63c7d08b23ef9ac6f561da33f7413bef4762b':
-    resolution: {integrity: sha512-f55p66Goz5+iMhLGY4iZQ0srb1ThXbDfdnnQ+HmTuekbU8bRuWtL2jX0J6Vrh1mqdKLvyDIPqgbc1d4p0w13Lg==}
+  '@darksoil-studio/friends-zome@0.501.0-rev.a13d10ee721b8fb94d1fedf032d80807037f9beb':
+    resolution: {integrity: sha512-uFVpX8/zvJOhFfXBu/3j9IdZ8g2PWpe8wuiUEr2a22UThGawb5z2GzPEuAG5SrZB3Hz71UwfwoBYoWwDJwiecg==}
 
   '@darksoil-studio/holochain-elements@0.500.0':
     resolution: {integrity: sha512-ByatMh1LW6je5Ne27UP8JvnZBjzBm0RJuXjqi7Jvm0CoGLbYXIqtTso0A6n7sPeIM+Qu/IHx1uRFfDj4MoYWIA==}
@@ -569,6 +575,9 @@ packages:
   '@rocket/components@0.2.0':
     resolution: {integrity: sha512-N15uUVrpNPJNp/vNtsWsyDaGxblrmC7+uRmY/GloUS+6PyByQPGDVV9GIgUcnrmU2GvM9MtMQyo16q7M4zNndA==}
 
+  '@saurl/tauri-plugin-safe-area-insets-css-api@0.1.0':
+    resolution: {integrity: sha512-cZbOexV7OSBvgGECrqInA7daoCRLG5wGcUy/zrRIDaqXVKP6THdLWwsC5Ho6UD0lsxr8O4+zd1PPFJwrlHxTYg==}
+
   '@shoelace-style/animations@1.2.0':
     resolution: {integrity: sha512-avvo1xxkLbv2dgtabdewBbqcJfV0e0zCwFqkPMnHFGbJbBHorRFfMAHh1NG9ymmXn0jW95ibUVH03E1NYXD6Gw==}
 
@@ -655,6 +664,9 @@ packages:
 
   '@tauri-apps/plugin-barcode-scanner@2.3.0':
     resolution: {integrity: sha512-YgUJ/BcLN40+rhLdOr8MBrzMHUPPNwuVwj1RNden+ehsb+2aJxURcOZ43Jvh6W0nQGJFjcgq0+4AIdjdDB9ZqQ==}
+
+  '@tauri-apps/plugin-deep-link@2.4.2':
+    resolution: {integrity: sha512-og3F/wNrTKh1vdgnGr5fG/vJYHvok114PIZy2zjx753GKqHAaZpngaNc6aP3pKnSqvUp3sjgBbPn/DeJ+CXwrA==}
 
   '@tauri-apps/plugin-log@2.6.0':
     resolution: {integrity: sha512-gVp3l31akA1Jk2bZsTA0hMFD5/gLe49Nw1btu5lViau0QqgC2XyT79LSwvy7a44ewtQbSexchqIg7oTJKMIbXQ==}
@@ -991,8 +1003,8 @@ packages:
     resolution: {integrity: sha512-9+Sj30DIu+4KvHqMfLUGLFYL2PkURSYMVXJyXe92nFRvlYq5hBjLEhblKB+vkd/WVlUYMWigiY07T91Fkk0+4A==}
     engines: {node: '>= 0.4'}
 
-  emittery@1.0.3:
-    resolution: {integrity: sha512-tJdCJitoy2lrC2ldJcqN4vkqJ00lT+tOWNT1hBJjO/3FDMJa5TTIiYGCKGkn/WfCyOzUMObeohbVTj00fhiLiA==}
+  emittery@1.2.0:
+    resolution: {integrity: sha512-KxdRyyFcS85pH3dnU8Y5yFUm2YJdaHwcBZWrfG8o89ZY9a13/f9itbN+YG3ELbBo9Pg5zvIozstmuV8bX13q6g==}
     engines: {node: '>=14.16'}
 
   emoji-regex@8.0.0:
@@ -1697,9 +1709,6 @@ packages:
     resolution: {integrity: sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==}
     engines: {node: '>=6'}
 
-  tauri-plugin-m3@0.2.2:
-    resolution: {integrity: sha512-soFyj24kKAXdlck9cURxngO2pRw0zx5vF7alDGYTc/AxGQFVTGhmxxyVJBshZGZPDzGq7JYmp2wYgepIN0OerQ==}
-
   to-fast-properties@2.0.0:
     resolution: {integrity: sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==}
     engines: {node: '>=4'}
@@ -2005,7 +2014,7 @@ snapshots:
     dependencies:
       es-module-lexer: 0.9.3
 
-  '@darksoil-studio/friends-zome@0.501.0-rev.10f63c7d08b23ef9ac6f561da33f7413bef4762b(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
+  '@darksoil-studio/friends-zome@0.501.0-rev.a13d10ee721b8fb94d1fedf032d80807037f9beb(@floating-ui/utils@0.2.8)(@types/react@18.3.15)':
     dependencies:
       '@darksoil-studio/holochain-elements': 0.500.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@darksoil-studio/holochain-signals': 0.500.0
@@ -2064,7 +2073,7 @@ snapshots:
       '@holochain/client': 0.19.0
       '@msgpack/msgpack': 2.8.0
       blakejs: 1.2.1
-      emittery: 1.0.3
+      emittery: 1.2.0
       js-base64: 3.7.7
       lodash-es: 4.17.21
       sort-keys: 5.1.0
@@ -2302,7 +2311,7 @@ snapshots:
     dependencies:
       '@bitgo/blake2b': 3.2.4
       '@msgpack/msgpack': 3.1.1
-      emittery: 1.0.3
+      emittery: 1.2.0
       isomorphic-ws: 5.0.0(ws@8.18.0)
       js-base64: 3.7.7
       js-sha512: 0.9.0
@@ -2421,6 +2430,10 @@ snapshots:
       fontawesome-free: 1.0.4
       lit: 2.8.0
 
+  '@saurl/tauri-plugin-safe-area-insets-css-api@0.1.0':
+    dependencies:
+      '@tauri-apps/api': 2.8.0
+
   '@shoelace-style/animations@1.2.0': {}
 
   '@shoelace-style/localize@3.2.1': {}
@@ -2489,6 +2502,10 @@ snapshots:
       '@tauri-apps/cli-win32-x64-msvc': 2.8.2
 
   '@tauri-apps/plugin-barcode-scanner@2.3.0':
+    dependencies:
+      '@tauri-apps/api': 2.8.0
+
+  '@tauri-apps/plugin-deep-link@2.4.2':
     dependencies:
       '@tauri-apps/api': 2.8.0
 
@@ -2899,7 +2916,7 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  emittery@1.0.3: {}
+  emittery@1.2.0: {}
 
   emoji-regex@8.0.0: {}
 
@@ -3600,10 +3617,6 @@ snapshots:
       fs-constants: 1.0.0
       inherits: 2.0.4
       readable-stream: 3.6.2
-
-  tauri-plugin-m3@0.2.2:
-    dependencies:
-      '@tauri-apps/api': 2.8.0
 
   to-fast-properties@2.0.0: {}
 

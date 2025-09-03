@@ -149,6 +149,21 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 					${this.renderButtons()}
 				</div>
 			`;
+		} else if (this.currentPage === 4) {
+			return html`
+				<div class="column" style="gap: 16px; flex: 1">
+					<span class="smaller-title">${msg('Dash Chat is in pre-alpha.')} </span>
+					<span
+						>${msg(
+							"We are still building Dash Chat. The app is ready for testing and experimentation, but not to be used as a daily driver.",
+						)}
+					</span>
+
+					<span style="flex: 1"></span>
+
+					${this.renderButtons()}
+				</div>
+			`;
 		} else {
 			return html`
 				<div class="column" style="gap: 16px; flex: 1">

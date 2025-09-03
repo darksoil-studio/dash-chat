@@ -32,7 +32,11 @@ image = "0.25"
 tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-workspace", branch = "push-notifications", features = ["push-notifications-fcm"] }
 tauri-plugin-dialog = "2.3"
 tauri-plugin-process = "2.3"
-tauri-plugin-m3 = "0.2.2"
+tauri-plugin-safe-area-insets-css = { git = "https://github.com/guillemcordoba/tauri-plugin-safe-area-insets-css" }
+
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+tauri-plugin-deep-link = "2"
+
 opener = { version = "0.7", features = ["reveal"] }
 log = "0.4"
 tauri-plugin-log = "2.0.0"

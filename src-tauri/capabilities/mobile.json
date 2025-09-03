@@ -9,6 +9,6 @@
 		"barcode-scanner:allow-request-permissions",
 		"barcode-scanner:allow-scan",
 		"barcode-scanner:allow-cancel",
-		"m3:default"
+		"safe-area-insets-css:default"
 	]
 }

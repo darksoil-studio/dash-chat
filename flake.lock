@@ -20,11 +20,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1756301715,
-        "narHash": "sha256-l5fxCM1WFC47s86W6JPQqhOgEHSpm8M2IAjjkDiG8kU=",
+        "lastModified": 1756800933,
+        "narHash": "sha256-M+azHkN1mjGSL0jf8AxgR/1gRDkZEaUDwZg8KoCJKQE=",
         "owner": "darksoil-studio",
         "repo": "always-online-nodes",
-        "rev": "bc8b8954b99119d615e500ee3aae2da4249dfde1",
+        "rev": "9dc96b84d797862f2bafea63d4776f09a1c3a061",
         "type": "github"
       },
       "original": {
@@ -273,11 +273,11 @@
         "private-event-sourcing-zome": "private-event-sourcing-zome"
       },
       "locked": {
-        "lastModified": 1755949755,
-        "narHash": "sha256-knIW9uWqzk5vlgyiKxBoQKwKKcwe7UybX0/4wCjafqI=",
+        "lastModified": 1756802754,
+        "narHash": "sha256-jbO9i7UoQDUA7om605fvPnxYLpMr4dOYg762mHIxBiU=",
         "owner": "darksoil-studio",
         "repo": "friends-zome",
-        "rev": "10f63c7d08b23ef9ac6f561da33f7413bef4762b",
+        "rev": "1016097df144b4970e75ccb99199edb80d0ab1cf",
         "type": "github"
       },
       "original": {
@@ -569,11 +569,11 @@
         "tauri-plugin-holochain": "tauri-plugin-holochain"
       },
       "locked": {
-        "lastModified": 1755947522,
-        "narHash": "sha256-NrXc0DRN3IOSoK6siZjkGc1GfZLfz2PuyE0xUgpY9Yw=",
+        "lastModified": 1756729954,
+        "narHash": "sha256-7OQbmIruCqCK+aXzQ8yCrwi61N6K1jm0CutTn90R+4U=",
         "owner": "darksoil-studio",
         "repo": "holochain-utils",
-        "rev": "e9b5a9dd5a111a039ddccee641290868ecca6cbd",
+        "rev": "4fa7537cc947c427834acf018a05b084b7ef9674",
         "type": "github"
       },
       "original": {
@@ -1515,11 +1515,11 @@
         "service-providers": "service-providers_3"
       },
       "locked": {
-        "lastModified": 1756377057,
-        "narHash": "sha256-Y9pwSYUuSop1Zw97DusPA6f7jr4I077+w7C+8S05+to=",
+        "lastModified": 1756802779,
+        "narHash": "sha256-KY48KHO0u7z/uLYp/8oqZwYdQZeSEfFCt9lzSwpiKtE=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "79edde256b693434fe4779109888fbd792bc1a23",
+        "rev": "7b9c3e11f8a98230fc486f4293d1d4ddb94328e6",
         "type": "github"
       },
       "original": {
@@ -1555,11 +1555,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1753170537,
-        "narHash": "sha256-vnaU7xkEWXQ/Bg+IkZT+hkF3h/ZFQ31IFEURpoT8ew8=",
+        "lastModified": 1756729856,
+        "narHash": "sha256-xJnIfcIyLRTXsf+N8OOMnqzRkx2gT/DSta7qCm8yU7Y=",
         "owner": "darksoil-studio",
         "repo": "holochain-playground",
-        "rev": "464d4220865aefd91cf9db19399dfa435c919db7",
+        "rev": "5e858641de8ac6113cfa6b47ea1350762a629a61",
         "type": "github"
       },
       "original": {
@@ -1866,11 +1866,11 @@
         "service-providers": "service-providers"
       },
       "locked": {
-        "lastModified": 1756376957,
-        "narHash": "sha256-RukMZqnCb4bQAdWz+4q5SWzzYUEsB92985rlsCqSwes=",
+        "lastModified": 1756800965,
+        "narHash": "sha256-YwfIdiV0HJdztrb2fK88OHhqTmK2UG2JfPCfuxD9cA8=",
         "owner": "darksoil-studio",
         "repo": "push-notifications-service",
-        "rev": "b4e2d4989e72303467a5fdbd4b2968a772680547",
+        "rev": "4ee81ec4900247bb22bb8c4843b027244071c84d",
         "type": "github"
       },
       "original": {
@@ -2148,11 +2148,11 @@
         "service-providers": "service-providers_2"
       },
       "locked": {
-        "lastModified": 1756376881,
-        "narHash": "sha256-2VtK65eQUWCUZD2CNOCv7GU8qXkOzox+wX+FB0U2oTs=",
+        "lastModified": 1756800994,
+        "narHash": "sha256-RYY4MI0OD+xmPPwpw/tlHiborrb1pAXX3Y/1Rb16OxM=",
         "owner": "darksoil-studio",
         "repo": "safehold",
-        "rev": "711aaec9604d9cf5d6936f7331e04c3ff28810bf",
+        "rev": "c019aa7405d3985ec16d709eb156b0bb20ad9238",
         "type": "github"
       },
       "original": {
@@ -2228,11 +2228,11 @@
         "roles-zome": "roles-zome"
       },
       "locked": {
-        "lastModified": 1756376651,
-        "narHash": "sha256-CpY1c0uzFWEQd3gCIQtwUfa7F+PtDQ239UJOTWFnEu4=",
+        "lastModified": 1756750321,
+        "narHash": "sha256-ucPHeUzQlCxqwZRsEGBeAIDKDjGES7xQFhRXbc0fldc=",
         "owner": "darksoil-studio",
         "repo": "service-providers",
-        "rev": "9d1859d0eeda9ff4c9d8808b3e6efcea63f78baf",
+        "rev": "b4717c4c981030483cc10f6ba7b331b63b2bd00d",
         "type": "github"
       },
       "original": {
@@ -2259,11 +2259,11 @@
         "roles-zome": "roles-zome_3"
       },
       "locked": {
-        "lastModified": 1756376651,
-        "narHash": "sha256-CpY1c0uzFWEQd3gCIQtwUfa7F+PtDQ239UJOTWFnEu4=",
+        "lastModified": 1756750321,
+        "narHash": "sha256-ucPHeUzQlCxqwZRsEGBeAIDKDjGES7xQFhRXbc0fldc=",
         "owner": "darksoil-studio",
         "repo": "service-providers",
-        "rev": "9d1859d0eeda9ff4c9d8808b3e6efcea63f78baf",
+        "rev": "b4717c4c981030483cc10f6ba7b331b63b2bd00d",
         "type": "github"
       },
       "original": {
@@ -2291,11 +2291,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1756376651,
-        "narHash": "sha256-CpY1c0uzFWEQd3gCIQtwUfa7F+PtDQ239UJOTWFnEu4=",
+        "lastModified": 1756750321,
+        "narHash": "sha256-ucPHeUzQlCxqwZRsEGBeAIDKDjGES7xQFhRXbc0fldc=",
         "owner": "darksoil-studio",
         "repo": "service-providers",
-        "rev": "9d1859d0eeda9ff4c9d8808b3e6efcea63f78baf",
+        "rev": "b4717c4c981030483cc10f6ba7b331b63b2bd00d",
         "type": "github"
       },
       "original": {
@@ -2346,11 +2346,11 @@
         "webkitnixpkgs": "webkitnixpkgs"
       },
       "locked": {
-        "lastModified": 1755947416,
-        "narHash": "sha256-Fp1sObCTxY2BxD0m4WdslL0Qll5b9rHRnmEupcV53fM=",
+        "lastModified": 1756109559,
+        "narHash": "sha256-r+Pwd2chZrzvY63HJ/qa7c1/zGAhZtKjCDMEZN+QTUs=",
         "owner": "darksoil-studio",
         "repo": "tauri-plugin-holochain",
-        "rev": "7439f392790b248a866abfcd40c4d8beac5688cb",
+        "rev": "e987ae89c534a9e8c851d03a4e6cf80f228f303b",
         "type": "github"
       },
       "original": {

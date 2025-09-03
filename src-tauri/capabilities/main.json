@@ -8,6 +8,7 @@
 		"core:window:allow-set-title",
 		"log:default",
 		"notification:default",
-		"notification:allow-is-permission-granted"
+		"notification:allow-is-permission-granted",
+		"deep-link:default"
 	]
 }

@@ -72,7 +72,6 @@ import { appStyles } from './app-styles.js';
 import { adminWebsocketContext, isMobileContext } from './context.js';
 import { LinkDeviceDialog } from './link-device-dialog.js';
 import { getOS, isMobileOs } from './utils.js';
-import { M3 } from 'tauri-plugin-m3';
 
 @customElement('home-page')
 export class HomePage extends SignalWatcher(LitElement) {
@@ -405,11 +404,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 		return html`
 			<sl-dialog id="add-friend-dialog" .label=${msg('Add friend')}>
 				<div class="column" style="gap: 16px">
-					<span
-						>${msg(
-							'Ask your friend scan this QR code to send you a friend request.',
-						)}
-					</span>
 					<div class="column" style="align-items: center; padding: 16px">
 						<friend-request-qr-code
 							@friend-request-sent=${() => {

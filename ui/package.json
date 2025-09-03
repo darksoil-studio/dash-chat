@@ -12,7 +12,7 @@
     "localize:build": "lit-localize build"
   },
   "dependencies": {
-    "@darksoil-studio/friends-zome": "0.501.0-rev.10f63c7d08b23ef9ac6f561da33f7413bef4762b",
+    "@darksoil-studio/friends-zome": "0.501.0-rev.a13d10ee721b8fb94d1fedf032d80807037f9beb",
     "@darksoil-studio/holochain-elements": "^0.500.0",
     "@darksoil-studio/holochain-signals": "^0.500.0",
     "@darksoil-studio/holochain-utils": "^0.500.0",
@@ -25,16 +25,18 @@
     "@lit/localize": "^0.12.0",
     "@mdi/js": "^7.2.0",
     "@msgpack/msgpack": "^2.8.0",
+    "@saurl/tauri-plugin-safe-area-insets-css-api": "^0.1.0",
     "@shoelace-style/shoelace": "^2.11.0",
     "@tauri-apps/api": "^2.8.0",
     "@tauri-apps/plugin-barcode-scanner": "^2.3.0",
+    "@tauri-apps/plugin-deep-link": "^2.4.2",
     "@tauri-apps/plugin-log": "^2.6.0",
     "@tauri-apps/plugin-notification": "^2.3.0",
     "@tauri-apps/plugin-process": "^2.3.0",
     "@tauri-apps/plugin-updater": "^2.9.0",
+    "emittery": "^1.2.0",
     "js-base64": "^3.7.7",
     "lit": "^3.0.0",
-    "tauri-plugin-m3": "^0.2.2",
     "urlpattern-polyfill": "^10.0.0"
   },
   "devDependencies": {
