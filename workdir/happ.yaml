@@ -1,4 +1,4 @@
-manifest_version: '1'
+manifest_version: '0'
 name: dash-chat
 description: null
 roles:
@@ -7,7 +7,7 @@ roles:
     strategy: create
     deferred: false
   dna:
-    bundled: '../dnas/dash_chat/workdir/dash_chat.dna'
+    path: '../dnas/dash_chat/workdir/dash_chat.dna'
     modifiers:
       network_seed: null
       properties: null
@@ -18,9 +18,9 @@ roles:
     strategy: create
     deferred: false
   dna:
-    bundled: 'NIX_BUNDLED'
+    path: 'NIX_BUNDLED'
     modifiers:
-      network_seed: somesecretnetworkseedv0.5.0
+      network_seed: somesecretnetworkseedv0.6.0
       properties: null
     installed_hash: null
     clone_limit: 0

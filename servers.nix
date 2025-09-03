@@ -16,7 +16,7 @@ let
   };
 
   bootstrapUrl =
-    "https://bootstrap.kitsune-v0-1.kitsune.darksoil-studio.garnix.me";
+    "https://bootstrap.kitsune-v0-2.kitsune.darksoil-studio.garnix.me";
 
   always_online_module = {
     systemd.services.dash_chat_aon = let
@@ -49,7 +49,7 @@ in {
           sshModule
           always_online_module
           {
-            garnix.server.persistence.name = "dash-chat-aon-v0-5-0-1";
+            garnix.server.persistence.name = "dash-chat-aon-v0-6-0-1";
             system.stateVersion = "25.05";
             garnix.server.enable = true;
             garnix.server.persistence.enable = true;
@@ -63,7 +63,7 @@ in {
           sshModule
           always_online_module
           {
-            garnix.server.persistence.name = "dash-chat-aon-v0-5-0-2";
+            garnix.server.persistence.name = "dash-chat-aon-v0-6-0-2";
             system.stateVersion = "25.05";
             garnix.server.enable = true;
             garnix.server.persistence.enable = true;

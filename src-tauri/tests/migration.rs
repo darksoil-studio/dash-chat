@@ -1,13 +1,13 @@
 use profiles_provider_zome_trait::Profile;
 use tauri_app_lib::{happ_bundle, migrate_app};
 use tauri_plugin_holochain::{
-    vec_to_locked, AllowedOrigins, AppBundle, ExternIO, HolochainRuntime, HolochainRuntimeConfig, NetworkConfig
+    vec_to_locked, AllowedOrigins, AppBundle, ExternIO, HolochainRuntime, HolochainRuntimeConfig, NetworkConfig, ZomeCallTarget
 };
 use tempdir::TempDir;
 
 pub fn old_happ_bundle() -> AppBundle {
     let bytes = include_bytes!("../../workdir/old-dash-chat.happ");
-    AppBundle::decode(bytes).expect("Failed to decode dash-chat happ")
+    AppBundle::unpack(&bytes[..]).expect("Failed to decode dash-chat happ")
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -20,6 +20,7 @@ async fn migrate_app_test() {
             holochain_dir: tmp.path().to_path_buf(),
             network_config: NetworkConfig::default(),
             admin_port: None,
+            mdns_discovery: false
         },
     )
     .await

@@ -1,6 +1,6 @@
-manifest_version: '1'
+manifest_version: '0'
 name: dash-chat
 ui:
-  bundled: '../ui/dist.zip'
+  path: '../ui/dist.zip'
 happ_manifest:
-  bundled: './dash-chat.happ'
+  path: './dash-chat.happ'

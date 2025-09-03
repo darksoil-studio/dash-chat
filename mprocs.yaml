@@ -2,9 +2,9 @@ procs:
   agent1: pnpm tauri dev --no-watch
   agent2: pnpm tauri dev --no-watch
   push-notifications-service:
-    shell: test-push-notifications-service ./service-account-key.json somesecretnetworkseedv0.5.0
+    shell: test-push-notifications-service ./service-account-key.json somesecretnetworkseedv0.6.0
   safehold-service:
-    shell: test-safehold-service somesecretnetworkseedv0.5.0
+    shell: test-safehold-service somesecretnetworkseedv0.6.0
   playground: hc playground
   ui: pnpm -F ./ui start
   android: adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev --release

@@ -1,6 +1,6 @@
 [package]
 name = "dash-chat"
-version = "0.5.0"
+version = "0.6.0"
 description = "Dash Chat"
 authors = ["you"]
 license = ""
@@ -19,13 +19,13 @@ tauri-build = { version = "2.4.0", default-features = false , features = [] }
 
 [dependencies]
 tauri = { version = "2.8", features = ["devtools"] }
-tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main-0.5", default-features = false, features = ["sqlite"] }
+tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main-0.6", default-features = false, features = ["sqlite"] }
 
-service_providers_utils = { git = "https://github.com/darksoil-studio/service-providers", branch = "main-0.5" }
-push_notifications_service_trait = { git = "https://github.com/darksoil-studio/push-notifications-service", branch = "main-0.5" }
-notifications_zome_trait = { git = "https://github.com/darksoil-studio/notifications-zome-trait", branch = "main-0.5" }
-profiles_provider_zome_trait = { git = "https://github.com/darksoil-studio/profiles-zome", branch = "main-0.5" }
-migration_zome_trait = { git = "https://github.com/darksoil-studio/migration-zome-trait", branch = "main-0.5" }
+service_providers_utils = { git = "https://github.com/darksoil-studio/service-providers", branch = "main-0.6" }
+push_notifications_service_trait = { git = "https://github.com/darksoil-studio/push-notifications-service", branch = "main-0.6" }
+notifications_zome_trait = { git = "https://github.com/darksoil-studio/notifications-zome-trait", branch = "main-0.6" }
+profiles_provider_zome_trait = { git = "https://github.com/darksoil-studio/profiles-zome", branch = "main-0.6" }
+migration_zome_trait = { git = "https://github.com/darksoil-studio/migration-zome-trait", branch = "main-0.6" }
 
 image = "0.25"
 

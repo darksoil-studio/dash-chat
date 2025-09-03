@@ -16,7 +16,7 @@ mod push_notifications;
 
 pub fn happ_bundle() -> AppBundle {
     let bytes = include_bytes!("../../workdir/dash-chat.happ");
-    AppBundle::decode(bytes).expect("Failed to decode dash-chat happ")
+    AppBundle::unpack(&bytes[..]).expect("Failed to decode dash-chat happ")
 }
 
 const APP_ID_PREFIX: &'static str = "dash-chat";
@@ -141,7 +141,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
     let admin_ws = handle.holochain()?.admin_websocket().await?;
 
     let installed_apps = admin_ws
-        .list_apps(Some(AppStatusFilter::Running))
+        .list_apps(Some(AppStatusFilter::Enabled))
         .await
         .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
 
@@ -156,7 +156,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
             .filter(|app| app.installed_app_id.as_str().starts_with(APP_ID_PREFIX))
             .min_by_key(|app_info| app_info.installed_at);
 
-        let services_network_seed = String::from("somesecretnetworkseedv0.5.0");
+        let services_network_seed = String::from("somesecretnetworkseedv0.6.0");
 
         let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
         roles_settings.insert(
@@ -216,7 +216,7 @@ fn network_config() -> NetworkConfig {
         network_config.bootstrap_url = url2::Url2::parse("http://0.0.0.0:8888");
     } else {
         network_config.bootstrap_url =
-            url2::Url2::parse("https://bootstrap.kitsune-v0-1.kitsune.darksoil-studio.garnix.me");
+            url2::Url2::parse("https://bootstrap.kitsune-v0-2.kitsune.darksoil-studio.garnix.me");
     }
 
     // Don't hold any slice of the DHT in mobile

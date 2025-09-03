@@ -210,15 +210,15 @@ pub async fn dna_hash_for_app_bundle_role(
         return Ok(None);
     };
 
-    let Some(DnaLocation::Bundled(path)) = role.dna.location else {
+    let Some(path) = role.dna.path else {
         return Ok(None);
     };
 
-    let Some(dna_bundle_bytes) = app_bundle.bundled_resources().get(&path) else {
+    let Some(dna_bundle_bytes) = app_bundle.get_resource(&path) else {
         return Ok(None);
     };
 
-    let bundle = DnaBundle::decode(dna_bundle_bytes.inner())?;
+    let bundle = DnaBundle::unpack(dna_bundle_bytes.as_ref())?;
 
     let (dna_file, _) = bundle.into_dna_file(DnaModifiersOpt::default()).await?;
 
@@ -239,9 +239,7 @@ pub async fn find_zomes_with_zome_trait(
     cell_id: &CellId,
     zome_trait_hash: [u8; 32],
 ) -> anyhow::Result<Vec<ZomeName>> {
-    let dna_def = admin_ws
-        .get_dna_definition(cell_id.dna_hash().clone())
-        .await?;
+    let dna_def = admin_ws.get_dna_definition(cell_id.clone()).await?;
 
     let mut zomes = vec![];
 

@@ -2,7 +2,7 @@
   description = "Template for Holochain app development";
 
   inputs = {
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.5";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.6";
     nixpkgs.follows = "p2p-shipyard/nixpkgs";
 
     garnix-lib = {
@@ -17,10 +17,12 @@
     extra-substituters = [
       "https://holochain-ci.cachix.org"
       "https://darksoil-studio.cachix.org"
+      "https://cache.garnix.io"
     ];
     extra-trusted-public-keys = [
       "holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8="
       "darksoil-studio.cachix.org-1:UEi+aujy44s41XL/pscLw37KEVpTEIn8N/kn7jO8rkc="
+      "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
     ];
   };
 
