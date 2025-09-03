@@ -48,7 +48,7 @@ importers:
   site:
     dependencies:
       '@darksoil-studio/holochain-elements':
-        specifier: ^0.500.0-rc
+        specifier: ^0.500.0
         version: 0.500.0(@floating-ui/utils@0.2.8)(@types/react@18.3.15)
       '@mdi/js':
         specifier: ^7.2.0
