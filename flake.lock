@@ -20,11 +20,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1756913287,
-        "narHash": "sha256-dBz4VYUo5ml6pVTJXGc2siMKs0pBngv9WytiINlwGKE=",
+        "lastModified": 1757008694,
+        "narHash": "sha256-Ooh95CZx+tB9uCJAsrGxnhQbV0j5uHFy0H1UskfxedY=",
         "owner": "darksoil-studio",
         "repo": "always-online-nodes",
-        "rev": "2843fa3c53539c013f391948e1fb5d22ff781eb4",
+        "rev": "0b8fb39fd8cad91f50cfce828636d26be86d6679",
         "type": "github"
       },
       "original": {
@@ -490,16 +490,16 @@
     "holochain": {
       "flake": false,
       "locked": {
-        "lastModified": 1755649944,
-        "narHash": "sha256-HT1roqQlOkkyeBI/c+G6w5gArXW6h9kp1Qkchem1J/Y=",
+        "lastModified": 1756913828,
+        "narHash": "sha256-g6uMmnyvWLauoN56UnRcqp9g6XXsgt6dMq7olp0GrkA=",
         "owner": "holochain",
         "repo": "holochain",
-        "rev": "0b52a0ee490238a43ca7caf8639399bc66f89cca",
+        "rev": "86affa7aa25eb7e02864d28ff60222351b6ccee4",
         "type": "github"
       },
       "original": {
         "owner": "holochain",
-        "ref": "holochain-0.6.0-dev.18",
+        "ref": "holochain-0.6.0-dev.20",
         "repo": "holochain",
         "type": "github"
       }
@@ -569,11 +569,11 @@
         "tauri-plugin-holochain": "tauri-plugin-holochain"
       },
       "locked": {
-        "lastModified": 1756904605,
-        "narHash": "sha256-ZfegXAjuUdphhLD/JnwFqRkokI5fnsv3Pgs/xFzobUQ=",
+        "lastModified": 1756988556,
+        "narHash": "sha256-0gs2KkyAn27gxOazOw3cICWkLVesb47vwT0sBdhWDCY=",
         "owner": "darksoil-studio",
         "repo": "holochain-utils",
-        "rev": "98df5dea0b6f77ee10175fe400bec8f0320a15cb",
+        "rev": "c5171ee8669d5f88362b56d30152ca43c469feb1",
         "type": "github"
       },
       "original": {
@@ -652,11 +652,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1755693622,
-        "narHash": "sha256-rhhQw9FXAmB5ni/AaBbd0T/h6GsJpoMXhwqqGMGorvE=",
+        "lastModified": 1756927627,
+        "narHash": "sha256-InyCu7VmnrDuFc920nZpMfNKPm+Kz6Lu5CpsX+ks/Ew=",
         "owner": "holochain",
         "repo": "holonix",
-        "rev": "852b31e112cb06cb046a98ed3a0246965cc9def7",
+        "rev": "4747d05952043702ef59d01372c6807224e4143e",
         "type": "github"
       },
       "original": {
@@ -1459,11 +1459,11 @@
         "service-providers": "service-providers_3"
       },
       "locked": {
-        "lastModified": 1756924025,
-        "narHash": "sha256-hvHjszzjr/3S3hl0SUzayU0MrpkG6LupVOBPn56vHks=",
+        "lastModified": 1757008724,
+        "narHash": "sha256-NZT86poATJ8G4ruykm97373b9Ju04LN1sahyvJgwXCY=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "3da670f0e968ba8d90c56b62dbf012abdbfb5584",
+        "rev": "df205091c8b5c050013b1d614a4cbced844510bc",
         "type": "github"
       },
       "original": {
@@ -1788,11 +1788,11 @@
         "service-providers": "service-providers"
       },
       "locked": {
-        "lastModified": 1756919731,
-        "narHash": "sha256-VV+awft0+NYJimGOOVZfu+lOjAUq8W8NGPoOGAF2LzA=",
+        "lastModified": 1757008705,
+        "narHash": "sha256-XH1ZBJSFF9Z6aeLMnkt53EsNWvhT1qZzEafD9HxsVTE=",
         "owner": "darksoil-studio",
         "repo": "push-notifications-service",
-        "rev": "caa3fa4114abbcb7182002d15fb3377d37f5cdef",
+        "rev": "0ec828239e90ad5154b3d107de5a1ddeb0cb4395",
         "type": "github"
       },
       "original": {
@@ -2070,11 +2070,11 @@
         "service-providers": "service-providers_2"
       },
       "locked": {
-        "lastModified": 1756918205,
-        "narHash": "sha256-MDzsZZphOapN90tB7IVa6pvP3HuHXYcnTV+1usfmuII=",
+        "lastModified": 1757008681,
+        "narHash": "sha256-/bfKnpZ+NQwVfAmANqfJv756H8PYuBwqwsolqJ2HZUk=",
         "owner": "darksoil-studio",
         "repo": "safehold",
-        "rev": "474bd22ac2bb9631a59b8e9510955e03e771b23b",
+        "rev": "4cdc934e7f6ec80a5c6e0ce1db88dc746f32707e",
         "type": "github"
       },
       "original": {
@@ -2268,11 +2268,11 @@
         "webkitnixpkgs": "webkitnixpkgs"
       },
       "locked": {
-        "lastModified": 1756901974,
-        "narHash": "sha256-A1cvDX4dVb335fIiSTc4+74OhYYPbHTvBsjqMidqUBs=",
+        "lastModified": 1756988517,
+        "narHash": "sha256-/Ogft6qTZ6pYjli5+Y9+CvO9LJdyDUMSf6w78JEo5bA=",
         "owner": "darksoil-studio",
         "repo": "tauri-plugin-holochain",
-        "rev": "f86fd704c2fc3b53c513afb425f594c9a1819e6d",
+        "rev": "d17f67e7a17d8b96bc0e2b00fd04113f27ed3286",
         "type": "github"
       },
       "original": {

@@ -95,18 +95,21 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 
 	async firstUpdated() {
 		connectConsoleToTauriLogs();
-		onKeyboardShown(async () => {
-			const bi = await getBottomInset();
-			const top = await getTopInset();
-			document.documentElement.style = `--safe-area-inset-bottom: ${bi?.inset}px; --safe-area-inset-top: ${top?.inset}px`;
-		});
 
-		await onOpenUrl(urls => {
-			console.log('Received deep links:', urls);
-			for (const url of urls) {
-				this.emitter.emit('deep-link', url);
-			}
-		});
+		if (getOS() === 'Android') {
+			onKeyboardShown(async () => {
+				const bi = await getBottomInset();
+				const top = await getTopInset();
+				document.documentElement.style = `--safe-area-inset-bottom: ${bi?.inset}px; --safe-area-inset-top: ${top?.inset}px`;
+			});
+		}
+
+		// await onOpenUrl(urls => {
+		// 	console.log('Received deep links:', urls);
+		// 	for (const url of urls) {
+		// 		this.emitter.emit('deep-link', url);
+		// 	}
+		// });
 
 		this._isMobile = this.getBoundingClientRect().width < MOBILE_WIDTH_PX;
 		new ResizeController(this, {
@@ -201,11 +204,11 @@ export class HolochainApp extends SignalWatcher(LitElement) {
 				<notifications-context role="main">
 					<messenger-context role="main">
 						<linked-devices-context role="main">
-								<friends-context role="main">
-									<profile-prompt style="flex: 1;">
-										<home-page> </home-page>
-									</profile-prompt>
-								</friends-context>
+							<friends-context role="main">
+								<profile-prompt style="flex: 1;">
+									<home-page> </home-page>
+								</profile-prompt>
+							</friends-context>
 						</linked-devices-context>
 					</messenger-context>
 				</notifications-context>
