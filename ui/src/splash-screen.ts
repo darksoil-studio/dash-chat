@@ -152,10 +152,13 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 		} else if (this.currentPage === 4) {
 			return html`
 				<div class="column" style="gap: 16px; flex: 1">
-					<span class="smaller-title">${msg('Dash Chat is in pre-alpha.')} </span>
+					<span class="smaller-title"
+						>${msg('Dash Chat is in pre-alpha.')}
+					</span>
+					<span>${msg('We are still building Dash Chat.')} </span>
 					<span
 						>${msg(
-							"We are still building Dash Chat. The app is ready for testing and experimentation, but not to be used as a daily driver.",
+							'The app is ready for testing and experimentation, but not to be used as a daily driver.',
 						)}
 					</span>
 
@@ -223,7 +226,9 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 				class="row"
 				style="flex: 1; align-items: center; justify-content: center"
 			>
-				<sl-card style="height: 350px; width: 600px"> ${this.renderPage()} </sl-card>
+				<sl-card style="height: 350px; width: 600px">
+					${this.renderPage()}
+				</sl-card>
 			</div>
 		`;
 	}
