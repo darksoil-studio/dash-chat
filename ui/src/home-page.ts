@@ -171,7 +171,9 @@ export class HomePage extends SignalWatcher(LitElement) {
 					icon="back"
 					@close-requested=${() => this.router.goto('/')}
 				>
-					${this.renderFriends()}
+					<div class="column" style="margin: 8px; flex: 1">
+						${this.renderFriends()}
+					</div>
 				</overlay-page>
 			`,
 		},
@@ -182,20 +184,13 @@ export class HomePage extends SignalWatcher(LitElement) {
 					.title=${msg('Add friend')}
 					icon="back"
 					@close-requested=${() => {
-						if (this.isMobile) {
-							this.router.goto('/');
-							setTimeout(() => {
-								this.shadowRoot!.querySelector('sl-tab-group')!.show('friends');
-							});
-						} else {
-							this.router.goto('/my-friends');
-						}
+						this.showMyFriends();
 					}}
 				>
 					<div class="column" style="align-items: center; padding: 16px">
 						<friend-request-qr-code
 							@friend-request-sent=${() => {
-								this.router.goto('/my-friends');
+								this.showMyFriends();
 							}}
 							style="align-self: center; "
 							size="${document.documentElement.clientWidth - 128}"
@@ -394,7 +389,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 
 		switch (notificationType) {
 			case 'friend-request':
-				this.router.goto(`/my-friends`);
+				this.showMyFriends();
 				return;
 			case 'group-chat':
 				this.router.goto(`/group-chat/${split[1]}`);
@@ -424,22 +419,6 @@ export class HomePage extends SignalWatcher(LitElement) {
 		</div>`;
 	}
 
-	renderFriendsIcon() {
-		return html`
-			<div style="position: relative">
-				<sl-icon-button
-					.src=${wrapPathInSvg(mdiAccountGroup)}
-					@click=${() => this.router.goto('/my-friends')}
-					style="font-size: 1.5rem"
-				>
-				</sl-icon-button>
-				<div style="position: absolute; right: -8px; bottom: -4px">
-					${this.renderFriendsBadge()}
-				</div>
-			</div>
-		`;
-	}
-
 	renderFriendsBadge() {
 		const incomingFriendRequestsResult =
 			this.friendsStore.incomingFriendRequests.get();
@@ -450,7 +429,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 		return html`
 			${Object.keys(incomingFriendRequests).length > 0
 				? html`
-						<sl-badge variant="primary" pill pulse
+						<sl-badge variant="primary" pill pulse style="align-self: center;"
 							>${Object.keys(incomingFriendRequests).length}</sl-badge
 						>
 					`
@@ -465,12 +444,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 					<div class="column" style="align-items: center; padding: 16px">
 						<friend-request-qr-code
 							@friend-request-sent=${() => {
-								(
-									this.shadowRoot!.getElementById(
-										'add-friend-dialog',
-									) as SlDialog
-								).hide();
-								this.router.goto('/my-friends');
+								this.showMyFriends();
 							}}
 							style="align-self: center; "
 							size="256"
@@ -489,6 +463,15 @@ export class HomePage extends SignalWatcher(LitElement) {
 			(this.shadowRoot!.getElementById('add-friend-dialog') as SlDialog).show();
 	}
 
+	showMyFriends() {
+		if (this.isMobile) {
+			this.router.goto('/');
+			setTimeout(() => {
+				this.shadowRoot!.querySelector('sl-tab-group')!.show('friends');
+			});
+		} else this.router.goto(`/my-friends`);
+	}
+
 	renderFriends() {
 		const pendingFriendRequestsResult =
 			this.friendsStore.pendingFriendRequests.get();
@@ -498,7 +481,7 @@ export class HomePage extends SignalWatcher(LitElement) {
 				: pendingFriendRequestsResult.value;
 		const showFriendRequests = Object.keys(pendingFriendRequests).length > 0;
 		return html`
-			<div class="column" style="gap: 24px; margin: 8px; flex: 1">
+			<div class="column" style="gap: 24px; flex: 1">
 				${showFriendRequests
 					? html`
 							<sl-card>
@@ -580,7 +563,8 @@ export class HomePage extends SignalWatcher(LitElement) {
 			) as SlDialog;
 			if (dialog) dialog.hide();
 			notify(msg('Friend request sent.'));
-			this.router.goto('/my-friends');
+
+			this.showMyFriends();
 		} catch (e) {
 			if ((e as any).message && (e as any).message.includes('permission')) {
 				await openAppSettings();
@@ -638,7 +622,17 @@ export class HomePage extends SignalWatcher(LitElement) {
 			<div class="row" style="gap: 16px; align-items: center; flex: 1">
 				<span style="font-size: 18px">${msg('Chats')} </span>
 				<span style="flex: 1"></span>
-				${this.renderFriendsIcon()}
+				<div style="position: relative">
+					<sl-icon-button
+						.src=${wrapPathInSvg(mdiAccountGroup)}
+						@click=${() => this.router.goto('/my-friends')}
+						style="font-size: 1.5rem"
+					>
+					</sl-icon-button>
+					<div style="position: absolute; right: -8px; bottom: -4px">
+						${this.renderFriendsBadge()}
+					</div>
+				</div>
 				<sl-icon-button
 					.src=${wrapPathInSvg(mdiMessagePlus)}
 					variant="primary"
@@ -655,47 +649,54 @@ export class HomePage extends SignalWatcher(LitElement) {
 	}
 
 	renderMobile() {
+		const allChats = this.messengerStore.allChats.get();
+		const newChatActivityCount =
+			allChats.status !== 'completed'
+				? 0
+				: allChats.value.reduce(
+						(acc, next) => acc + next.myUnreadMessages.length,
+						0,
+					);
+
 		if (this.router.currentPathname() !== '/') return this.router.outlet();
 		return html`
 			<sl-tab-group style="flex: 1" placement="bottom">
-				<sl-tab
-					slot="nav"
-					panel="chats"
-					style="flex: 1; display: flex; align-items: center; justify-content: center;"
-				>
-					<div
-						class="column"
-						style="gap: 4px; flex: 1; align-items: center; justify-content: center "
-					>
-						<sl-icon .src=${wrapPathInSvg(mdiChat)} style="font-size: 1.5rem">
-						</sl-icon>
-
-						${msg('Chats')}
-					</div></sl-tab
-				>
+				<sl-tab slot="nav" panel="chats" style="flex: 1;">
+					<div class="row" style="justify-content: center; flex: 1">
+						<div class="column" style="align-items: center; gap: 4px;">
+							<sl-icon
+								.src=${wrapPathInSvg(mdiChat)}
+								style="font-size: 24px"
+							></sl-icon>
+							<span> ${msg('Chats')} </span>
+						</div>
+						${newChatActivityCount > 0
+							? html`
+									<sl-badge
+										variant="primary"
+										pill
+										pulse
+										style="align-self: center;"
+										>${newChatActivityCount}</sl-badge
+									>
+								`
+							: html``}
+					</div>
+				</sl-tab>
 				<sl-tab
 					slot="nav"
 					panel="friends"
 					style="flex: 1; display: flex; align-items: center; justify-content: center;"
 				>
-					<div
-						class="column"
-						style="flex: 1; align-items: center; justify-content: center"
-					>
-						<div
-							class="column"
-							style="gap: 4px; position: relative; align-items: center; justify-content: center"
-						>
+					<div class="row" style="justify-content: center; flex: 1">
+						<div class="column" style="align-items: center; gap: 4px;">
 							<sl-icon
 								.src=${wrapPathInSvg(mdiAccountGroup)}
-								style="font-size: 1.5rem"
-							>
-							</sl-icon>
-							${msg('Friends')}
-							<div style="position: absolute; right: -16px;">
-								${this.renderFriendsBadge()}
-							</div>
+								style="font-size: 24px"
+							></sl-icon>
+							<span> ${msg('Friends')} </span>
 						</div>
+						${this.renderFriendsBadge()}
 					</div>
 				</sl-tab>
 				<sl-tab-panel name="chats">
@@ -713,7 +714,12 @@ export class HomePage extends SignalWatcher(LitElement) {
 						>
 							<div class="flex-scrollable-container" style="flex:1">
 								<div class="flex-scrollable-y" style="height: 100%;">
-									<div style="padding: 8px;">${this.renderFriends()}</div>
+									<div
+										class="column"
+										style="min-height: calc(100% - 32px); margin: 16px; flex: 1;"
+									>
+										${this.renderFriends()}
+									</div>
 								</div>
 							</div>
 						</div>

@@ -156,7 +156,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
             .filter(|app| app.installed_app_id.as_str().starts_with(APP_ID_PREFIX))
             .min_by_key(|app_info| app_info.installed_at);
 
-        let services_network_seed = String::from("somesecretnetworkseedv0.7.0");
+        let services_network_seed = String::from("somesecretnetworkseedv0.8.0");
 
         let mut roles_settings: RoleSettingsMap = RoleSettingsMap::new();
         roles_settings.insert(

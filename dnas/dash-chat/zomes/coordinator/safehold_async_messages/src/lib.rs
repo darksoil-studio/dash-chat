@@ -2,7 +2,7 @@ use hdk::prelude::*;
 
 use hc_zome_traits::*;
 
-use private_event_sourcing_types::{Message, ReceiveMessageInput};
+use private_event_sourcing_types::{Message, ReceiveMessageWithProvenanceInput};
 use push_notifications_types::{PushNotification, SendPushNotificationToAgentInput};
 use safehold_service_trait::MessageOutput;
 use safehold_types::*;
@@ -135,9 +135,9 @@ pub fn receive_messages() -> ExternResult<()> {
         let response = call_remote(
             agent_info()?.agent_initial_pubkey, // Move to call when https://github.com/holochain/holochain/issues/5123 is solved
             message_with_zome.zome_name,
-            FunctionName::from("receive_message"),
+            FunctionName::from("receive_message_with_provenance"),
             None,
-            ReceiveMessageInput {
+            ReceiveMessageWithProvenanceInput {
                 provenance: decrypted_message.provenance,
                 message,
             },
