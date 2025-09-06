@@ -1,9 +1,9 @@
-servers: []
-  # - configuration: aon1
-  #   deployment:
-  #     type: on-branch
-  #     branch: production-v0-9-0
-  # - configuration: aon2
-  #   deployment:
-  #     type: on-branch
-  #     branch: production-v0-9-0
+servers:
+  - configuration: aon1
+    deployment:
+      type: on-branch
+      branch: production-v0-9-0
+  - configuration: aon2
+    deployment:
+      type: on-branch
+      branch: production-v0-9-0
