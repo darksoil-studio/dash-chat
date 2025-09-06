@@ -201,7 +201,7 @@ export class SplashScreen extends SignalWatcher(LitElement) {
 								}
 							} catch (e) {
 								console.error(e);
-								notifyError(msg('Failed to grant permissions.'));
+								notifyError(msg('Failed to setup push notifications.'));
 							}
 							button.loading = false;
 							button.disabled = false;

@@ -1921,7 +1921,7 @@ checksum = "04d2cd9c18b9f454ed67da600630b021a8a80bf33f8c95896ab33aaf1c26b728"
 
 [[package]]
 name = "dash-chat"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "anyhow",
  "app_dirs2",
@@ -3094,7 +3094,7 @@ dependencies = [
  "js-sys",
  "libc",
  "r-efi",
- "wasi 0.14.3+wasi-0.2.4",
+ "wasi 0.14.4+wasi-0.2.4",
  "wasm-bindgen",
 ]
 
@@ -5243,7 +5243,7 @@ dependencies = [
 [[package]]
 name = "kitsune2"
 version = "0.2.17"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#2f0691a943b328bcad6fb28aa9a669bb683deaf7"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#741e58c72fd818b0b04c1359c05d9f117f29a5f0"
 dependencies = [
  "bytes",
  "kitsune2_api",
@@ -5256,7 +5256,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_api"
 version = "0.2.17"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#2f0691a943b328bcad6fb28aa9a669bb683deaf7"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#741e58c72fd818b0b04c1359c05d9f117f29a5f0"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -5272,7 +5272,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_bootstrap_client"
 version = "0.2.17"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#2f0691a943b328bcad6fb28aa9a669bb683deaf7"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#741e58c72fd818b0b04c1359c05d9f117f29a5f0"
 dependencies = [
  "base64 0.22.1",
  "kitsune2_api",
@@ -5286,7 +5286,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_core"
 version = "0.2.17"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#2f0691a943b328bcad6fb28aa9a669bb683deaf7"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#741e58c72fd818b0b04c1359c05d9f117f29a5f0"
 dependencies = [
  "bytes",
  "ed25519-dalek",
@@ -5305,7 +5305,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_dht"
 version = "0.2.17"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#2f0691a943b328bcad6fb28aa9a669bb683deaf7"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#741e58c72fd818b0b04c1359c05d9f117f29a5f0"
 dependencies = [
  "bytes",
  "kitsune2_api",
@@ -5315,7 +5315,7 @@ dependencies = [
 [[package]]
 name = "kitsune2_gossip"
 version = "0.2.17"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#2f0691a943b328bcad6fb28aa9a669bb683deaf7"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#741e58c72fd818b0b04c1359c05d9f117f29a5f0"
 dependencies = [
  "bytes",
  "futures",
@@ -5334,13 +5334,14 @@ dependencies = [
 [[package]]
 name = "kitsune2_transport_iroh"
 version = "0.2.17"
-source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#2f0691a943b328bcad6fb28aa9a669bb683deaf7"
+source = "git+https://github.com/guillemcordoba/kitsune2?branch=iroh-transport-v0.2#741e58c72fd818b0b04c1359c05d9f117f29a5f0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
  "bytes",
  "iroh",
  "kitsune2_api",
+ "local-ip-address",
  "serde",
  "serde_json",
  "tokio",
@@ -7715,7 +7716,7 @@ dependencies = [
 [[package]]
 name = "private_event_sourcing_types"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=main-0.6#9bd93d1fbc82a0e974f499392057bc7eefa79ad1"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=main-0.6#4b564045692d605bf31e08a8cb5aa90be725416d"
 dependencies = [
  "blake2",
  "hdk",
@@ -7908,7 +7909,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_service_trait"
 version = "0.600.0-dev.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.6#0ec828239e90ad5154b3d107de5a1ddeb0cb4395"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.6#a1885edca6a110d9b04ad6bb15e282882f825bf3"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -7918,7 +7919,7 @@ dependencies = [
 [[package]]
 name = "push_notifications_types"
 version = "0.600.0-dev.0"
-source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.6#0ec828239e90ad5154b3d107de5a1ddeb0cb4395"
+source = "git+https://github.com/darksoil-studio/push-notifications-service?branch=main-0.6#a1885edca6a110d9b04ad6bb15e282882f825bf3"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -8962,7 +8963,7 @@ dependencies = [
 [[package]]
 name = "safehold_service_trait"
 version = "0.600.0-dev.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.6#4cdc934e7f6ec80a5c6e0ce1db88dc746f32707e"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.6#b93b2866d063da22ad70deed30ae408d12076508"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -8974,7 +8975,7 @@ dependencies = [
 [[package]]
 name = "safehold_types"
 version = "0.600.0-dev.0"
-source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.6#4cdc934e7f6ec80a5c6e0ce1db88dc746f32707e"
+source = "git+https://github.com/darksoil-studio/safehold?branch=main-0.6#b93b2866d063da22ad70deed30ae408d12076508"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -9167,7 +9168,7 @@ dependencies = [
 [[package]]
 name = "send_async_message_zome_trait"
 version = "0.1.0"
-source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=main-0.6#9bd93d1fbc82a0e974f499392057bc7eefa79ad1"
+source = "git+https://github.com/darksoil-studio/private-event-sourcing-zome?branch=main-0.6#4b564045692d605bf31e08a8cb5aa90be725416d"
 dependencies = [
  "hc_zome_traits",
  "hdk",
@@ -11610,9 +11611,9 @@ checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
 
 [[package]]
 name = "wasi"
-version = "0.14.3+wasi-0.2.4"
+version = "0.14.4+wasi-0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a51ae83037bdd272a9e28ce236db8c07016dd0d50c27038b3f407533c030c95"
+checksum = "88a5f4a424faf49c3c2c344f166f0662341d470ea185e939657aaff130f0ec4a"
 dependencies = [
  "wit-bindgen",
 ]
@@ -12640,9 +12641,9 @@ dependencies = [
 
 [[package]]
 name = "wit-bindgen"
-version = "0.45.0"
+version = "0.45.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "052283831dbae3d879dc7f51f3d92703a316ca49f91540417d38591826127814"
+checksum = "5c573471f125075647d03df72e026074b7203790d41351cd6edc96f46bcccd36"
 
 [[package]]
 name = "wmi"

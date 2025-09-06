@@ -453,6 +453,26 @@ export class HomePage extends SignalWatcher(LitElement) {
 						</friend-request-qr-code>
 					</div>
 				</div>
+				${getOS() === 'Android'
+					? html`
+							<sl-button
+								variant="primary"
+								pill
+								size="large"
+								slot="footer"
+								@click=${async (e: CustomEvent) => {
+									const button = e.target as SlButton;
+									button.loading = true;
+									await this.scan();
+									button.loading = false;
+								}}
+							>
+								<sl-icon .src=${wrapPathInSvg(mdiQrcodeScan)} slot="prefix">
+								</sl-icon>
+								${msg('Scan QR Code')}
+							</sl-button>
+						`
+					: html``}
 			</sl-dialog>
 		`;
 	}
