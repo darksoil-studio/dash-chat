@@ -27,10 +27,9 @@
   outputs = inputs:
     inputs.p2p-shipyard.inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
-        ./servers.nix
-        ./happ.nix
-        ./tauri-app.nix
-        ./aon/raspberry-pi.nix
+        ./nix/servers.nix
+        ./nix/tauri-app.nix
+        ./nix/raspberry-pi.nix
         inputs.p2p-shipyard.outputs.flakeModules.builders
       ];
 
@@ -42,15 +41,7 @@
             inputs'.p2p-shipyard.devShells.synchronized-pnpm
             inputs'.p2p-shipyard.devShells.default
           ];
-          packages = [
-            inputs'.p2p-shipyard.packages.holochain
-            inputs'.p2p-shipyard.packages.hc-pilot
-            inputs'.p2p-shipyard.packages.hc-scaffold-happ
-            inputs'.p2p-shipyard.packages.hc-playground
-            inputs'.p2p-shipyard.packages.test-push-notifications-service
-            inputs'.p2p-shipyard.packages.test-safehold-service
-            pkgs.mprocs
-          ];
+          packages = [ pkgs.mprocs ];
         };
 
         devShells.androidDev = pkgs.mkShell {
