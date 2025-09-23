@@ -2,10 +2,37 @@ import { UnsubscribeFn } from '../friends/friends-client';
 import { Message, MessageContent, MessageId } from '../types';
 import { UserId } from '../users/user-client';
 
+export interface GroupInfo {
+	name: string;
+	description: string;
+	avatar_src: string | undefined;
+}
+
+export interface GroupMember {
+	userId: UserId;
+	admin: boolean
+}
+
 // Client tied to a specific group chat
 export interface GroupChatClient {
+	/// Info
+
+	getGroupInfo(): Promise<GroupInfo>;
+
+	/// Members
+
+	getMembers(): Promise<GroupMember[]>;
+
+	addMember(userId: UserId): Promise<void>;
+
+	removeMember(userId: UserId): Promise<void>;
+
+	promoteToAdmin(userId: UserId): Promise<void>;
+
+	demoteFromAdmin(userId: UserId): Promise<void>;
+
 	/// Messages
-	
+
 	// Get all messages for this group chat
 	getMessages(): Promise<Message[]>;
 

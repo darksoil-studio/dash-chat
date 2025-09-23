@@ -1,8 +1,12 @@
 import { UnsubscribeFn } from '../friends/friends-client';
 import { Message, MessageContent, MessageId } from '../types';
+import { UserId } from '../users/user-client';
 
 // Client tied to a specific peer chat
 export interface PeerChatClient {
+	// Get the peer for this chat
+	getPeer(): Promise<UserId>;
+	
 	/// Messages
 
 	// Get all messages for this peer chat
