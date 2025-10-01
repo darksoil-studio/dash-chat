@@ -10,7 +10,7 @@
 	"app": {
 		"windows": [
 			{
-				"title": "main",
+				"title": "Dash Chat",
 				"width": 800,
 				"height": 600
 			}

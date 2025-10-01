@@ -20,11 +20,16 @@ tauri-build = { version = "2.4.0", default-features = false , features = [] }
 [dependencies]
 tauri = { version = "2.8", features = ["devtools"] }
 
-# service_providers_utils = { git = "https://github.com/darksoil-studio/service-providers", branch = "main-0.5" }
-# push_notifications_service_trait = { git = "https://github.com/darksoil-studio/push-notifications-service", branch = "main-0.5" }
-# notifications_zome_trait = { git = "https://github.com/darksoil-studio/notifications-zome-trait", branch = "main-0.5" }
-# profiles_provider_zome_trait = { git = "https://github.com/darksoil-studio/profiles-zome", branch = "main-0.5" }
-# migration_zome_trait = { git = "https://github.com/darksoil-studio/migration-zome-trait", branch = "main-0.5" }
+anyhow = "1.0.95"
+async-trait = "0.1.85"
+p2panda-core = "0.3.1"
+p2panda-discovery = { version = "0.3.1", features = ["mdns"] }
+p2panda-net = "0.3.1"
+p2panda-store = "0.3.1"
+p2panda-stream = "0.3.1"
+p2panda-sync = { version = "0.3.1", features = ["log-sync"] }
+tokio = { version = "1.43.0", features = ["fs"] }
+hex = "0.4.3"
 
 image = "0.25"
 

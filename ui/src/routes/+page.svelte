@@ -29,7 +29,9 @@
 </script>
 
 <main class="container">
-	{$clock.value}
+	{#if $clock.status === 'completed'}
+		{$clock.value}
+	{/if}
 	<wa-button variant="brand" onclick={() => console.log('aaa')}>aaa</wa-button>
 	<wa-button-group label="Alignment">
 		<wa-button>Left</wa-button>
