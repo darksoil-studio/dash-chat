@@ -5,9 +5,16 @@
 	"build": {
 		"beforeBuildCommand": "pnpm -F ui build",
 		"devUrl": "http://localhost:1420",
-		"frontendDist": "../ui/dist"
+		"frontendDist": "../ui/build"
 	},
 	"app": {
+		"windows": [
+			{
+				"title": "main",
+				"width": 800,
+				"height": 600
+			}
+		],
 		"withGlobalTauri": false,
 		"security": {
 			"capabilities": [

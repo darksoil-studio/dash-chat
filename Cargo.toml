@@ -1,6 +1,3 @@
-[profile.dev]
-opt-level = 3
-
 [profile.release]
 opt-level = 3
 panic = "abort"
@@ -9,21 +6,8 @@ codegen-units = 1
 # inherits = "release"
 
 [workspace]
-members = ["src-tauri", "dnas/*/zomes/coordinator/*"]
+members = ["src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]
-hdi = "0.6.4"
-hdk = "0.5.4"
-holochain_serialized_bytes = "*"
-serde = "1"
 
-[patch.crates-io]
-wasmer-vm = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
-wasmer-types = { git = "https://github.com/guillemcordoba/wasmer", branch = "fix-x86" }
-kitsune2 = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
-kitsune2_api = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
-kitsune2_core = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
-kitsune2_dht = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
-kitsune2_gossip = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }
-kitsune2_bootstrap_client = { git = "https://github.com/guillemcordoba/kitsune2", branch = "iroh-transport" }

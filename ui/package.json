@@ -1,53 +1,32 @@
 {
-  "name": "ui",
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "start": "vite --clearScreen false",
-    "build": "vite build",
-    "lint": "eslint src && prettier \"**/*.ts\" --check --ignore-path .gitignore",
-    "format": "eslint src && prettier \"**/*.ts\" --write --ignore-path .gitignore",
-    "package": "pnpm build && cd dist && bestzip ../dist.zip *",
-    "localize:extract": "lit-localize extract",
-    "localize:build": "lit-localize build"
-  },
-  "dependencies": {
-    "@darksoil-studio/friends-zome": "0.501.0-rev.a13d10ee721b8fb94d1fedf032d80807037f9beb",
-    "@darksoil-studio/holochain-elements": "^0.500.0",
-    "@darksoil-studio/holochain-signals": "^0.500.0",
-    "@darksoil-studio/holochain-utils": "^0.500.0",
-    "@darksoil-studio/linked-devices-zome": "0.500.0-rev.32ccd54fd917e9d9713c2e924b156d49fd1ceb00",
-    "@darksoil-studio/messenger-zome": "0.501.0-rev.f7d6db1a254aff53227d4bd6ef47cb025e1ef779",
-    "@darksoil-studio/notifications-zome": "0.500.0-rev.0f9d7bf645a6c3754b7304800016d3155bd0a266",
-    "@darksoil-studio/profiles-provider": "^0.500.0",
-    "@gn8/alien-signals-svelte": "^0.1.1",
-    "@holochain/client": "^0.19.0",
-    "@lit/context": "^1.0.0",
-    "@lit/localize": "^0.12.0",
-    "@mdi/js": "^7.2.0",
-    "@msgpack/msgpack": "^2.8.0",
-    "@saurl/tauri-plugin-safe-area-insets-css-api": "^0.1.0",
-    "@shoelace-style/shoelace": "^2.11.0",
-    "@tauri-apps/api": "^2.8.0",
-    "@tauri-apps/plugin-barcode-scanner": "^2.3.0",
-    "@tauri-apps/plugin-deep-link": "^2.4.2",
-    "@tauri-apps/plugin-log": "^2.6.0",
-    "@tauri-apps/plugin-notification": "^2.3.0",
-    "@tauri-apps/plugin-process": "^2.3.0",
-    "@tauri-apps/plugin-updater": "^2.9.0",
-    "alien-signals": "^2.0.7",
-    "emittery": "^1.2.0",
-    "js-base64": "^3.7.7",
-    "lit": "^3.0.0",
-    "urlpattern-polyfill": "^10.0.0"
-  },
-  "devDependencies": {
-    "@custom-elements-manifest/analyzer": "^0.10.3",
-    "@lit-labs/observers": "^2.0.4",
-    "@lit/localize-tools": "^0.6.3",
-    "bestzip": "^2.2.0",
-    "tslib": "^2.6.2",
-    "typescript": "^5.4.5",
-    "vite": "^4.0.0"
-  }
+	"name": "ui",
+	"version": "0.1.0",
+	"description": "",
+	"type": "module",
+	"scripts": {
+		"start": "pnpm dev",
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+	},
+	"dependencies": {
+		"@awesome.me/webawesome": "3.0.0-beta.6",
+		"@saurl/tauri-plugin-safe-area-insets-css-api": "^0.1.0",
+		"@tauri-apps/api": "^2",
+		"@tauri-apps/plugin-opener": "^2",
+		"signal-polyfill": "^0.2.2",
+		"signal-utils": "^0.21.1"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-static": "^3.0.6",
+		"@sveltejs/kit": "^2.9.0",
+		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"svelte": "^5.0.0",
+		"svelte-check": "^4.0.0",
+		"typescript": "~5.6.2",
+		"typescript-svelte-plugin": "^0.3.50",
+		"vite": "^6.0.3"
+	}
 }

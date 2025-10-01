@@ -2,8 +2,6 @@ use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 
-use crate::holochain_dir;
-
 pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     app_handle.on_menu_event(|app_handle, menu_event| match menu_event.id().as_ref() {
         "open-logs-folder" => {
@@ -26,11 +24,12 @@ pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R
                 .buttons(MessageDialogButtons::OkCancel)
                 .show(move |result| match result {
                     true => {
-                        if let Err(err) = std::fs::remove_dir_all(holochain_dir()) {
-                            log::error!("Failed to perform factory reset: {err:?}");
-                        } else {
-                            h.restart();
-                        }
+                        // TODO: uncomment this with the correct folder
+                        // if let Err(err) = std::fs::remove_dir_all(holochain_dir()) {
+                        //     log::error!("Failed to perform factory reset: {err:?}");
+                        // } else {
+                        //     h.restart();
+                        // }
                     }
                     false => {}
                 });
