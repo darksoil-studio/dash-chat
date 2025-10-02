@@ -1,6 +1,10 @@
+import { decode, encode } from 'cbor';
+
 export type Signature = Uint8Array;
 export type PublicKey = string;
 export type Hash = string;
+export type LogId = string;
+export type TopicId = string;
 
 export interface Operation<E = void> {
 	hash: Hash;
@@ -50,3 +54,10 @@ export interface Header<E = void> {
 
 export type Body = Uint8Array;
 
+export function decodeBody<T>(body: Uint8Array): T {
+	return decode(body);
+}
+
+export function encodeBody<T>(body: T): Uint8Array {
+	return encode(body);
+}

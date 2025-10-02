@@ -11,7 +11,7 @@ pub fn run() {
     std::env::set_var("WASM_LOG", "debug");
 
     let mut builder = tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![logs::get_log])
+        // .invoke_handler(tauri::generate_handler![logs::get_log])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
