@@ -1,5 +1,24 @@
 import { Signal } from 'signal-polyfill';
 import { effect } from 'signal-utils/subtle/microtask-effect';
+// import { load } from './async-computed';
+
+// export function asyncRelay<T>(
+// 	maker: AsyncRelayMakerFn<T>,
+// ): Promise<Signal.Computed<T> & { subscribe: (v: T) => void }> {
+// 	return new Promise(async (resolve, reject) => {
+// 		let unsubs: UnsubscribeFn | void;
+// 		const signal = new Signal.State<T | undefined>(undefined, {
+// 			[Signal.subtle.unwatched]: () => {
+// 				if (unsubs) unsubs();
+// 			},
+// 			// [Signal.subtle.unwatched]: () => {
+// 			// 	if (unsubs) unsubs();
+// 			// },
+// 		});
+// 		const set = (value: T) => signal.set(value);
+// 		unsubs = await maker(set, () => signal.get()!);
+// 	});
+// }
 
 export type AsyncResult<T, E = unknown> =
 	| {
@@ -73,4 +92,8 @@ export class AsyncRelay<T, E = unknown> {
 			fn(value);
 		});
 	}
+
+	// load(): Promise<T> {
+	// 	return load(this)
+	// }
 }

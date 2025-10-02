@@ -43,7 +43,7 @@ export class UsersStore implements IUsersStore {
 		protected usersClient: IUsersClient,
 	) {}
 
-	me = new Signal.Computed(() => {
+	me = new AsyncComputed(() => {
 		const myPubKey = this.logsStore.myPubKey.get();
 		if (myPubKey.status !== 'completed') return myPubKey;
 

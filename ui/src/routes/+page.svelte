@@ -1,78 +1,7 @@
 <script lang="ts">
-	import { AsyncRelay } from '../signals/relay';
-	import {listen} from '@tauri-apps/api/event'
-
-	const clock = new AsyncRelay<number>(async (set, get) => {
-		const i = setInterval(() => {
-			const v = get();
-			const c = v.status === 'completed' ? v.value : 0;
-			set(c + 1);
-		}, 1000);
-		return () => clearInterval(i);
-	});
-
-	function logStore(topicId: string, author: string) {
-		
-	return new AsyncRelay<Operation[]>(async (set, get) => {
-	'loading'
-		const messages = await client.getLog(topicId, author);
-		set(messages) // makes it completed
-		const unsubs = await listen(event => {
-			messages.push(event)
-			set(messages)
-		})
-
-		return () => {
-			unsubs()
-		};
-	});
-	}
-
-	const store =logStore(thistopic, thisauthor)
-
-	async function getMessages() {
-		const logs = await getLogs()
-
-		return logs.map(log => {
-			
-		})
-	}
-
-	const messages = new Signal.Computed(()=> {
-	const logs = store.get()
-
-// if (logs.status !== 'completed') return logs;
-
-const messages = logs.value;
-		
-	})
-	
-
-	import '@awesome.me/webawesome/dist/components/button/button.js';
-	import '@awesome.me/webawesome/dist/components/select/select.js';
-	import '@awesome.me/webawesome/dist/components/button-group/button-group.js';
-	import '@awesome.me/webawesome/dist/components/switch/switch.js';
-	import '@awesome.me/webawesome/dist/components/input/input.js';
-	import { invoke } from '@tauri-apps/api/core';
-	import { Signal } from 'signal-polyfill';
-
-	let name = $state('');
-	let greetMsg = $state('');
-
-	async function greet(event: Event) {
-		event.preventDefault();
-		// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-		greetMsg = await invoke('greet', { name });
-	}
 </script>
 
 <main class="container">
-	{#if $clock.status === 'loading'}
-	LOADING
-	{/if}
-	{#if $clock.status === 'completed'}
-		{$clock.value}
-	{/if}
 	<wa-button variant="brand" onclick={() => console.log('aaa')}>aaa</wa-button>
 	<wa-button-group label="Alignment">
 		<wa-button>Left</wa-button>

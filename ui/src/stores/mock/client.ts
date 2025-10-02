@@ -17,7 +17,7 @@ export function hash<T>(obj: T): Hash {
 	return blake2bHex(encode(obj));
 }
 
-export class IndexedDBLogsClient implements LogsClient {
+export class LocalStorageLogsClient implements LogsClient {
 	emitter = new Emittery();
 
 	constructor(protected _myPubKey: PublicKey) {}
