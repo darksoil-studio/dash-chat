@@ -1,0 +1,224 @@
+warning: unused variable: `control_message`
+  --> src/spaces/control_message.rs:75:17
+   |
+75 |                 control_message,
+   |                 ^^^^^^^^^^^^^^^ help: try ignoring the field: `control_message: _`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `auth_dependencies`
+  --> src/spaces/control_message.rs:76:17
+   |
+76 |                 auth_dependencies,
+   |                 ^^^^^^^^^^^^^^^^^ help: try ignoring the field: `auth_dependencies: _`
+
+warning: unused variable: `space_id`
+  --> src/spaces/control_message.rs:79:17
+   |
+79 |                 space_id,
+   |                 ^^^^^^^^ help: try ignoring the field: `space_id: _`
+
+warning: unused variable: `group_id`
+  --> src/spaces/control_message.rs:80:17
+   |
+80 |                 group_id,
+   |                 ^^^^^^^^ help: try ignoring the field: `group_id: _`
+
+warning: unused variable: `space_dependencies`
+  --> src/spaces/control_message.rs:81:17
+   |
+81 |                 space_dependencies,
+   |                 ^^^^^^^^^^^^^^^^^^ help: try ignoring the field: `space_dependencies: _`
+
+warning: unused variable: `auth_message_id`
+  --> src/spaces/control_message.rs:82:17
+   |
+82 |                 auth_message_id,
+   |                 ^^^^^^^^^^^^^^^ help: try ignoring the field: `auth_message_id: _`
+
+warning: unused variable: `direct_messages`
+  --> src/spaces/control_message.rs:83:17
+   |
+83 |                 direct_messages,
+   |                 ^^^^^^^^^^^^^^^ help: try ignoring the field: `direct_messages: _`
+
+warning: unused variable: `space_id`
+  --> src/spaces/control_message.rs:86:17
+   |
+86 |                 space_id,
+   |                 ^^^^^^^^ help: try ignoring the field: `space_id: _`
+
+warning: unused variable: `group_id`
+  --> src/spaces/control_message.rs:87:17
+   |
+87 |                 group_id,
+   |                 ^^^^^^^^ help: try ignoring the field: `group_id: _`
+
+warning: unused variable: `space_dependencies`
+  --> src/spaces/control_message.rs:88:17
+   |
+88 |                 space_dependencies,
+   |                 ^^^^^^^^^^^^^^^^^^ help: try ignoring the field: `space_dependencies: _`
+
+warning: unused variable: `space_id`
+  --> src/spaces/control_message.rs:91:17
+   |
+91 |                 space_id,
+   |                 ^^^^^^^^ help: try ignoring the field: `space_id: _`
+
+warning: unused variable: `space_dependencies`
+  --> src/spaces/control_message.rs:92:17
+   |
+92 |                 space_dependencies,
+   |                 ^^^^^^^^^^^^^^^^^^ help: try ignoring the field: `space_dependencies: _`
+
+warning: unused variable: `group_secret_id`
+  --> src/spaces/control_message.rs:93:17
+   |
+93 |                 group_secret_id,
+   |                 ^^^^^^^^^^^^^^^ help: try ignoring the field: `group_secret_id: _`
+
+warning: unused variable: `nonce`
+  --> src/spaces/control_message.rs:94:17
+   |
+94 |                 nonce,
+   |                 ^^^^^ help: try ignoring the field: `nonce: _`
+
+warning: unused variable: `ciphertext`
+  --> src/spaces/control_message.rs:95:17
+   |
+95 |                 ciphertext,
+   |                 ^^^^^^^^^^ help: try ignoring the field: `ciphertext: _`
+
+warning: unused variable: `event`
+ --> src/polestar/mod.rs:5:13
+  |
+5 | pub fn emit(event: Action) {
+  |             ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: trait `ResultExt` is never used
+ --> src/util.rs:1:11
+  |
+1 | pub trait ResultExt<T, E> {
+  |           ^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `dashchat-node` (lib) generated 17 warnings
+   Compiling dashchat-node v0.1.0 (/home/michael/darksoil/p2pandashchat/dashchat-node)
+warning: `dashchat-node` (lib test) generated 17 warnings (17 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.57s
+     Running unittests src/lib.rs (target/debug/deps/dashchat_node-de6a7935dd53a549)
+
+running 1 test
+===   wait for up to 10s   ===
+=== NODES ===
+alice:    PK|6c325337
+bob:      PK|8fad5815
+carol:    PK|41c7aea1
+[2m2025-10-02T21:22:21.623875Z[0m [32m INFO[0m [1madd_friend[0m[1m{[0m[3mme[0m[2m=[0mPK|6c325337[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[] [3mpk[0m[2m=[0mPK|6c325337 [3mhash[0m[2m=[0m"H|7a082753"
+[2m2025-10-02T21:22:21.632512Z[0m [32m INFO[0m [1madd_friend[0m[1m{[0m[3mme[0m[2m=[0mPK|8fad5815[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[] [3mpk[0m[2m=[0mPK|8fad5815 [3mhash[0m[2m=[0m"H|93c366b6"
+[2m2025-10-02T21:22:21.640749Z[0m [32m INFO[0m [1madd_friend[0m[1m{[0m[3mme[0m[2m=[0mPK|8fad5815[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[] [3mpk[0m[2m=[0mPK|8fad5815 [3mhash[0m[2m=[0m"H|59313470"
+[2m2025-10-02T21:22:21.649347Z[0m [32m INFO[0m [1madd_friend[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[] [3mpk[0m[2m=[0mPK|41c7aea1 [3mhash[0m[2m=[0m"H|d27954d2"
+==> alice creates group
+[2m2025-10-02T21:22:21.661313Z[0m [32m INFO[0m [1mcreate_group[0m[1m{[0m[3mme[0m[2m=[0mPK|6c325337[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[Auth, SpaceMembership] [3mpk[0m[2m=[0mPK|6c325337 [3mhash[0m[2m=[0m"H|5f311628"
+==> alice adds bob
+[2m2025-10-02T21:22:21.681422Z[0m [32m INFO[0m [1madd_member[0m[1m{[0m[3mme[0m[2m=[0mPK|6c325337[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[] [3mpk[0m[2m=[0mPK|6c325337 [3mhash[0m[2m=[0m"H|c9d16938"
+[2m2025-10-02T21:22:21.690406Z[0m [32m INFO[0m [1madd_member[0m[1m{[0m[3mme[0m[2m=[0mPK|6c325337[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[Auth, SpaceMembership] [3mpk[0m[2m=[0mPK|6c325337 [3mhash[0m[2m=[0m"H|a42d1be3"
+===   wait for up to 10s   ===
+==> alice sends message
+[2m2025-10-02T21:22:21.801403Z[0m [32m INFO[0m [1msend_message[0m[1m{[0m[3mme[0m[2m=[0mPK|6c325337[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[Application] [3mpk[0m[2m=[0mPK|6c325337 [3mhash[0m[2m=[0m"H|246db068"
+===   wait for up to 5s   ===
+==> bob sends message
+[2m2025-10-02T21:22:22.317010Z[0m [32m INFO[0m [1msend_message[0m[1m{[0m[3mme[0m[2m=[0mPK|8fad5815[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[Application] [3mpk[0m[2m=[0mPK|8fad5815 [3mhash[0m[2m=[0m"H|0d5ac74c"
+===   wait for up to 5s   ===
+==> bob adds carol
+[2m2025-10-02T21:22:22.842336Z[0m [32m INFO[0m [1madd_member[0m[1m{[0m[3mme[0m[2m=[0mPK|8fad5815[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[] [3mpk[0m[2m=[0mPK|8fad5815 [3mhash[0m[2m=[0m"H|21572dcf"
+[2m2025-10-02T21:22:22.848926Z[0m [32m INFO[0m [1madd_member[0m[1m{[0m[3mme[0m[2m=[0mPK|8fad5815[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[Auth, SpaceMembership] [3mpk[0m[2m=[0mPK|8fad5815 [3mhash[0m[2m=[0m"H|f34ba2ca"
+===   wait for up to 5s   ===
+[2m2025-10-02T21:22:22.879501Z[0m [31mERROR[0m [1mjoin_group[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mstream_process_loop[0m[1m{[0m[3mtopic[0m[2m=[0m"Chat(Ch|74438569)"[1m}[0m[2m:[0m [2mdashchat_node::node::stream_processing[0m[2m:[0m [2msrc/node/stream_processing.rs[0m[2m:[0m[2m284:[0m space manager unexpected operation [3mop[0m[2m=[0m"OP|af441798"
+[2m2025-10-02T21:22:22.885588Z[0m [32m INFO[0m [1mjoin_group[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mstream_process_loop[0m[1m{[0m[3mtopic[0m[2m=[0m"Chat(Ch|74438569)"[1m}[0m[2m:[0m [2mp2panda_stream::stream::ingest[0m[2m:[0m [2m/home/michael/.cargo/git/checkouts/p2panda-c4169c5e973b8422/f67ee6f/p2panda-stream/src/stream/ingest.rs[0m[2m:[0m[2m123:[0m Retry ingest operation [3mhash[0m[2m=[0mf34ba2caf8ae8170b841030d231bb68445eeda96acef0b14f0fcbb1929dc4f07
+[2m2025-10-02T21:22:22.923875Z[0m [31mERROR[0m [1mjoin_group[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mstream_process_loop[0m[1m{[0m[3mtopic[0m[2m=[0m"Chat(Ch|74438569)"[1m}[0m[2m:[0m [2mdashchat_node::node::stream_processing[0m[2m:[0m [2msrc/node/stream_processing.rs[0m[2m:[0m[2m276:[0m duplicate space control msg [3margtype[0m[2m=[0mAuth [3mopid[0m[2m=[0m"OP|aa0c1742"
+[2m2025-10-02T21:22:22.923986Z[0m [31mERROR[0m [1mjoin_group[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mstream_process_loop[0m[1m{[0m[3mtopic[0m[2m=[0m"Chat(Ch|74438569)"[1m}[0m[2m:[0m [2mdashchat_node::node::stream_processing[0m[2m:[0m [2msrc/node/stream_processing.rs[0m[2m:[0m[2m276:[0m duplicate space control msg [3margtype[0m[2m=[0mSpaceMembership [3mopid[0m[2m=[0m"OP|aa0c1742"
+[2m2025-10-02T21:22:22.930147Z[0m [31mERROR[0m [1mjoin_group[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mstream_process_loop[0m[1m{[0m[3mtopic[0m[2m=[0m"Chat(Ch|74438569)"[1m}[0m[2m:[0m [2mdashchat_node::node::stream_processing[0m[2m:[0m [2msrc/node/stream_processing.rs[0m[2m:[0m[2m276:[0m duplicate space control msg [3margtype[0m[2m=[0mAuth [3mopid[0m[2m=[0m"OP|23a2eb85"
+[2m2025-10-02T21:22:22.930267Z[0m [31mERROR[0m [1mjoin_group[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mstream_process_loop[0m[1m{[0m[3mtopic[0m[2m=[0m"Chat(Ch|74438569)"[1m}[0m[2m:[0m [2mdashchat_node::node::stream_processing[0m[2m:[0m [2msrc/node/stream_processing.rs[0m[2m:[0m[2m276:[0m duplicate space control msg [3margtype[0m[2m=[0mSpaceMembership [3mopid[0m[2m=[0m"OP|23a2eb85"
+[2m2025-10-02T21:22:22.942870Z[0m [31mERROR[0m [1mjoin_group[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mstream_process_loop[0m[1m{[0m[3mtopic[0m[2m=[0m"Chat(Ch|74438569)"[1m}[0m[2m:[0m [2mdashchat_node::node::stream_processing[0m[2m:[0m [2msrc/node/stream_processing.rs[0m[2m:[0m[2m276:[0m duplicate space control msg [3margtype[0m[2m=[0mAuth [3mopid[0m[2m=[0m"OP|c954d1e0"
+[2m2025-10-02T21:22:22.942984Z[0m [31mERROR[0m [1mjoin_group[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mstream_process_loop[0m[1m{[0m[3mtopic[0m[2m=[0m"Chat(Ch|74438569)"[1m}[0m[2m:[0m [2mdashchat_node::node::stream_processing[0m[2m:[0m [2msrc/node/stream_processing.rs[0m[2m:[0m[2m276:[0m duplicate space control msg [3margtype[0m[2m=[0mSpaceMembership [3mopid[0m[2m=[0m"OP|c954d1e0"
+===   wait for up to 10s   ===
+==> carol sends message
+[2m2025-10-02T21:22:23.360692Z[0m [32m INFO[0m [1msend_message[0m[1m{[0m[3mme[0m[2m=[0mPK|41c7aea1[1m}[0m[2m:[0m[1mauthor_operation[0m[2m:[0m[1mauthor_operation_with_deps[0m[2m:[0m [2mdashchat_node::node::author_operation[0m[2m:[0m [2msrc/node/author_operation.rs[0m[2m:[0m[2m93:[0m authored operation [3margs[0m[2m=[0m[Application] [3mpk[0m[2m=[0mPK|41c7aea1 [3mhash[0m[2m=[0m"H|01105b07"
+===   wait for up to 5s   ===
+===   wait for up to 10s   ===
+===   wait for up to 10s   ===
+>>> PK|6c325337
+
+•        Chat(Ch|74438569) PK|41c7aea1  0 H|01105b07 : [Application]
+•        Chat(Ch|74438569) PK|6c325337  0 H|5f311628 : [Auth, SpaceMembership]
+•        Chat(Ch|74438569) PK|6c325337  1 H|a42d1be3 : [Auth, SpaceMembership]
+•        Chat(Ch|74438569) PK|6c325337  2 H|246db068 : [Application]
+•        Chat(Ch|74438569) PK|8fad5815  0 H|0d5ac74c : [Application]
+•        Chat(Ch|74438569) PK|8fad5815  1 H|f34ba2ca : [Auth, SpaceMembership]
+•       Inbox(PK|6c325337) PK|8fad5815  0 H|93c366b6 : Friend
+•       Inbox(PK|8fad5815) PK|41c7aea1  0 H|d27954d2 : Friend
+•       Inbox(PK|8fad5815) PK|6c325337  0 H|7a082753 : Friend
+•       Inbox(PK|8fad5815) PK|6c325337  1 H|c9d16938 : JoinGroup(Ch|74438569)
+
+
+
+========== PK|6c325337 ===============
+
+  0 PK|6c325337 1759440141 Some("H|fee2799e") [(Auth, "OP|aa0c1742"), (SpaceMembership, "OP|a405b708")]
+
+  1 PK|6c325337 1759440141 Some("H|1a371d15") [(Auth, "OP|23a2eb85"), (SpaceMembership, "OP|7aabdfd4")]
+
+  2 PK|6c325337 1759440141 Some("H|fafeef00") [(Application, "OP|f3dc3fc3")]
+>>> PK|8fad5815
+
+•        Chat(Ch|74438569) PK|41c7aea1  0 H|01105b07 : [Application]
+•        Chat(Ch|74438569) PK|6c325337  0 H|5f311628 : [Auth, SpaceMembership]
+•        Chat(Ch|74438569) PK|6c325337  1 H|a42d1be3 : [Auth, SpaceMembership]
+•        Chat(Ch|74438569) PK|6c325337  2 H|246db068 : [Application]
+•        Chat(Ch|74438569) PK|8fad5815  0 H|0d5ac74c : [Application]
+•        Chat(Ch|74438569) PK|8fad5815  1 H|f34ba2ca : [Auth, SpaceMembership]
+•       Inbox(PK|41c7aea1) PK|8fad5815  0 H|59313470 : Friend
+•       Inbox(PK|41c7aea1) PK|8fad5815  1 H|21572dcf : JoinGroup(Ch|74438569)
+•       Inbox(PK|6c325337) PK|8fad5815  0 H|93c366b6 : Friend
+•       Inbox(PK|8fad5815) PK|41c7aea1  0 H|d27954d2 : Friend
+•       Inbox(PK|8fad5815) PK|6c325337  0 H|7a082753 : Friend
+•       Inbox(PK|8fad5815) PK|6c325337  1 H|c9d16938 : JoinGroup(Ch|74438569)
+
+
+
+========== PK|8fad5815 ===============
+
+  0 PK|8fad5815 1759440142 Some("H|8fc91524") [(Application, "OP|af441798")]
+
+  1 PK|8fad5815 1759440142 Some("H|14eef75b") [(Auth, "OP|c954d1e0"), (SpaceMembership, "OP|47cbf627")]
+>>> PK|41c7aea1
+
+•        Chat(Ch|74438569) PK|41c7aea1  0 H|01105b07 : [Application]
+•        Chat(Ch|74438569) PK|6c325337  0 H|5f311628 : [Auth, SpaceMembership]
+•        Chat(Ch|74438569) PK|6c325337  1 H|a42d1be3 : [Auth, SpaceMembership]
+•        Chat(Ch|74438569) PK|6c325337  2 H|246db068 : [Application]
+•        Chat(Ch|74438569) PK|8fad5815  0 H|0d5ac74c : [Application]
+•        Chat(Ch|74438569) PK|8fad5815  1 H|f34ba2ca : [Auth, SpaceMembership]
+•       Inbox(PK|41c7aea1) PK|8fad5815  0 H|59313470 : Friend
+•       Inbox(PK|41c7aea1) PK|8fad5815  1 H|21572dcf : JoinGroup(Ch|74438569)
+•       Inbox(PK|8fad5815) PK|41c7aea1  0 H|d27954d2 : Friend
+•       Inbox(PK|8fad5815) PK|6c325337  0 H|7a082753 : Friend
+•       Inbox(PK|8fad5815) PK|6c325337  1 H|c9d16938 : JoinGroup(Ch|74438569)
+
+
+
+========== PK|41c7aea1 ===============
+
+  0 PK|41c7aea1 1759440143 Some("H|554bcdef") [(Application, "OP|e778f783")]
+test chat::tests::test_group_3 ... ok
+
+successes:
+
+successes:
+    chat::tests::test_group_3
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 2.27s
+
