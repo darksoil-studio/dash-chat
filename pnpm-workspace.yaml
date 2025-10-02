@@ -1,3 +1,6 @@
 packages:
-  - 'ui'
-  - 'site'
+  - ui
+  - site
+
+overrides:
+  signal-polyfill: link:../../gitfork/signal-polyfill

@@ -3,9 +3,12 @@
 		"target": "es2018",
 		"module": "esnext",
 		"moduleResolution": "node",
-		"types": ["node"],
+		"types": [],
 		"noEmitOnError": true,
-		"lib": ["es2018", "dom"],
+		"lib": [
+			"es2018",
+			"dom"
+		],
 		"strict": true,
 		"esModuleInterop": false,
 		"allowSyntheticDefaultImports": true,
@@ -18,5 +21,7 @@
 		"incremental": true,
 		"skipLibCheck": true
 	},
-	"include": ["src/**/*.ts"]
+	"include": [
+		"src/**/*.ts"
+	]
 }

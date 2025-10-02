@@ -7,18 +7,21 @@
 		"tauri": "tauri"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.23.0",
-		"@tauri-apps/cli": "^2.8.0",
+		"@eslint/js": "^9.36.0",
+		"@tauri-apps/cli": "^2.8.4",
 		"@trivago/prettier-plugin-sort-imports": "^4.3.0",
-		"eslint": "^9.23.0",
-		"eslint-config-prettier": "^9.1.0",
-		"prettier": "^3.5.3",
-		"typescript": "^5.8.2",
-		"typescript-eslint": "^8.29.0",
-		"vite": "^4.5.11"
+		"eslint": "^9.36.0",
+		"eslint-config-prettier": "^9.1.2",
+		"prettier": "^3.6.2",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.45.0",
+		"vite": "^4.5.14"
 	},
 	"type": "module",
 	"engines": {
 		"pnpm": ">=9.0.0"
+	},
+	"dependencies": {
+		"signal-polyfill": "link:../../.local/share/pnpm/global/5/node_modules/signal-polyfill"
 	}
 }

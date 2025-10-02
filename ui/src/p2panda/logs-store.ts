@@ -7,7 +7,7 @@ import type { LogsClient } from './logs-client';
 import type { LogId, Operation, PublicKey, TopicId } from './types';
 
 export class LogsStore {
-	constructor(protected logsClient: LogsClient) {}
+	constructor(protected logsClient: LogsClient) { }
 
 	myPubKey = new AsyncRelay<PublicKey>(async set => {
 		const myPubKey = await this.logsClient.myPubKey();

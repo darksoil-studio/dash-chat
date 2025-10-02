@@ -20,7 +20,7 @@ export function hash<T>(obj: T): Hash {
 export class LocalStorageLogsClient implements LogsClient {
 	emitter = new Emittery();
 
-	constructor(protected _myPubKey: PublicKey) {}
+	constructor(protected _myPubKey: PublicKey) { }
 
 	async myPubKey() {
 		return this._myPubKey;

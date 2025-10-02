@@ -1,8 +1,6 @@
 use std::time::Duration;
 
 use p2panda_auth::Access;
-use p2panda_spaces::message::AuthoredMessage;
-use p2panda_store::LogStore;
 
 use crate::{testing::*, *};
 
