@@ -53,7 +53,7 @@ impl Node {
     /// network activity.
     ///
     /// This must be called:
-    /// - when created a new group chat
+    /// - when creating a new group chat
     /// - when initializing the node, for each existing group chat
     pub(super) async fn initialize_topic(
         &self,

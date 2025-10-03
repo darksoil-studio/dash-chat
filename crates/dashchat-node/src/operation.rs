@@ -16,6 +16,8 @@ pub struct Extensions {
 pub enum InvitationMessage {
     /// Instructs the recipient to subscribe to the group chat topic.
     JoinGroup(ChatId),
+
+    /// Invites the recipient to add the sender as a friend.
     Friend,
 }
 

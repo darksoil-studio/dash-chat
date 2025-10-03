@@ -1,13 +1,12 @@
 #![feature(bool_to_result)]
 
 mod chat;
-mod forge;
 mod friend;
 mod network;
 mod node;
 mod operation;
 mod spaces;
-mod store;
+mod stores;
 mod util;
 
 pub mod polestar;
@@ -23,7 +22,6 @@ pub use operation::{InvitationMessage, Payload};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 use p2panda_spaces::OperationId;
-pub use spaces::MemberCode;
 
 #[derive(
     Copy,

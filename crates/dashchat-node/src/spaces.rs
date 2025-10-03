@@ -1,15 +1,17 @@
+//! Types to use with p2panda-spaces
+
 mod control_message;
-mod store;
+mod forge;
 
 pub use control_message::*;
-pub use store::*;
 
 use p2panda_spaces::manager::Manager;
 use p2panda_spaces::traits::SpaceId;
 use p2panda_spaces::types::StrongRemoveResolver;
 
 use crate::chat::ChatId;
-use crate::forge::DashForge;
+use crate::stores::SpacesStore;
+pub use forge::DashForge;
 
 pub type TestConditions = ();
 

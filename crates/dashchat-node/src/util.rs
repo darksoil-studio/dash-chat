@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 pub trait ResultExt<T, E> {
     fn ok_or_warn(self, message: &str) -> Option<T>;
 }

@@ -5,6 +5,8 @@ description = "dashchat's p2p backend"
 authors = ["you"]
 edition = "2024"
 
+[workspace]
+
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }

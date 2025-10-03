@@ -71,29 +71,10 @@ impl SpaceControlMessage {
     pub fn arg_type(&self) -> ArgType {
         match &self.spaces_args {
             p2panda_spaces::message::SpacesArgs::KeyBundle {} => ArgType::KeyBundle,
-            p2panda_spaces::message::SpacesArgs::Auth {
-                control_message,
-                auth_dependencies,
-            } => ArgType::Auth,
-            p2panda_spaces::message::SpacesArgs::SpaceMembership {
-                space_id,
-                group_id,
-                space_dependencies,
-                auth_message_id,
-                direct_messages,
-            } => ArgType::SpaceMembership,
-            p2panda_spaces::message::SpacesArgs::SpaceUpdate {
-                space_id,
-                group_id,
-                space_dependencies,
-            } => ArgType::SpaceUpdate,
-            p2panda_spaces::message::SpacesArgs::Application {
-                space_id,
-                space_dependencies,
-                group_secret_id,
-                nonce,
-                ciphertext,
-            } => ArgType::Application,
+            p2panda_spaces::message::SpacesArgs::Auth { .. } => ArgType::Auth,
+            p2panda_spaces::message::SpacesArgs::SpaceMembership { .. } => ArgType::SpaceMembership,
+            p2panda_spaces::message::SpacesArgs::SpaceUpdate { .. } => ArgType::SpaceUpdate,
+            p2panda_spaces::message::SpacesArgs::Application { .. } => ArgType::Application,
         }
     }
 }

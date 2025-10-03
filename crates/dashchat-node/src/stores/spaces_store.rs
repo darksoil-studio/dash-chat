@@ -1,10 +1,7 @@
-use std::{str::FromStr, sync::Arc};
+use std::sync::Arc;
 
 use p2panda_auth::traits::Conditions;
-use p2panda_core::{
-    PrivateKey,
-    cbor::{decode_cbor, encode_cbor},
-};
+use p2panda_core::PrivateKey;
 use p2panda_encryption::{
     Rng,
     crypto::x25519::SecretKey,
@@ -16,15 +13,17 @@ use p2panda_encryption::{
 use p2panda_spaces::{
     ActorId, OperationId,
     auth::orderer::AuthOrderer,
-    member::Member,
     space::SpaceState,
     store::{AuthStore, KeyStore, MessageStore, SpaceStore},
+    traits::SpaceId,
     types::AuthGroupState,
 };
-use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 
-use super::*;
+use crate::{
+    ChatId,
+    spaces::{SpaceControlMessage, TestConditions},
+};
 
 pub type TestStore =
     p2panda_spaces::test_utils::MemoryStore<ChatId, SpaceControlMessage, TestConditions>;
@@ -53,6 +52,12 @@ pub type SpacesStore = SharedSpaceStore<TestStore>;
 #[derive(Debug, derive_more::Deref)]
 pub struct SharedSpaceStore<S>(Arc<RwLock<S>>);
 
+impl SharedSpaceStore<TestStore> {
+    pub fn new(private_key: PrivateKey) -> Self {
+        Self(Arc::new(RwLock::new(create_test_store(private_key))))
+    }
+}
+
 impl<S> From<S> for SharedSpaceStore<S> {
     fn from(store: S) -> Self {
         Self(Arc::new(RwLock::new(store)))
@@ -70,51 +75,6 @@ impl<S: KeyStore> SharedSpaceStore<S> {
         let store = self.read().await;
         let y = store.key_manager().await?;
         Ok(KeyManager::prekey_bundle(&y))
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, derive_more::From)]
-#[serde(into = "String", try_from = "String")]
-pub struct MemberCode(LongTermKeyBundle, ActorId);
-
-impl From<Member> for MemberCode {
-    fn from(member: Member) -> Self {
-        Self(member.key_bundle().clone(), member.id())
-    }
-}
-
-impl From<MemberCode> for Member {
-    fn from(member_code: MemberCode) -> Self {
-        Member::new(member_code.1, member_code.0)
-    }
-}
-
-impl std::fmt::Display for MemberCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let bytes = encode_cbor(&(self.0.clone(), self.1)).map_err(|_| std::fmt::Error)?;
-        write!(f, "{}", hex::encode(bytes))
-    }
-}
-
-impl FromStr for MemberCode {
-    type Err = anyhow::Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let bytes = hex::decode(s)?;
-        let (long_term_key_bundle, actor_id) = decode_cbor(bytes.as_slice())?;
-        Ok(Self(long_term_key_bundle, actor_id))
-    }
-}
-
-impl From<MemberCode> for String {
-    fn from(code: MemberCode) -> Self {
-        code.to_string()
-    }
-}
-
-impl TryFrom<String> for MemberCode {
-    type Error = anyhow::Error;
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(MemberCode::from_str(&value).unwrap())
     }
 }
 

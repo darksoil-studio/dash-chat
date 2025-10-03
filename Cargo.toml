@@ -6,7 +6,10 @@ codegen-units = 1
 # inherits = "release"
 
 [workspace]
-members = ["crates/dashchat-node", "src-tauri"]
+members = [
+  # "crates/dashchat-node", 
+  "src-tauri",
+]
 resolver = "2"
 
 [workspace.dependencies]

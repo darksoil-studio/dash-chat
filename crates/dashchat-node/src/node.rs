@@ -28,14 +28,13 @@ use tracing::Instrument;
 
 use crate::chat::{Chat, ChatId};
 use crate::chat::{ChatMessage, ChatMessageContent};
-use crate::forge::DashForge;
 use crate::friend::Friend;
 use crate::network::{AuthorStore, LogId, Topic};
 use crate::operation::{
     Extensions, InvitationMessage, Payload, decode_gossip_message, encode_gossip_message,
 };
-use crate::spaces::{DashManager, DashSpace, SpacesStore};
-use crate::store::OpStore;
+use crate::spaces::{DashForge, DashManager, DashSpace};
+use crate::stores::{OpStore, SpacesStore};
 use crate::{AsBody, Cbor, PK, timestamp_now};
 
 pub use stream_processing::Notification;
@@ -147,8 +146,7 @@ impl Node {
         let network = network_builder.build().await.context("spawn p2p network")?;
         let chats = Arc::new(RwLock::new(HashMap::new()));
 
-        let spaces_store: SpacesStore =
-            crate::spaces::create_test_store(private_key.clone()).into();
+        let spaces_store = SpacesStore::new(private_key.clone());
 
         let rng = Rng::default();
 
