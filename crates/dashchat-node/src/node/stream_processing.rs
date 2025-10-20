@@ -1,7 +1,10 @@
 use futures::StreamExt;
 use p2panda_core::Operation;
 use p2panda_spaces::{
-    group::GroupError, manager::ManagerError, space::SpaceError, traits::AuthoredMessage,
+    group::GroupError,
+    manager::ManagerError,
+    space::SpaceError,
+    traits::{AuthoredMessage, MessageStore},
     types::AuthGroupError,
 };
 use serde::{Deserialize, Serialize};
@@ -256,6 +259,7 @@ impl Node {
                         batch = ?msgs.iter().map(|m| m.id().short()).collect::<Vec<_>>(),
                         "processing space msg"
                     );
+                    self.spaces_store.set_message(&msg.id(), &msg).await?;
                     match self.manager.process(msg).await {
                         Ok(events) => {
                             for (i, event) in events.into_iter().enumerate() {

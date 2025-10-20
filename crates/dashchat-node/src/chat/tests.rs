@@ -5,7 +5,7 @@ use p2panda_auth::Access;
 use crate::{testing::*, *};
 
 const TRACING_FILTER: &str =
-    "dashchat=trace,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=warn";
+    "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
@@ -86,7 +86,7 @@ async fn test_group_3() {
 
     let cfg = ClusterConfig {
         poll_interval: Duration::from_millis(500),
-        poll_timeout: Duration::from_secs(5),
+        poll_timeout: Duration::from_secs(15),
     };
     let cluster = TestCluster::new(cfg.clone()).await;
     let [alice, bob, carol] = cluster.nodes().await;

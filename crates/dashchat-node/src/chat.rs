@@ -1,5 +1,6 @@
 mod message;
 pub use message::*;
+use p2panda_spaces::traits::SpaceId;
 
 #[cfg(test)]
 mod tests;
@@ -49,6 +50,8 @@ impl ChatId {
         Self(rand::random())
     }
 }
+
+impl SpaceId for ChatId {}
 
 impl From<ChatId> for String {
     fn from(chat_id: ChatId) -> Self {

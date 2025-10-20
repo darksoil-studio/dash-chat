@@ -56,11 +56,11 @@ impl Default for NodeConfig {
 
 #[derive(Clone, Debug)]
 pub struct Node {
-    pub(crate) op_store: OpStore,
+    pub op_store: OpStore,
     pub network: Network<Topic>,
     chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
     author_store: AuthorStore<Topic>,
-    /// Used solely to extract the keybundle
+    /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
     manager: DashManager,
     /// mapping from space operations to header hashes, so that dependencies
@@ -151,10 +151,11 @@ impl Node {
         let network = network_builder.build().await.context("spawn p2p network")?;
         let chats = Arc::new(RwLock::new(HashMap::new()));
 
-        let spaces_store = SpacesStore::new(private_key.clone());
+        let spaces_store = SpacesStore::new();
 
         let forge = DashForge {
-            private_key: private_key.clone(),
+            public_key: private_key.public_key(),
+            store: spaces_store.clone(),
         };
 
         let key_store = p2panda_spaces::test_utils::TestKeyStore::new();

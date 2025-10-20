@@ -3,10 +3,11 @@ use std::{
     time::{Duration, Instant},
 };
 
+use crate::ShortId;
 use p2panda_core::PrivateKey;
 use tokio::sync::mpsc::Receiver;
 
-use crate::{NodeConfig, Notification, ShortId, network::Topic, node::Node, testing::introduce};
+use crate::{NodeConfig, Notification, network::Topic, node::Node, testing::introduce};
 
 #[derive(Debug, Clone, derive_more::Deref)]
 pub struct TestNode(Node);
@@ -92,8 +93,13 @@ pub async fn consistency(
         // The operations field is now private in the new p2panda-store version
         let sets = nodes
             .iter()
-            .map(|_node| {
-                BTreeSet::new() // Empty set for now
+            .map(|node| {
+                node.op_store
+                    .read_store()
+                    .operations
+                    .keys()
+                    .map(|h| h.short())
+                    .collect::<BTreeSet<_>>()
             })
             .collect::<Vec<_>>();
         let mut diffs = ConsistencyReport::new(sets);
