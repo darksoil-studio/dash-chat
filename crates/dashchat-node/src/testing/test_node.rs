@@ -97,8 +97,14 @@ pub async fn consistency(
                 node.op_store
                     .read_store()
                     .operations
-                    .keys()
-                    .map(|h| h.short())
+                    .iter()
+                    .filter_map(|(h, (t, _, _, _))| {
+                        if topics.is_empty() || topics.contains(t) {
+                            Some(h.short())
+                        } else {
+                            None
+                        }
+                    })
                     .collect::<BTreeSet<_>>()
             })
             .collect::<Vec<_>>();

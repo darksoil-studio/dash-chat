@@ -86,7 +86,7 @@ async fn test_group_3() {
 
     let cfg = ClusterConfig {
         poll_interval: Duration::from_millis(500),
-        poll_timeout: Duration::from_secs(15),
+        poll_timeout: Duration::from_secs(7),
     };
     let cluster = TestCluster::new(cfg.clone()).await;
     let [alice, bob, carol] = cluster.nodes().await;
