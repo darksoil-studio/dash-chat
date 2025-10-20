@@ -3,46 +3,25 @@ use std::sync::Arc;
 use p2panda_auth::traits::Conditions;
 use p2panda_core::PrivateKey;
 use p2panda_encryption::{
-    Rng,
-    crypto::x25519::SecretKey,
-    key_bundle::{Lifetime, LongTermKeyBundle},
+    key_bundle::LongTermKeyBundle,
     key_manager::{KeyManager, KeyManagerState},
     key_registry::KeyRegistryState,
-    traits::PreKeyManager,
 };
 use p2panda_spaces::{
     ActorId, OperationId,
-    auth::orderer::AuthOrderer,
     space::SpaceState,
-    store::{AuthStore, KeyStore, MessageStore, SpaceStore},
-    traits::SpaceId,
+    traits::{AuthStore, MessageStore, SpaceId, SpaceStore},
     types::AuthGroupState,
 };
 use tokio::sync::RwLock;
 
-use crate::{
-    ChatId,
-    spaces::{SpaceControlMessage, TestConditions},
-};
+use crate::spaces::{SpaceControlMessage, TestConditions};
 
 pub type TestStore =
-    p2panda_spaces::test_utils::MemoryStore<ChatId, SpaceControlMessage, TestConditions>;
+    p2panda_spaces::test_utils::store::MemoryStore<SpaceControlMessage, TestConditions>;
 
 pub fn create_test_store(private_key: PrivateKey) -> TestStore {
-    let rng = Rng::default();
-
-    let my_id: ActorId = private_key.public_key().into();
-
-    let key_manager_y = {
-        let identity_secret = SecretKey::from_bytes(rng.random_array().unwrap());
-        KeyManager::init(&identity_secret, Lifetime::default(), &rng).unwrap()
-    };
-
-    let orderer_y = AuthOrderer::init();
-    let auth_y = AuthGroupState::new(orderer_y);
-    let store = TestStore::new(my_id, key_manager_y, auth_y);
-
-    store
+    TestStore::new()
 }
 
 /////////////////////////////////////////////////////////
@@ -70,14 +49,6 @@ impl<S> Clone for SharedSpaceStore<S> {
     }
 }
 
-impl<S: KeyStore> SharedSpaceStore<S> {
-    pub async fn long_term_key_bundle(&self) -> Result<LongTermKeyBundle, S::Error> {
-        let store = self.read().await;
-        let y = store.key_manager().await?;
-        Ok(KeyManager::prekey_bundle(&y))
-    }
-}
-
 /////////////////////////////////////////////////////////////////
 
 impl<S, ID, M, C> SpaceStore<ID, M, C> for SharedSpaceStore<S>
@@ -101,31 +72,8 @@ where
         self.read().await.spaces_ids().await
     }
 
-    async fn set_space(&mut self, id: &ID, y: SpaceState<ID, M, C>) -> Result<(), Self::Error> {
+    async fn set_space(&self, id: &ID, y: SpaceState<ID, M, C>) -> Result<(), Self::Error> {
         self.write().await.set_space(id, y).await
-    }
-}
-
-impl<S> KeyStore for SharedSpaceStore<S>
-where
-    S: KeyStore,
-{
-    type Error = S::Error;
-
-    async fn key_manager(&self) -> Result<KeyManagerState, Self::Error> {
-        self.read().await.key_manager().await
-    }
-
-    async fn key_registry(&self) -> Result<KeyRegistryState<ActorId>, Self::Error> {
-        self.read().await.key_registry().await
-    }
-
-    async fn set_key_manager(&mut self, y: &KeyManagerState) -> Result<(), Self::Error> {
-        self.write().await.set_key_manager(y).await
-    }
-
-    async fn set_key_registry(&mut self, y: &KeyRegistryState<ActorId>) -> Result<(), Self::Error> {
-        self.write().await.set_key_registry(y).await
     }
 }
 
@@ -140,7 +88,7 @@ where
         self.read().await.auth().await
     }
 
-    async fn set_auth(&mut self, y: &AuthGroupState<C>) -> Result<(), Self::Error> {
+    async fn set_auth(&self, y: &AuthGroupState<C>) -> Result<(), Self::Error> {
         self.write().await.set_auth(y).await
     }
 }
@@ -156,7 +104,7 @@ where
         self.read().await.message(id).await
     }
 
-    async fn set_message(&mut self, id: &OperationId, message: &M) -> Result<(), Self::Error> {
+    async fn set_message(&self, id: &OperationId, message: &M) -> Result<(), Self::Error> {
         self.write().await.set_message(id, message).await
     }
 }

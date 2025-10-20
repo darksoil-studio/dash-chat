@@ -2,7 +2,7 @@ use p2panda_core::cbor::{EncodeError, encode_cbor};
 use p2panda_spaces::OperationId;
 use serde::{Deserialize, Serialize};
 
-pub type SpacesArgs = p2panda_spaces::message::SpacesArgs<ChatId, ()>;
+pub type SpacesArgs = p2panda_spaces::SpacesArgs<ChatId, ()>;
 
 use super::*;
 
@@ -14,7 +14,7 @@ pub struct SpaceControlMessage {
     pub spaces_args: SpacesArgs,
 }
 
-impl p2panda_spaces::message::AuthoredMessage for SpaceControlMessage {
+impl p2panda_spaces::traits::AuthoredMessage for SpaceControlMessage {
     fn id(&self) -> OperationId {
         OperationId::from(self.hash.clone())
     }
@@ -24,7 +24,7 @@ impl p2panda_spaces::message::AuthoredMessage for SpaceControlMessage {
     }
 }
 
-impl p2panda_spaces::message::SpacesMessage<ChatId, ()> for SpaceControlMessage {
+impl p2panda_spaces::traits::SpacesMessage<ChatId, ()> for SpaceControlMessage {
     fn args(&self) -> &SpacesArgs {
         &self.spaces_args
     }
@@ -70,11 +70,11 @@ impl SpaceControlMessage {
 
     pub fn arg_type(&self) -> ArgType {
         match &self.spaces_args {
-            p2panda_spaces::message::SpacesArgs::KeyBundle {} => ArgType::KeyBundle,
-            p2panda_spaces::message::SpacesArgs::Auth { .. } => ArgType::Auth,
-            p2panda_spaces::message::SpacesArgs::SpaceMembership { .. } => ArgType::SpaceMembership,
-            p2panda_spaces::message::SpacesArgs::SpaceUpdate { .. } => ArgType::SpaceUpdate,
-            p2panda_spaces::message::SpacesArgs::Application { .. } => ArgType::Application,
+            p2panda_spaces::SpacesArgs::KeyBundle { .. } => ArgType::KeyBundle,
+            p2panda_spaces::SpacesArgs::Auth { .. } => ArgType::Auth,
+            p2panda_spaces::SpacesArgs::SpaceMembership { .. } => ArgType::SpaceMembership,
+            p2panda_spaces::SpacesArgs::SpaceUpdate { .. } => ArgType::SpaceUpdate,
+            p2panda_spaces::SpacesArgs::Application { .. } => ArgType::Application,
         }
     }
 }

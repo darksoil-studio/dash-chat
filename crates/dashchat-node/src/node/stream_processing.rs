@@ -1,7 +1,7 @@
 use futures::StreamExt;
 use p2panda_core::Operation;
 use p2panda_spaces::{
-    group::GroupError, manager::ManagerError, message::AuthoredMessage, space::SpaceError,
+    group::GroupError, manager::ManagerError, space::SpaceError, traits::AuthoredMessage,
     types::AuthGroupError,
 };
 use serde::{Deserialize, Serialize};

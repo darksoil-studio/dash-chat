@@ -1,5 +1,5 @@
 use p2panda_core::{Hash, Operation};
-use p2panda_spaces::{OperationId, message::AuthoredMessage};
+use p2panda_spaces::{OperationId, traits::AuthoredMessage};
 use p2panda_stream::operation::IngestResult;
 
 use crate::{AsBody, ShortId, operation::Payload};
@@ -213,7 +213,7 @@ pub(crate) async fn create_operation(
         seq_num,
         backlink,
         previous: deps,
-        extensions: Some(extensions),
+        extensions,
     };
     header.sign(private_key);
 

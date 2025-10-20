@@ -17,7 +17,6 @@ use p2panda_net::{
 };
 use p2panda_spaces::OperationId;
 use p2panda_spaces::event::Event;
-use p2panda_spaces::member::Member;
 use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::{DecodeExt, IngestExt};
 use p2panda_sync::log_sync::LogSyncProtocol;
@@ -28,7 +27,7 @@ use tracing::Instrument;
 
 use crate::chat::{Chat, ChatId};
 use crate::chat::{ChatMessage, ChatMessageContent};
-use crate::friend::Friend;
+use crate::friend::{Friend, MemberCode};
 use crate::network::{AuthorStore, LogId, Topic};
 use crate::operation::{
     Extensions, InvitationMessage, Payload, decode_gossip_message, encode_gossip_message,
@@ -180,11 +179,11 @@ impl Node {
         Ok(node)
     }
 
-    pub async fn me(&self) -> anyhow::Result<p2panda_spaces::member::Member> {
-        let long_term_key_bundle = self.spaces_store.long_term_key_bundle().await?;
-        Ok(p2panda_spaces::member::Member::new(
+    pub async fn me(&self) -> anyhow::Result<MemberCode> {
+        let me = self.manager.me().await?;
+        Ok(MemberCode::new(
             self.private_key.public_key().into(),
-            long_term_key_bundle,
+            todo!(),
         ))
     }
 
@@ -313,7 +312,7 @@ impl Node {
     /// - store them in the friends map
     /// - send an invitation to them to do the same
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn add_friend(&self, member: Member) -> anyhow::Result<PK> {
+    pub async fn add_friend(&self, member: MemberCode) -> anyhow::Result<PK> {
         tracing::debug!("adding friend: {:?}", member);
         let public_key = PK::try_from(member.id()).expect("actor id is public key");
 

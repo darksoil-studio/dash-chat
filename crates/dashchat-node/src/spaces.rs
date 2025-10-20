@@ -6,6 +6,7 @@ mod forge;
 pub use control_message::*;
 
 use p2panda_spaces::manager::Manager;
+use p2panda_spaces::test_utils::TestKeyStore;
 use p2panda_spaces::traits::SpaceId;
 use p2panda_spaces::types::StrongRemoveResolver;
 
@@ -20,6 +21,7 @@ impl SpaceId for ChatId {}
 pub type DashSpace = p2panda_spaces::space::Space<
     ChatId,
     SpacesStore,
+    TestKeyStore,
     DashForge,
     SpaceControlMessage,
     TestConditions,
@@ -29,6 +31,7 @@ pub type DashSpace = p2panda_spaces::space::Space<
 pub type DashManager = Manager<
     ChatId,
     SpacesStore,
+    TestKeyStore,
     DashForge,
     SpaceControlMessage,
     TestConditions,
