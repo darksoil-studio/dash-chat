@@ -5,7 +5,7 @@ use p2panda_auth::Access;
 use crate::{testing::*, *};
 
 const TRACING_FILTER: &str =
-    "dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=warn";
+    "dashchat=trace,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=warn";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {

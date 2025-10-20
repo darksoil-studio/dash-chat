@@ -284,6 +284,14 @@ impl Node {
                             tracing::error!(op = op.short(), "space manager unexpected operation");
                         }
 
+                        Err(ManagerError::MissingAuthMessage(op, auth_op)) => {
+                            tracing::error!(
+                                op = op.short(),
+                                auth_op = auth_op.short(),
+                                "space manager missing auth message"
+                            );
+                        }
+
                         Err(err) => {
                             tracing::error!(?err, "space manager process error");
                         }
