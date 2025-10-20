@@ -34,10 +34,7 @@ pub type Header = p2panda_core::Header<Extensions>;
 
 impl Extension<LogId> for Extensions {
     fn extract(header: &Header) -> Option<LogId> {
-        header
-            .extensions
-            .as_ref()
-            .map(|extensions| extensions.log_id.clone())
+        Some(header.extensions.log_id.clone())
     }
 }
 

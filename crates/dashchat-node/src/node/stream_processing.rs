@@ -316,16 +316,29 @@ impl Node {
     async fn process_chat_event(
         &self,
         chat: &mut Chat,
-        event: Event<ChatId>,
+        event: Event<ChatId, ()>,
     ) -> anyhow::Result<()> {
         match event {
             Event::Application { data, .. } => {
                 let message = ChatMessage::from_bytes(&data)?;
                 chat.messages.insert(message);
             }
-            Event::Removed { .. } => {
-                tracing::warn!(?chat.id, "removed from chat");
-                chat.removed = true;
+            Event::Space(space_event) => {
+                match space_event {
+                    p2panda_spaces::event::SpaceEvent::Ejected { .. } => {
+                        tracing::warn!(?chat.id, "removed from chat");
+                        chat.removed = true;
+                    }
+                    _ => {
+                        // Handle other space events if needed
+                    }
+                }
+            }
+            Event::KeyBundle { .. } => {
+                // Handle key bundle events if needed
+            }
+            Event::Group(_) => {
+                // Handle group events if needed
             }
         }
         Ok(())

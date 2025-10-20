@@ -38,7 +38,7 @@ impl Chat {
     Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, derive_more::Deref,
 )]
 #[serde(into = "String", try_from = "String")]
-pub struct ChatId([u8; 32]);
+pub struct ChatId(pub [u8; 32]);
 
 impl ChatId {
     pub fn new(topic_id: [u8; 32]) -> Self {

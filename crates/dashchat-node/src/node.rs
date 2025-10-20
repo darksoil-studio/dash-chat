@@ -11,6 +11,7 @@ use p2panda_core::{Header, PrivateKey};
 use p2panda_discovery::Discovery;
 use p2panda_discovery::mdns::LocalDiscovery;
 use p2panda_encryption::Rng;
+use p2panda_encryption::crypto::x25519::SecretKey;
 use p2panda_net::config::GossipConfig;
 use p2panda_net::{
     FromNetwork, Network, NetworkBuilder, ResyncConfiguration, SyncConfiguration, ToNetwork,
@@ -80,6 +81,11 @@ impl Node {
         _config: NodeConfig,
         notification_tx: Option<mpsc::Sender<Notification>>,
     ) -> Result<Self> {
+        let rng = Rng::default();
+        let credentials = p2panda_spaces::Credentials::from_keys(
+            private_key.clone(),
+            SecretKey::from_rng(&rng).context("Failed to generate secret key")?,
+        );
         let public_key = PK::from(private_key.public_key());
 
         let mdns = LocalDiscovery::new();
@@ -147,13 +153,14 @@ impl Node {
 
         let spaces_store = SpacesStore::new(private_key.clone());
 
-        let rng = Rng::default();
-
         let forge = DashForge {
             private_key: private_key.clone(),
         };
 
-        let manager = DashManager::new(spaces_store.clone(), forge, rng).unwrap();
+        let key_store = p2panda_spaces::test_utils::TestKeyStore::new();
+        let manager = DashManager::new(spaces_store.clone(), key_store, forge, credentials, rng)
+            .await
+            .unwrap();
 
         let node = Self {
             op_store: OpStore::from(op_store),
@@ -169,8 +176,8 @@ impl Node {
             notification_tx,
         };
 
-        // TODO: this doesn't seem to make a difference
-        manager.register_member(&node.me().await?).await?;
+        // // TODO: this doesn't seem to make a difference
+        // manager.register_member(&node.me().await?.into()).await?;
 
         node.initialize_inbox(public_key).await?;
 
@@ -181,10 +188,7 @@ impl Node {
 
     pub async fn me(&self) -> anyhow::Result<MemberCode> {
         let me = self.manager.me().await?;
-        Ok(MemberCode::new(
-            self.private_key.public_key().into(),
-            todo!(),
-        ))
+        Ok(MemberCode::new(me.key_bundle().clone(), me.id()))
     }
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
@@ -193,7 +197,7 @@ impl Node {
         let chat_id = ChatId::random();
         let chat = self.initialize_group(chat_id).await?;
 
-        let (_space, msgs) = self
+        let (_space, msgs, _event) = self
             .manager
             .create_space(
                 chat_id,
@@ -225,7 +229,7 @@ impl Node {
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     pub async fn add_member(&self, chat_id: ChatId, pubkey: PK) -> anyhow::Result<()> {
-        let msgs = self
+        let (msgs, _events) = self
             .manager
             .space(chat_id)
             .await?
@@ -317,8 +321,9 @@ impl Node {
         let public_key = PK::try_from(member.id()).expect("actor id is public key");
 
         // Register the member in the spaces manager
+        let spaces_member = p2panda_spaces::Member::new(member.id(), member.key_bundle().clone());
         self.manager
-            .register_member(&member)
+            .register_member(&spaces_member)
             .await
             .map_err(|e| anyhow!("Failed to register friend: {e:?}"))?;
 
