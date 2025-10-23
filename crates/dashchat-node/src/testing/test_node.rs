@@ -127,7 +127,6 @@ pub async fn consistency(
             }
         }
         if diffs.diffs.is_empty() {
-            dbg!(&diffs);
             Ok(())
         } else {
             Err(diffs)
@@ -196,7 +195,7 @@ where
 {
     assert!(poll < timeout);
     let start = Instant::now();
-    println!("===   wait for up to {:?}   ===", timeout);
+    tracing::info!("=== awaiting consistency for up to {:?} ===", timeout);
     loop {
         match f().await {
             Ok(()) => break Ok(()),

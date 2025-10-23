@@ -5,5 +5,6 @@ mod action;
 pub use action::*;
 
 pub fn emit(_event: Action) {
-    // tracing::info!(target: "polestar", "event: {:?}", event);
+    // println!("<𝓟𝓢>");
+    // println!("<¶§> {:?}", event);
 }

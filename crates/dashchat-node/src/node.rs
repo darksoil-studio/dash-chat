@@ -252,7 +252,7 @@ impl Node {
             .author_operation(
                 pubkey.into(),
                 Payload::Invitation(InvitationMessage::JoinGroup(chat_id)),
-                Some(&format!("add_member/invitation:{}", chat_id.alias())),
+                Some(&format!("add_member/invitation({})", chat_id.alias())),
             )
             .await?;
 
@@ -366,7 +366,7 @@ impl Node {
         self.author_operation(
             public_key.clone().into(),
             Payload::Invitation(InvitationMessage::Friend),
-            Some(&format!("add_friend/invitation:{}", public_key.alias())),
+            Some(&format!("add_friend/invitation({})", public_key.alias())),
         )
         .await?;
 

@@ -18,6 +18,8 @@ pub fn alias_space_messages<'a>(
 }
 
 pub trait AliasedId: ShortId {
+    const SHOW_SHORT_ID: bool = true;
+
     fn as_bytes(&self) -> &[u8];
 
     fn aliased(self, alias: &str) -> Self
@@ -26,7 +28,11 @@ pub trait AliasedId: ShortId {
     {
         let existing = ALIASES.lock().unwrap().insert(
             self.as_bytes().to_vec(),
-            format!("⟪{}{}⟫", <Self as ShortId>::PREFIX, alias),
+            if Self::SHOW_SHORT_ID {
+                format!("⟪{}|{}⟫", self.short(), alias)
+            } else {
+                format!("⟪{}‖{}⟫", <Self as ShortId>::PREFIX, alias)
+            },
         );
         if let Some(existing) = existing {
             tracing::warn!(?existing, "alias already exists, replacing");
@@ -51,6 +57,8 @@ impl AliasedId for p2panda_core::Hash {
 }
 
 impl AliasedId for p2panda_core::PublicKey {
+    const SHOW_SHORT_ID: bool = false;
+
     fn as_bytes(&self) -> &[u8] {
         self.as_bytes()
     }
@@ -63,6 +71,8 @@ impl AliasedId for p2panda_spaces::OperationId {
 }
 
 impl AliasedId for crate::chat::ChatId {
+    const SHOW_SHORT_ID: bool = false;
+
     fn as_bytes(&self) -> &[u8] {
         self.0.as_ref()
     }

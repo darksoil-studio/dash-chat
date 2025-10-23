@@ -31,7 +31,7 @@ impl Node {
             return Ok(friend.network_tx.clone());
         }
 
-        let (network_tx, _gossip_ready) = self.initialize_topic(pubkey.into()).await?;
+        let network_tx = self.initialize_topic(pubkey.into()).await?;
         Ok(network_tx)
     }
 
@@ -44,7 +44,7 @@ impl Node {
             .add_author(chat_id.into(), self.public_key())
             .await;
 
-        let (network_tx, _gossip_ready) = self.initialize_topic(chat_id.into()).await?;
+        let network_tx = self.initialize_topic(chat_id.into()).await?;
 
         let chat = Chat::new(chat_id, network_tx);
         self.chats.write().await.insert(chat_id, chat.clone());
@@ -61,7 +61,7 @@ impl Node {
     pub(super) async fn initialize_topic(
         &self,
         topic: Topic,
-    ) -> anyhow::Result<(Sender<ToNetwork>, tokio::sync::oneshot::Receiver<()>)> {
+    ) -> anyhow::Result<(Sender<ToNetwork>)> {
         let (network_tx, network_rx, gossip_ready) = self.network.subscribe(topic.clone()).await?;
         tracing::debug!(?topic, "subscribed to topic");
 
@@ -81,6 +81,7 @@ impl Node {
             }
         });
 
+        let pubkey = self.public_key();
         // Decode and ingest the p2panda operations.
         let stream = stream
             .decode()
@@ -91,6 +92,19 @@ impl Node {
                         tracing::warn!(?err, "decode operation error");
                         None
                     }
+                }
+            })
+            .inspect(move |(h, _, _)| {
+                let deps = h
+                    .previous
+                    .iter()
+                    .map(|h| h.alias())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                if !deps.is_empty() {
+                    println!("ℰ {} : {} -> [{}]", pubkey.alias(), h.hash().alias(), deps);
+                } else {
+                    println!("ℰ {} : {}", pubkey.alias(), h.hash().alias());
                 }
             })
             .ingest(self.op_store.clone(), 128)
@@ -113,7 +127,9 @@ impl Node {
         let author_store = self.author_store.clone();
         self.spawn_stream_process_loop(stream, author_store, topic.clone());
 
-        Ok((network_tx, gossip_ready))
+        // gossip_ready.await?;
+
+        Ok(network_tx)
     }
 
     fn spawn_stream_process_loop(

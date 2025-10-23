@@ -56,11 +56,11 @@ impl ChatId {
 impl SpaceId for ChatId {}
 
 impl ShortId for ChatId {
-    const PREFIX: &'static str = "Ch|";
+    const PREFIX: &'static str = "Ch";
     fn short(&self) -> String {
         let mut k = self.to_string();
         k.truncate(8);
-        format!("{}{}", Self::PREFIX, k)
+        format!("{}|{}", Self::PREFIX, k)
     }
 }
 
