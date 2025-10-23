@@ -2,20 +2,23 @@ use std::time::Duration;
 
 use p2panda_auth::Access;
 
-use crate::{testing::*, *};
+use crate::{
+    testing::{AliasedId, *},
+    *,
+};
 
 const TRACING_FILTER: &str =
-    "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
+    "dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
     crate::testing::setup_tracing(TRACING_FILTER);
 
     println!("nodes:");
-    let (alice, _alice_rx) = TestNode::new().await;
-    println!("alice: {:?}", alice.public_key());
-    let (bob, mut bob_rx) = TestNode::new().await;
-    println!("bob:   {:?}", bob.public_key());
+    let (alice, _alice_rx) = TestNode::new(Some("alice")).await;
+    println!("alice: {:?}", alice.public_key().short());
+    let (bob, mut bob_rx) = TestNode::new(Some("bob")).await;
+    println!("bob:   {:?}", bob.public_key().short());
 
     introduce_and_wait([&alice.network, &bob.network]).await;
 
@@ -24,7 +27,8 @@ async fn test_group_2() {
     alice.add_friend(bob.me().await.unwrap()).await.unwrap();
     bob.add_friend(alice.me().await.unwrap()).await.unwrap();
 
-    let (chat_id, _) = alice.create_group().await.unwrap();
+    let chat_id = ChatId::random().aliased("onlychat");
+    let _chat = alice.create_group(chat_id).await.unwrap();
 
     alice.add_member(chat_id, bob.public_key()).await.unwrap();
 
@@ -86,17 +90,17 @@ async fn test_group_3() {
 
     let cfg = ClusterConfig {
         poll_interval: Duration::from_millis(500),
-        poll_timeout: Duration::from_secs(7),
+        poll_timeout: Duration::from_secs(10),
     };
-    let cluster = TestCluster::new(cfg.clone()).await;
+    let cluster = TestCluster::new(cfg.clone(), ["alice", "bob", "carol"]).await;
     let [alice, bob, carol] = cluster.nodes().await;
 
     introduce_and_wait([&alice.network, &bob.network, &carol.network]).await;
 
     println!("=== NODES ===");
-    println!("alice:    {:?}", alice.public_key());
-    println!("bob:      {:?}", bob.public_key());
-    println!("carol:    {:?}", carol.public_key());
+    println!("alice:    {:?}", alice.public_key().short());
+    println!("bob:      {:?}", bob.public_key().short());
+    println!("carol:    {:?}", carol.public_key().short());
 
     // alice -- bob -- carol (bob is the pivot)
     alice.add_friend(bob.me().await.unwrap()).await.unwrap();
@@ -109,7 +113,8 @@ async fn test_group_3() {
     // carol.add_friend(alice.me().await.unwrap()).await.unwrap();
 
     println!("==> alice creates group");
-    let (chat_id, _) = alice.create_group().await.unwrap();
+    let chat_id = ChatId::random().aliased("onlychat");
+    let _chat = alice.create_group(chat_id).await.unwrap();
     println!("==> alice adds bob");
     alice.add_member(chat_id, bob.public_key()).await.unwrap();
 

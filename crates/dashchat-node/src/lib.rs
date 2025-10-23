@@ -23,6 +23,8 @@ pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 use p2panda_spaces::OperationId;
 
+use crate::testing::AliasedId;
+
 #[derive(
     Copy,
     Clone,
@@ -33,7 +35,6 @@ use p2panda_spaces::OperationId;
     Ord,
     serde::Serialize,
     serde::Deserialize,
-    derive_more::Display,
     derive_more::Deref,
     derive_more::From,
     derive_more::Into,
@@ -42,7 +43,13 @@ pub struct PK(p2panda_core::PublicKey);
 
 impl std::fmt::Debug for PK {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", ShortId::short(&self.0))
+        write!(f, "{}", AliasedId::alias(&self.0))
+    }
+}
+
+impl std::fmt::Display for PK {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", AliasedId::alias(&self.0))
     }
 }
 
@@ -86,6 +93,7 @@ pub trait AsBody: Cbor {
 
 pub trait ShortId {
     const PREFIX: &'static str;
+
     fn short(&self) -> String;
 }
 

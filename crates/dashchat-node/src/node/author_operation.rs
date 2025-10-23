@@ -2,7 +2,7 @@ use p2panda_core::{Hash, Operation};
 use p2panda_spaces::{OperationId, traits::AuthoredMessage};
 use p2panda_stream::operation::IngestResult;
 
-use crate::{AsBody, ShortId, operation::Payload};
+use crate::{AsBody, operation::Payload, testing::AliasedId};
 use crate::{polestar as p, timestamp_now};
 
 use super::*;
@@ -15,8 +15,9 @@ impl Node {
         &self,
         topic: Topic,
         payload: Payload,
+        alias: Option<&str>,
     ) -> Result<Header<Extensions>, anyhow::Error> {
-        self.author_operation_with_deps(topic, payload, vec![])
+        self.author_operation_with_deps(topic, payload, vec![], alias)
             .await
     }
 
@@ -26,6 +27,7 @@ impl Node {
         topic: Topic,
         payload: Payload,
         mut deps: Vec<p2panda_core::Hash>,
+        alias: Option<&str>,
     ) -> Result<Header<Extensions>, anyhow::Error> {
         let mut sd = self.space_dependencies.write().await;
         let (ids, space_deps): (Vec<OperationId>, Vec<Hash>) = match &payload {
@@ -35,10 +37,10 @@ impl Node {
                     .iter()
                     .flat_map(|msg| {
                         tracing::debug!(
-                            id = msg.id().short(),
+                            id = msg.id().alias(),
                             argtype = ?msg.arg_type(),
-                            batch = ?ids.iter().map(|id| id.short()).collect::<Vec<_>>(),
-                            deps = ?msg.dependencies().iter().map(|id| id.short()).collect::<Vec<_>>(),
+                            batch = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
+                            deps = ?msg.dependencies().iter().map(|id| id.alias()).collect::<Vec<_>>(),
                             "authoring space msg",
                         );
                         msg.dependencies()
@@ -49,9 +51,9 @@ impl Node {
                             // If the msg is part of the set being committed, it's ok
                             if !ids.contains(&dep) {
                                 tracing::error!(
-                                    dep = dep.short(),
-                                    deps = ?sd.keys().map(|k| k.short()).collect::<Vec<_>>(),
-                                    ids = ?ids.iter().map(|id| id.short()).collect::<Vec<_>>(),
+                                    dep = dep.alias(),
+                                    deps = ?sd.keys().map(|k| k.alias()).collect::<Vec<_>>(),
+                                    ids = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
                                     "space dep should have been seen already"
                                 );
                                 panic!("space dep should have been seen already")
@@ -72,31 +74,36 @@ impl Node {
             &self.private_key,
             topic.clone(),
             payload.clone(),
-            deps,
+            deps.clone(),
         )
         .await?;
+
+        if let Some(alias) = alias {
+            header.hash().aliased(alias);
+        }
+
+        {
+            let space_msgs = match &payload {
+                Payload::SpaceControl(msgs) => {
+                    msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>()
+                }
+                Payload::Invitation(_) => vec![],
+            };
+            let pk = PK::from(header.public_key);
+            tracing::info!(
+                ?space_msgs,
+                ?pk,
+                hash = header.hash().alias(),
+                deps = ?deps.iter().map(|id| id.alias()).collect::<Vec<_>>(),
+                "authored operation"
+            );
+        }
 
         for id in ids {
             sd.insert(id, hash);
         }
 
         drop(sd);
-
-        {
-            let args = match &payload {
-                Payload::SpaceControl(msgs) => {
-                    msgs.iter().map(|m| m.arg_type()).collect::<Vec<_>>()
-                }
-                Payload::Invitation(_) => vec![],
-            };
-            let pk = PK::from(header.public_key);
-            tracing::info!(
-                ?args,
-                ?pk,
-                hash = header.hash().short(),
-                "authored operation"
-            );
-        }
 
         let result = p2panda_stream::operation::ingest_operation(
             &mut *self.op_store.clone(),
@@ -116,7 +123,7 @@ impl Node {
                     .await?;
 
                 // self.notify_payload(&header, &payload).await?;
-                tracing::debug!(?topic, hash = hash.short(), "authored operation");
+                tracing::debug!(?topic, hash = hash.alias(), "authored operation");
 
                 p::emit(p::Action::AuthorOp {
                     topic,
@@ -125,16 +132,16 @@ impl Node {
             }
 
             IngestResult::Retry(h, _, _, missing) => {
-                let backlink = h.backlink.as_ref().map(|h| h.short());
+                let backlink = h.backlink.as_ref().map(|h| h.alias());
                 tracing::warn!(
                     ?topic,
-                    hash = hash.short(),
+                    hash = hash.alias(),
                     ?backlink,
                     ?missing,
                     "operation could not be ingested"
                 );
             } // IngestResult::Duplicate(op) => {
-              //     tracing::warn!(?topic, hash = hash.short(), "operation already exists");
+              //     tracing::warn!(?topic, hash = hash.alias(), "operation already exists");
               //     return Ok(op.header);
               // }
         }

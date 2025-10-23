@@ -10,6 +10,8 @@ use std::{collections::BTreeSet, convert::Infallible, str::FromStr};
 use p2panda_net::ToNetwork;
 use serde::{Deserialize, Serialize};
 
+use crate::{ShortId, testing::AliasedId};
+
 #[derive(Clone, Debug)]
 pub struct Chat {
     pub(crate) id: ChatId,
@@ -53,6 +55,15 @@ impl ChatId {
 
 impl SpaceId for ChatId {}
 
+impl ShortId for ChatId {
+    const PREFIX: &'static str = "Ch|";
+    fn short(&self) -> String {
+        let mut k = self.to_string();
+        k.truncate(8);
+        format!("{}{}", Self::PREFIX, k)
+    }
+}
+
 impl From<ChatId> for String {
     fn from(chat_id: ChatId) -> Self {
         chat_id.to_string()
@@ -74,9 +85,7 @@ impl std::fmt::Display for ChatId {
 
 impl std::fmt::Debug for ChatId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut k = self.to_string();
-        k.truncate(8);
-        write!(f, "Ch|{k}")
+        write!(f, "{}", self.alias())
     }
 }
 

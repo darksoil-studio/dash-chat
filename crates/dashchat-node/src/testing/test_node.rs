@@ -3,19 +3,26 @@ use std::{
     time::{Duration, Instant},
 };
 
-use crate::ShortId;
 use p2panda_core::PrivateKey;
 use tokio::sync::mpsc::Receiver;
 
-use crate::{NodeConfig, Notification, network::Topic, node::Node, testing::introduce};
+use crate::{
+    NodeConfig, Notification,
+    network::Topic,
+    node::Node,
+    testing::{AliasedId, introduce},
+};
 
 #[derive(Debug, Clone, derive_more::Deref)]
 pub struct TestNode(Node);
 
 impl TestNode {
-    pub async fn new() -> (Self, Watcher<Notification>) {
+    pub async fn new(alias: Option<&str>) -> (Self, Watcher<Notification>) {
         let private_key = PrivateKey::new();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
+        if let Some(alias) = alias {
+            private_key.public_key().aliased(alias);
+        }
         let node = Self(
             Node::new(private_key, NodeConfig::default(), Some(notification_tx))
                 .await
@@ -48,8 +55,8 @@ pub struct TestCluster<const N: usize> {
 }
 
 impl<const N: usize> TestCluster<N> {
-    pub async fn new(config: ClusterConfig) -> Self {
-        let nodes = futures::future::join_all((0..N).map(|_| TestNode::new()))
+    pub async fn new(config: ClusterConfig, aliases: [&str; N]) -> Self {
+        let nodes = futures::future::join_all((0..N).map(|i| TestNode::new(Some(aliases[i]))))
             .await
             .try_into()
             .unwrap_or_else(|_| panic!("expected {} nodes", N));
@@ -100,7 +107,7 @@ pub async fn consistency(
                     .iter()
                     .filter_map(|(h, (t, _, _, _))| {
                         if topics.is_empty() || topics.contains(t) {
-                            Some(h.short())
+                            Some(h.alias())
                         } else {
                             None
                         }

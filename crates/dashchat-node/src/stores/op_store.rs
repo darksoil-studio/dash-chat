@@ -6,6 +6,7 @@ use p2panda_store::{LogStore, MemoryStore, OperationStore};
 use crate::{
     network::{LogId, Topic},
     operation::Extensions,
+    testing::AliasedId,
     *,
 };
 
@@ -21,7 +22,7 @@ impl OpStore {
             .iter()
             .filter(|(_, (t, _, _, _))| topics.is_empty() || topics.contains(t))
             .collect::<Vec<_>>();
-        ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.short(), header.seq_num));
+        ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.alias(), header.seq_num));
         ops.into_iter()
             .map(|(h, (t, header, body, _))| {
                 let desc = match body
@@ -40,9 +41,9 @@ impl OpStore {
                 if topics.len() == 1 {
                     format!(
                         "• {} {:2} {} : {}",
-                        header.public_key.short(),
+                        header.public_key.alias(),
                         header.seq_num,
-                        h.short(),
+                        h.alias(),
                         desc
                     )
                 } else {
@@ -50,9 +51,9 @@ impl OpStore {
                     format!(
                         "• {:>24} {} {:2} {} : {}",
                         t,
-                        header.public_key.short(),
+                        header.public_key.alias(),
                         header.seq_num,
-                        h.short(),
+                        h.alias(),
                         desc
                     )
                 }

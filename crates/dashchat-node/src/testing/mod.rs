@@ -1,6 +1,8 @@
+mod aliased;
 mod introduce;
 mod test_node;
 
+pub use aliased::{AliasedId, alias_space_messages};
 pub use introduce::*;
 pub use test_node::*;
 use tracing_subscriber::EnvFilter;

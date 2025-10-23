@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 use tokio_stream::Stream;
 
-use crate::{ShortId, operation::InvitationMessage, spaces::ArgType};
+use crate::{operation::InvitationMessage, spaces::ArgType, testing::AliasedId};
 
 use super::*;
 
@@ -99,7 +99,7 @@ impl Node {
                     Ok(operation) => Some(operation),
                     Err(err) => match err {
                         // IngestError::Duplicate(hash) => {
-                        //     tracing::warn!(hash = hash.short(), "ingest: operation already exists");
+                        //     tracing::warn!(hash = hash.alias(), "ingest: operation already exists");
                         //     None
                         // }
                         err => {
@@ -206,7 +206,7 @@ impl Node {
             tracing::error!(?payload, ?err, "process operation error");
         }
 
-        tracing::debug!(hash = hash.short(), "processed operation");
+        tracing::info!(hash = hash.alias(), "processed operation");
 
         if let Some(payload) = payload.as_ref() {
             self.notify_payload(&header, payload).await?;
@@ -245,20 +245,18 @@ impl Node {
             (Topic::Chat(chat_id), Some(Payload::SpaceControl(msgs))) => {
                 let mut chats = self.chats.write().await;
                 let chat = chats.get_mut(&chat_id).unwrap();
-                let types: Vec<_> = msgs.iter().map(|m| m.arg_type()).collect();
-                tracing::debug!(?types, "processing space msgs");
+                tracing::info!(
+                    hash = header.hash().alias(),
+                    messages = ?msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>(),
+                    "processing space msgs"
+                );
                 for msg in msgs {
                     // While authoring, all message types other than Application
                     // are already processed
                     if is_author && msg.arg_type() != ArgType::Application {
                         continue;
                     }
-                    tracing::debug!(
-                        argtype = ?msg.arg_type(),
-                        opid = msg.id().short(),
-                        batch = ?msgs.iter().map(|m| m.id().short()).collect::<Vec<_>>(),
-                        "processing space msg"
-                    );
+                    tracing::debug!(opid = msg.id().alias(), "processing space msg");
                     self.spaces_store.set_message(&msg.id(), &msg).await?;
                     match self.manager.process(msg).await {
                         Ok(events) => {
@@ -279,19 +277,19 @@ impl Node {
                             // assert_eq!(op, msg.id());
                             tracing::error!(
                                 argtype = ?msg.arg_type(),
-                                opid = op.short(),
+                                opid = op.alias(),
                                 "duplicate space control msg"
                             );
                         }
 
                         Err(ManagerError::UnexpectedMessage(op)) => {
-                            tracing::error!(op = op.short(), "space manager unexpected operation");
+                            tracing::error!(op = op.alias(), "space manager unexpected operation");
                         }
 
                         Err(ManagerError::MissingAuthMessage(op, auth_op)) => {
                             tracing::error!(
-                                op = op.short(),
-                                auth_op = auth_op.short(),
+                                op = op.alias(),
+                                auth_op = auth_op.alias(),
                                 "space manager missing auth message"
                             );
                         }

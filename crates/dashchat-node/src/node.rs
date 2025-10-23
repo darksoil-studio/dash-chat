@@ -18,6 +18,7 @@ use p2panda_net::{
 };
 use p2panda_spaces::OperationId;
 use p2panda_spaces::event::Event;
+use p2panda_spaces::traits::AuthoredMessage;
 use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::{DecodeExt, IngestExt};
 use p2panda_sync::log_sync::LogSyncProtocol;
@@ -35,6 +36,7 @@ use crate::operation::{
 };
 use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{OpStore, SpacesStore};
+use crate::testing::{AliasedId, alias_space_messages};
 use crate::{AsBody, Cbor, PK, timestamp_now};
 
 pub use stream_processing::Notification;
@@ -194,8 +196,7 @@ impl Node {
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn create_group(&self) -> anyhow::Result<(ChatId, Chat)> {
-        let chat_id = ChatId::random();
+    pub async fn create_group(&self, chat_id: ChatId) -> anyhow::Result<Chat> {
         let chat = self.initialize_group(chat_id).await?;
 
         let (_space, msgs, _event) = self
@@ -206,11 +207,17 @@ impl Node {
             )
             .await?;
 
+        alias_space_messages("create_group", msgs.iter());
+
         let _header = self
-            .author_operation(chat_id.into(), Payload::SpaceControl(msgs))
+            .author_operation(
+                chat_id.into(),
+                Payload::SpaceControl(msgs),
+                Some(&format!("create_group/space-control({})", chat_id.alias())),
+            )
             .await?;
 
-        Ok((chat_id, chat))
+        Ok(chat)
     }
 
     /// "Joining" a chat means subscribing to messages for that chat.
@@ -239,13 +246,22 @@ impl Node {
             .add(pubkey.into(), Access::manage())
             .await?;
 
-        self.author_operation(
-            pubkey.into(),
-            Payload::Invitation(InvitationMessage::JoinGroup(chat_id)),
-        )
-        .await?;
+        alias_space_messages("add_member", msgs.iter());
 
-        self.author_operation(chat_id.into(), Payload::SpaceControl(msgs))
+        let _header = self
+            .author_operation(
+                pubkey.into(),
+                Payload::Invitation(InvitationMessage::JoinGroup(chat_id)),
+                Some(&format!("add_member/invitation:{}", chat_id.alias())),
+            )
+            .await?;
+
+        let _header = self
+            .author_operation(
+                chat_id.into(),
+                Payload::SpaceControl(msgs),
+                Some(&format!("add_member/space-control({})", chat_id.alias())),
+            )
             .await?;
 
         Ok(())
@@ -298,10 +314,16 @@ impl Node {
         };
         let encrypted = space.publish(&encode_cbor(&message.clone())?).await?;
 
+        alias_space_messages("send_message", vec![&encrypted]);
+
         let topic = chat_id.into();
 
         let _header = self
-            .author_operation(topic, Payload::SpaceControl(vec![encrypted]))
+            .author_operation(
+                topic,
+                Payload::SpaceControl(vec![encrypted]),
+                Some(&format!("send_message/space-control({})", chat_id.alias())),
+            )
             .await?;
 
         Ok(message)
@@ -344,6 +366,7 @@ impl Node {
         self.author_operation(
             public_key.clone().into(),
             Payload::Invitation(InvitationMessage::Friend),
+            Some(&format!("add_friend/invitation:{}", public_key.alias())),
         )
         .await?;
 
