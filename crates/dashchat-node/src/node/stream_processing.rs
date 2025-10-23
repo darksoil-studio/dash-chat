@@ -58,11 +58,8 @@ impl Node {
     /// This must be called:
     /// - when creating a new group chat
     /// - when initializing the node, for each existing group chat
-    pub(super) async fn initialize_topic(
-        &self,
-        topic: Topic,
-    ) -> anyhow::Result<(Sender<ToNetwork>)> {
-        let (network_tx, network_rx, gossip_ready) = self.network.subscribe(topic.clone()).await?;
+    pub(super) async fn initialize_topic(&self, topic: Topic) -> anyhow::Result<Sender<ToNetwork>> {
+        let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.clone()).await?;
         tracing::debug!(?topic, "subscribed to topic");
 
         let stream = ReceiverStream::new(network_rx);

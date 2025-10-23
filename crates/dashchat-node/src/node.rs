@@ -18,7 +18,6 @@ use p2panda_net::{
 };
 use p2panda_spaces::OperationId;
 use p2panda_spaces::event::Event;
-use p2panda_spaces::traits::AuthoredMessage;
 use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::{DecodeExt, IngestExt};
 use p2panda_sync::log_sync::LogSyncProtocol;
