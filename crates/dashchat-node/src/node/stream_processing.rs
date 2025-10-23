@@ -94,19 +94,6 @@ impl Node {
                     }
                 }
             })
-            .inspect(move |(h, _, _)| {
-                let deps = h
-                    .previous
-                    .iter()
-                    .map(|h| h.alias())
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                if !deps.is_empty() {
-                    println!("ℰ {} : {} -> [{}]", pubkey.alias(), h.hash().alias(), deps);
-                } else {
-                    println!("ℰ {} : {}", pubkey.alias(), h.hash().alias());
-                }
-            })
             .ingest(self.op_store.clone(), 128)
             .filter_map(|result| async {
                 match result {
@@ -121,6 +108,20 @@ impl Node {
                             None
                         }
                     },
+                }
+            })
+            .inspect(move |operation| {
+                let h = &operation.header;
+                let deps = h
+                    .previous
+                    .iter()
+                    .map(|h| h.alias())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                if !deps.is_empty() {
+                    println!("ℰ {} : {} -> [{}]", pubkey.alias(), h.hash().alias(), deps);
+                } else {
+                    println!("ℰ {} : {}", pubkey.alias(), h.hash().alias());
                 }
             });
 
@@ -301,7 +302,11 @@ impl Node {
                         }
 
                         Err(ManagerError::UnexpectedMessage(op)) => {
-                            tracing::error!(op = op.alias(), "space manager unexpected operation");
+                            tracing::error!(
+                                header = header.hash().alias(),
+                                op = op.alias(),
+                                "space manager unexpected operation"
+                            );
                         }
 
                         Err(ManagerError::MissingAuthMessage(op, auth_op)) => {

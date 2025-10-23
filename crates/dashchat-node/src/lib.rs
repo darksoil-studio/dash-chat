@@ -98,29 +98,29 @@ pub trait ShortId {
 }
 
 impl ShortId for p2panda_core::Hash {
-    const PREFIX: &'static str = "H|";
+    const PREFIX: &'static str = "H";
     fn short(&self) -> String {
         let mut s = self.to_hex();
         s.truncate(8);
-        format!("{}{s}", Self::PREFIX)
+        format!("{}|{s}", Self::PREFIX)
     }
 }
 
 impl ShortId for p2panda_core::PublicKey {
-    const PREFIX: &'static str = "PK|";
+    const PREFIX: &'static str = "PK";
     fn short(&self) -> String {
         let mut s = self.to_hex();
         s.truncate(8);
-        format!("{}{s}", Self::PREFIX)
+        format!("{}|{s}", Self::PREFIX)
     }
 }
 
 impl ShortId for OperationId {
-    const PREFIX: &'static str = "OP|";
+    const PREFIX: &'static str = "OP";
     fn short(&self) -> String {
         let mut s = self.to_hex();
         s.truncate(8);
-        format!("{}{s}", Self::PREFIX)
+        format!("{}|{s}", Self::PREFIX)
     }
 }
 

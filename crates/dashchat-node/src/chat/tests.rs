@@ -60,7 +60,7 @@ async fn test_group_2() {
                 .await
                 .unwrap()
                 .contains(&chat_id)
-                .ok_or(())
+                .ok_or("chat not yet found")
         },
     )
     .await
@@ -94,7 +94,7 @@ async fn test_group_2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_3() {
-    crate::testing::setup_tracing("error,dashchat_node=warn");
+    crate::testing::setup_tracing("error,dashchat_node=warn,p2panda_stream=info");
     // crate::testing::setup_tracing(TRACING_FILTER);
 
     let cfg = ClusterConfig {
@@ -138,9 +138,9 @@ async fn test_group_3() {
                     .await
                     .map(|m| m.contains(&(bobbi.public_key().into(), Access::manage())))
                     .unwrap_or(false)
-                    .ok_or(())
+                    .ok_or("not a manager")
             } else {
-                Err(())
+                Err("space doesn't exist")
             }
         },
     )
@@ -198,9 +198,9 @@ async fn test_group_3() {
                     .await
                     .map(|m| m.contains(&(carol.public_key().into(), Access::manage())))
                     .unwrap_or(false)
-                    .ok_or(())
+                    .ok_or("not a manager")
             } else {
-                Err(())
+                Err("space doesn't exist")
             }
         },
     )
@@ -233,7 +233,7 @@ async fn test_group_3() {
             .await
             .iter()
             .all(|l| *l == 3)
-            .ok_or(())
+            .ok_or("not all members registered")
         },
     )
     .await
@@ -248,8 +248,7 @@ async fn test_group_3() {
         msgs.iter().all(|m| m.len() == 3).ok_or(msgs)
     })
     .await
-    .ok();
-    // .unwrap_or_else(|e| panic!("{:#?}", e));
+    .unwrap_or_else(|e| panic!("{:#?}", e));
 
     let alice_messages = alice.get_messages(chat_id).await.unwrap();
     let bobbi_messages = bobbi.get_messages(chat_id).await.unwrap();
