@@ -612,6 +612,7 @@ dependencies = [
  "futures",
  "help",
  "hex",
+ "itertools",
  "p2panda-auth",
  "p2panda-core",
  "p2panda-discovery",
@@ -784,6 +785,12 @@ dependencies = [
  "subtle",
  "zeroize",
 ]
+
+[[package]]
+name = "either"
+version = "1.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elliptic-curve"
@@ -1939,6 +1946,15 @@ dependencies = [
  "url",
  "webpki-roots 0.26.11",
  "z32",
+]
+
+[[package]]
+name = "itertools"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
+dependencies = [
+ "either",
 ]
 
 [[package]]

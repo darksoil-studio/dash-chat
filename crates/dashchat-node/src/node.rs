@@ -166,7 +166,7 @@ impl Node {
             .unwrap();
 
         let node = Self {
-            op_store: OpStore::from(op_store),
+            op_store: OpStore::new(op_store),
             author_store,
             spaces_store,
             network,
@@ -299,7 +299,7 @@ impl Node {
         &self,
         chat_id: ChatId,
         message: ChatMessageContent,
-    ) -> anyhow::Result<ChatMessage> {
+    ) -> anyhow::Result<(ChatMessage, Header<Extensions>)> {
         let space = self
             .manager
             .space(chat_id)
@@ -318,7 +318,7 @@ impl Node {
 
         let topic = chat_id.into();
 
-        let _header = self
+        let header = self
             .author_operation(
                 topic,
                 Payload::SpaceControl(vec![encrypted]),
@@ -326,7 +326,7 @@ impl Node {
             )
             .await?;
 
-        Ok(message)
+        Ok((message, header))
     }
 
     pub fn public_key(&self) -> PK {

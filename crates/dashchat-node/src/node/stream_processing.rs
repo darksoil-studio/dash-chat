@@ -138,7 +138,7 @@ impl Node {
                         Err(err) => {
                             tracing::error!(
                                 ?topic,
-                                hash = hash.short(),
+                                hash = hash.alias(),
                                 ?err,
                                 "process operation error"
                             )
@@ -211,6 +211,8 @@ impl Node {
         if let Some(payload) = payload.as_ref() {
             self.notify_payload(&header, payload).await?;
         }
+
+        self.op_store.mark_op_processed(&topic, &hash);
 
         anyhow::Ok(())
     }

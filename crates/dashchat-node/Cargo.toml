@@ -48,6 +48,7 @@ help = "0.0.0"
 
 [dev-dependencies]
 dashchat-node = { path = ".", features = ["testing"] }
+itertools = "0.14.0"
 pretty_assertions = "1.4.1"
 
 [features]

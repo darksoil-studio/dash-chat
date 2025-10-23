@@ -3,6 +3,7 @@ use std::time::Duration;
 use p2panda_auth::Access;
 
 use crate::{
+    network::Topic,
     testing::{AliasedId, *},
     *,
 };
@@ -138,7 +139,8 @@ async fn test_group_3() {
     .await
     .unwrap();
 
-    let tt = [chat_id.into()];
+    let topic: Topic = chat_id.into();
+    let tt = [topic];
 
     println!("==> alice sends message");
     alice
@@ -155,9 +157,11 @@ async fn test_group_3() {
     assert_eq!(alice.get_messages(chat_id).await.unwrap().len(), 1);
 
     println!("==> bob sends message");
-    bob.send_message(chat_id, "i am bob".into()).await.unwrap();
+    let (_, bob_header) = bob.send_message(chat_id, "i am bob".into()).await.unwrap();
 
     consistency([&alice, &bob], &tt, &cfg).await.unwrap();
+    assert!(bob.op_store.is_op_processed(&topic, &bob_header.hash()));
+    assert!(alice.op_store.is_op_processed(&topic, &bob_header.hash()));
 
     assert_eq!(
         alice.get_messages(chat_id).await.unwrap(),

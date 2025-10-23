@@ -7,7 +7,7 @@ use p2panda_core::PrivateKey;
 use tokio::sync::mpsc::Receiver;
 
 use crate::{
-    NodeConfig, Notification,
+    NodeConfig, Notification, ShortId,
     network::Topic,
     node::Node,
     testing::{AliasedId, introduce},
@@ -101,16 +101,16 @@ pub async fn consistency(
         let sets = nodes
             .iter()
             .map(|node| {
-                node.op_store
-                    .read_store()
-                    .operations
+                let ops = node.op_store.processed_ops.read().unwrap();
+
+                topics
                     .iter()
-                    .filter_map(|(h, (t, _, _, _))| {
-                        if topics.is_empty() || topics.contains(t) {
-                            Some(h.alias())
-                        } else {
-                            None
-                        }
+                    .flat_map(|topic| {
+                        ops.get(topic)
+                            .cloned()
+                            .unwrap_or_default()
+                            .into_iter()
+                            .map(|h| format!("{} {}", h.short(), h.alias()))
                     })
                     .collect::<BTreeSet<_>>()
             })
@@ -127,6 +127,7 @@ pub async fn consistency(
             }
         }
         if diffs.diffs.is_empty() {
+            dbg!(&diffs);
             Ok(())
         } else {
             Err(diffs)
