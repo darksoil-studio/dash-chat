@@ -14,7 +14,7 @@ use crate::{
     *,
 };
 
-#[derive(Clone, Debug, derive_more::Deref, derive_more::DerefMut)]
+#[derive(Clone, derive_more::Deref, derive_more::DerefMut)]
 pub struct OpStore {
     #[deref]
     #[deref_mut]

@@ -19,6 +19,7 @@ use p2panda_net::{
 use p2panda_spaces::OperationId;
 use p2panda_spaces::event::Event;
 use p2panda_store::{LogStore, MemoryStore};
+use p2panda_stream::partial::operations::PartialOrder;
 use p2panda_stream::{DecodeExt, IngestExt};
 use p2panda_sync::log_sync::LogSyncProtocol;
 use tokio::sync::{RwLock, mpsc};
@@ -47,17 +48,29 @@ const NETWORK_ID: [u8; 32] = [88; 32];
 const MAX_MESSAGE_SIZE: usize = 1000 * 10; // 10kb max. UDP payload size
 
 #[derive(Clone, Debug)]
-pub struct NodeConfig {}
+pub struct NodeConfig {
+    pub resync: ResyncConfiguration,
+}
 
 impl Default for NodeConfig {
     fn default() -> Self {
-        Self {}
+        let resync = ResyncConfiguration::new().interval(3).poll_interval(1);
+        Self { resync }
     }
 }
 
-#[derive(Clone, Debug)]
+pub type Orderer = PartialOrder<
+    LogId,
+    Extensions,
+    OpStore,
+    p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
+>;
+
+#[derive(Clone)]
 pub struct Node {
     pub op_store: OpStore,
+    pub ordering: Arc<RwLock<HashMap<Topic, Orderer>>>,
+    // pub ordering_store: p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
     pub network: Network<Topic>,
     chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
     author_store: AuthorStore<Topic>,
@@ -67,7 +80,7 @@ pub struct Node {
     /// mapping from space operations to header hashes, so that dependencies
     /// can be declared
     space_dependencies: Arc<RwLock<HashMap<OperationId, p2panda_core::Hash>>>,
-    _config: NodeConfig,
+    config: NodeConfig,
     private_key: PrivateKey,
     friends: Arc<RwLock<HashMap<PK, Friend>>>,
     notification_tx: Option<mpsc::Sender<Notification>>,
@@ -79,7 +92,7 @@ impl Node {
     #[tracing::instrument(skip_all, fields(me = ?PK::from(private_key.public_key())))]
     pub async fn new(
         private_key: PrivateKey,
-        _config: NodeConfig,
+        config: NodeConfig,
         notification_tx: Option<mpsc::Sender<Notification>>,
     ) -> Result<Self> {
         let rng = Rng::default();
@@ -102,8 +115,7 @@ impl Node {
         // let relay_url = RELAY_ENDPOINT.parse()?;
 
         let sync_protocol = LogSyncProtocol::new(author_store.clone(), op_store.clone());
-        let sync_config = SyncConfiguration::new(sync_protocol)
-            .resync(ResyncConfiguration::new().interval(3).poll_interval(1));
+        let sync_config = SyncConfiguration::new(sync_protocol).resync(config.resync.clone());
 
         let mut new_peers = mdns.subscribe(NETWORK_ID).unwrap();
 
@@ -164,15 +176,17 @@ impl Node {
             .await
             .unwrap();
 
+        let op_store = OpStore::new(op_store);
         let node = Self {
-            op_store: OpStore::new(op_store),
+            op_store: op_store.clone(),
+            ordering: Arc::new(RwLock::new(HashMap::new())),
             author_store,
             spaces_store,
             network,
             chats,
             manager: manager.clone(),
             space_dependencies: Arc::new(RwLock::new(HashMap::new())),
-            _config,
+            config,
             private_key,
             friends: Arc::new(RwLock::new(HashMap::new())),
             notification_tx,
@@ -312,6 +326,7 @@ impl Node {
             timestamp: timestamp_now(),
         };
         let encrypted = space.publish(&encode_cbor(&message.clone())?).await?;
+        let encrypted_hash = encrypted.hash.clone();
 
         alias_space_messages("send_message", vec![&encrypted]);
 
@@ -321,7 +336,11 @@ impl Node {
             .author_operation(
                 topic,
                 Payload::SpaceControl(vec![encrypted]),
-                Some(&format!("send_message/space-control({})", chat_id.alias())),
+                Some(&format!(
+                    "send_message/encrypted(chat={}, msg={})",
+                    chat_id.alias(),
+                    encrypted_hash.alias()
+                )),
             )
             .await?;
 

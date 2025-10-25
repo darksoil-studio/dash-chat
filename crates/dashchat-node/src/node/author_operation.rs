@@ -69,7 +69,7 @@ impl Node {
 
         deps.extend(space_deps.into_iter());
 
-        let Operation { header, body, hash } = create_operation(
+        let operation = create_operation(
             &self.op_store,
             &self.private_key,
             topic.clone(),
@@ -77,6 +77,7 @@ impl Node {
             deps.clone(),
         )
         .await?;
+        let Operation { header, body, hash } = operation.clone();
 
         if let Some(alias) = alias {
             header.hash().aliased(alias);
@@ -118,6 +119,9 @@ impl Node {
         match result {
             IngestResult::Complete(op @ Operation { hash: hash2, .. }) => {
                 assert_eq!(hash, hash2);
+
+                // NOTE: if we fail to process here, incoming operations will be stuck as pending!
+                self.process_ordering(topic, operation).await?;
 
                 self.process_operation(topic, op, self.author_store.clone(), true)
                     .await?;

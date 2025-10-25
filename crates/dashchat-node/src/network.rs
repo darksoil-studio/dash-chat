@@ -25,7 +25,9 @@ use serde::{Deserialize, Serialize};
     PartialOrd,
     Ord,
     derive_more::From,
+    derive_more::Display,
 )]
+#[display("{:?}", self)]
 pub enum Topic {
     Chat(ChatId),
     Inbox(PK),

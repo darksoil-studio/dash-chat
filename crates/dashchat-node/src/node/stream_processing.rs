@@ -7,6 +7,8 @@ use p2panda_spaces::{
     traits::{AuthoredMessage, MessageStore},
     types::AuthGroupError,
 };
+use p2panda_store::OperationStore;
+use p2panda_stream::partial::operations::PartialOrder;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 use tokio_stream::Stream;
@@ -91,6 +93,22 @@ impl Node {
                     }
                 }
             })
+            // .inspect(move |operation| {
+            .inspect(move |(header, _, _)| {
+                // let h = &operation.header;
+                let h = &header;
+                let deps = h
+                    .previous
+                    .iter()
+                    .map(|h| h.alias())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                if !deps.is_empty() {
+                    println!("▎{} : {} -> [{}]", pubkey.alias(), h.hash().alias(), deps);
+                } else {
+                    println!("▎{} : {}", pubkey.alias(), h.hash().alias());
+                }
+            })
             .ingest(self.op_store.clone(), 128)
             .filter_map(|result| async {
                 match result {
@@ -105,20 +123,6 @@ impl Node {
                             None
                         }
                     },
-                }
-            })
-            .inspect(move |operation| {
-                let h = &operation.header;
-                let deps = h
-                    .previous
-                    .iter()
-                    .map(|h| h.alias())
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                if !deps.is_empty() {
-                    println!("ℰ {} : {} -> [{}]", pubkey.alias(), h.hash().alias(), deps);
-                } else {
-                    println!("ℰ {} : {}", pubkey.alias(), h.hash().alias());
                 }
             });
 
@@ -138,24 +142,44 @@ impl Node {
     ) {
         let node = self.clone();
         let mut stream = Box::pin(stream);
+
         task::spawn(
             async move {
                 let node = node.clone();
                 tracing::debug!("stream process loop started");
                 while let Some(operation) = stream.next().await {
                     let hash = operation.hash;
-                    match node
-                        .process_operation(topic, operation, author_store.clone(), false)
+
+                    if let Err(err) = node.process_ordering(topic, operation).await {
+                        tracing::error!(?err, "process ordering error");
+                        continue;
+                    }
+
+                    let reordered = node
+                        .next_ordering(topic)
                         .await
-                    {
-                        Ok(()) => (),
-                        Err(err) => {
-                            tracing::error!(
-                                ?topic,
-                                hash = hash.alias(),
-                                ?err,
-                                "process operation error"
-                            )
+                        .map_err(|err| {
+                            tracing::error!(?err, "next ordering error");
+                        })
+                        .unwrap_or_default();
+                    // dbg!(&reordered.iter().map(|o| o.hash.alias()).collect::<Vec<_>>());
+
+                    // let reordered = vec![operation];
+
+                    for operation in reordered {
+                        match node
+                            .process_operation(topic, operation, author_store.clone(), false)
+                            .await
+                        {
+                            Ok(()) => (),
+                            Err(err) => {
+                                tracing::error!(
+                                    ?topic,
+                                    hash = hash.alias(),
+                                    ?err,
+                                    "process operation error"
+                                )
+                            }
                         }
                     }
                 }
@@ -168,22 +192,33 @@ impl Node {
         );
     }
 
-    // async fn enforce_ordering(
-    //     &self,
-    //     operation: Operation<Extensions>,
-    // ) -> Vec<Operation<Extensions>> {
-    //     //
-    //     // XXX: this is a temporary hack because ordering is not implemented for `previous` deps
-    //     //
-    //     let mut deps = vec![];
-    //     for hash in operation.header.previous {
-    //         if !self.op_store.has_operation(hash).await.unwrap_or(false) {
-    //             self.ooo_buffer.write().await.push(operation);
-    //             return vec![];
-    //         }
-    //     }
-    //     let mut ready = vec![];
-    // }
+    pub async fn process_ordering(
+        &self,
+        topic: Topic,
+        operation: Operation<Extensions>,
+    ) -> anyhow::Result<()> {
+        let mut ordering = self.ordering.write().await;
+        ordering
+            .entry(topic)
+            .or_insert(PartialOrder::new(self.op_store.clone(), Default::default()))
+            .process(operation)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn next_ordering(&self, topic: Topic) -> anyhow::Result<Vec<Operation<Extensions>>> {
+        let mut ordering = self.ordering.write().await;
+        let mut next = vec![];
+        while let Some(op) = ordering
+            .entry(topic)
+            .or_insert(PartialOrder::new(self.op_store.clone(), Default::default()))
+            .next()
+            .await?
+        {
+            next.push(op);
+        }
+        Ok(next)
+    }
 
     pub async fn process_operation(
         &self,
@@ -249,6 +284,7 @@ impl Node {
         Ok(())
     }
 
+    #[tracing::instrument(skip_all, fields(me=?self.public_key()))]
     pub async fn process_payload(
         &self,
         topic: Topic,

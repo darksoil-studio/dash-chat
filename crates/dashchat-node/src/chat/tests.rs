@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use p2panda_auth::Access;
+use p2panda_net::ResyncConfiguration;
 
 use crate::{
     network::Topic,
@@ -16,9 +17,9 @@ async fn test_group_2() {
     crate::testing::setup_tracing(TRACING_FILTER);
 
     println!("nodes:");
-    let (alice, _alice_rx) = TestNode::new(Some("alice")).await;
+    let (alice, _alice_rx) = TestNode::new(NodeConfig::default(), Some("alice")).await;
     println!("alice: {:?}", alice.public_key().short());
-    let (bobbi, mut bobbi_rx) = TestNode::new(Some("bobbi")).await;
+    let (bobbi, mut bobbi_rx) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
     println!("bobbi: {:?}", bobbi.public_key().short());
 
     introduce_and_wait([&alice.network, &bobbi.network]).await;
@@ -94,14 +95,17 @@ async fn test_group_2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_3() {
-    crate::testing::setup_tracing("error,dashchat_node=warn,p2panda_stream=info");
+    crate::testing::setup_tracing("warn,dashchat_node=warn,p2panda_stream=info,p2panda_net=error");
     // crate::testing::setup_tracing(TRACING_FILTER);
 
+    let node_config = NodeConfig {
+        resync: ResyncConfiguration::new().interval(10).poll_interval(1),
+    };
     let cfg = ClusterConfig {
         poll_interval: Duration::from_millis(500),
         poll_timeout: Duration::from_secs(10),
     };
-    let cluster = TestCluster::new(cfg.clone(), ["Alice", "Bobbi", "Carol"]).await;
+    let cluster = TestCluster::new(node_config, cfg.clone(), ["Alice", "Bobbi", "Carol"]).await;
     let [alice, bobbi, carol] = cluster.nodes().await;
 
     introduce_and_wait([&alice.network, &bobbi.network, &carol.network]).await;
@@ -121,10 +125,10 @@ async fn test_group_3() {
     // alice.add_friend(carol.me().await.unwrap()).await.unwrap();
     // carol.add_friend(alice.me().await.unwrap()).await.unwrap();
 
-    println!("==> alice creates group");
+    println!("\n==> alice creates group\n");
     let chat_id = ChatId::random().aliased("onlychat");
     let _chat = alice.create_group(chat_id).await.unwrap();
-    println!("==> alice adds bobbi");
+    println!("\n==> alice adds bobbi\n");
     alice.add_member(chat_id, bobbi.public_key()).await.unwrap();
 
     // Bob has joined the group via his inbox topic and is a manager
@@ -150,7 +154,7 @@ async fn test_group_3() {
     let topic: Topic = chat_id.into();
     let tt = [topic];
 
-    println!("==> alice sends message");
+    println!("\n==> alice sends message\n");
     alice
         .send_message(chat_id, "alice is my name".into())
         .await
@@ -164,7 +168,7 @@ async fn test_group_3() {
     );
     assert_eq!(alice.get_messages(chat_id).await.unwrap().len(), 1);
 
-    println!("==> bobbi sends message");
+    println!("\n==> bobbi sends message\n");
     let (_, bobbi_header) = bobbi
         .send_message(chat_id, "i am bobbi".into())
         .await
@@ -180,7 +184,7 @@ async fn test_group_3() {
     );
     assert_eq!(alice.get_messages(chat_id).await.unwrap().len(), 2);
 
-    println!("==> bobbi adds carol");
+    println!("\n==> bobbi adds carol\n");
     bobbi.add_member(chat_id, carol.public_key()).await.unwrap();
 
     consistency([&alice, &bobbi, &carol], &tt, &cfg)
@@ -207,7 +211,7 @@ async fn test_group_3() {
     .await
     .unwrap();
 
-    println!("==> carol sends message");
+    println!("\n==> carol sends message\n");
     carol
         .send_message(chat_id, "watashi no namae wa carol".into())
         .await

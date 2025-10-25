@@ -13,18 +13,19 @@ use crate::{
     testing::{AliasedId, introduce},
 };
 
-#[derive(Debug, Clone, derive_more::Deref)]
+#[derive(Clone, derive_more::Deref, derive_more::Debug)]
+#[debug("TestNode({})", self.0.public_key().alias())]
 pub struct TestNode(Node);
 
 impl TestNode {
-    pub async fn new(alias: Option<&str>) -> (Self, Watcher<Notification>) {
+    pub async fn new(config: NodeConfig, alias: Option<&str>) -> (Self, Watcher<Notification>) {
         let private_key = PrivateKey::new();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = alias {
             private_key.public_key().aliased(alias);
         }
         let node = Self(
-            Node::new(private_key, NodeConfig::default(), Some(notification_tx))
+            Node::new(private_key, config, Some(notification_tx))
                 .await
                 .unwrap(),
         );
@@ -55,11 +56,13 @@ pub struct TestCluster<const N: usize> {
 }
 
 impl<const N: usize> TestCluster<N> {
-    pub async fn new(config: ClusterConfig, aliases: [&str; N]) -> Self {
-        let nodes = futures::future::join_all((0..N).map(|i| TestNode::new(Some(aliases[i]))))
-            .await
-            .try_into()
-            .unwrap_or_else(|_| panic!("expected {} nodes", N));
+    pub async fn new(node_config: NodeConfig, config: ClusterConfig, aliases: [&str; N]) -> Self {
+        let nodes = futures::future::join_all(
+            (0..N).map(|i| TestNode::new(node_config.clone(), Some(aliases[i]))),
+        )
+        .await
+        .try_into()
+        .unwrap_or_else(|_| panic!("expected {} nodes", N));
         Self { nodes, config }
     }
 
