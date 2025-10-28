@@ -1,22 +1,20 @@
-import { Signal } from 'signal-polyfill';
-
-import type { AsyncComputed } from '../signals/async-computed';
+import { AsyncComputed } from '../signals/async-computed';
 import { MemoMap } from '../signals/memo-map';
 import { AsyncRelay, type AsyncResult } from '../signals/relay';
 import type { LogsClient } from './logs-client';
+import type { SimplifiedOperation } from './simplified-types';
 import type { LogId, Operation, PublicKey, TopicId } from './types';
 
 export class LogsStore {
 	constructor(protected logsClient: LogsClient) { }
 
-	myPubKey = new AsyncRelay<PublicKey>(async set => {
-		const myPubKey = await this.logsClient.myPubKey();
-		set(myPubKey);
-	});
+	myPubKey = new AsyncComputed<PublicKey>(async () =>
+		this.logsClient.myPubKey(),
+	);
 
 	authorsForTopic = new MemoMap(
 		(topicId: TopicId) =>
-			new AsyncRelay(async (set, get) => {
+			new AsyncRelay<PublicKey[]>(async set => {
 				const authors = await this.logsClient.getAuthorsForTopic(topicId);
 				set(authors);
 
@@ -37,7 +35,7 @@ export class LogsStore {
 				(author: PublicKey) =>
 					new MemoMap(
 						(logId: LogId) =>
-							new AsyncRelay<Operation[]>(async (set, get) => {
+							new AsyncRelay<SimplifiedOperation<any>[]>(async (set, get) => {
 								const log = await this.logsClient.getLog(
 									topicId,
 									author,
@@ -68,23 +66,25 @@ export class LogsStore {
 		(topicId: TopicId) =>
 			new MemoMap(
 				(logId: LogId) =>
-					new Signal.Computed<AsyncResult<Record<PublicKey, Operation[]>>>(
-						() => {
-							const authorsForTopic = this.authorsForTopic.get(topicId).get();
-							if (authorsForTopic.status !== 'completed')
-								return authorsForTopic;
+					new AsyncComputed<Record<PublicKey, SimplifiedOperation<any>[]>>(
+						async () => {
+							const authorsForTopic =
+								await this.authorsForTopic.get(topicId).complete;
+							// if (authorsForTopic.status !== 'completed')
+							// 	return authorsForTopic;
 
-							const logsForAllAuthors: Record<PublicKey, Operation[]> = {};
+							const logsForAllAuthors: Record<
+								PublicKey,
+								SimplifiedOperation<any>[]
+							> = {};
 
-							for (const author in authorsForTopic) {
-								const log = this.logs.get(topicId).get(author).get(logId).get();
-								if (log.status !== 'completed') return log;
-								logsForAllAuthors[author] = log.value;
+							for (const author of authorsForTopic) {
+								const log = await this.logs.get(topicId).get(author).get(logId)
+									.complete;
+								// if (log.status !== 'completed') return log;
+								logsForAllAuthors[author] = log;
 							}
-							return {
-								status: 'completed',
-								value: logsForAllAuthors,
-							};
+							return logsForAllAuthors;
 						},
 					),
 			),

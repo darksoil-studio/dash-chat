@@ -1,7 +1,6 @@
-import Emittery from 'emittery';
-
 import type { UnsubscribeFn } from '../signals/relay';
-import type { LogId, Operation, PublicKey, TopicId } from './types';
+import type { SimplifiedOperation } from './simplified-types';
+import type { LogId, PublicKey, TopicId } from './types';
 
 export interface LogsClient {
 	myPubKey(): Promise<PublicKey>;
@@ -12,10 +11,14 @@ export interface LogsClient {
 		topicId: TopicId,
 		author: PublicKey,
 		logId: LogId,
-	): Promise<Operation[]>;
+	): Promise<SimplifiedOperation<any>[]>;
 
 	onNewOperation(
-		handler: (topicId: TopicId, author: PublicKey, logId: LogId, operation: Operation) => void,
+		handler: (
+			topicId: TopicId,
+			author: PublicKey,
+			logId: LogId,
+			operation: SimplifiedOperation<any>,
+		) => void,
 	): UnsubscribeFn;
 }
-

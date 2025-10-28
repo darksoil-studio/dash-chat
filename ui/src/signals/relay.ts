@@ -1,5 +1,7 @@
 import { Signal } from 'signal-polyfill';
+import { AsyncComputed } from 'signal-utils/async-computed';
 import { effect } from 'signal-utils/subtle/microtask-effect';
+
 // import { load } from './async-computed';
 
 // export function asyncRelay<T>(
@@ -43,17 +45,30 @@ export type AsyncRelayMakerFn<T> = (
 	get: () => AsyncResult<T>,
 ) => Promise<UnsubscribeFn | void>;
 
-export class AsyncRelay<T, E = unknown> {
-	#signal: Signal.State<AsyncResult<T, E>>;
+export class AsyncRelay<T, E = unknown> extends AsyncComputed<T> {
+	#signal: Signal.State<AsyncResult<T, E>> = new Signal.State({
+		status: 'initial',
+	});
 	#unsubscribeFn: UnsubscribeFn | void = undefined;
 	constructor(protected maker: AsyncRelayMakerFn<T>) {
+		super(() => {
+			const value = this.#signal.get();
+			switch (value.status) {
+				case 'initial':
+				case 'loading':
+					return new Promise(r => {});
+				case 'completed':
+					return Promise.resolve(value.value);
+				case 'error':
+					return Promise.reject(value.error);
+			}
+		});
 		this.#signal = new Signal.State(
 			{
 				status: 'initial',
 			},
 			{
 				[Signal.subtle.watched]: async () => {
-					console.log('watched');
 					this.#signal.set({
 						status: 'loading',
 					});
@@ -82,18 +97,25 @@ export class AsyncRelay<T, E = unknown> {
 		);
 	}
 
-	get(): AsyncResult<T, E> {
-		return this.#signal.get();
-	}
+	// get(): AsyncResult<T, E> {
+	// 	return this.#signal.get();
+	// }
 
-	subscribe(fn: (value: AsyncResult<T, E>) => void) {
-		return effect(() => {
-			const value = this.get();
-			fn(value);
-		});
-	}
-
-	// load(): Promise<T> {
-	// 	return load(this)
+	// subscribe(fn: (value: Promise<T>) => void): UnsubscribeFn {
+	// 	return effect(() => {
+	// 		const value = this.get();
+	// 		switch (value.status) {
+	// 			case 'initial':
+	// 			case 'loading':
+	// 				fn(new Promise(r => {}));
+	// 				break;
+	// 			case 'error':
+	// 				fn(Promise.reject(value.error));
+	// 				break;
+	// 			case 'completed':
+	// 				fn(Promise.resolve(value.value));
+	// 				break;
+	// 		}
+	// 	});
 	// }
 }

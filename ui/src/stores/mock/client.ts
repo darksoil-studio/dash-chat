@@ -1,8 +1,11 @@
 import { blake2b, blake2bHex } from 'blakejs';
-import { encode } from 'cbor';
 import Emittery from 'emittery';
 
 import type { LogsClient } from '../../p2panda/logs-client';
+import type {
+	SimplifiedHeader,
+	SimplifiedOperation,
+} from '../../p2panda/simplified-types';
 import type {
 	Hash,
 	Header,
@@ -14,7 +17,7 @@ import type {
 import type { UnsubscribeFn } from '../../signals/relay';
 
 export function hash<T>(obj: T): Hash {
-	return blake2bHex(encode(obj));
+	return blake2bHex(JSON.stringify(obj));
 }
 
 export class LocalStorageLogsClient implements LogsClient {
@@ -28,6 +31,7 @@ export class LocalStorageLogsClient implements LogsClient {
 
 	getItems() {
 		const items = { ...localStorage };
+		console.log('itesm', items)
 		return items;
 	}
 
@@ -35,7 +39,7 @@ export class LocalStorageLogsClient implements LogsClient {
 		topicId: TopicId,
 		author: PublicKey,
 		logId: LogId,
-	): Promise<Operation[]> {
+	): Promise<SimplifiedOperation<any>[]> {
 		const logKey = `${topicId}/${author}/${logId}`;
 		const items = this.getItems();
 
@@ -64,25 +68,18 @@ export class LocalStorageLogsClient implements LogsClient {
 		);
 		const lastOperation = descendantOperations[0];
 
-		const encodedBody = encode(body);
-		const payload_hash = hash(body);
-
-		const header: Header = {
+		const header: SimplifiedHeader = {
 			backlink: lastOperation?.hash,
-			payload_hash,
-			payload_size: encodedBody.length,
 			previous: [],
 			public_key: this._myPubKey,
 			seq_num: lastOperation ? lastOperation.header.seq_num + 1 : 0,
-			signature: undefined,
 			timestamp: Date.now() * 1000,
-			version: 0,
 		};
 
 		const headerHash = hash(header);
 
-		const operation: Operation = {
-			body: encodedBody,
+		const operation: SimplifiedOperation<T> = {
+			body,
 			hash: headerHash,
 			header,
 		};
@@ -92,6 +89,8 @@ export class LocalStorageLogsClient implements LogsClient {
 
 		const authorsLogKey = `${topicId}/authors/${this._myPubKey}`;
 		localStorage.setItem(authorsLogKey, this._myPubKey);
+
+		console.log('created', operation);
 
 		this.emitter.emit('new-operation', {
 			topicId,
@@ -106,7 +105,7 @@ export class LocalStorageLogsClient implements LogsClient {
 			topicId: TopicId,
 			author: PublicKey,
 			logId: LogId,
-			operation: Operation,
+			operation: SimplifiedOperation<any>,
 		) => void,
 	): UnsubscribeFn {
 		return this.emitter.on('new-operation', event => {
