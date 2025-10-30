@@ -43,13 +43,13 @@ export type UnsubscribeFn = () => void;
 export type AsyncRelayMakerFn<T> = (
 	set: (value: T) => void,
 	get: () => AsyncResult<T>,
-) => Promise<UnsubscribeFn | void>;
+) => Promise<{ unsubscribe: UnsubscribeFn } | void>;
 
 export class AsyncRelay<T, E = unknown> extends AsyncComputed<T> {
 	#signal: Signal.State<AsyncResult<T, E>> = new Signal.State({
 		status: 'initial',
 	});
-	#unsubscribeFn: UnsubscribeFn | void = undefined;
+	#unsubscribeFn: { unsubscribe: UnsubscribeFn } | void = undefined;
 	constructor(protected maker: AsyncRelayMakerFn<T>) {
 		super(() => {
 			const value = this.#signal.get();
@@ -90,7 +90,7 @@ export class AsyncRelay<T, E = unknown> extends AsyncComputed<T> {
 				},
 				[Signal.subtle.unwatched]: () => {
 					if (this.#unsubscribeFn) {
-						this.#unsubscribeFn();
+						this.#unsubscribeFn.unsubscribe();
 					}
 				},
 			},

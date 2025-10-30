@@ -6,7 +6,7 @@ import type { SimplifiedOperation } from './simplified-types';
 import type { LogId, Operation, PublicKey, TopicId } from './types';
 
 export class LogsStore {
-	constructor(protected logsClient: LogsClient) { }
+	constructor(protected logsClient: LogsClient) {}
 
 	myPubKey = new AsyncComputed<PublicKey>(async () =>
 		this.logsClient.myPubKey(),
@@ -18,14 +18,17 @@ export class LogsStore {
 				const authors = await this.logsClient.getAuthorsForTopic(topicId);
 				set(authors);
 
-				return this.logsClient.onNewOperation(
-					(operationTopicId, author, logId) => {
-						if (topicId !== operationTopicId) return;
-						if (authors.includes(author)) return;
-						authors.push(author);
-						set(authors);
-					},
-				);
+				return {
+					unsubscribe: () =>
+						this.logsClient.onNewOperation(
+							(operationTopicId, author, logId) => {
+								if (topicId !== operationTopicId) return;
+								if (authors.includes(author)) return;
+								authors.push(author);
+								set(authors);
+							},
+						),
+				};
 			}),
 	);
 
@@ -43,20 +46,22 @@ export class LogsStore {
 								);
 								set(log);
 
-								return this.logsClient.onNewOperation(
-									(
-										operationTopicId,
-										operationAuthor,
-										operationLogId,
-										operation,
-									) => {
-										if (topicId !== operationTopicId) return;
-										if (author !== operationAuthor) return;
-										if (logId !== operationLogId) return;
-										log.push(operation);
-										set(log);
-									},
-								);
+								return {
+									unsubscribe: this.logsClient.onNewOperation(
+										(
+											operationTopicId,
+											operationAuthor,
+											operationLogId,
+											operation,
+										) => {
+											if (topicId !== operationTopicId) return;
+											if (author !== operationAuthor) return;
+											if (logId !== operationLogId) return;
+											log.push(operation);
+											set(log);
+										},
+									),
+								};
 							}),
 					),
 			),
