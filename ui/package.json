@@ -19,7 +19,7 @@
 		"blakejs": "^1.2.1",
 		"cbor": "^10.0.11",
 		"emittery": "^1.2.0",
-		"signal-polyfill": "^0.2.2",
+		"signal-polyfill": "^0.2.0",
 		"signal-utils": "^0.21.1"
 	},
 	"devDependencies": {

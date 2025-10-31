@@ -4,16 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  signal-polyfill: link:../../gitfork/signal-polyfill
-
 importers:
 
   .:
-    dependencies:
-      signal-polyfill:
-        specifier: link:../../gitfork/signal-polyfill
-        version: link:../../gitfork/signal-polyfill
     devDependencies:
       '@eslint/js':
         specifier: ^9.36.0
@@ -94,11 +87,11 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       signal-polyfill:
-        specifier: link:../../../gitfork/signal-polyfill
-        version: link:../../../gitfork/signal-polyfill
+        specifier: ^0.2.0
+        version: 0.2.2
       signal-utils:
         specifier: ^0.21.1
-        version: 0.21.1(signal-polyfill@..+gitfork+signal-polyfill)
+        version: 0.21.1(signal-polyfill@0.2.2)
     devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^3.0.6
@@ -1699,6 +1692,12 @@ packages:
     resolution: {integrity: sha512-fDW/EZ6Q9RiO8eFG8Hj+7u/oW+XrPTIChwCOM2+th2A6OblDtYYIpve9m+KvI9Z4C9qSEXlaGR6bTEYHReuglA==}
     engines: {node: '>= 0.4'}
 
+  signal-polyfill@0.1.2:
+    resolution: {integrity: sha512-HT9d+L9NMiTzMxb/tU2Baym6129ROyRETSjvchvSkQa7wN0+SrG/IUlsaBLqKn2c+4mlze6CgQBEvgBjxOpiaQ==}
+
+  signal-polyfill@0.2.2:
+    resolution: {integrity: sha512-p63Y4Er5/eMQ9RHg0M0Y64NlsQKpiu6MDdhBXpyywRuWiPywhJTpKJ1iB5K2hJEbFZ0BnDS7ZkJ+0AfTuL37Rg==}
+
   signal-utils@0.21.1:
     resolution: {integrity: sha512-i9cdLSvVH4j8ql8mz2lyrA93xL499P8wEbIev3ldSriXeUwqh+wM4Q5VPhIZ19gPtIS4BOopJuKB8l1+wH9LCg==}
     peerDependencies:
@@ -2071,7 +2070,7 @@ snapshots:
       async-signals: 0.1.11
       lit-signal-watcher: 0.1.1
       lodash-es: 4.17.21
-      signal-polyfill: link:../../gitfork/signal-polyfill
+      signal-polyfill: 0.1.2
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -2746,7 +2745,7 @@ snapshots:
   async-signals@0.1.11:
     dependencies:
       lit: 3.2.1
-      signal-polyfill: link:../../gitfork/signal-polyfill
+      signal-polyfill: 0.1.2
 
   async@2.6.4:
     dependencies:
@@ -3227,7 +3226,7 @@ snapshots:
   lit-signal-watcher@0.1.1:
     dependencies:
       lit: 3.2.1
-      signal-polyfill: link:../../gitfork/signal-polyfill
+      signal-polyfill: 0.1.2
 
   lit@2.8.0:
     dependencies:
@@ -3457,9 +3456,13 @@ snapshots:
       get-intrinsic: 1.2.5
       object-inspect: 1.13.3
 
-  signal-utils@0.21.1(signal-polyfill@..+gitfork+signal-polyfill):
+  signal-polyfill@0.1.2: {}
+
+  signal-polyfill@0.2.2: {}
+
+  signal-utils@0.21.1(signal-polyfill@0.2.2):
     dependencies:
-      signal-polyfill: link:../../gitfork/signal-polyfill
+      signal-polyfill: 0.2.2
 
   sirv@3.0.2:
     dependencies:

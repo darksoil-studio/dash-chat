@@ -20,8 +20,5 @@
 	"type": "module",
 	"engines": {
 		"pnpm": ">=9.0.0"
-	},
-	"dependencies": {
-		"signal-polyfill": "link:../../.local/share/pnpm/global/5/node_modules/signal-polyfill"
 	}
 }
