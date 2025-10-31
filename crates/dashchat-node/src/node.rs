@@ -80,12 +80,9 @@ pub struct Node {
     /// mapping from space operations to header hashes, so that dependencies
     /// can be declared
     space_dependencies: Arc<RwLock<HashMap<OperationId, p2panda_core::Hash>>>,
-    config: NodeConfig,
     private_key: PrivateKey,
     friends: Arc<RwLock<HashMap<PK, Friend>>>,
     notification_tx: Option<mpsc::Sender<Notification>>,
-    // // XXX: temporary hack
-    // ooo_buffer: Arc<RwLock<Vec<Operation<Extensions>>>>,
 }
 
 impl Node {
@@ -186,7 +183,6 @@ impl Node {
             chats,
             manager: manager.clone(),
             space_dependencies: Arc::new(RwLock::new(HashMap::new())),
-            config,
             private_key,
             friends: Arc::new(RwLock::new(HashMap::new())),
             notification_tx,

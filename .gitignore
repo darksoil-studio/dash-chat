@@ -12,6 +12,9 @@ node_modules/
 ## testing
 /coverage/
 
+## debugging
+*.log
+
 ## temp folders
 /.tmp/
 
