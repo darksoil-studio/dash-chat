@@ -154,6 +154,7 @@ impl Node {
         match topic {
             Topic::Chat(chat_id) => {
                 let chat_network = self
+                    .nodestate
                     .chats
                     .read()
                     .await
@@ -169,7 +170,13 @@ impl Node {
                     .await?;
             }
             Topic::Inbox(public_key) => {
-                let friend = self.friends.read().await.get(&public_key).cloned();
+                let friend = self
+                    .nodestate
+                    .friends
+                    .read()
+                    .await
+                    .get(&public_key)
+                    .cloned();
 
                 if let Some(friend) = friend {
                     friend

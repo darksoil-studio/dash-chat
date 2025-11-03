@@ -67,12 +67,17 @@ pub type Orderer = PartialOrder<
 >;
 
 #[derive(Clone)]
+pub struct NodeState {
+    chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
+    friends: Arc<RwLock<HashMap<PK, Friend>>>,
+}
+
+#[derive(Clone)]
 pub struct Node {
     pub op_store: OpStore,
     pub ordering: Arc<RwLock<HashMap<Topic, Orderer>>>,
     // pub ordering_store: p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
     pub network: Network<Topic>,
-    chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
     author_store: AuthorStore<Topic>,
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
@@ -82,10 +87,11 @@ pub struct Node {
     space_dependencies: Arc<RwLock<HashMap<OperationId, p2panda_core::Hash>>>,
     config: NodeConfig,
     private_key: PrivateKey,
-    friends: Arc<RwLock<HashMap<PK, Friend>>>,
     notification_tx: Option<mpsc::Sender<Notification>>,
-    // // XXX: temporary hack
-    // ooo_buffer: Arc<RwLock<Vec<Operation<Extensions>>>>,
+
+    /// TODO: some of the stuff in here is only for testing.
+    /// The channel senders are needed but any stateful stuff should go.
+    nodestate: NodeState,
 }
 
 impl Node {
@@ -162,7 +168,6 @@ impl Node {
         // }
 
         let network = network_builder.build().await.context("spawn p2p network")?;
-        let chats = Arc::new(RwLock::new(HashMap::new()));
 
         let spaces_store = SpacesStore::new();
 
@@ -183,13 +188,15 @@ impl Node {
             author_store,
             spaces_store,
             network,
-            chats,
             manager: manager.clone(),
             space_dependencies: Arc::new(RwLock::new(HashMap::new())),
             config,
             private_key,
-            friends: Arc::new(RwLock::new(HashMap::new())),
             notification_tx,
+            nodestate: NodeState {
+                chats: Arc::new(RwLock::new(HashMap::new())),
+                friends: Arc::new(RwLock::new(HashMap::new())),
+            },
         };
 
         // // TODO: this doesn't seem to make a difference
@@ -243,8 +250,9 @@ impl Node {
         Ok(chat)
     }
 
+    #[cfg(feature = "testing")]
     pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
-        let groups = self.chats.read().await.keys().cloned().collect();
+        let groups = self.nodestate.chats.read().await.keys().cloned().collect();
         Ok(groups)
     }
 
@@ -293,8 +301,9 @@ impl Node {
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
+    #[cfg(feature = "testing")]
     pub async fn get_messages(&self, chat_id: ChatId) -> anyhow::Result<Vec<ChatMessage>> {
-        let chats = self.chats.read().await;
+        let chats = self.nodestate.chats.read().await;
         let chat = chats
             .get(&chat_id)
             .ok_or_else(|| anyhow!("Chat not found: {chat_id}"))?;
@@ -373,7 +382,7 @@ impl Node {
             .await?;
 
         // Store the friend
-        self.friends.write().await.insert(
+        self.nodestate.friends.write().await.insert(
             public_key.clone(),
             Friend {
                 // member: member.clone(),
@@ -391,15 +400,16 @@ impl Node {
         Ok(public_key)
     }
 
+    #[cfg(feature = "testing")]
     pub async fn get_friends(&self) -> anyhow::Result<Vec<PK>> {
-        let friends = self.friends.read().await;
+        let friends = self.nodestate.friends.read().await;
         Ok(friends.keys().cloned().collect())
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     pub async fn remove_friend(&self, public_key: PK) -> anyhow::Result<()> {
         // TODO: shutdown inbox task, etc.
-        self.friends.write().await.remove(&public_key);
+        self.nodestate.friends.write().await.remove(&public_key);
         Ok(())
     }
 

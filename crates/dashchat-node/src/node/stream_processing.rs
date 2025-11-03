@@ -29,7 +29,7 @@ impl Node {
         &self,
         pubkey: PK,
     ) -> anyhow::Result<tokio::sync::mpsc::Sender<ToNetwork>> {
-        if let Some(friend) = self.friends.read().await.get(&pubkey) {
+        if let Some(friend) = self.nodestate.friends.read().await.get(&pubkey) {
             return Ok(friend.network_tx.clone());
         }
 
@@ -38,7 +38,7 @@ impl Node {
     }
 
     pub(super) async fn initialize_group(&self, chat_id: ChatId) -> anyhow::Result<Chat> {
-        if let Some(chat_network) = self.chats.read().await.get(&chat_id) {
+        if let Some(chat_network) = self.nodestate.chats.read().await.get(&chat_id) {
             return Ok(chat_network.clone());
         }
 
@@ -49,7 +49,11 @@ impl Node {
         let network_tx = self.initialize_topic(chat_id.into()).await?;
 
         let chat = Chat::new(chat_id, network_tx);
-        self.chats.write().await.insert(chat_id, chat.clone());
+        self.nodestate
+            .chats
+            .write()
+            .await
+            .insert(chat_id, chat.clone());
 
         Ok(chat)
     }
@@ -295,7 +299,7 @@ impl Node {
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match (topic, &payload) {
             (Topic::Chat(chat_id), Some(Payload::SpaceControl(msgs))) => {
-                let mut chats = self.chats.write().await;
+                let mut chats = self.nodestate.chats.write().await;
                 let chat = chats.get_mut(&chat_id).unwrap();
                 tracing::info!(
                     hash = header.hash().alias(),
