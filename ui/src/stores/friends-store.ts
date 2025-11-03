@@ -1,5 +1,4 @@
 import type { User, UserId } from "./users-store";
-import type { AsyncSignal } from "../signals/async-computed";
 
 export type FriendRequestId = string;
 
@@ -10,7 +9,7 @@ export interface FriendsClient {
 	/// Friends
 
 	// Get all the current friends
-	allFriends(): AsyncSignal<Array<Friend>>;
+	// getAllFriends(): Promise<Array<Friend>>;
 
 	// Remove friend
 	removeFriend(friend: FriendId): Promise<void>;
@@ -18,7 +17,7 @@ export interface FriendsClient {
 	/// Friend Requests
 
 	// Get all the current friends
-	pendingFriendRequests(): AsyncSignal<Array<User>>;
+	// getPendingFriendRequests(): Promise<Array<User>>;
 
 	// Send friend request to the given user
 	sendFriendRequest(userId: UserId): Promise<void>;

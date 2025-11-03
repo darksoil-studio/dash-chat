@@ -1,4 +1,4 @@
-import type { UnsubscribeFn } from '../signals/relay';
+import { UnsubscribeFunction } from 'emittery';
 import type { SimplifiedOperation } from './simplified-types';
 import type { LogId, PublicKey, TopicId } from './types';
 
@@ -20,5 +20,7 @@ export interface LogsClient {
 			logId: LogId,
 			operation: SimplifiedOperation<any>,
 		) => void,
-	): UnsubscribeFn;
+	): UnsubscribeFunction;
 }
+
+

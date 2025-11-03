@@ -2,23 +2,7 @@ import { reactive } from 'signalium';
 
 import type { LogsStore } from '../p2panda/logs-store';
 import { type PublicKey, type TopicId } from '../p2panda/types';
-
-export type UserId = PublicKey;
-
-export interface User {
-	publicKeys: PublicKey[];
-	profile: Profile | undefined;
-}
-
-export interface Profile {
-	name: string;
-	avatar_src: string | undefined;
-}
-
-export interface IUsersClient {
-	// Sets the profile for this user
-	setProfile(profile: Profile): Promise<void>;
-}
+import { IUsersClient, Profile, User, UserId } from './users-client';
 
 export function userTopicFor(userId: UserId): TopicId {
 	return `${userId}`;
@@ -31,37 +15,18 @@ export class UsersStore {
 	) {}
 
 	me = reactive(async () => {
-		console.log('hay');
 		const myPubKey = await this.logsStore.myPubKey();
-		console.log('hay2');
-		console.log(myPubKey);
-		// if (myPubKey.status !== 'completed') return myPubKey;
 
 		const user = await this.users(myPubKey);
 		return user;
-		// if (myUser.status !== 'completed') return myUser;
-		// if (myUser.value) return myUser as AsyncResult<User>;
-		// else {
-		// 	return {
-		// 		status: 'completed',
-		// 		value: {
-		// 			profile: undefined,
-		// 			publicKeys: [myPubKey.value],
-		// 		},
-		// 	};
-		// }
 	});
 
 	users = reactive(async (userId: UserId) => {
-		console.log('haaa1');
 		const topicId = userTopicFor(userId);
 		const operations = await this.logsStore.logsForAllAuthors(
 			topicId,
-			'profile',
+			userId,
 		);
-		console.log('haaa3');
-
-		// if (operations.status !== 'completed') return operations;
 
 		const log = Object.values(operations)[0];
 
@@ -69,7 +34,6 @@ export class UsersStore {
 			(o1, o2) => o2.header.timestamp - o1.header.timestamp,
 		);
 		const lastOperation = descendantSortedOperations[0];
-		console.log(log);
 
 		if (!lastOperation || !lastOperation.body) {
 			return {
