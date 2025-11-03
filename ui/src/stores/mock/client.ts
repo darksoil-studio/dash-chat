@@ -1,5 +1,5 @@
 import { blake2b, blake2bHex } from 'blakejs';
-import Emittery from 'emittery';
+import Emittery, { type UnsubscribeFunction } from 'emittery';
 
 import type { LogsClient } from '../../p2panda/logs-client';
 import type {
@@ -14,7 +14,6 @@ import type {
 	PublicKey,
 	TopicId,
 } from '../../p2panda/types';
-import type { UnsubscribeFn } from '../../signals/relay';
 
 export function hash<T>(obj: T): Hash {
 	return blake2bHex(JSON.stringify(obj));
@@ -107,7 +106,7 @@ export class LocalStorageLogsClient implements LogsClient {
 			logId: LogId,
 			operation: SimplifiedOperation<any>,
 		) => void,
-	): UnsubscribeFn {
+	): UnsubscribeFunction {
 		return this.emitter.on('new-operation', event => {
 			handler(event.topicId, event.author, event.logId, event.operation);
 		});

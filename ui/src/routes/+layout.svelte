@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { UsersStore, type Profile } from '../stores/users-store';
-	import { useSignal } from '../signals/svelte-adaptor';
 	import { LogsStore } from '../p2panda/logs-store';
 	import { LocalStorageLogsClient } from '../stores/mock/client';
 	import { LocalStorageUsersClient } from '../stores/mock/users-client';
+	import {  useSignal } from '../stores/use-signal';
+	import { reactive, relay, signal } from 'signalium';
 
-	const myPubKey =`random`
+	const myPubKey = `random`;
 
 	const logsClient = new LocalStorageLogsClient(myPubKey);
 	const logsStore = new LogsStore(logsClient);
@@ -16,22 +17,37 @@
 	const usersStore = new UsersStore(logsStore, usersClient);
 	setContext('users-store', usersStore);
 
-	const me = usersStore.me;
-	me.subscribe(console.log)
+	const counter =reactive(()=>relay<number>(state => {
+		// state.value = 0;
+		console.log('hi')
 
-	setTimeout(()=> {
-		logsClient.create(myPubKey, "profile", {
-			name: `${Date.now()}`
-		} as Profile)
-	}, 5000)
+		const id = setInterval(
+			() => state.value = state.value != undefined ? state.value + 1 :0,
+			1000,
+		);
 
+		return () => clearInterval(id);
+	}));
+
+	const r = reactive(async ()=>counter())
+
+	const me = useSignal(r);
+	// const me = useSignal(usersStore.me);
+	// me.subscribe(v => console.log('aa', v));
+
+	// setTimeout(() => {
+	// 	logsClient.create(myPubKey, 'profile', {
+	// 		name: `${Date.now()}`,
+	// 	} as Profile);
+	// }, 5000);
 </script>
 
 <main class="container">
 	{#await $me}
-		<span>loading</span>
-		{:then me}
-		<p>{me?.profile?.name}</p>
+		<span>loading
+		</span>
+	{:then i} 
+		{i}
 	{/await}
 	<slot />
 </main>
