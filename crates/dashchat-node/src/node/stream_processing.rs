@@ -7,7 +7,6 @@ use p2panda_spaces::{
     traits::{AuthoredMessage, MessageStore},
     types::AuthGroupError,
 };
-use p2panda_store::OperationStore;
 use p2panda_stream::partial::operations::PartialOrder;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
@@ -33,7 +32,7 @@ impl Node {
             return Ok(friend.network_tx.clone());
         }
 
-        let network_tx = self.initialize_topic(pubkey.into()).await?;
+        let network_tx = self.initialize_topic(Topic::Inbox(pubkey)).await?;
         Ok(network_tx)
     }
 

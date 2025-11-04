@@ -24,7 +24,6 @@ use serde::{Deserialize, Serialize};
     PartialEq,
     PartialOrd,
     Ord,
-    derive_more::From,
     derive_more::Display,
 )]
 #[display("{:?}", self)]
@@ -41,6 +40,12 @@ impl TopicId for Topic {
             Topic::Chat(chat_id) => **chat_id,
             Topic::Inbox(public_key) => *public_key.as_bytes(),
         }
+    }
+}
+
+impl From<ChatId> for Topic {
+    fn from(chat_id: ChatId) -> Self {
+        Topic::Chat(chat_id)
     }
 }
 

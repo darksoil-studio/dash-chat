@@ -231,7 +231,7 @@ impl Node {
 
         let _header = self
             .author_operation(
-                chat_id.into(),
+                Topic::Chat(chat_id),
                 Payload::SpaceControl(msgs),
                 Some(&format!("create_group/space-control({})", chat_id.alias())),
             )
@@ -271,7 +271,7 @@ impl Node {
 
         let _header = self
             .author_operation(
-                pubkey.into(),
+                Topic::Inbox(pubkey),
                 Payload::Invitation(InvitationMessage::JoinGroup(chat_id)),
                 Some(&format!("add_member/invitation({})", chat_id.alias())),
             )
@@ -279,7 +279,7 @@ impl Node {
 
         let _header = self
             .author_operation(
-                chat_id.into(),
+                Topic::Chat(chat_id),
                 Payload::SpaceControl(msgs),
                 Some(&format!("add_member/space-control({})", chat_id.alias())),
             )
@@ -391,7 +391,7 @@ impl Node {
         );
 
         self.author_operation(
-            public_key.clone().into(),
+            Topic::Inbox(public_key.clone()),
             Payload::Invitation(InvitationMessage::Friend),
             Some(&format!("add_friend/invitation({})", public_key.alias())),
         )
