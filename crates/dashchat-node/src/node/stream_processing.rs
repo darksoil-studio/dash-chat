@@ -17,9 +17,8 @@ use super::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Notification {
+    pub header: Header<Extensions>,
     pub payload: Payload,
-    pub author: PK,
-    pub timestamp: u64,
 }
 
 impl Node {
@@ -257,9 +256,8 @@ impl Node {
         if let Some((notification_tx, payload)) = self.notification_tx.clone().zip(Some(payload)) {
             notification_tx
                 .send(Notification {
+                    header: header.clone(),
                     payload: payload.clone(),
-                    author: header.public_key.into(),
-                    timestamp: header.timestamp,
                 })
                 .await
                 .unwrap_or_else(|_| tracing::warn!("notification channel closed"));
