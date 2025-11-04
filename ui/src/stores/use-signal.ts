@@ -18,7 +18,8 @@ export function useSignal<T, Args extends unknown[]>(
 		// console.log('signal', s.addListenerLazy());
 		const version = (value as any)['value'];
 
-		// if (value instanceof ReactivePromise && value.value) return value.value;
+		if (value instanceof ReactivePromise && value.value !== undefined)
+			return value.value;
 		// if (value instanceof Promise) {
 		// 	const s = signal(value);
 
@@ -31,7 +32,6 @@ export function useSignal<T, Args extends unknown[]>(
 	return {
 		subscribe: set => {
 			const unsubs = w.addListener(() => {
-
 				const s = (w.value as any)['_signal'];
 				set(w.value as T);
 			});
@@ -43,23 +43,37 @@ export function useSignal<T, Args extends unknown[]>(
 	};
 }
 
-let count = signal(0);
+// const counter = reactive(() =>
+// 	relay<number>(state => {
+// 		console.log('relay');
+// 		state.value = 0;
 
-const getInnerLoader = reactive(async () => {
-  const v = count.value;
-  // await sleep(3000);
-  return v;
-});
+// 		const id = setInterval(() => state.value!++, 1000);
 
-const getOuterLoader = reactive(async () => {
-  const innerValue = await getInnerLoader();
+// 		return () => clearInterval(id);
+// 	}),
+// );
 
-  return innerValue + 1;
-});
+// const getInnerLoader = reactive(() => {
+// 	return counter();
+// });
 
-export const getText = reactive(() => {
-  const { isPending, value } = getOuterLoader();
+// const getOuterLoader = reactive(async () => {
+// 	const innerValue = await getInnerLoader();
 
-  return isPending ? 'Loading...' : value;
-});
+// 	return innerValue + 1;
+// });
 
+// export const getText = reactive(() => {
+// 	const { isPending, value } = getOuterLoader();
+
+// 	return isPending ? 'Loading...' : value;
+// });
+
+// // const w = watcher(() => {
+// // 	return getInnerLoader().value;
+// // });
+// // w.addListener(() => console.log('wat', w.value));
+
+// // useSignal(counter).subscribe(console.log)
+// useSignal(getOuterLoader).subscribe(console.log);

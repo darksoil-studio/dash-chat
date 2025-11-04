@@ -27,13 +27,13 @@ const config = {
 				// plugins: [],
 			},
 		}),
-		{
-			name: 'a',
-			markup: ({ content }) => {
-				console.log('hey', content);
-			},
-			script: ({ content }) => console.log('hey', content),
-		},
+		// {
+		// 	name: 'a',
+		// 	markup: ({ content }) => {
+		// 		console.log('hey', content);
+		// 	},
+		// 	script: ({ content }) => console.log('hey', content),
+		// },
 	],
 
 	kit: {

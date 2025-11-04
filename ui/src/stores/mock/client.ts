@@ -30,7 +30,6 @@ export class LocalStorageLogsClient implements LogsClient {
 
 	getItems() {
 		const items = { ...localStorage };
-		console.log('itesm', items)
 		return items;
 	}
 

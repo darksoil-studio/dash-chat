@@ -7,8 +7,8 @@
 	import { TauriLogsClient } from '../p2panda/tauri-logs-client';
 	import { UsersClient, type Profile } from '../stores/users-client';
 
-	// const logsClient = new TauriLogsClient();
-	const logsClient = new LocalStorageLogsClient('random');
+	const logsClient = new TauriLogsClient();
+	// const logsClient = new LocalStorageLogsClient('random');
 	const logsStore = new LogsStore(logsClient);
 
 	const usersClient = new UsersClient();
@@ -17,13 +17,12 @@
 	setContext('users-store', usersStore);
 
 	const me = useSignal(usersStore.me);
-	me.subscribe(v => console.log('hey',v))
 
-	setTimeout(() => {
-		logsClient.create("random", 'random', {
-			name: `${Date.now()}`,
-		} as Profile);
-	}, 5000);
+	// setTimeout(() => {
+	// 	logsClient.create("random", 'random', {
+	// 		name: `${Date.now()}`,
+	// 	} as Profile);
+	// }, 5000);
 </script>
 
 <main class="container">
