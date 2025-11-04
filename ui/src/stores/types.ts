@@ -1,5 +1,4 @@
-import type { UserId } from "./users-store";
-
+import type { UserId } from "./users-client";
 
 export type MessageId = string;
 

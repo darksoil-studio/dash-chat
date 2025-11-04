@@ -2,6 +2,7 @@ import {
 	type ReactiveFn,
 	ReactivePromise,
 	reactive,
+	relay,
 	signal,
 	watcher,
 } from 'signalium';
@@ -13,22 +14,26 @@ export function useSignal<T, Args extends unknown[]>(
 ): Readable<T> {
 	const w = watcher(() => {
 		const value = v(...args);
+		const s = (value as any)['_signal'];
+		// console.log('signal', s.addListenerLazy());
+		const version = (value as any)['value'];
 
-		if (value instanceof ReactivePromise && value.value) return value.value;
-		if (value instanceof Promise) {
-			const s = signal(value);
+		if (value instanceof ReactivePromise && value.value !== undefined)
+			return value.value;
+		// if (value instanceof Promise) {
+		// 	const s = signal(value);
 
-			value.then(v => (s.value = v));
+		// 	value.then(v => (s.value = v));
 
-			return s.value;
-		}
+		// 	return s.value;
+		// }
 		return value;
 	});
 	return {
 		subscribe: set => {
 			const unsubs = w.addListener(() => {
-				console.log('setting', v(...args));
-				set(w.value);
+				const s = (w.value as any)['_signal'];
+				set(w.value as T);
 			});
 
 			return () => {
@@ -38,36 +43,37 @@ export function useSignal<T, Args extends unknown[]>(
 	};
 }
 
-// export function useRelay<T, Args extends unknown[]>(
-// 	v: ReactiveFn<ReactivePromise<T>, Args>,
-// 	...args: Args
-// ): Readable<T> {
-// 	return {
-// 		subscribe: set => {
-// 			const w = watcher(() => v(...args).value);
-// 			const unsubs = w.addListener(() => {
-// 				set(v(...args) as T);
-// 			});
+// const counter = reactive(() =>
+// 	relay<number>(state => {
+// 		console.log('relay');
+// 		state.value = 0;
 
-// 			return () => {
-// 				unsubs();
-// 			};
-// 		},
-// 	};
-// }
+// 		const id = setInterval(() => state.value!++, 1000);
 
-// // export function useReactivePromise<T>(p: ReactivePromise<T>): Readable<T> {
-// // 	return {
-// // 		subscribe: set => {
-// // 			const w = watcher(() => v(...args));
-// // 			const unsubs = w.addListener(() => {
-// // 				console.log('setting', v(...args));
-// // 				set(v(...args) as T);
-// // 			});
+// 		return () => clearInterval(id);
+// 	}),
+// );
 
-// // 			return () => {
-// // 				unsubs();
-// // 			};
-// // 		},
-// // 	};
-// // }
+// const getInnerLoader = reactive(() => {
+// 	return counter();
+// });
+
+// const getOuterLoader = reactive(async () => {
+// 	const innerValue = await getInnerLoader();
+
+// 	return innerValue + 1;
+// });
+
+// export const getText = reactive(() => {
+// 	const { isPending, value } = getOuterLoader();
+
+// 	return isPending ? 'Loading...' : value;
+// });
+
+// // const w = watcher(() => {
+// // 	return getInnerLoader().value;
+// // });
+// // w.addListener(() => console.log('wat', w.value));
+
+// // useSignal(counter).subscribe(console.log)
+// useSignal(getOuterLoader).subscribe(console.log);

@@ -1,4 +1,4 @@
-import { reactive, relay } from 'signalium';
+import { reactive, ReactivePromise, relay } from 'signalium';
 
 import type { LogsClient } from './logs-client';
 import type { SimplifiedOperation } from './simplified-types';
@@ -11,7 +11,6 @@ export class LogsStore {
 
 	authorsForTopic = reactive((topicId: TopicId) =>
 		relay<PublicKey[]>(state => {
-			console.log('haii');
 			const fetchAuthors = async () => {
 				const authors = await this.logsClient.getAuthorsForTopic(topicId);
 				state.value = authors;
@@ -20,12 +19,10 @@ export class LogsStore {
 
 			const unsubs = this.logsClient.onNewOperation(
 				(operationTopicId, author, _logId) => {
-					console.log('newop', operationTopicId);
 					if (topicId !== operationTopicId) return;
 					const authors = state.value || [];
 					if (authors.includes(author)) return;
-					authors.push(author);
-					state.value = authors;
+					state.value = [...(state.value || []), author];
 				},
 			);
 
@@ -38,38 +35,34 @@ export class LogsStore {
 			const fetchLog = async () => {
 				const log = await this.logsClient.getLog(topicId, author, logId);
 				state.value = log;
+
 			};
 			fetchLog();
-			return {
-				deactivate: () =>
-					this.logsClient.onNewOperation(
-						(operationTopicId, operationAuthor, operationLogId, operation) => {
-							if (topicId !== operationTopicId) return;
-							if (author !== operationAuthor) return;
-							if (logId !== operationLogId) return;
-							const log = state.value || [];
-							log.push(operation);
-							state.value = log;
-						},
-					),
+
+			const unsubs = this.logsClient.onNewOperation(
+				(operationTopicId, operationAuthor, operationLogId, operation) => {
+					if (topicId !== operationTopicId) return;
+					if (author !== operationAuthor) return;
+					if (logId !== operationLogId) return;
+					state.value = [...(state.value || []), operation]
+				},
+			);
+			return ()=>{
+				unsubs()
 			};
 		}),
 	);
 
-	logsForAllAuthors = reactive(async (topicId: TopicId, logId: LogId) => {
-		console.log('b');
-		const authorsForTopic = await this.authorsForTopic(topicId);
-		console.log('b2');
+	logsForAllAuthors = reactive((topicId: TopicId, logId: LogId) => {
+		const authorsForTopic = this.authorsForTopic(topicId);
+		if (!authorsForTopic.isReady) return authorsForTopic;
 
 		const logsForAllAuthors: Record<PublicKey, SimplifiedOperation<any>[]> = {};
-
-		for (const author of authorsForTopic) {
-			const log = await this.logs(topicId, author, logId);
-			// if (log.status !== 'completed') return log;
-			logsForAllAuthors[author] = log;
+		for (const author of authorsForTopic.value) {
+			const log = this.logs(topicId, author, logId);
+			if (!log.isReady) return log;
+			logsForAllAuthors[author] = log.value;
 		}
-		return logsForAllAuthors;
+		return ReactivePromise.resolve(logsForAllAuthors);
 	});
 }
-
-// store.logs.get(chatId).get().get("messages")

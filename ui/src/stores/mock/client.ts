@@ -30,7 +30,6 @@ export class LocalStorageLogsClient implements LogsClient {
 
 	getItems() {
 		const items = { ...localStorage };
-		console.log('itesm', items)
 		return items;
 	}
 
@@ -88,8 +87,6 @@ export class LocalStorageLogsClient implements LogsClient {
 
 		const authorsLogKey = `${topicId}/authors/${this._myPubKey}`;
 		localStorage.setItem(authorsLogKey, this._myPubKey);
-
-		console.log('created', operation);
 
 		this.emitter.emit('new-operation', {
 			topicId,
