@@ -1,14 +1,11 @@
 use p2panda_core::cbor::{decode_cbor, encode_cbor};
 use p2panda_encryption::key_bundle::LongTermKeyBundle;
-use p2panda_net::ToNetwork;
 use p2panda_spaces::ActorId;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
 #[derive(Clone, Debug)]
-pub struct Friend {
-    pub network_tx: tokio::sync::mpsc::Sender<ToNetwork>,
-}
+pub struct Friend {}
 
 #[derive(Clone, Debug, Serialize, Deserialize, derive_more::From)]
 #[serde(into = "String", try_from = "String")]

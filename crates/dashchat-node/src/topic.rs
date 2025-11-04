@@ -22,6 +22,7 @@ use serde::{Deserialize, Serialize};
 pub enum Topic {
     Chat(ChatId),
     Inbox(PK),
+    Announcements(PK),
 }
 
 impl TopicId for Topic {
@@ -29,6 +30,7 @@ impl TopicId for Topic {
         match self {
             Topic::Chat(chat_id) => **chat_id,
             Topic::Inbox(public_key) => *public_key.as_bytes(),
+            Topic::Announcements(public_key) => *public_key.as_bytes(),
         }
     }
 }

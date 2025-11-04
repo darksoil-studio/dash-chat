@@ -89,6 +89,8 @@ pub struct Node {
     private_key: PrivateKey,
     notification_tx: Option<mpsc::Sender<Notification>>,
 
+    gossip: Arc<RwLock<HashMap<Topic, mpsc::Sender<ToNetwork>>>>,
+
     /// TODO: some of the stuff in here is only for testing.
     /// The channel senders are needed but any stateful stuff should go.
     nodestate: NodeState,
@@ -193,6 +195,7 @@ impl Node {
             config,
             private_key,
             notification_tx,
+            gossip: Arc::new(RwLock::new(HashMap::new())),
             nodestate: NodeState {
                 chats: Arc::new(RwLock::new(HashMap::new())),
                 friends: Arc::new(RwLock::new(HashMap::new())),
@@ -377,18 +380,8 @@ impl Node {
             .await
             .map_err(|e| anyhow!("Failed to register friend: {e:?}"))?;
 
-        let network_tx = self
-            .initialize_inbox(PK::try_from(member.id()).expect("actor id is public key"))
+        self.initialize_inbox(PK::try_from(member.id()).expect("actor id is public key"))
             .await?;
-
-        // Store the friend
-        self.nodestate.friends.write().await.insert(
-            public_key.clone(),
-            Friend {
-                // member: member.clone(),
-                network_tx,
-            },
-        );
 
         self.author_operation(
             Topic::Inbox(public_key.clone()),

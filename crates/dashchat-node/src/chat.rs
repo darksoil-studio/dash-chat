@@ -17,9 +17,6 @@ use crate::{ShortId, testing::AliasedId};
 pub struct Chat {
     pub(crate) id: ChatId,
 
-    /// The gossip overlay sender for this chat.
-    pub(crate) sender: tokio::sync::mpsc::Sender<ToNetwork>,
-
     /// The processed decrypted messages for this chat.
     pub(crate) messages: BTreeSet<ChatMessage>,
 
@@ -28,10 +25,9 @@ pub struct Chat {
 }
 
 impl Chat {
-    pub fn new(id: ChatId, sender: tokio::sync::mpsc::Sender<ToNetwork>) -> Self {
+    pub fn new(id: ChatId) -> Self {
         Self {
             id,
-            sender,
             messages: BTreeSet::new(),
             removed: false,
         }

@@ -150,45 +150,16 @@ impl Node {
               // }
         }
 
-        // Do gossip broadcast for newly created operations
-        match topic {
-            Topic::Chat(chat_id) => {
-                let chat_network = self
-                    .nodestate
-                    .chats
-                    .read()
-                    .await
-                    .get(&chat_id)
-                    .cloned()
-                    .ok_or(anyhow!("Chat not found"))?;
-
-                chat_network
-                    .sender
+        match self.gossip.read().await.get(&topic) {
+            Some(gossip) => {
+                gossip
                     .send(ToNetwork::Message {
                         bytes: encode_gossip_message(&header, body.as_ref())?,
                     })
                     .await?;
             }
-            Topic::Inbox(public_key) => {
-                let friend = self
-                    .nodestate
-                    .friends
-                    .read()
-                    .await
-                    .get(&public_key)
-                    .cloned();
-
-                if let Some(friend) = friend {
-                    friend
-                        .network_tx
-                        .send(ToNetwork::Message {
-                            bytes: encode_gossip_message(&header, body.as_ref())?,
-                        })
-                        .await?;
-                    tracing::debug!(%public_key, "Friend found, gossiping invite");
-                } else {
-                    tracing::warn!(%public_key, "Friend not found, skipping gossip");
-                }
+            None => {
+                tracing::error!(?topic, "no gossip channel found for topic");
             }
         }
 

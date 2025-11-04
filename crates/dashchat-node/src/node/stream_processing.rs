@@ -24,30 +24,25 @@ pub struct Notification {
 }
 
 impl Node {
-    pub(super) async fn initialize_inbox(
-        &self,
-        pubkey: PK,
-    ) -> anyhow::Result<tokio::sync::mpsc::Sender<ToNetwork>> {
-        if let Some(friend) = self.nodestate.friends.read().await.get(&pubkey) {
-            return Ok(friend.network_tx.clone());
-        }
+    pub(super) async fn initialize_announcements(&self, pubkey: PK) -> anyhow::Result<()> {
+        let topic = Topic::Announcements(pubkey);
+        self.author_store
+            .add_author(topic.clone(), self.public_key())
+            .await;
 
-        let network_tx = self.initialize_topic(Topic::Inbox(pubkey)).await?;
-        Ok(network_tx)
+        self.initialize_topic(topic).await
+    }
+
+    pub(super) async fn initialize_inbox(&self, pubkey: PK) -> anyhow::Result<()> {
+        self.initialize_topic(Topic::Inbox(pubkey)).await
     }
 
     pub(super) async fn initialize_group(&self, chat_id: ChatId) -> anyhow::Result<Chat> {
-        if let Some(chat_network) = self.nodestate.chats.read().await.get(&chat_id) {
-            return Ok(chat_network.clone());
-        }
-
         self.author_store
             .add_author(chat_id.into(), self.public_key())
             .await;
 
-        let network_tx = self.initialize_topic(chat_id.into()).await?;
-
-        let chat = Chat::new(chat_id, network_tx);
+        let chat = Chat::new(chat_id);
         self.nodestate
             .chats
             .write()
@@ -63,7 +58,11 @@ impl Node {
     /// This must be called:
     /// - when creating a new group chat
     /// - when initializing the node, for each existing group chat
-    pub(super) async fn initialize_topic(&self, topic: Topic) -> anyhow::Result<Sender<ToNetwork>> {
+    pub(super) async fn initialize_topic(&self, topic: Topic) -> anyhow::Result<()> {
+        if self.gossip.read().await.contains_key(&topic) {
+            return Ok(());
+        }
+
         let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.clone()).await?;
         tracing::debug!(?topic, "subscribed to topic");
 
@@ -132,9 +131,9 @@ impl Node {
         let author_store = self.author_store.clone();
         self.spawn_stream_process_loop(stream, author_store, topic.clone());
 
-        // gossip_ready.await?;
+        self.gossip.write().await.insert(topic, network_tx);
 
-        Ok(network_tx)
+        Ok(())
     }
 
     fn spawn_stream_process_loop(
