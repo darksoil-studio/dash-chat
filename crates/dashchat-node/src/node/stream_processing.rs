@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 use tokio_stream::Stream;
 
-use crate::{operation::InvitationMessage, spaces::ArgType, testing::AliasedId};
+use crate::{chat::InboxId, operation::InvitationMessage, spaces::ArgType, testing::AliasedId};
 
 use super::*;
 
@@ -25,28 +25,52 @@ pub struct Notification {
 }
 
 impl Node {
-    pub(super) async fn initialize_inbox(
+    pub(super) async fn initialize_announcements(
         &self,
         pubkey: PK,
     ) -> anyhow::Result<tokio::sync::mpsc::Sender<ToNetwork>> {
-        if let Some(friend) = self.nodestate.friends.read().await.get(&pubkey) {
-            return Ok(friend.network_tx.clone());
-        }
-
-        let network_tx = self.initialize_topic(pubkey.into()).await?;
+        let network_tx = self
+            .initialize_topic(Topic::Announcements(pubkey), true)
+            .await?;
         Ok(network_tx)
     }
 
-    pub(super) async fn initialize_group(&self, chat_id: ChatId) -> anyhow::Result<Chat> {
+    pub(super) async fn initialize_friend_topics(&self, pubkey: PK) -> anyhow::Result<Friend> {
+        if let Some(friend) = self.nodestate.friends.read().await.get(&pubkey) {
+            return Ok(friend.clone());
+        }
+
+        // Subscribe to the friend's announcements.
+        let _ = self
+            .initialize_topic(Topic::Announcements(pubkey), false)
+            .await?;
+
+        // Subscribe to my own inbox, which my friend can publish to.
+        let _ = self
+            .initialize_topic(
+                Topic::Inbox(GroupId::from_keys([self.public_key(), pubkey])),
+                false,
+            )
+            .await?;
+
+        // Subscribe to my friend's inbox, which only I can publish to.
+        let inbox_tx = self
+            .initialize_topic(
+                Topic::Inbox(GroupId::from_keys([pubkey, self.public_key()])),
+                true,
+            )
+            .await?;
+
+        Ok(Friend { inbox_tx })
+    }
+
+    pub(super) async fn initialize_chat_topic(&self, chat_id: GroupId) -> anyhow::Result<Chat> {
         if let Some(chat_network) = self.nodestate.chats.read().await.get(&chat_id) {
             return Ok(chat_network.clone());
         }
 
-        self.author_store
-            .add_author(chat_id.into(), self.public_key())
-            .await;
-
-        let network_tx = self.initialize_topic(chat_id.into()).await?;
+        let topic = Topic::Direct(chat_id);
+        let network_tx = self.initialize_topic(topic, true).await?;
 
         let chat = Chat::new(chat_id, network_tx);
         self.nodestate
@@ -64,7 +88,15 @@ impl Node {
     /// This must be called:
     /// - when creating a new group chat
     /// - when initializing the node, for each existing group chat
-    pub(super) async fn initialize_topic(&self, topic: Topic) -> anyhow::Result<Sender<ToNetwork>> {
+    pub(super) async fn initialize_topic(
+        &self,
+        topic: Topic,
+        is_author: bool,
+    ) -> anyhow::Result<Sender<ToNetwork>> {
+        if is_author {
+            self.author_store.add_author(topic, self.public_key()).await;
+        }
+
         let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.clone()).await?;
         tracing::debug!(?topic, "subscribed to topic");
 
@@ -298,7 +330,7 @@ impl Node {
     ) -> anyhow::Result<()> {
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match (topic, &payload) {
-            (Topic::Chat(chat_id), Some(Payload::SpaceControl(msgs))) => {
+            (Topic::Direct(chat_id), Some(Payload::SpaceControl(msgs))) => {
                 let mut chats = self.nodestate.chats.write().await;
                 let chat = chats.get_mut(&chat_id).unwrap();
                 tracing::info!(
@@ -386,7 +418,7 @@ impl Node {
     async fn process_chat_event(
         &self,
         chat: &mut Chat,
-        event: Event<ChatId, ()>,
+        event: Event<GroupId, ()>,
     ) -> anyhow::Result<()> {
         match event {
             Event::Application { data, .. } => {

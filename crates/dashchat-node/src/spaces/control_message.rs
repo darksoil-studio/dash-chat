@@ -2,7 +2,7 @@ use p2panda_core::cbor::{EncodeError, encode_cbor};
 use p2panda_spaces::OperationId;
 use serde::{Deserialize, Serialize};
 
-pub type SpacesArgs = p2panda_spaces::SpacesArgs<ChatId, ()>;
+pub type SpacesArgs = p2panda_spaces::SpacesArgs<BaseId, ()>;
 
 use super::*;
 
@@ -24,7 +24,7 @@ impl p2panda_spaces::traits::AuthoredMessage for SpaceControlMessage {
     }
 }
 
-impl p2panda_spaces::traits::SpacesMessage<ChatId, ()> for SpaceControlMessage {
+impl p2panda_spaces::traits::SpacesMessage<BaseId, ()> for SpaceControlMessage {
     fn args(&self) -> &SpacesArgs {
         &self.spaces_args
     }

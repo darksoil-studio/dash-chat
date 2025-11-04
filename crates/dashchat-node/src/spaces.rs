@@ -9,14 +9,14 @@ use p2panda_spaces::manager::Manager;
 use p2panda_spaces::test_utils::TestKeyStore;
 use p2panda_spaces::types::StrongRemoveResolver;
 
-use crate::chat::ChatId;
+use crate::chat::BaseId;
 use crate::stores::SpacesStore;
 pub use forge::DashForge;
 
 pub type TestConditions = ();
 
 pub type DashSpace = p2panda_spaces::space::Space<
-    ChatId,
+    BaseId,
     SpacesStore,
     TestKeyStore,
     DashForge,
@@ -26,7 +26,7 @@ pub type DashSpace = p2panda_spaces::space::Space<
 >;
 
 pub type DashManager = Manager<
-    ChatId,
+    BaseId,
     SpacesStore,
     TestKeyStore,
     DashForge,

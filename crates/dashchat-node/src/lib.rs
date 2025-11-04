@@ -11,12 +11,13 @@ mod util;
 
 pub mod polestar;
 
+pub mod profile;
 #[cfg(feature = "testing")]
 pub mod testing;
 
 use p2panda_core::IdentityError;
 
-pub use chat::{ChatId, ChatMessage, ChatMessageContent};
+pub use chat::{ChatMessage, ChatMessageContent, GroupId};
 pub use node::{Node, NodeConfig, Notification};
 pub use operation::{InvitationMessage, Payload};
 pub use p2panda_core::PrivateKey;
@@ -24,6 +25,8 @@ pub use p2panda_spaces::ActorId;
 use p2panda_spaces::OperationId;
 
 use crate::testing::AliasedId;
+
+pub use iroh_blobs::Hash as BlobHash;
 
 #[derive(
     Copy,

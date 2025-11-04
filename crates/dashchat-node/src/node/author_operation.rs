@@ -152,7 +152,7 @@ impl Node {
 
         // Do gossip broadcast for newly created operations
         match topic {
-            Topic::Chat(chat_id) => {
+            Topic::Direct(chat_id) => {
                 let chat_network = self
                     .nodestate
                     .chats
@@ -180,7 +180,7 @@ impl Node {
 
                 if let Some(friend) = friend {
                     friend
-                        .network_tx
+                        .inbox_tx
                         .send(ToNetwork::Message {
                             bytes: encode_gossip_message(&header, body.as_ref())?,
                         })

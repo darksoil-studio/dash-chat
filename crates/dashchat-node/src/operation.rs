@@ -2,7 +2,7 @@ use p2panda_core::cbor::{DecodeError, EncodeError, decode_cbor, encode_cbor};
 use p2panda_core::{Body, Extension, PruneFlag};
 use serde::{Deserialize, Serialize};
 
-use crate::chat::ChatId;
+use crate::chat::GroupId;
 use crate::network::LogId;
 use crate::spaces::SpaceControlMessage;
 use crate::{AsBody, Cbor};
@@ -15,7 +15,7 @@ pub struct Extensions {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum InvitationMessage {
     /// Instructs the recipient to subscribe to the group chat topic.
-    JoinGroup(ChatId),
+    JoinGroup(GroupId),
 
     /// Invites the recipient to add the sender as a friend.
     Friend,

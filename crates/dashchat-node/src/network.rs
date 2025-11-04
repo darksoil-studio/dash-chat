@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use p2panda_sync::log_sync::TopicLogMap;
 
 use crate::PK;
-use crate::chat::ChatId;
+use crate::chat::{DirectId, GroupId, InboxId};
 use p2panda_net::TopicId;
 use p2panda_sync::TopicQuery;
 use serde::{Deserialize, Serialize};
@@ -24,13 +24,29 @@ use serde::{Deserialize, Serialize};
     PartialEq,
     PartialOrd,
     Ord,
-    derive_more::From,
     derive_more::Display,
 )]
 #[display("{:?}", self)]
 pub enum Topic {
-    Chat(ChatId),
-    Inbox(PK),
+    /// Announcements include changes to the node's profile (name+avatar).
+    ///
+    /// This is backed by a Space where the Author is the only Manager,
+    /// and anyone else added has only Read access.
+    Announcements(PK),
+
+    /// The inbox is used for things like friend requests and group invitations
+    /// from people not yet my friend.
+    ///
+    /// This is backed by a Space where the Author is the only Manager,
+    /// and anyone else added has only Read access.
+    Inbox(InboxId),
+
+    /// A symmetric topic for communication between exactly two keys.
+    /// Used for direct messages as well as friend requests and group invitations.
+    Direct(DirectId),
+
+    /// A group chat ()
+    Group(GroupId),
 }
 
 impl TopicQuery for Topic {}
@@ -38,8 +54,10 @@ impl TopicQuery for Topic {}
 impl TopicId for Topic {
     fn id(&self) -> [u8; 32] {
         match self {
-            Topic::Chat(chat_id) => **chat_id,
-            Topic::Inbox(public_key) => *public_key.as_bytes(),
+            Topic::Announcements(public_key) => *public_key.as_bytes(),
+            Topic::Inbox(chat_id) => ***chat_id,
+            Topic::Direct(chat_id) => ***chat_id,
+            Topic::Group(chat_id) => ***chat_id,
         }
     }
 }

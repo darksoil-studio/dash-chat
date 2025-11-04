@@ -70,7 +70,7 @@ impl AliasedId for p2panda_spaces::OperationId {
     }
 }
 
-impl AliasedId for crate::chat::ChatId {
+impl AliasedId for crate::chat::BaseId {
     const SHOW_SHORT_ID: bool = false;
 
     fn as_bytes(&self) -> &[u8] {

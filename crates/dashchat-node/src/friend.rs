@@ -5,20 +5,36 @@ use p2panda_spaces::ActorId;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
+use crate::chat::InboxId;
+
 #[derive(Clone, Debug)]
 pub struct Friend {
-    pub network_tx: tokio::sync::mpsc::Sender<ToNetwork>,
+    /// Send a message to a friend's inbox.
+    pub inbox_tx: tokio::sync::mpsc::Sender<ToNetwork>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, derive_more::From, derive_more::Deref)]
+#[serde(into = "String", try_from = "String")]
+pub struct FriendCode {
+    #[deref]
+    pub member: MemberCode,
+    salt: [u8; 32],
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, derive_more::From)]
-#[serde(into = "String", try_from = "String")]
 pub struct MemberCode(LongTermKeyBundle, ActorId);
 
-impl MemberCode {
-    pub fn new(key_bundle: LongTermKeyBundle, actor_id: ActorId) -> Self {
-        Self(key_bundle, actor_id)
+impl FriendCode {
+    pub fn new_salted(key_bundle: LongTermKeyBundle, actor_id: ActorId) -> Self {
+        let salt = rand::random();
+        Self {
+            member: MemberCode(key_bundle, actor_id),
+            salt,
+        }
     }
+}
 
+impl MemberCode {
     pub fn id(&self) -> ActorId {
         self.1
     }
@@ -28,19 +44,19 @@ impl MemberCode {
     }
 }
 
-impl std::fmt::Display for MemberCode {
+impl std::fmt::Display for FriendCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let bytes = encode_cbor(&(self.0.clone(), self.1)).map_err(|_| std::fmt::Error)?;
+        let bytes = encode_cbor(&self).map_err(|_| std::fmt::Error)?;
         write!(f, "{}", hex::encode(bytes))
     }
 }
 
-impl FromStr for MemberCode {
+impl FromStr for FriendCode {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let bytes = hex::decode(s)?;
-        let (long_term_key_bundle, actor_id) = decode_cbor(bytes.as_slice())?;
-        Ok(Self(long_term_key_bundle, actor_id))
+        let friend_code = decode_cbor(bytes.as_slice())?;
+        Ok(friend_code)
     }
 }
 
@@ -56,15 +72,15 @@ impl From<MemberCode> for p2panda_spaces::Member {
     }
 }
 
-impl From<MemberCode> for String {
-    fn from(code: MemberCode) -> Self {
+impl From<FriendCode> for String {
+    fn from(code: FriendCode) -> Self {
         code.to_string()
     }
 }
 
-impl TryFrom<String> for MemberCode {
+impl TryFrom<String> for FriendCode {
     type Error = anyhow::Error;
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(MemberCode::from_str(&value).unwrap())
+        Ok(FriendCode::from_str(&value).unwrap())
     }
 }

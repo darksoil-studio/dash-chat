@@ -1,10 +1,10 @@
-use crate::chat::ChatId;
+use crate::chat::BaseId;
 use crate::spaces::SpaceControlMessage;
 
-// Conversion traits between ChatId and TestSpaceId
-impl From<ChatId> for p2panda_spaces::test_utils::TestSpaceId {
-    fn from(chat_id: ChatId) -> Self {
-        // Convert the first 8 bytes of the ChatId to a usize
+// Conversion traits between BaseId and TestSpaceId
+impl From<BaseId> for p2panda_spaces::test_utils::TestSpaceId {
+    fn from(chat_id: BaseId) -> Self {
+        // Convert the first 8 bytes of the BaseId to a usize
         let bytes = chat_id.0;
         let mut result = 0u64;
         for (i, &byte) in bytes.iter().enumerate().take(8) {
@@ -14,15 +14,15 @@ impl From<ChatId> for p2panda_spaces::test_utils::TestSpaceId {
     }
 }
 
-impl From<p2panda_spaces::test_utils::TestSpaceId> for ChatId {
+impl From<p2panda_spaces::test_utils::TestSpaceId> for BaseId {
     fn from(test_id: p2panda_spaces::test_utils::TestSpaceId) -> Self {
-        // Convert usize back to ChatId by padding with zeros
+        // Convert usize back to BaseId by padding with zeros
         let mut bytes = [0u8; 32];
         let id_bytes = test_id.to_le_bytes();
         bytes[..id_bytes.len()].copy_from_slice(&id_bytes);
-        ChatId(bytes)
+        BaseId(bytes)
     }
 }
 
 pub type SpacesStore =
-    p2panda_spaces::test_utils::store::MemoryStore<ChatId, SpaceControlMessage, ()>;
+    p2panda_spaces::test_utils::store::MemoryStore<BaseId, SpaceControlMessage, ()>;

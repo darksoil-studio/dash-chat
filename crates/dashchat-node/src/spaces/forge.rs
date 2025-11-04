@@ -2,7 +2,7 @@ use p2panda_core::PublicKey;
 use p2panda_spaces::traits::{AuthoredMessage, MessageStore};
 
 use crate::{
-    chat::ChatId,
+    chat::BaseId,
     spaces::{SpaceControlMessage, SpacesArgs},
     stores::SpacesStore,
     timestamp_now,
@@ -14,7 +14,7 @@ pub struct DashForge {
     pub store: SpacesStore,
 }
 
-impl p2panda_spaces::traits::Forge<ChatId, SpaceControlMessage, ()> for DashForge {
+impl p2panda_spaces::traits::Forge<BaseId, SpaceControlMessage, ()> for DashForge {
     type Error = anyhow::Error;
 
     fn public_key(&self) -> PublicKey {

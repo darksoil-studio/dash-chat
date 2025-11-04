@@ -14,8 +14,10 @@ serde_json = "1"
 
 anyhow = "1.0.95"
 async-trait = "0.1.85"
+blake3 = "1.8"
 derive_more = { version = "1.0.0", features = ["full"] }
 futures = "0.3"
+iroh-blobs = "0.34"
 # p2panda-core = "0.3.1"
 # p2panda-discovery = { version = "0.3.1", features = ["mdns"] }
 # p2panda-net = "0.3.1"

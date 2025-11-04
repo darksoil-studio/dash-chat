@@ -29,7 +29,7 @@ async fn test_group_2() {
     alice.add_friend(bobbi.me().await.unwrap()).await.unwrap();
     bobbi.add_friend(alice.me().await.unwrap()).await.unwrap();
 
-    let chat_id = ChatId::random().aliased("onlychat");
+    let chat_id = GroupId::random().aliased("onlychat");
     let _chat = alice.create_group(chat_id).await.unwrap();
 
     alice.add_member(chat_id, bobbi.public_key()).await.unwrap();
@@ -126,7 +126,7 @@ async fn test_group_3() {
     // carol.add_friend(alice.me().await.unwrap()).await.unwrap();
 
     println!("\n==> alice creates group\n");
-    let chat_id = ChatId::random().aliased("onlychat");
+    let chat_id = GroupId::random().aliased("onlychat");
     let _chat = alice.create_group(chat_id).await.unwrap();
     println!("\n==> alice adds bobbi\n");
     alice.add_member(chat_id, bobbi.public_key()).await.unwrap();
