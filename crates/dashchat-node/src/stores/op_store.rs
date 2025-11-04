@@ -43,7 +43,7 @@ impl OpStore {
             .map(|(h, (t, header, body, _))| {
                 let desc = match body
                     .clone()
-                    .map(|body| Payload::try_from_body(body).unwrap())
+                    .map(|body| Payload::try_from_body(&body).unwrap())
                 {
                     Some(Payload::Chat(msgs)) => {
                         format!(

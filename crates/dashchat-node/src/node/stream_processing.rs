@@ -217,7 +217,7 @@ impl Node {
         author_store.add_author(topic, header.public_key).await;
         tracing::debug!(?topic, "adding author");
 
-        let payload = body.map(|body| Payload::try_from_body(body)).transpose()?;
+        let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
 
         match payload.as_ref() {
             Some(Payload::Chat(ChatPayload(msgs))) => {
@@ -339,6 +339,7 @@ impl Node {
                     }
                 }
             }
+
             (Topic::Inbox(public_key), Some(Payload::Inbox(invitation))) => {
                 if public_key != self.public_key() {
                     // not for me, ignore
@@ -355,6 +356,11 @@ impl Node {
                     }
                 }
             }
+
+            (Topic::Announcements(_), Some(Payload::Announcements(_))) => {
+                // Nothing to do.
+            }
+
             (topic, payload) => {
                 tracing::error!(?topic, ?payload, "unhandled topic/payload");
             }

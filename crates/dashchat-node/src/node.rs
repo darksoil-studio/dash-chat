@@ -31,7 +31,8 @@ use crate::chat::{Chat, ChatId};
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::friend::{Friend, MemberCode};
 use crate::operation::{
-    ChatPayload, Extensions, InboxPayload, Payload, decode_gossip_message, encode_gossip_message,
+    AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
+    decode_gossip_message, encode_gossip_message,
 };
 use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
@@ -258,6 +259,17 @@ impl Node {
     pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
         let groups = self.nodestate.chats.read().await.keys().cloned().collect();
         Ok(groups)
+    }
+
+    pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
+        self.author_operation(
+            Topic::Announcements(self.public_key()),
+            Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
+            Some(&format!("set_profile({})", self.public_key().alias())),
+        )
+        .await?;
+
+        Ok(())
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]

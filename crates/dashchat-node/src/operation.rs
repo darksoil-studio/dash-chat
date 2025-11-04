@@ -14,8 +14,8 @@ pub struct Extensions {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Profile {
-    name: String,
-    avatar: Option<String>,
+    pub name: String,
+    pub avatar: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

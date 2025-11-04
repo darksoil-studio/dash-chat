@@ -9,6 +9,9 @@ mod stores;
 mod topic;
 mod util;
 
+#[cfg(test)]
+mod tests;
+
 pub mod polestar;
 
 #[cfg(feature = "testing")]
@@ -86,7 +89,7 @@ pub trait AsBody: Cbor {
         Ok(p2panda_core::Body::new(self.as_bytes()?.as_slice()))
     }
 
-    fn try_from_body(body: p2panda_core::Body) -> Result<Self, p2panda_core::cbor::DecodeError> {
+    fn try_from_body(body: &p2panda_core::Body) -> Result<Self, p2panda_core::cbor::DecodeError> {
         Self::from_bytes(body.to_bytes().as_slice())
     }
 }
