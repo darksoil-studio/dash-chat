@@ -23,43 +23,25 @@ pub struct Notification {
 }
 
 impl Node {
-    pub(super) async fn initialize_announcements(&self, pubkey: PK) -> anyhow::Result<()> {
-        let topic = Topic::Announcements(pubkey);
-        self.author_store
-            .add_author(topic.clone(), self.public_key())
-            .await;
-
-        self.initialize_topic(topic).await
-    }
-
-    pub(super) async fn initialize_inbox(&self, pubkey: PK) -> anyhow::Result<()> {
-        self.initialize_topic(Topic::Inbox(pubkey)).await
-    }
-
-    pub(super) async fn initialize_group(&self, chat_id: ChatId) -> anyhow::Result<Chat> {
-        self.author_store
-            .add_author(chat_id.into(), self.public_key())
-            .await;
-
-        let chat = Chat::new(chat_id);
-        self.nodestate
-            .chats
-            .write()
-            .await
-            .insert(chat_id, chat.clone());
-
-        Ok(chat)
-    }
-
     /// Internal function to start the necessary tasks for processing group chat
     /// network activity.
     ///
     /// This must be called:
     /// - when creating a new group chat
     /// - when initializing the node, for each existing group chat
-    pub(super) async fn initialize_topic(&self, topic: Topic) -> anyhow::Result<()> {
+    pub(super) async fn initialize_topic(
+        &self,
+        topic: Topic,
+        is_author: bool,
+    ) -> anyhow::Result<()> {
         if self.gossip.read().await.contains_key(&topic) {
             return Ok(());
+        }
+
+        if is_author {
+            self.author_store
+                .add_author(topic.clone(), self.public_key())
+                .await;
         }
 
         let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.clone()).await?;
@@ -297,7 +279,7 @@ impl Node {
         match (topic, &payload) {
             (Topic::Chat(chat_id), Some(Payload::Chat(msgs))) => {
                 let mut chats = self.nodestate.chats.write().await;
-                let chat = chats.get_mut(&chat_id).unwrap();
+                let chat = chats.entry(chat_id).or_insert(Chat::new(chat_id));
                 tracing::info!(
                     hash = header.hash().alias(),
                     messages = ?msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>(),

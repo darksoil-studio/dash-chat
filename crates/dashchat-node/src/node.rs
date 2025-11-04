@@ -205,7 +205,10 @@ impl Node {
         // // TODO: this doesn't seem to make a difference
         // manager.register_member(&node.me().await?.into()).await?;
 
-        node.initialize_inbox(public_key).await?;
+        node.initialize_topic(Topic::Announcements(public_key), true)
+            .await?;
+        node.initialize_topic(Topic::Inbox(public_key), false)
+            .await?;
 
         // TODO: locally store list of groups and initialize them when the node starts
 
@@ -219,8 +222,8 @@ impl Node {
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn create_group(&self, chat_id: ChatId) -> anyhow::Result<Chat> {
-        let chat = self.initialize_group(chat_id).await?;
+    pub async fn create_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
+        self.initialize_topic(Topic::Chat(chat_id), true).await?;
 
         let (_space, msgs, _event) = self
             .manager
@@ -240,17 +243,15 @@ impl Node {
             )
             .await?;
 
-        Ok(chat)
+        Ok(())
     }
 
     /// "Joining" a chat means subscribing to messages for that chat.
     /// This needs to be accompanied by being added as a member of the chat Space by an existing member
     /// -- you're not fully a member until someone adds you.
     #[tracing::instrument(skip_all, parent = None, fields(me = ?self.public_key()))]
-    pub async fn join_group(&self, chat_id: ChatId) -> anyhow::Result<Chat> {
-        let chat = self.initialize_group(chat_id).await?;
-
-        Ok(chat)
+    pub async fn join_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
+        self.initialize_topic(Topic::Chat(chat_id), true).await
     }
 
     #[cfg(feature = "testing")]
@@ -380,7 +381,9 @@ impl Node {
             .await
             .map_err(|e| anyhow!("Failed to register friend: {e:?}"))?;
 
-        self.initialize_inbox(PK::try_from(member.id()).expect("actor id is public key"))
+        self.initialize_topic(Topic::Announcements(public_key.clone()), false)
+            .await?;
+        self.initialize_topic(Topic::Inbox(public_key), true)
             .await?;
 
         self.author_operation(
