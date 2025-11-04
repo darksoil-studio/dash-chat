@@ -7,11 +7,28 @@ mod menu;
 mod push_notifications;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
+pub async fn run() {
     std::env::set_var("WASM_LOG", "debug");
 
+    let private_key = dashchat_node::PrivateKey::new();
+    let config = dashchat_node::NodeConfig::default();
+    let (notification_tx, mut notification_rx) = tokio::sync::mpsc::channel(100);
+    let node = dashchat_node::Node::new(private_key, config, Some(notification_tx))
+        .await
+        .expect("Failed to create node");
+
+    tokio::spawn(async move {
+        while let Some(notification) = notification_rx.recv().await {
+            // TODO: trigger new operation handler
+            println!("Received notification: {:?}", notification);
+        }
+    });
+
     let mut builder = tauri::Builder::default()
-        // .invoke_handler(tauri::generate_handler![logs::get_log])
+        .invoke_handler(tauri::generate_handler![
+            commands::my_pub_key,
+            commands::logs::get_log,
+        ])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
@@ -23,6 +40,7 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
+        .manage(node)
         .setup(move |app| {
             #[cfg(mobile)]
             {
@@ -83,4 +101,3 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-

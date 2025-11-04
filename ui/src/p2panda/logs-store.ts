@@ -5,7 +5,7 @@ import type { SimplifiedOperation } from './simplified-types';
 import type { LogId, PublicKey, TopicId } from './types';
 
 export class LogsStore {
-	constructor(protected logsClient: LogsClient) {}
+	constructor(protected logsClient: LogsClient) { }
 
 	myPubKey = reactive(() => this.logsClient.myPubKey());
 
@@ -18,9 +18,10 @@ export class LogsStore {
 			fetchAuthors();
 
 			const unsubs = this.logsClient.onNewOperation(
-				(operationTopicId, author, _logId) => {
+				(operationTopicId, operation) => {
 					if (topicId !== operationTopicId) return;
 					const authors = state.value || [];
+					const author = operation.header.public_key;
 					if (authors.includes(author)) return;
 					state.value = [...(state.value || []), author];
 				},
@@ -30,36 +31,34 @@ export class LogsStore {
 		}),
 	);
 
-	logs = reactive((topicId: TopicId, author: PublicKey, logId: LogId) =>
+	logs = reactive((topicId: TopicId, author: PublicKey) =>
 		relay<SimplifiedOperation<any>[]>(state => {
 			const fetchLog = async () => {
-				const log = await this.logsClient.getLog(topicId, author, logId);
+				const log = await this.logsClient.getLog(topicId, author);
 				state.value = log;
 
 			};
 			fetchLog();
 
 			const unsubs = this.logsClient.onNewOperation(
-				(operationTopicId, operationAuthor, operationLogId, operation) => {
+				(operationTopicId, operation) => {
 					if (topicId !== operationTopicId) return;
-					if (author !== operationAuthor) return;
-					if (logId !== operationLogId) return;
 					state.value = [...(state.value || []), operation]
 				},
 			);
-			return ()=>{
+			return () => {
 				unsubs()
 			};
 		}),
 	);
 
-	logsForAllAuthors = reactive((topicId: TopicId, logId: LogId) => {
+	logsForAllAuthors = reactive((topicId: TopicId) => {
 		const authorsForTopic = this.authorsForTopic(topicId);
 		if (!authorsForTopic.isReady) return authorsForTopic;
 
 		const logsForAllAuthors: Record<PublicKey, SimplifiedOperation<any>[]> = {};
 		for (const author of authorsForTopic.value) {
-			const log = this.logs(topicId, author, logId);
+			const log = this.logs(topicId, author);
 			if (!log.isReady) return log;
 			logsForAllAuthors[author] = log.value;
 		}

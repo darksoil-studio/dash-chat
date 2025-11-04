@@ -10,14 +10,11 @@ export interface LogsClient {
 	getLog(
 		topicId: TopicId,
 		author: PublicKey,
-		logId: LogId,
 	): Promise<SimplifiedOperation<any>[]>;
 
 	onNewOperation(
 		handler: (
 			topicId: TopicId,
-			author: PublicKey,
-			logId: LogId,
 			operation: SimplifiedOperation<any>,
 		) => void,
 	): UnsubscribeFunction;

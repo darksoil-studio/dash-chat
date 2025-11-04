@@ -13,7 +13,7 @@ export class UsersStore {
 	constructor(
 		protected logsStore: LogsStore,
 		protected usersClient: IUsersClient,
-	) {}
+	) { }
 
 	me = reactive(() => {
 		const myPubKey = this.logsStore.myPubKey();
@@ -24,7 +24,7 @@ export class UsersStore {
 
 	users = reactive((userId: UserId) => {
 		const topicId = userTopicFor(userId);
-		const operations = this.logsStore.logsForAllAuthors(topicId, userId);
+		const operations = this.logsStore.logsForAllAuthors(topicId);
 		if (!operations.isReady) return operations as any as ReactivePromise<User | void>;
 
 		const log: SimplifiedOperation<any>[] = Object.values(operations.value)[0];

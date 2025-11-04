@@ -11,38 +11,38 @@ import type {
 	PublicKey,
 	TopicId,
 } from './types';
+import { invoke } from '@tauri-apps/api/core';
 
 export class TauriLogsClient implements LogsClient {
-	constructor() {}
+	constructor() { }
 
-	async myPubKey() {
-		// TODO: implement with invoke
-		return 'unimplemented';
+	async myPubKey(): Promise<PublicKey> {
+		return await invoke("my_pub_key")
 	}
 
 	async getLog(
 		topicId: TopicId,
 		author: PublicKey,
-		logId: LogId,
 	): Promise<SimplifiedOperation<any>[]> {
-		// TODO: implement with invoke
-		return [];
+		const log: any[] = await invoke("get_log", { topicId, author });
+		console.log("LOG", log);
+		return []
+		// return log.map(([header, body]) => ({
+		// 	// TODO
+		// }));
 	}
 
 	async getAuthorsForTopic(topicId: TopicId): Promise<PublicKey[]> {
-		// TODO: implement with invoke
-		return [];
+		return await invoke("get_authors", { topicId })
 	}
 
 	onNewOperation(
 		handler: (
 			topicId: TopicId,
-			author: PublicKey,
-			logId: LogId,
 			operation: SimplifiedOperation<any>,
 		) => void,
 	): UnsubscribeFunction {
 		// TODO: implement with event listener
-		return () => {};
+		return () => { };
 	}
 }

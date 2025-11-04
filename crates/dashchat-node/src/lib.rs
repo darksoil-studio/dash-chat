@@ -21,10 +21,11 @@ use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
 pub use node::{Node, NodeConfig, Notification};
-pub use operation::InboxPayload;
+pub use operation::*;
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 use p2panda_spaces::OperationId;
+pub use topic::Topic;
 
 use crate::testing::AliasedId;
 

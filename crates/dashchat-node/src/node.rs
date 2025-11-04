@@ -7,7 +7,7 @@ use std::sync::Arc;
 use anyhow::{Context, Result, anyhow};
 use p2panda_auth::Access;
 use p2panda_core::cbor::encode_cbor;
-use p2panda_core::{Header, PrivateKey};
+use p2panda_core::{Body, Header, PrivateKey};
 use p2panda_discovery::Discovery;
 use p2panda_discovery::mdns::LocalDiscovery;
 use p2panda_encryption::Rng;
@@ -214,6 +214,30 @@ impl Node {
         // TODO: locally store list of groups and initialize them when the node starts
 
         Ok(node)
+    }
+
+    pub async fn get_log(
+        &self,
+        topic_id: Topic,
+        author: PK,
+    ) -> anyhow::Result<Vec<(Header<Extensions>, Option<Body>)>> {
+        match self.op_store.get_log(&author, &topic_id, None).await? {
+            Some(log) => Ok(log),
+            None => {
+                tracing::warn!("No log found for topic {topic_id} and author {author}");
+                Ok(vec![])
+            }
+        }
+    }
+
+    pub async fn get_authors(&self, topic_id: Topic) -> anyhow::Result<Vec<String>> {
+        match self.author_store.authors(&topic_id).await {
+            Some(authors) => Ok(authors.into_iter().map(|a| a.to_string()).collect()),
+            None => {
+                tracing::warn!("No authors found for topic {topic_id}");
+                Ok(vec![])
+            }
+        }
     }
 
     pub async fn me(&self) -> anyhow::Result<MemberCode> {

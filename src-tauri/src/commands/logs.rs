@@ -1,7 +1,16 @@
+use dashchat_node::{Header, Node, Payload, Topic, PK};
+use p2panda_core::{Body, PublicKey};
+use tauri::State;
 
-// pub struct Node;
-
-// #[tauri::command]
-// pub fn get_log(topic_id: Vec<u8>, author: PublicKey, node: State<'_, Node>) -> Result<Vec<Operation>,String> {
-	
-// }
+#[tauri::command]
+pub async fn get_log(
+    topic_id: Topic,
+    author: PK,
+    node: State<'_, Node>,
+) -> Result<Vec<(Header, Option<Body>)>, String> {
+    let log = node
+        .get_log(topic_id, author)
+        .await
+        .map_err(|e| format!("Failed to get log: {e:?}"))?;
+    Ok(log)
+}

@@ -36,9 +36,8 @@ export class LocalStorageLogsClient implements LogsClient {
 	async getLog(
 		topicId: TopicId,
 		author: PublicKey,
-		logId: LogId,
 	): Promise<SimplifiedOperation<any>[]> {
-		const logKey = `${topicId}/${author}/${logId}`;
+		const logKey = `${topicId}/${author}`;
 		const items = this.getItems();
 
 		const operations = Object.entries(items).filter(([key, value]) =>
@@ -59,8 +58,8 @@ export class LocalStorageLogsClient implements LogsClient {
 		return operations.map(([k, v]) => v);
 	}
 
-	async create<T>(topicId: TopicId, logId: LogId, body: T) {
-		const log = await this.getLog(topicId, this._myPubKey, logId);
+	async create<T>(topicId: TopicId, body: T) {
+		const log = await this.getLog(topicId, this._myPubKey);
 		const descendantOperations = log.sort(
 			(o1, o2) => o2.header.timestamp - o1.header.timestamp,
 		);
@@ -82,7 +81,7 @@ export class LocalStorageLogsClient implements LogsClient {
 			header,
 		};
 
-		const logKey = `${topicId}/${this._myPubKey}/${logId}/${header.seq_num}`;
+		const logKey = `${topicId}/${this._myPubKey}/${header.seq_num}`;
 		localStorage.setItem(logKey, JSON.stringify(operation));
 
 		const authorsLogKey = `${topicId}/authors/${this._myPubKey}`;
@@ -91,7 +90,6 @@ export class LocalStorageLogsClient implements LogsClient {
 		this.emitter.emit('new-operation', {
 			topicId,
 			author: this._myPubKey,
-			logId,
 			operation,
 		});
 	}
@@ -99,13 +97,11 @@ export class LocalStorageLogsClient implements LogsClient {
 	onNewOperation(
 		handler: (
 			topicId: TopicId,
-			author: PublicKey,
-			logId: LogId,
 			operation: SimplifiedOperation<any>,
 		) => void,
 	): UnsubscribeFunction {
 		return this.emitter.on('new-operation', event => {
-			handler(event.topicId, event.author, event.logId, event.operation);
+			handler(event.topicId, event.operation);
 		});
 	}
 }
