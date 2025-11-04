@@ -4,7 +4,7 @@ use p2panda_auth::Access;
 use p2panda_net::ResyncConfiguration;
 
 use crate::{
-    network::Topic,
+    topic::Topic,
     testing::{AliasedId, *},
     *,
 };

@@ -2,7 +2,7 @@
 
 mod chat;
 mod friend;
-mod network;
+mod topic;
 mod node;
 mod operation;
 mod spaces;

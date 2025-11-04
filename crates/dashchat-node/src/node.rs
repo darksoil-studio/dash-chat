@@ -30,13 +30,13 @@ use tracing::Instrument;
 use crate::chat::{Chat, ChatId};
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::friend::{Friend, MemberCode};
-use crate::network::{AuthorStore, LogId, Topic};
 use crate::operation::{
     Extensions, InvitationMessage, Payload, decode_gossip_message, encode_gossip_message,
 };
 use crate::spaces::{DashForge, DashManager, DashSpace};
-use crate::stores::{OpStore, SpacesStore};
+use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::{AliasedId, alias_space_messages};
+use crate::topic::{LogId, Topic};
 use crate::{AsBody, Cbor, PK, timestamp_now};
 
 pub use stream_processing::Notification;

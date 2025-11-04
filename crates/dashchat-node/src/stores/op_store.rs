@@ -8,7 +8,7 @@ use p2panda_core::{Body, Hash, Header, PublicKey, RawOperation};
 use p2panda_store::{LogStore, MemoryStore, OperationStore};
 
 use crate::{
-    network::{LogId, Topic},
+    topic::{LogId, Topic},
     operation::Extensions,
     testing::AliasedId,
     *,

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::network::Topic;
+use crate::topic::Topic;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Action {

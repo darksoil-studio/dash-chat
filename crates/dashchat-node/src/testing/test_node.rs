@@ -8,9 +8,9 @@ use tokio::sync::mpsc::Receiver;
 
 use crate::{
     NodeConfig, Notification, ShortId,
-    network::Topic,
     node::Node,
     testing::{AliasedId, introduce},
+    topic::Topic,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
