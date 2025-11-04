@@ -8,24 +8,33 @@ import { sveltePreprocess } from 'svelte-preprocess';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: sveltePreprocess({
-		babel: {
-			presets: [
-				[
-					'@babel/preset-env',
-					{
-						loose: true,
-						modules: false,
-						targets: {
-							esmodules: true,
-						},
-					},
+	preprocess: [
+		sveltePreprocess({
+			babel: {
+				presets: [
+					// [
+					// 	'@babel/preset-env',
+					// 	{
+					// 		loose: true,
+					// 		modules: false,
+					// 		targets: {
+					// 			esmodules: true,
+					// 		},
+					// 	},
+					// ],
+					signaliumPreset(),
 				],
-				signaliumPreset(),
-			],
-			plugins: [],
+				// plugins: [],
+			},
+		}),
+		{
+			name: 'a',
+			markup: ({ content }) => {
+				console.log('hey', content);
+			},
+			script: ({ content }) => console.log('hey', content),
 		},
-	}),
+	],
 
 	kit: {
 		adapter: adapter({

@@ -1,4 +1,4 @@
-import { UnsubscribeFunction } from 'emittery';
+import type { UnsubscribeFunction } from 'emittery';
 import type { SimplifiedOperation } from './simplified-types';
 import type { LogId, PublicKey, TopicId } from './types';
 

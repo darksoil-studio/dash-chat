@@ -89,8 +89,6 @@ export class LocalStorageLogsClient implements LogsClient {
 		const authorsLogKey = `${topicId}/authors/${this._myPubKey}`;
 		localStorage.setItem(authorsLogKey, this._myPubKey);
 
-		console.log('created', operation);
-
 		this.emitter.emit('new-operation', {
 			topicId,
 			author: this._myPubKey,
