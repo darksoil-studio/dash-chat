@@ -4,8 +4,9 @@ use p2panda_auth::Access;
 use p2panda_net::ResyncConfiguration;
 
 use crate::{
-    topic::Topic,
+    operation::Payload,
     testing::{AliasedId, *},
+    topic::Topic,
     *,
 };
 
@@ -36,7 +37,7 @@ async fn test_group_2() {
 
     bobbi_rx
         .watch_for(Duration::from_secs(5), |n| {
-            matches!(n.payload, Payload::Invitation(InvitationMessage::Friend))
+            matches!(n.payload, Payload::Inbox(InboxPayload::Friend))
         })
         .await
         .unwrap();
@@ -45,7 +46,7 @@ async fn test_group_2() {
         .watch_for(Duration::from_secs(5), |n| {
             matches!(
                 n.payload,
-                Payload::Invitation(InvitationMessage::JoinGroup(id)) if id == chat_id
+                Payload::Inbox(InboxPayload::JoinGroup(id)) if id == chat_id
             )
         })
         .await

@@ -8,9 +8,9 @@ use p2panda_core::{Body, Hash, Header, PublicKey, RawOperation};
 use p2panda_store::{LogStore, MemoryStore, OperationStore};
 
 use crate::{
-    topic::{LogId, Topic},
-    operation::Extensions,
+    operation::{Extensions, Payload},
     testing::AliasedId,
+    topic::{LogId, Topic},
     *,
 };
 
@@ -45,13 +45,14 @@ impl OpStore {
                     .clone()
                     .map(|body| Payload::try_from_body(body).unwrap())
                 {
-                    Some(Payload::SpaceControl(msgs)) => {
+                    Some(Payload::Chat(msgs)) => {
                         format!(
                             "{:?}",
                             msgs.iter().map(|m| m.arg_type()).collect::<Vec<_>>()
                         )
                     }
-                    Some(Payload::Invitation(invitation)) => format!("{:?}", invitation),
+                    Some(Payload::Inbox(invitation)) => format!("{:?}", invitation),
+                    Some(Payload::Announcements(announcements)) => format!("{:?}", announcements),
                     None => "_".to_string(),
                 };
                 if topics.len() == 1 {

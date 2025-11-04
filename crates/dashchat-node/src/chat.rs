@@ -8,7 +8,6 @@ mod tests;
 
 use std::{collections::BTreeSet, convert::Infallible, str::FromStr};
 
-use p2panda_net::ToNetwork;
 use serde::{Deserialize, Serialize};
 
 use crate::{ShortId, testing::AliasedId};

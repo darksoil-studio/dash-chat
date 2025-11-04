@@ -2,7 +2,7 @@ use p2panda_core::{Hash, Operation};
 use p2panda_spaces::{OperationId, traits::AuthoredMessage};
 use p2panda_stream::operation::IngestResult;
 
-use crate::{AsBody, operation::Payload, testing::AliasedId};
+use crate::{AsBody, testing::AliasedId};
 use crate::{polestar as p, timestamp_now};
 
 use super::*;
@@ -31,11 +31,11 @@ impl Node {
     ) -> Result<Header<Extensions>, anyhow::Error> {
         let mut sd = self.space_dependencies.write().await;
         let (ids, space_deps): (Vec<OperationId>, Vec<Hash>) = match &payload {
-            Payload::SpaceControl(msgs) => {
+            Payload::Chat(msgs) => {
                 let ids = msgs.iter().map(|msg| msg.id()).collect::<Vec<_>>();
                 let deps = msgs
-                    .iter()
-                    .flat_map(|msg| {
+                .iter()
+                .flat_map(|msg| {
                         tracing::debug!(
                             id = msg.id().alias(),
                             argtype = ?msg.arg_type(),
@@ -64,7 +64,8 @@ impl Node {
                     .collect();
                 (ids, deps)
             }
-            Payload::Invitation(_) => (vec![], vec![]),
+            Payload::Announcements(_) => (vec![], vec![]),
+            Payload::Inbox(_) => (vec![], vec![]),
         };
 
         deps.extend(space_deps.into_iter());
@@ -85,10 +86,9 @@ impl Node {
 
         {
             let space_msgs = match &payload {
-                Payload::SpaceControl(msgs) => {
-                    msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>()
-                }
-                Payload::Invitation(_) => vec![],
+                Payload::Chat(msgs) => msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>(),
+                Payload::Inbox(_) => vec![],
+                Payload::Announcements(_) => vec![],
             };
             let pk = PK::from(header.public_key);
             tracing::info!(

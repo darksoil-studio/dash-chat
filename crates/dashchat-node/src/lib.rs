@@ -2,11 +2,11 @@
 
 mod chat;
 mod friend;
-mod topic;
 mod node;
 mod operation;
 mod spaces;
 mod stores;
+mod topic;
 mod util;
 
 pub mod polestar;
@@ -18,7 +18,7 @@ use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
 pub use node::{Node, NodeConfig, Notification};
-pub use operation::{InvitationMessage, Payload};
+pub use operation::InboxPayload;
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 use p2panda_spaces::OperationId;

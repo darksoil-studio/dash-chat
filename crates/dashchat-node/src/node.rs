@@ -31,7 +31,7 @@ use crate::chat::{Chat, ChatId};
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::friend::{Friend, MemberCode};
 use crate::operation::{
-    Extensions, InvitationMessage, Payload, decode_gossip_message, encode_gossip_message,
+    ChatPayload, Extensions, InboxPayload, Payload, decode_gossip_message, encode_gossip_message,
 };
 use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
@@ -235,7 +235,7 @@ impl Node {
         let _header = self
             .author_operation(
                 Topic::Chat(chat_id),
-                Payload::SpaceControl(msgs),
+                Payload::Chat(msgs.into()),
                 Some(&format!("create_group/space-control({})", chat_id.alias())),
             )
             .await?;
@@ -275,7 +275,7 @@ impl Node {
         let _header = self
             .author_operation(
                 Topic::Inbox(pubkey),
-                Payload::Invitation(InvitationMessage::JoinGroup(chat_id)),
+                Payload::Inbox(InboxPayload::JoinGroup(chat_id)),
                 Some(&format!("add_member/invitation({})", chat_id.alias())),
             )
             .await?;
@@ -283,7 +283,7 @@ impl Node {
         let _header = self
             .author_operation(
                 Topic::Chat(chat_id),
-                Payload::SpaceControl(msgs),
+                Payload::Chat(ChatPayload::from(msgs)),
                 Some(&format!("add_member/space-control({})", chat_id.alias())),
             )
             .await?;
@@ -347,7 +347,7 @@ impl Node {
         let header = self
             .author_operation(
                 topic,
-                Payload::SpaceControl(vec![encrypted]),
+                Payload::Chat(vec![encrypted].into()),
                 Some(&format!(
                     "send_message/encrypted(chat={}, msg={})",
                     chat_id.alias(),
@@ -385,7 +385,7 @@ impl Node {
 
         self.author_operation(
             Topic::Inbox(public_key.clone()),
-            Payload::Invitation(InvitationMessage::Friend),
+            Payload::Inbox(InboxPayload::Friend),
             Some(&format!("add_friend/invitation({})", public_key.alias())),
         )
         .await?;

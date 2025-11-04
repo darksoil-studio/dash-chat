@@ -3,8 +3,8 @@ use p2panda_core::{Body, Extension, PruneFlag};
 use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
-use crate::topic::LogId;
 use crate::spaces::SpaceControlMessage;
+use crate::topic::LogId;
 use crate::{AsBody, Cbor};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -13,7 +13,18 @@ pub struct Extensions {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum InvitationMessage {
+pub struct Profile {
+    name: String,
+    avatar: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AnnouncementsPayload {
+    SetProfile(Profile),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum InboxPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
     JoinGroup(ChatId),
 
@@ -23,9 +34,13 @@ pub enum InvitationMessage {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Payload {
-    SpaceControl(Vec<SpaceControlMessage>),
-    Invitation(InvitationMessage),
+    Announcements(AnnouncementsPayload),
+    Inbox(InboxPayload),
+    Chat(ChatPayload),
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize, derive_more::Deref, derive_more::From)]
+pub struct ChatPayload(pub Vec<SpaceControlMessage>);
 
 impl Cbor for Payload {}
 impl AsBody for Payload {}

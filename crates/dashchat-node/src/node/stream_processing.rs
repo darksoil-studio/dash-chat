@@ -9,10 +9,9 @@ use p2panda_spaces::{
 };
 use p2panda_stream::partial::operations::PartialOrder;
 use serde::{Deserialize, Serialize};
-use tokio::sync::mpsc::Sender;
 use tokio_stream::Stream;
 
-use crate::{operation::InvitationMessage, spaces::ArgType, testing::AliasedId};
+use crate::{operation::InboxPayload, spaces::ArgType, testing::AliasedId};
 
 use super::*;
 
@@ -239,7 +238,7 @@ impl Node {
         let payload = body.map(|body| Payload::try_from_body(body)).transpose()?;
 
         match payload.as_ref() {
-            Some(Payload::SpaceControl(msgs)) => {
+            Some(Payload::Chat(ChatPayload(msgs))) => {
                 let mut sd = self.space_dependencies.write().await;
                 for msg in msgs {
                     sd.insert(msg.id(), hash.clone());
@@ -296,7 +295,7 @@ impl Node {
     ) -> anyhow::Result<()> {
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match (topic, &payload) {
-            (Topic::Chat(chat_id), Some(Payload::SpaceControl(msgs))) => {
+            (Topic::Chat(chat_id), Some(Payload::Chat(msgs))) => {
                 let mut chats = self.nodestate.chats.write().await;
                 let chat = chats.get_mut(&chat_id).unwrap();
                 tracing::info!(
@@ -304,7 +303,7 @@ impl Node {
                     messages = ?msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>(),
                     "processing space msgs"
                 );
-                for msg in msgs {
+                for msg in msgs.iter() {
                     // While authoring, all message types other than Application
                     // are already processed
                     if is_author && msg.arg_type() != ArgType::Application {
@@ -358,18 +357,18 @@ impl Node {
                     }
                 }
             }
-            (Topic::Inbox(public_key), Some(Payload::Invitation(invitation))) => {
+            (Topic::Inbox(public_key), Some(Payload::Inbox(invitation))) => {
                 if public_key != self.public_key() {
                     // not for me, ignore
                     return Ok(());
                 }
                 tracing::debug!(?invitation, "received invitation message");
                 match invitation {
-                    InvitationMessage::JoinGroup(chat_id) => {
+                    InboxPayload::JoinGroup(chat_id) => {
                         self.join_group(*chat_id).await?;
                         // TODO: maybe close down the chat tasks if we are kicked out?
                     }
-                    InvitationMessage::Friend => {
+                    InboxPayload::Friend => {
                         tracing::debug!("received friend invitation from: {:?}", header.public_key);
                     }
                 }
