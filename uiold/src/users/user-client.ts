@@ -17,7 +17,7 @@ export interface User {
 
 export interface Profile {
 	name: string;
-	avatar_src: string | undefined;
+	avatar: string | undefined;
 }
 
 export interface UsersClient {

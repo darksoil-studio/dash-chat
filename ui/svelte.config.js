@@ -3,7 +3,6 @@
 // See: https://svelte.dev/docs/kit/single-page-apps
 // See: https://v2.tauri.app/start/frontend/sveltekit/ for more info
 import adapter from '@sveltejs/adapter-static';
-import { signaliumPreset } from 'signalium/transform';
 import { sveltePreprocess } from 'svelte-preprocess';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -22,7 +21,6 @@ const config = {
 					// 		},
 					// 	},
 					// ],
-					signaliumPreset(),
 				],
 				// plugins: [],
 			},

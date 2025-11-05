@@ -1,4 +1,4 @@
-import type { User, UserId } from "./users-store";
+import { User, UserId } from "./users-client";
 
 export type FriendRequestId = string;
 

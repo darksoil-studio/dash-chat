@@ -7,7 +7,7 @@ use std::sync::Arc;
 use anyhow::{Context, Result, anyhow};
 use p2panda_auth::Access;
 use p2panda_core::cbor::encode_cbor;
-use p2panda_core::{Body, Header, PrivateKey};
+use p2panda_core::{Body, Header, PrivateKey, PublicKey};
 use p2panda_discovery::Discovery;
 use p2panda_discovery::mdns::LocalDiscovery;
 use p2panda_encryption::Rng;
@@ -15,6 +15,7 @@ use p2panda_encryption::crypto::x25519::SecretKey;
 use p2panda_net::config::GossipConfig;
 use p2panda_net::{
     FromNetwork, Network, NetworkBuilder, ResyncConfiguration, SyncConfiguration, ToNetwork,
+    TopicId,
 };
 use p2panda_spaces::OperationId;
 use p2panda_spaces::event::Event;
@@ -37,7 +38,7 @@ use crate::operation::{
 use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::{AliasedId, alias_space_messages};
-use crate::topic::{LogId, Topic};
+use crate::topic::{DashChatTopicId, LogId, Topic};
 use crate::{AsBody, Cbor, PK, timestamp_now};
 
 pub use stream_processing::Notification;
@@ -78,8 +79,8 @@ pub struct Node {
     pub op_store: OpStore,
     pub ordering: Arc<RwLock<HashMap<Topic, Orderer>>>,
     // pub ordering_store: p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
-    pub network: Network<Topic>,
-    author_store: AuthorStore<Topic>,
+    pub network: Network<LogId>,
+    author_store: AuthorStore<LogId>,
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
     manager: DashManager,
@@ -114,11 +115,11 @@ impl Node {
         let mdns = LocalDiscovery::new();
 
         let op_store = MemoryStore::<LogId, Extensions>::new();
-        let author_store = AuthorStore::new();
+        let author_store: AuthorStore<DashChatTopicId> = AuthorStore::new();
 
         // TODO: unnecessary
         author_store
-            .add_author(Topic::Inbox(public_key.clone()), public_key)
+            .add_author(Topic::Inbox(public_key.clone()).into(), public_key)
             .await;
 
         // let relay_url = RELAY_ENDPOINT.parse()?;
@@ -136,14 +137,14 @@ impl Node {
                     while let Some(Ok(peer)) = new_peers.next().await {
                         let pubkey = PK::from_bytes(peer.node_addr.node_id.as_bytes()).unwrap();
                         if author_store
-                            .authors(&Topic::Inbox(pubkey.clone()))
+                            .authors(&Topic::Inbox(pubkey.clone()).into())
                             .await
                             .map(|authors| !authors.contains(&me))
                             .unwrap_or(true)
                         {
                             tracing::debug!("new peer: {}", pubkey);
                             author_store
-                                .add_author(Topic::Inbox(pubkey.clone()), me)
+                                .add_author(Topic::Inbox(pubkey.clone()).into(), me)
                                 .await;
                         }
                     }
@@ -218,24 +219,27 @@ impl Node {
 
     pub async fn get_log(
         &self,
-        topic_id: Topic,
-        author: PK,
+        topic_id: LogId,
+        author: PublicKey,
     ) -> anyhow::Result<Vec<(Header<Extensions>, Option<Body>)>> {
         match self.op_store.get_log(&author, &topic_id, None).await? {
             Some(log) => Ok(log),
             None => {
-                tracing::warn!("No log found for topic {topic_id} and author {author}");
+                tracing::warn!("No log found for topic {topic_id:?} and author {author}");
                 Ok(vec![])
             }
         }
     }
 
-    pub async fn get_authors(&self, topic_id: Topic) -> anyhow::Result<Vec<String>> {
+    pub async fn get_authors(
+        &self,
+        topic_id: LogId,
+    ) -> anyhow::Result<std::collections::HashSet<PublicKey>> {
         match self.author_store.authors(&topic_id).await {
-            Some(authors) => Ok(authors.into_iter().map(|a| a.to_string()).collect()),
+            Some(authors) => Ok(authors.into_iter().map(|a| a.into()).collect()),
             None => {
-                tracing::warn!("No authors found for topic {topic_id}");
-                Ok(vec![])
+                tracing::warn!("No authors found for topic {topic_id:?}");
+                Ok(Default::default())
             }
         }
     }
@@ -287,7 +291,7 @@ impl Node {
 
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
         self.author_operation(
-            Topic::Announcements(self.public_key()),
+            Topic::Announcements(self.public_key().into()),
             Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
             Some(&format!("set_profile({})", self.public_key().alias())),
         )
@@ -371,7 +375,7 @@ impl Node {
         // NOTE: duplication of timestamp and author
         let message = ChatMessage {
             content: message,
-            author: self.public_key(),
+            author: self.public_key().into(),
             timestamp: timestamp_now(),
         };
         let encrypted = space.publish(&encode_cbor(&message.clone())?).await?;
@@ -396,8 +400,8 @@ impl Node {
         Ok((message, header))
     }
 
-    pub fn public_key(&self) -> PK {
-        self.private_key.public_key().into()
+    pub fn public_key(&self) -> PublicKey {
+        self.private_key.public_key()
     }
 
     /// Store someone as a friend, and:

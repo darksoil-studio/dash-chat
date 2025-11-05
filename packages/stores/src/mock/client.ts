@@ -1,11 +1,11 @@
 import { blake2b, blake2bHex } from 'blakejs';
 import Emittery, { type UnsubscribeFunction } from 'emittery';
 
-import type { LogsClient } from '../../p2panda/logs-client';
+import type { LogsClient } from './../p2panda/logs-client';
 import type {
 	SimplifiedHeader,
 	SimplifiedOperation,
-} from '../../p2panda/simplified-types';
+} from './../p2panda/simplified-types';
 import type {
 	Hash,
 	Header,
@@ -13,7 +13,7 @@ import type {
 	Operation,
 	PublicKey,
 	TopicId,
-} from '../../p2panda/types';
+} from './../p2panda/types';
 
 export function hash<T>(obj: T): Hash {
 	return blake2bHex(JSON.stringify(obj));
@@ -22,7 +22,7 @@ export function hash<T>(obj: T): Hash {
 export class LocalStorageLogsClient implements LogsClient {
 	emitter = new Emittery();
 
-	constructor(protected _myPubKey: PublicKey) { }
+	constructor(protected _myPubKey: PublicKey) {}
 
 	async myPubKey() {
 		return this._myPubKey;
@@ -71,6 +71,7 @@ export class LocalStorageLogsClient implements LogsClient {
 			public_key: this._myPubKey,
 			seq_num: lastOperation ? lastOperation.header.seq_num + 1 : 0,
 			timestamp: Date.now() * 1000,
+			topic_id: topicId
 		};
 
 		const headerHash = hash(header);
@@ -95,10 +96,7 @@ export class LocalStorageLogsClient implements LogsClient {
 	}
 
 	onNewOperation(
-		handler: (
-			topicId: TopicId,
-			operation: SimplifiedOperation<any>,
-		) => void,
+		handler: (topicId: TopicId, operation: SimplifiedOperation<any>) => void,
 	): UnsubscribeFunction {
 		return this.emitter.on('new-operation', event => {
 			handler(event.topicId, event.operation);

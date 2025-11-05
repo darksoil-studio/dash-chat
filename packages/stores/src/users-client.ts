@@ -1,4 +1,6 @@
-import { type PublicKey, type TopicId } from '../p2panda/types';
+import { invoke } from '@tauri-apps/api/core';
+
+import { type PublicKey, type TopicId } from './p2panda/types';
 
 export type UserId = PublicKey;
 
@@ -18,9 +20,10 @@ export interface IUsersClient {
 }
 
 export class UsersClient implements IUsersClient {
-	constructor() {}
 
 	async setProfile(profile: Profile): Promise<void> {
-		// TODO: call the `set_profile` command
+		return invoke('set_profile', {
+			profile,
+		});
 	}
 }

@@ -1,3 +1,7 @@
+use tauri::{Emitter, Manager};
+
+use crate::commands::logs::{SimplifiedHeader, SimplifiedOperation, simplify};
+
 mod commands;
 mod utils;
 
@@ -7,32 +11,17 @@ mod menu;
 mod push_notifications;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub async fn run() {
-    std::env::set_var("WASM_LOG", "debug");
-
-    let private_key = dashchat_node::PrivateKey::new();
-    let config = dashchat_node::NodeConfig::default();
-    let (notification_tx, mut notification_rx) = tokio::sync::mpsc::channel(100);
-    let node = dashchat_node::Node::new(private_key, config, Some(notification_tx))
-        .await
-        .expect("Failed to create node");
-
-    tokio::spawn(async move {
-        while let Some(notification) = notification_rx.recv().await {
-            // TODO: trigger new operation handler
-            println!("Received notification: {:?}", notification);
-        }
-    });
-
+pub fn run() {
     let mut builder = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::my_pub_key,
             commands::logs::get_log,
+            commands::logs::get_authors,
+            commands::profile::set_profile,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
-                .level_for("iroh", log::LevelFilter::Info)
                 .level_for("dash-chat", log::LevelFilter::Debug)
                 .build(),
         )
@@ -40,7 +29,6 @@ pub async fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
-        .manage(node)
         .setup(move |app| {
             #[cfg(mobile)]
             {
@@ -64,6 +52,43 @@ pub async fn run() {
                     .plugin(tauri_plugin_updater::Builder::new().build())?;
             }
             let handle = app.handle().clone();
+
+            tauri::async_runtime::block_on(async move {
+                let private_key = dashchat_node::PrivateKey::new();
+                let config = dashchat_node::NodeConfig::default();
+                let (notification_tx, mut notification_rx) = tokio::sync::mpsc::channel(100);
+                let node = dashchat_node::Node::new(private_key, config, Some(notification_tx))
+                    .await
+                    .expect("Failed to create node");
+
+                handle.manage(node);
+
+                tauri::async_runtime::spawn(async move {
+                    while let Some(notification) = notification_rx.recv().await {
+                        // TODO: trigger new operation handler
+                        println!("Received notification: {:?}", notification);
+
+                        let body = match serde_json::to_value(notification.payload) {
+                            Ok(body) => body,
+                            Err(err) => {
+                                log::error!("Failed to serialize payload: {err:?}");
+                                continue;
+                            }
+                        };
+
+                        let simplified_operation = SimplifiedOperation {
+                            header: SimplifiedHeader::from(notification.header),
+                            body: Some(body),
+                        };
+
+                        if let Err(err) =
+                            handle.emit("p2panda://new-operation", simplified_operation)
+                        {
+                            log::error!("Failed to emit operation: {err:?}");
+                        }
+                    }
+                });
+            });
 
             // app.handle()
             //     .listen("holochain://setup-completed", move |_event| {

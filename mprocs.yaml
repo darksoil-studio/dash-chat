@@ -1,14 +1,14 @@
 procs:
   agent1:
-    shell: pnpm tauri dev --no-watch
+    shell: pnpm tauri dev
   agent2:
-    shell: pnpm tauri dev --no-watch
+    shell: pnpm tauri dev
   # push-notifications-service:
   #   shell: test-push-notifications-service ./service-account-key.json somesecretnetworkseedv0.5.0
   # safehold-service:
   #   shell: test-safehold-service somesecretnetworkseedv0.5.0
-  ui:
-    shell: pnpm -F ./ui start
+  ui:  pnpm -F ./packages/stores build && pnpm -F ./ui start
+  stores: pnpm -F ./packages/stores dev
   android:
     shell: adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev
   logcat:

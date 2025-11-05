@@ -4,13 +4,16 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+use futures::FutureExt;
 use p2panda_core::{Body, Hash, Header, PublicKey, RawOperation};
+use p2panda_net::TopicId;
 use p2panda_store::{LogStore, MemoryStore, OperationStore};
+use rand::Rng;
 
 use crate::{
     operation::{Extensions, Payload},
     testing::AliasedId,
-    topic::{LogId, Topic},
+    topic::{DashChatTopicId, LogId, Topic},
     *,
 };
 
@@ -31,12 +34,18 @@ impl OpStore {
     }
 
     pub fn report<'a>(&self, topics: impl IntoIterator<Item = &'a Topic>) -> String {
-        let topics = topics.into_iter().collect::<HashSet<_>>();
+        let topics = topics.into_iter().collect::<Vec<_>>();
         let s = self.store.read_store();
         let mut ops = s
             .operations
             .iter()
-            .filter(|(_, (t, _, _, _))| topics.is_empty() || topics.contains(t))
+            .filter(|(_, (t, _, _, _))| {
+                topics.is_empty()
+                    || topics
+                        .iter()
+                        .find(|topic| DashChatTopicId::from(Hash::from_bytes(topic.id())).eq(t))
+                        .is_some()
+            })
             .collect::<Vec<_>>();
         ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.alias(), header.seq_num));
         ops.into_iter()

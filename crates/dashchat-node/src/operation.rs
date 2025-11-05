@@ -19,11 +19,13 @@ pub struct Profile {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "type", content = "payload")]
 pub enum AnnouncementsPayload {
     SetProfile(Profile),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
     JoinGroup(ChatId),
@@ -33,6 +35,7 @@ pub enum InboxPayload {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "type", content = "payload")]
 pub enum Payload {
     Announcements(AnnouncementsPayload),
     Inbox(InboxPayload),

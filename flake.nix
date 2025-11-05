@@ -2,8 +2,9 @@
   description = "Template for Holochain app development";
 
   inputs = {
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.5";
-    nixpkgs.follows = "p2p-shipyard/nixpkgs";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    flake-parts.url = "github:hercules-ci/flake-parts";
 
     garnix-lib = {
       url = "github:garnix-io/garnix-lib";
@@ -25,37 +26,23 @@
   };
 
   outputs = inputs:
-    inputs.p2p-shipyard.inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         ./nix/servers.nix
         ./nix/tauri-app.nix
         ./nix/raspberry-pi.nix
-        inputs.p2p-shipyard.outputs.flakeModules.builders
+        # inputs.p2p-shipyard.outputs.flakeModules.builders
       ];
 
-      systems = builtins.attrNames inputs.p2p-shipyard.devShells;
-      perSystem = { inputs', config, pkgs, system, ... }: rec {
+      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
+      perSystem = { inputs', config, pkgs, system, ... }: {
         devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            inputs'.p2p-shipyard.devShells.holochainTauriDev
-            inputs'.p2p-shipyard.devShells.default
-          ];
-          packages = [ pkgs.mprocs pkgs.pnpm ];
-        };
+          packages = let
+            overlays = [ (import inputs.rust-overlay) ];
+            pkgs = import inputs.nixpkgs { inherit system overlays; };
 
-        devShells.androidDev = pkgs.mkShell {
-          inputsFrom = [
-            inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
-            devShells.default
-          ];
-        };
-
-        devShells.ci = pkgs.mkShell {
-          inputsFrom = [
-            inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
-            inputs'.p2p-shipyard.devShells.synchronized-pnpm
-            inputs'.p2p-shipyard.devShells.default
-          ];
+            rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+          in [ pkgs.mprocs pkgs.pnpm rust ];
         };
       };
     };

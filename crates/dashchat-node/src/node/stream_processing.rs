@@ -1,5 +1,6 @@
 use futures::StreamExt;
 use p2panda_core::Operation;
+use p2panda_net::TopicId;
 use p2panda_spaces::{
     group::GroupError,
     manager::ManagerError,
@@ -11,7 +12,7 @@ use p2panda_stream::partial::operations::PartialOrder;
 use serde::{Deserialize, Serialize};
 use tokio_stream::Stream;
 
-use crate::{operation::InboxPayload, spaces::ArgType, testing::AliasedId};
+use crate::{operation::InboxPayload, spaces::ArgType, testing::AliasedId, topic::LogId};
 
 use super::*;
 
@@ -39,11 +40,14 @@ impl Node {
 
         if is_author {
             self.author_store
-                .add_author(topic.clone(), self.public_key())
+                .add_author(topic.into(), self.public_key())
                 .await;
         }
 
-        let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.clone()).await?;
+        let (network_tx, network_rx, _gossip_ready) = self
+            .network
+            .subscribe(DashChatTopicId::from(topic).clone())
+            .await?;
         tracing::debug!(?topic, "subscribed to topic");
 
         let stream = ReceiverStream::new(network_rx);
@@ -119,7 +123,7 @@ impl Node {
     fn spawn_stream_process_loop(
         &self,
         stream: impl Stream<Item = Operation<Extensions>> + Send + 'static,
-        author_store: AuthorStore<Topic>,
+        author_store: AuthorStore<LogId>,
         topic: Topic,
     ) {
         let node = self.clone();
@@ -206,14 +210,16 @@ impl Node {
         &self,
         topic: Topic,
         operation: Operation<Extensions>,
-        author_store: AuthorStore<Topic>,
+        author_store: AuthorStore<LogId>,
         is_author: bool,
     ) -> anyhow::Result<()> {
         let Operation { header, body, hash } = operation;
 
         // NOTE: this is very much needed!!
         // TODO: this eventually needs to be more selective than just adding any old author
-        author_store.add_author(topic, header.public_key).await;
+        author_store
+            .add_author(topic.into(), header.public_key)
+            .await;
         tracing::debug!(?topic, "adding author");
 
         let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
@@ -339,7 +345,7 @@ impl Node {
             }
 
             (Topic::Inbox(public_key), Some(Payload::Inbox(invitation))) => {
-                if public_key != self.public_key() {
+                if public_key != self.public_key().into() {
                     // not for me, ignore
                     return Ok(());
                 }

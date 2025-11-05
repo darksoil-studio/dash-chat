@@ -1,7 +1,9 @@
 use p2panda_core::{Hash, Operation};
+use p2panda_net::TopicId;
 use p2panda_spaces::{OperationId, traits::AuthoredMessage};
 use p2panda_stream::operation::IngestResult;
 
+use crate::topic::LogId;
 use crate::{AsBody, testing::AliasedId};
 use crate::{polestar as p, timestamp_now};
 
@@ -111,7 +113,7 @@ impl Node {
             header.clone(),
             body.clone(),
             header.to_bytes(),
-            &topic,
+            &topic.into(),
             false,
         )
         .await?;
@@ -180,11 +182,11 @@ pub(crate) async fn create_operation(
     let body = Some(payload.try_into_body()?);
 
     let extensions = Extensions {
-        log_id: log_id.clone(),
+        log_id: log_id.clone().into(),
     };
 
     // TODO: atomicity, see https://github.com/p2panda/p2panda/issues/798
-    let latest_operation = store.latest_operation(&public_key, &log_id).await?;
+    let latest_operation = store.latest_operation(&public_key, &log_id.into()).await?;
 
     let (seq_num, backlink) = match latest_operation {
         Some((header, _)) => (header.seq_num + 1, Some(header.hash())),

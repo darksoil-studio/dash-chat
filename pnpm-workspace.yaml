@@ -1,3 +1,4 @@
 packages:
   - ui
   - site
+  - packages/*

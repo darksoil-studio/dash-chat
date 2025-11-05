@@ -1422,6 +1422,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "base64 0.22.1",
  "dashchat-node",
  "derive_more 1.0.0",
  "futures",

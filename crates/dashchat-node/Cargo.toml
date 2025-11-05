@@ -38,6 +38,7 @@ p2panda-spaces = { git = "https://github.com/maackle/p2panda.git", branch = "das
 tokio = { version = "1.43.0", features = ["fs"] }
 hex = "0.4.3"
 
+base64 = "0.22"
 tokio-stream = "0.1.17"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }

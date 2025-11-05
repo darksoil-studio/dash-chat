@@ -1,11 +1,11 @@
-import { reactive, ReactivePromise, relay } from 'signalium';
+import { ReactivePromise, reactive, relay } from 'signalium';
 
 import type { LogsClient } from './logs-client';
 import type { SimplifiedOperation } from './simplified-types';
-import type { LogId, PublicKey, TopicId } from './types';
+import type { PublicKey, TopicId } from './types';
 
 export class LogsStore {
-	constructor(protected logsClient: LogsClient) { }
+	constructor(protected logsClient: LogsClient) {}
 
 	myPubKey = reactive(() => this.logsClient.myPubKey());
 
@@ -36,32 +36,32 @@ export class LogsStore {
 			const fetchLog = async () => {
 				const log = await this.logsClient.getLog(topicId, author);
 				state.value = log;
-
 			};
 			fetchLog();
 
 			const unsubs = this.logsClient.onNewOperation(
 				(operationTopicId, operation) => {
 					if (topicId !== operationTopicId) return;
-					state.value = [...(state.value || []), operation]
+					state.value = [...(state.value || []), operation];
 				},
 			);
 			return () => {
-				unsubs()
+				unsubs();
 			};
 		}),
 	);
 
-	logsForAllAuthors = reactive((topicId: TopicId) => {
-		const authorsForTopic = this.authorsForTopic(topicId);
-		if (!authorsForTopic.isReady) return authorsForTopic;
+	logsForAllAuthors = reactive(async (topicId: TopicId) => {
+		const authorsForTopic = await this.authorsForTopic(topicId);
+
+		const logs = await ReactivePromise.all(
+			authorsForTopic.map(author => this.logs(topicId, author)),
+		);
 
 		const logsForAllAuthors: Record<PublicKey, SimplifiedOperation<any>[]> = {};
-		for (const author of authorsForTopic.value) {
-			const log = this.logs(topicId, author);
-			if (!log.isReady) return log;
-			logsForAllAuthors[author] = log.value;
+		for (let i = 0; i < authorsForTopic.length; i++) {
+			logsForAllAuthors[authorsForTopic[i]] = logs[i];
 		}
-		return ReactivePromise.resolve(logsForAllAuthors);
+		return logsForAllAuthors;
 	});
 }

@@ -1,20 +1,15 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import { signaliumPreset } from 'signalium/transform';
 import { defineConfig } from 'vite';
-import babel from 'vite-plugin-babel';
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
+	optimizeDeps: {
+		exclude: ["../packages/dash-chat-stores"]
+	},
 	plugins: [
-		babel({
-			babelConfig: {
-				babelrc: false,
-				configFile: true,
-			},
-		}),
 		sveltekit(),
 	],
 

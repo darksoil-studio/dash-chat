@@ -26,6 +26,8 @@ export interface SimplifiedHeader {
 	/// author has been observed yet.
 	previous: Array<Hash>;
 
+	topic_id: Hash;
+
 	/// Custom meta data.
 	// extensions: E>, | undefined
 }

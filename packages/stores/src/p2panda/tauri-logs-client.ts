@@ -1,3 +1,5 @@
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { blake2b, blake2bHex } from 'blakejs';
 import Emittery, { type UnsubscribeFunction } from 'emittery';
 
@@ -11,38 +13,36 @@ import type {
 	PublicKey,
 	TopicId,
 } from './types';
-import { invoke } from '@tauri-apps/api/core';
 
 export class TauriLogsClient implements LogsClient {
-	constructor() { }
+	constructor() {}
 
 	async myPubKey(): Promise<PublicKey> {
-		return await invoke("my_pub_key")
+		return await invoke('my_pub_key');
 	}
 
 	async getLog(
 		topicId: TopicId,
 		author: PublicKey,
 	): Promise<SimplifiedOperation<any>[]> {
-		const log: any[] = await invoke("get_log", { topicId, author });
-		console.log("LOG", log);
-		return []
-		// return log.map(([header, body]) => ({
-		// 	// TODO
-		// }));
+		return invoke('get_log', { topicId, author });
 	}
 
 	async getAuthorsForTopic(topicId: TopicId): Promise<PublicKey[]> {
-		return await invoke("get_authors", { topicId })
+		return invoke('get_authors', { topicId });
 	}
 
 	onNewOperation(
-		handler: (
-			topicId: TopicId,
-			operation: SimplifiedOperation<any>,
-		) => void,
+		handler: (topicId: TopicId, operation: SimplifiedOperation<any>) => void,
 	): UnsubscribeFunction {
-		// TODO: implement with event listener
-		return () => { };
+		let unsubs: (() => void) | undefined;
+		listen('p2panda://new-operation', e => {
+			const operation = e.payload as SimplifiedOperation<any>;
+			handler(operation.header.topic_id, operation);
+		}).then(u => (unsubs = u));
+
+		return () => {
+			if (unsubs) unsubs();
+		};
 	}
 }

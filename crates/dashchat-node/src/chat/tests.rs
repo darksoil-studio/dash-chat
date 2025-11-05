@@ -33,7 +33,7 @@ async fn test_group_2() {
     let chat_id = ChatId::random().aliased("onlychat");
     alice.create_group(chat_id).await.unwrap();
 
-    alice.add_member(chat_id, bobbi.public_key()).await.unwrap();
+    alice.add_member(chat_id, bobbi.public_key().into()).await.unwrap();
 
     bobbi_rx
         .watch_for(Duration::from_secs(5), |n| {
@@ -130,7 +130,7 @@ async fn test_group_3() {
     let chat_id = ChatId::random().aliased("onlychat");
     alice.create_group(chat_id).await.unwrap();
     println!("\n==> alice adds bobbi\n");
-    alice.add_member(chat_id, bobbi.public_key()).await.unwrap();
+    alice.add_member(chat_id, bobbi.public_key().into()).await.unwrap();
 
     // Bob has joined the group via his inbox topic and is a manager
     wait_for(
@@ -186,7 +186,7 @@ async fn test_group_3() {
     assert_eq!(alice.get_messages(chat_id).await.unwrap().len(), 2);
 
     println!("\n==> bobbi adds carol\n");
-    bobbi.add_member(chat_id, carol.public_key()).await.unwrap();
+    bobbi.add_member(chat_id, carol.public_key().into()).await.unwrap();
 
     consistency([&alice, &bobbi, &carol], &tt, &cfg)
         .await
