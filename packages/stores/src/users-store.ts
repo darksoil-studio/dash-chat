@@ -12,7 +12,7 @@ export function userTopicFor(userId: UserId): TopicId {
 
 export class UsersStore {
 	constructor(
-		protected logsStore: LogsStore,
+		protected logsStore: LogsStore<TopicId, Payload>,
 		public client: IUsersClient,
 	) {}
 

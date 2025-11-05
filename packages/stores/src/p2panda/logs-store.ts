@@ -4,8 +4,8 @@ import type { LogsClient } from './logs-client';
 import type { SimplifiedOperation } from './simplified-types';
 import type { PublicKey, TopicId } from './types';
 
-export class LogsStore {
-	constructor(protected logsClient: LogsClient) {}
+export class LogsStore<TOPIC, PAYLOAD> {
+	constructor(protected logsClient: LogsClient<TOPIC, PAYLOAD>) {}
 
 	myPubKey = reactive(() => this.logsClient.myPubKey());
 
@@ -31,7 +31,7 @@ export class LogsStore {
 		}),
 	);
 
-	logs = reactive((topicId: TopicId, author: PublicKey) =>
+	logs = reactive((topicId: TOPIC, author: PublicKey) =>
 		relay<SimplifiedOperation<any>[]>(state => {
 			const fetchLog = async () => {
 				const log = await this.logsClient.getLog(topicId, author);

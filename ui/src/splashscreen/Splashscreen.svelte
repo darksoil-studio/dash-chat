@@ -9,12 +9,11 @@
 	const usersStore: UsersStore = getContext('users-store');
 	let nickname: string | undefined;
 
-async	function setProfile() {
+	async function setProfile() {
 		await usersStore.client.setProfile({
-			name: nickname,
+			name: nickname!,
 			avatar: undefined,
 		});
-		console.log('yes')
 
 		splashscreenDismissed.dismiss();
 	}
@@ -23,7 +22,7 @@ async	function setProfile() {
 <wa-input
 	oninput={(e: CustomEvent) => {
 		nickname = (e.target as WaInput).value!;
-		console.log(nickname)
+		console.log(nickname);
 	}}
 >
 </wa-input>

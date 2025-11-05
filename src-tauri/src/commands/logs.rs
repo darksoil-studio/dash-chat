@@ -69,7 +69,7 @@ pub fn simplify(
 
 #[tauri::command]
 pub async fn get_log(
-    topic_id: DashChatTopicId,
+    topic_id: Topic,
     author: PublicKey,
     node: State<'_, Node>,
 ) -> Result<Vec<SimplifiedOperation>, String> {

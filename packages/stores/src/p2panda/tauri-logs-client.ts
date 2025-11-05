@@ -1,30 +1,22 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { blake2b, blake2bHex } from 'blakejs';
-import Emittery, { type UnsubscribeFunction } from 'emittery';
+import { type UnsubscribeFunction } from 'emittery';
 
 import type { LogsClient } from './logs-client';
-import type { SimplifiedHeader, SimplifiedOperation } from './simplified-types';
-import type {
-	Hash,
-	Header,
-	LogId,
-	Operation,
-	PublicKey,
-	TopicId,
-} from './types';
+import type { SimplifiedOperation } from './simplified-types';
+import type { PublicKey, TopicId } from './types';
 
-export class TauriLogsClient implements LogsClient {
-	constructor() {}
-
-	async myPubKey(): Promise<PublicKey> {
-		return await invoke('my_pub_key');
+export class TauriLogsClient<TOPIC, PAYLOAD>
+	implements LogsClient<TOPIC, PAYLOAD>
+{
+	myPubKey(): Promise<PublicKey> {
+		return invoke('my_pub_key');
 	}
 
 	async getLog(
-		topicId: TopicId,
+		topicId: TOPIC,
 		author: PublicKey,
-	): Promise<SimplifiedOperation<any>[]> {
+	): Promise<SimplifiedOperation<PAYLOAD>[]> {
 		return invoke('get_log', { topicId, author });
 	}
 

@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard";
     rust-overlay.url = "github:oxalica/rust-overlay";
     flake-parts.url = "github:hercules-ci/flake-parts";
 
@@ -34,9 +35,11 @@
         # inputs.p2p-shipyard.outputs.flakeModules.builders
       ];
 
-      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
+      systems =
+        [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
       perSystem = { inputs', config, pkgs, system, ... }: {
         devShells.default = pkgs.mkShell {
+          inputsFrom = [ inputs'.p2p-shipyard.devShells.holochainTauriDev];
           packages = let
             overlays = [ (import inputs.rust-overlay) ];
             pkgs = import inputs.nixpkgs { inherit system overlays; };
