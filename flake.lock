@@ -1,99 +1,5 @@
 {
   "nodes": {
-    "always-online-nodes": {
-      "inputs": {
-        "crane": [
-          "p2p-shipyard",
-          "always-online-nodes",
-          "holochain-utils",
-          "crane"
-        ],
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "always-online-nodes",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1756800933,
-        "narHash": "sha256-M+azHkN1mjGSL0jf8AxgR/1gRDkZEaUDwZg8KoCJKQE=",
-        "owner": "darksoil-studio",
-        "repo": "always-online-nodes",
-        "rev": "9dc96b84d797862f2bafea63d4776f09a1c3a061",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main",
-        "repo": "always-online-nodes",
-        "type": "github"
-      }
-    },
-    "clone-manager": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "clone-manager",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752663669,
-        "narHash": "sha256-nzbcqZC7E8TfonM1rMr3q7lB9pvHsKl52yvgGzoOxlw=",
-        "owner": "darksoil-studio",
-        "repo": "clone-manager-zome",
-        "rev": "8945ddf29f9e48f365b464f23be80281467f86de",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "clone-manager-zome",
-        "type": "github"
-      }
-    },
-    "clone-manager_2": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "safehold",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "clone-manager",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752663669,
-        "narHash": "sha256-nzbcqZC7E8TfonM1rMr3q7lB9pvHsKl52yvgGzoOxlw=",
-        "owner": "darksoil-studio",
-        "repo": "clone-manager-zome",
-        "rev": "8945ddf29f9e48f365b464f23be80281467f86de",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "clone-manager-zome",
-        "type": "github"
-      }
-    },
     "crane": {
       "locked": {
         "lastModified": 1755537552,
@@ -106,79 +12,6 @@
       "original": {
         "owner": "ipetkov",
         "repo": "crane",
-        "type": "github"
-      }
-    },
-    "crane_2": {
-      "locked": {
-        "lastModified": 1750266157,
-        "narHash": "sha256-tL42YoNg9y30u7zAqtoGDNdTyXTi8EALDeCB13FtbQA=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "e37c943371b73ed87faf33f7583860f81f1d5a48",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
-        "type": "github"
-      }
-    },
-    "crane_3": {
-      "locked": {
-        "lastModified": 1750266157,
-        "narHash": "sha256-tL42YoNg9y30u7zAqtoGDNdTyXTi8EALDeCB13FtbQA=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "e37c943371b73ed87faf33f7583860f81f1d5a48",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
-        "type": "github"
-      }
-    },
-    "crane_4": {
-      "locked": {
-        "lastModified": 1750266157,
-        "narHash": "sha256-tL42YoNg9y30u7zAqtoGDNdTyXTi8EALDeCB13FtbQA=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "e37c943371b73ed87faf33f7583860f81f1d5a48",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
-        "type": "github"
-      }
-    },
-    "file-storage": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "file-storage",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752665951,
-        "narHash": "sha256-B2p0BNK0Dyezccd2vxWJH0g0IwBnxct1JQvJ3k1p9hc=",
-        "owner": "darksoil-studio",
-        "repo": "file-storage",
-        "rev": "c745b1d2d090de6c50caadff40131281c4f95aa2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "file-storage",
         "type": "github"
       }
     },
@@ -218,93 +51,6 @@
         "type": "github"
       }
     },
-    "flake-parts_3": {
-      "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib_3"
-      },
-      "locked": {
-        "lastModified": 1749398372,
-        "narHash": "sha256-tYBdgS56eXYaWVW3fsnPQ/nFlgWi/Z2Ymhyu21zVM98=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "9305fe4e5c2a6fcf5ba6a3ff155720fbe4076569",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_4": {
-      "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib_4"
-      },
-      "locked": {
-        "lastModified": 1749398372,
-        "narHash": "sha256-tYBdgS56eXYaWVW3fsnPQ/nFlgWi/Z2Ymhyu21zVM98=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "9305fe4e5c2a6fcf5ba6a3ff155720fbe4076569",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_5": {
-      "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib_5"
-      },
-      "locked": {
-        "lastModified": 1749398372,
-        "narHash": "sha256-tYBdgS56eXYaWVW3fsnPQ/nFlgWi/Z2Ymhyu21zVM98=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "9305fe4e5c2a6fcf5ba6a3ff155720fbe4076569",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "friends-zome": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "friends-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "private-event-sourcing-zome": "private-event-sourcing-zome"
-      },
-      "locked": {
-        "lastModified": 1756803204,
-        "narHash": "sha256-ASkRLnuBZSW+tJa8/fA9YZ/FMaeTbdRvJKqE2/8GuZ4=",
-        "owner": "darksoil-studio",
-        "repo": "friends-zome",
-        "rev": "a13d10ee721b8fb94d1fedf032d80807037f9beb",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "friends-zome",
-        "type": "github"
-      }
-    },
     "garnix-lib": {
       "inputs": {
         "nixpkgs": [
@@ -312,55 +58,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1746387091,
-        "narHash": "sha256-YivN7BL4XkZIJpUTdDJRQpYX/JORVdbZTQbSnULgRnY=",
+        "lastModified": 1758561011,
+        "narHash": "sha256-yYXd4qOH22Oe5PaaoGms0imXYweQeEeme+VUoMm4zwY=",
         "owner": "garnix-io",
         "repo": "garnix-lib",
-        "rev": "4cc103317aef34dd99617ed9ff12c44d659d86d0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "garnix-io",
-        "repo": "garnix-lib",
-        "type": "github"
-      }
-    },
-    "garnix-lib_2": {
-      "inputs": {
-        "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1746387091,
-        "narHash": "sha256-YivN7BL4XkZIJpUTdDJRQpYX/JORVdbZTQbSnULgRnY=",
-        "owner": "garnix-io",
-        "repo": "garnix-lib",
-        "rev": "4cc103317aef34dd99617ed9ff12c44d659d86d0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "garnix-io",
-        "repo": "garnix-lib",
-        "type": "github"
-      }
-    },
-    "garnix-lib_3": {
-      "inputs": {
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1746387091,
-        "narHash": "sha256-YivN7BL4XkZIJpUTdDJRQpYX/JORVdbZTQbSnULgRnY=",
-        "owner": "garnix-io",
-        "repo": "garnix-lib",
-        "rev": "4cc103317aef34dd99617ed9ff12c44d659d86d0",
+        "rev": "fbd9865a68c8f7f4bd9d4e136f27be04098fe1ee",
         "type": "github"
       },
       "original": {
@@ -386,109 +88,7 @@
         "type": "github"
       }
     },
-    "hc-launch_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1751046670,
-        "narHash": "sha256-HHbFIY14lVcEpCc6sWiXu98VHcuCoAU+WTKJLFqvte8=",
-        "owner": "holochain",
-        "repo": "hc-launch",
-        "rev": "ae0167461edd54913887e554e81e86a5c8de828b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "holochain-0.5",
-        "repo": "hc-launch",
-        "type": "github"
-      }
-    },
-    "hc-launch_3": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1751046670,
-        "narHash": "sha256-HHbFIY14lVcEpCc6sWiXu98VHcuCoAU+WTKJLFqvte8=",
-        "owner": "holochain",
-        "repo": "hc-launch",
-        "rev": "ae0167461edd54913887e554e81e86a5c8de828b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "holochain-0.5",
-        "repo": "hc-launch",
-        "type": "github"
-      }
-    },
-    "hc-launch_4": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1751046670,
-        "narHash": "sha256-HHbFIY14lVcEpCc6sWiXu98VHcuCoAU+WTKJLFqvte8=",
-        "owner": "holochain",
-        "repo": "hc-launch",
-        "rev": "ae0167461edd54913887e554e81e86a5c8de828b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "holochain-0.5",
-        "repo": "hc-launch",
-        "type": "github"
-      }
-    },
     "hc-scaffold": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1755878805,
-        "narHash": "sha256-Tdvnu56gNs8QU7b6xQOKkToJZvMZasyLmyYSxS6lT+w=",
-        "owner": "holochain",
-        "repo": "scaffolding",
-        "rev": "d64bcd2363adbe4f641b7a2ad5b460fc686aa93f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.500.2",
-        "repo": "scaffolding",
-        "type": "github"
-      }
-    },
-    "hc-scaffold_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1751016233,
-        "narHash": "sha256-MfHygBYMH2oFbdj+D8izQK6+J0zjqUJbr1w4ixvP4iw=",
-        "owner": "holochain",
-        "repo": "scaffolding",
-        "rev": "85b33854ea7c4c32d714161e0a2a2267157f28b2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.500.1",
-        "repo": "scaffolding",
-        "type": "github"
-      }
-    },
-    "hc-scaffold_3": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1751016233,
-        "narHash": "sha256-MfHygBYMH2oFbdj+D8izQK6+J0zjqUJbr1w4ixvP4iw=",
-        "owner": "holochain",
-        "repo": "scaffolding",
-        "rev": "85b33854ea7c4c32d714161e0a2a2267157f28b2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.500.1",
-        "repo": "scaffolding",
-        "type": "github"
-      }
-    },
-    "hc-scaffold_4": {
       "flake": false,
       "locked": {
         "lastModified": 1751016233,
@@ -525,27 +125,23 @@
     "holochain-nix-builders": {
       "inputs": {
         "crane": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "holochain-nix-builders",
           "holonix",
           "crane"
         ],
         "holonix": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "holonix"
         ],
         "nixpkgs": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "holochain-nix-builders",
           "holonix",
           "nixpkgs"
         ],
         "rust-overlay": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "holochain-nix-builders",
           "holonix",
           "rust-overlay"
@@ -566,92 +162,6 @@
         "type": "github"
       }
     },
-    "holochain-utils": {
-      "inputs": {
-        "crane": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "holonix",
-          "crane"
-        ],
-        "holochain-nix-builders": "holochain-nix-builders",
-        "holonix": "holonix",
-        "nixpkgs": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "holonix",
-          "nixpkgs"
-        ],
-        "playground": "playground",
-        "scaffolding": "scaffolding",
-        "tauri-plugin-holochain": "tauri-plugin-holochain"
-      },
-      "locked": {
-        "lastModified": 1756729954,
-        "narHash": "sha256-7OQbmIruCqCK+aXzQ8yCrwi61N6K1jm0CutTn90R+4U=",
-        "owner": "darksoil-studio",
-        "repo": "holochain-utils",
-        "rev": "4fa7537cc947c427834acf018a05b084b7ef9674",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "holochain-utils",
-        "type": "github"
-      }
-    },
-    "holochain_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1752078164,
-        "narHash": "sha256-Jl7l3z3LJ9nB/2yPwTUM5s5eYc1G+40lZ3rK2lpm5O4=",
-        "owner": "holochain",
-        "repo": "holochain",
-        "rev": "ba3bcf4d0da1b3683f1f715fafa6b469d89721c1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "holochain-0.5.4",
-        "repo": "holochain",
-        "type": "github"
-      }
-    },
-    "holochain_3": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1752078164,
-        "narHash": "sha256-Jl7l3z3LJ9nB/2yPwTUM5s5eYc1G+40lZ3rK2lpm5O4=",
-        "owner": "holochain",
-        "repo": "holochain",
-        "rev": "ba3bcf4d0da1b3683f1f715fafa6b469d89721c1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "holochain-0.5.4",
-        "repo": "holochain",
-        "type": "github"
-      }
-    },
-    "holochain_4": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1752078164,
-        "narHash": "sha256-Jl7l3z3LJ9nB/2yPwTUM5s5eYc1G+40lZ3rK2lpm5O4=",
-        "owner": "holochain",
-        "repo": "holochain",
-        "rev": "ba3bcf4d0da1b3683f1f715fafa6b469d89721c1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "holochain-0.5.4",
-        "repo": "holochain",
-        "type": "github"
-      }
-    },
     "holonix": {
       "inputs": {
         "crane": "crane",
@@ -661,104 +171,16 @@
         "holochain": "holochain",
         "kitsune2": "kitsune2",
         "lair-keystore": "lair-keystore",
-        "nixpkgs": "nixpkgs_3",
-        "playground": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "playground"
-        ],
-        "rust-overlay": "rust-overlay"
-      },
-      "locked": {
-        "lastModified": 1755881627,
-        "narHash": "sha256-e8u665I8VeGDTCeKhOEimY563GmPsf1/lgsORdlNZWg=",
-        "owner": "holochain",
-        "repo": "holonix",
-        "rev": "699c3b4f2179040af2c8e67f3a7b79b9a91e483d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "main-0.5",
-        "repo": "holonix",
-        "type": "github"
-      }
-    },
-    "holonix_2": {
-      "inputs": {
-        "crane": "crane_2",
-        "flake-parts": "flake-parts_3",
-        "hc-launch": "hc-launch_2",
-        "hc-scaffold": "hc-scaffold_2",
-        "holochain": "holochain_2",
-        "kitsune2": "kitsune2_2",
-        "lair-keystore": "lair-keystore_2",
         "nixpkgs": "nixpkgs_4",
-        "playground": "playground_2",
+        "playground": "playground",
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1752096312,
-        "narHash": "sha256-mP8nfNRBI+2swc3lCXzxLXyD6SAb7JHnAC17R0v6h+Q=",
+        "lastModified": 1755626523,
+        "narHash": "sha256-2NshDhjEBjK1BG/EBemBi3PriC19B6gWp2ADax3fG5A=",
         "owner": "holochain",
         "repo": "holonix",
-        "rev": "5e00d7be074f3b4dcfd5340a14c7046ce000fccf",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "main-0.5",
-        "repo": "holonix",
-        "type": "github"
-      }
-    },
-    "holonix_3": {
-      "inputs": {
-        "crane": "crane_3",
-        "flake-parts": "flake-parts_4",
-        "hc-launch": "hc-launch_3",
-        "hc-scaffold": "hc-scaffold_3",
-        "holochain": "holochain_3",
-        "kitsune2": "kitsune2_3",
-        "lair-keystore": "lair-keystore_3",
-        "nixpkgs": "nixpkgs_5",
-        "playground": "playground_3",
-        "rust-overlay": "rust-overlay_3"
-      },
-      "locked": {
-        "lastModified": 1752096312,
-        "narHash": "sha256-mP8nfNRBI+2swc3lCXzxLXyD6SAb7JHnAC17R0v6h+Q=",
-        "owner": "holochain",
-        "repo": "holonix",
-        "rev": "5e00d7be074f3b4dcfd5340a14c7046ce000fccf",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "main-0.5",
-        "repo": "holonix",
-        "type": "github"
-      }
-    },
-    "holonix_4": {
-      "inputs": {
-        "crane": "crane_4",
-        "flake-parts": "flake-parts_5",
-        "hc-launch": "hc-launch_4",
-        "hc-scaffold": "hc-scaffold_4",
-        "holochain": "holochain_4",
-        "kitsune2": "kitsune2_4",
-        "lair-keystore": "lair-keystore_4",
-        "nixpkgs": "nixpkgs_6",
-        "playground": "playground_4",
-        "rust-overlay": "rust-overlay_4"
-      },
-      "locked": {
-        "lastModified": 1752096312,
-        "narHash": "sha256-mP8nfNRBI+2swc3lCXzxLXyD6SAb7JHnAC17R0v6h+Q=",
-        "owner": "holochain",
-        "repo": "holonix",
-        "rev": "5e00d7be074f3b4dcfd5340a14c7046ce000fccf",
+        "rev": "68af9b58c676f1f243a8019e729efebea214218f",
         "type": "github"
       },
       "original": {
@@ -785,57 +207,6 @@
         "type": "github"
       }
     },
-    "kitsune2_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1750424599,
-        "narHash": "sha256-uY8f1hqUvS+8jd+2YKC0EPVG7HFEDXoWL0bOF7F1VQg=",
-        "owner": "holochain",
-        "repo": "kitsune2",
-        "rev": "dfc57d4c3faeca1b12a5669776a93cd6b43e6d7c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.1.9",
-        "repo": "kitsune2",
-        "type": "github"
-      }
-    },
-    "kitsune2_3": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1750424599,
-        "narHash": "sha256-uY8f1hqUvS+8jd+2YKC0EPVG7HFEDXoWL0bOF7F1VQg=",
-        "owner": "holochain",
-        "repo": "kitsune2",
-        "rev": "dfc57d4c3faeca1b12a5669776a93cd6b43e6d7c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.1.9",
-        "repo": "kitsune2",
-        "type": "github"
-      }
-    },
-    "kitsune2_4": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1750424599,
-        "narHash": "sha256-uY8f1hqUvS+8jd+2YKC0EPVG7HFEDXoWL0bOF7F1VQg=",
-        "owner": "holochain",
-        "repo": "kitsune2",
-        "rev": "dfc57d4c3faeca1b12a5669776a93cd6b43e6d7c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.1.9",
-        "repo": "kitsune2",
-        "type": "github"
-      }
-    },
     "lair-keystore": {
       "flake": false,
       "locked": {
@@ -850,352 +221,6 @@
         "owner": "holochain",
         "ref": "v0.6.2",
         "repo": "lair",
-        "type": "github"
-      }
-    },
-    "lair-keystore_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1750349209,
-        "narHash": "sha256-IUj2u8I2YSVZGrZ234mVCPENTg239LSG05TysoB3t+A=",
-        "owner": "holochain",
-        "repo": "lair",
-        "rev": "978e3569e6a9cf674d2f1fc380cc82a87a43c78a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.6.2",
-        "repo": "lair",
-        "type": "github"
-      }
-    },
-    "lair-keystore_3": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1750349209,
-        "narHash": "sha256-IUj2u8I2YSVZGrZ234mVCPENTg239LSG05TysoB3t+A=",
-        "owner": "holochain",
-        "repo": "lair",
-        "rev": "978e3569e6a9cf674d2f1fc380cc82a87a43c78a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.6.2",
-        "repo": "lair",
-        "type": "github"
-      }
-    },
-    "lair-keystore_4": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1750349209,
-        "narHash": "sha256-IUj2u8I2YSVZGrZ234mVCPENTg239LSG05TysoB3t+A=",
-        "owner": "holochain",
-        "repo": "lair",
-        "rev": "978e3569e6a9cf674d2f1fc380cc82a87a43c78a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "holochain",
-        "ref": "v0.6.2",
-        "repo": "lair",
-        "type": "github"
-      }
-    },
-    "linked-devices-zome": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "friends-zome",
-          "private-event-sourcing-zome",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "friends-zome",
-          "private-event-sourcing-zome",
-          "linked-devices-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752660571,
-        "narHash": "sha256-l7hpNbWDuU/6c5Rvjem81YUQud8s8+uqWJZfq/YAgcg=",
-        "owner": "darksoil-studio",
-        "repo": "linked-devices-zome",
-        "rev": "e7e158fc048c3e0e66317297cf5ac5b0f9a3d886",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "linked-devices-zome",
-        "type": "github"
-      }
-    },
-    "linked-devices-zome_2": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "linked-devices-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752660571,
-        "narHash": "sha256-l7hpNbWDuU/6c5Rvjem81YUQud8s8+uqWJZfq/YAgcg=",
-        "owner": "darksoil-studio",
-        "repo": "linked-devices-zome",
-        "rev": "e7e158fc048c3e0e66317297cf5ac5b0f9a3d886",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "linked-devices-zome",
-        "type": "github"
-      }
-    },
-    "linked-devices-zome_3": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "messenger-zome",
-          "private-event-sourcing-zome",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "messenger-zome",
-          "private-event-sourcing-zome",
-          "linked-devices-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752660571,
-        "narHash": "sha256-l7hpNbWDuU/6c5Rvjem81YUQud8s8+uqWJZfq/YAgcg=",
-        "owner": "darksoil-studio",
-        "repo": "linked-devices-zome",
-        "rev": "e7e158fc048c3e0e66317297cf5ac5b0f9a3d886",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "linked-devices-zome",
-        "type": "github"
-      }
-    },
-    "linked-devices-zome_4": {
-      "inputs": {
-        "flake-parts": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome",
-          "holonix",
-          "flake-parts"
-        ],
-        "holochain-utils": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holochain-utils"
-        ],
-        "holonix": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holonix"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome",
-          "holonix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752591885,
-        "narHash": "sha256-dTtlvouQMAM3tpVcE7WQPpYLi6NdKadKIQS49RKLX80=",
-        "owner": "darksoil-studio",
-        "repo": "linked-devices-zome",
-        "rev": "2c33f0c1d3b3eef67d7f96e6601091721d035dee",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "linked-devices-zome",
-        "type": "github"
-      }
-    },
-    "linked-devices-zome_5": {
-      "inputs": {
-        "flake-parts": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome",
-          "holonix",
-          "flake-parts"
-        ],
-        "holochain-utils": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holochain-utils"
-        ],
-        "holonix": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holonix"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome",
-          "holonix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752591885,
-        "narHash": "sha256-dTtlvouQMAM3tpVcE7WQPpYLi6NdKadKIQS49RKLX80=",
-        "owner": "darksoil-studio",
-        "repo": "linked-devices-zome",
-        "rev": "2c33f0c1d3b3eef67d7f96e6601091721d035dee",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "linked-devices-zome",
-        "type": "github"
-      }
-    },
-    "linked-devices-zome_6": {
-      "inputs": {
-        "flake-parts": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome",
-          "holonix",
-          "flake-parts"
-        ],
-        "holochain-utils": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holochain-utils"
-        ],
-        "holonix": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holonix"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome",
-          "holonix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752591885,
-        "narHash": "sha256-dTtlvouQMAM3tpVcE7WQPpYLi6NdKadKIQS49RKLX80=",
-        "owner": "darksoil-studio",
-        "repo": "linked-devices-zome",
-        "rev": "2c33f0c1d3b3eef67d7f96e6601091721d035dee",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "linked-devices-zome",
-        "type": "github"
-      }
-    },
-    "messenger-zome": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "messenger-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "private-event-sourcing-zome": "private-event-sourcing-zome_2",
-        "profiles-zome": [
-          "p2p-shipyard",
-          "profiles-zome"
-        ]
-      },
-      "locked": {
-        "lastModified": 1756105970,
-        "narHash": "sha256-F00Mz2iREdxlR9OvROHFvflbdB9fre8mYMDYG2Nsn1w=",
-        "owner": "darksoil-studio",
-        "repo": "messenger-zome",
-        "rev": "04773b6d00efa6fcaf5c70374b60fbdcc3b14e03",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "messenger-zome",
         "type": "github"
       }
     },
@@ -1279,58 +304,13 @@
         "type": "github"
       }
     },
-    "nixpkgs-lib_3": {
-      "locked": {
-        "lastModified": 1748740939,
-        "narHash": "sha256-rQaysilft1aVMwF14xIdGS3sj1yHlI6oKQNBRTF40cc=",
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "rev": "656a64127e9d791a334452c6b6606d17539476e2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "type": "github"
-      }
-    },
-    "nixpkgs-lib_4": {
-      "locked": {
-        "lastModified": 1748740939,
-        "narHash": "sha256-rQaysilft1aVMwF14xIdGS3sj1yHlI6oKQNBRTF40cc=",
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "rev": "656a64127e9d791a334452c6b6606d17539476e2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "type": "github"
-      }
-    },
-    "nixpkgs-lib_5": {
-      "locked": {
-        "lastModified": 1748740939,
-        "narHash": "sha256-rQaysilft1aVMwF14xIdGS3sj1yHlI6oKQNBRTF40cc=",
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "rev": "656a64127e9d791a334452c6b6606d17539476e2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "type": "github"
-      }
-    },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1761999846,
-        "narHash": "sha256-IYlYnp4O4dzEpL77BD/lj5NnJy2J8qbHkNSFiPBCbqo=",
+        "lastModified": 1762233356,
+        "narHash": "sha256-cGS3lLTYusbEP/IJIWGgnkzIl+FA5xDvtiHyjalGr4k=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "3de8f8d73e35724bf9abef41f1bdbedda1e14a31",
+        "rev": "ca534a76c4afb2bdc07b681dbc11b453bab21af8",
         "type": "github"
       },
       "original": {
@@ -1341,70 +321,6 @@
       }
     },
     "nixpkgs_3": {
-      "locked": {
-        "lastModified": 1755704039,
-        "narHash": "sha256-gKlP0LbyJ3qX0KObfIWcp5nbuHSb5EHwIvU6UcNBg2A=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "9cb344e96d5b6918e94e1bca2d9f3ea1e9615545",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-25.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
-        "lastModified": 1751211869,
-        "narHash": "sha256-1Cu92i1KSPbhPCKxoiVG5qnoRiKTgR5CcGSRyLpOd7Y=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "b43c397f6c213918d6cfe6e3550abfe79b5d1c51",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-25.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_5": {
-      "locked": {
-        "lastModified": 1751211869,
-        "narHash": "sha256-1Cu92i1KSPbhPCKxoiVG5qnoRiKTgR5CcGSRyLpOd7Y=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "b43c397f6c213918d6cfe6e3550abfe79b5d1c51",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-25.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_6": {
-      "locked": {
-        "lastModified": 1751211869,
-        "narHash": "sha256-1Cu92i1KSPbhPCKxoiVG5qnoRiKTgR5CcGSRyLpOd7Y=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "b43c397f6c213918d6cfe6e3550abfe79b5d1c51",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-25.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_7": {
       "locked": {
         "lastModified": 1744536153,
         "narHash": "sha256-awS2zRgF4uTwrOKwwiJcByDzDOdo3Q1rPZbiHQg/N38=",
@@ -1420,662 +336,36 @@
         "type": "github"
       }
     },
-    "notifications-zome": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "holochain-utils"
-        ],
-        "holonix": "holonix_2",
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "holonix",
-          "nixpkgs"
-        ],
-        "profiles-zome": "profiles-zome_2"
-      },
+    "nixpkgs_4": {
       "locked": {
-        "lastModified": 1752593255,
-        "narHash": "sha256-uOdMwNcLgoOjG2B6KOMZ3DqhdN/d2ouRrC2OJSsOwwg=",
-        "owner": "darksoil-studio",
-        "repo": "notifications-zome",
-        "rev": "fab0b7784a09d01085daa30b31d0ff16c1c4a457",
+        "lastModified": 1755471983,
+        "narHash": "sha256-axUoWcm4cNQ36jOlnkD9D40LTfSQgk8ExfHSRm3rTtg=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "48f4c982de68d966421d2b6f1ddbeb6227cc5ceb",
         "type": "github"
       },
       "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "notifications-zome",
-        "type": "github"
-      }
-    },
-    "notifications-zome_2": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "roles-zome",
-          "holochain-utils"
-        ],
-        "holonix": "holonix_3",
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "holonix",
-          "nixpkgs"
-        ],
-        "profiles-zome": "profiles-zome_3"
-      },
-      "locked": {
-        "lastModified": 1752593255,
-        "narHash": "sha256-uOdMwNcLgoOjG2B6KOMZ3DqhdN/d2ouRrC2OJSsOwwg=",
-        "owner": "darksoil-studio",
-        "repo": "notifications-zome",
-        "rev": "fab0b7784a09d01085daa30b31d0ff16c1c4a457",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "notifications-zome",
-        "type": "github"
-      }
-    },
-    "notifications-zome_3": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "holochain-utils"
-        ],
-        "holonix": "holonix_4",
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "holonix",
-          "nixpkgs"
-        ],
-        "profiles-zome": "profiles-zome_4"
-      },
-      "locked": {
-        "lastModified": 1752593255,
-        "narHash": "sha256-uOdMwNcLgoOjG2B6KOMZ3DqhdN/d2ouRrC2OJSsOwwg=",
-        "owner": "darksoil-studio",
-        "repo": "notifications-zome",
-        "rev": "fab0b7784a09d01085daa30b31d0ff16c1c4a457",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "notifications-zome",
-        "type": "github"
-      }
-    },
-    "p2p-shipyard": {
-      "inputs": {
-        "always-online-nodes": "always-online-nodes",
-        "crane": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "crane"
-        ],
-        "file-storage": "file-storage",
-        "flake-parts": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "holonix",
-          "flake-parts"
-        ],
-        "friends-zome": "friends-zome",
-        "holochain-utils": "holochain-utils",
-        "linked-devices-zome": "linked-devices-zome_2",
-        "messenger-zome": "messenger-zome",
-        "nixpkgs": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "profiles-zome": "profiles-zome",
-        "push-notifications-service": "push-notifications-service",
-        "roles-zome": "roles-zome_2",
-        "safehold": "safehold",
-        "service-providers": "service-providers_3"
-      },
-      "locked": {
-        "lastModified": 1756914247,
-        "narHash": "sha256-xSfVUHdnIpOLcc95S4QpFkGorx74z/nJl8fVZBZCseo=",
-        "owner": "darksoil-studio",
-        "repo": "p2p-shipyard",
-        "rev": "f35eefec7115df4c0bc78abee9d3fb485bf06b12",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "repo": "p2p-shipyard",
+        "owner": "nixos",
+        "ref": "nixos-25.05",
+        "repo": "nixpkgs",
         "type": "github"
       }
     },
     "playground": {
-      "inputs": {
-        "holonix": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "holonix"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "playground",
-          "holonix",
-          "nixpkgs"
-        ],
-        "scaffolding": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "scaffolding"
-        ],
-        "tauri-plugin-holochain": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "tauri-plugin-holochain"
-        ]
-      },
-      "locked": {
-        "lastModified": 1756729856,
-        "narHash": "sha256-xJnIfcIyLRTXsf+N8OOMnqzRkx2gT/DSta7qCm8yU7Y=",
-        "owner": "darksoil-studio",
-        "repo": "holochain-playground",
-        "rev": "5e858641de8ac6113cfa6b47ea1350762a629a61",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "holochain-playground",
-        "type": "github"
-      }
-    },
-    "playground_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1748941883,
-        "narHash": "sha256-YeLySFcUnDpbJPaNn5UF5LE3DlIYRlJLmknqqy7GHws=",
+        "lastModified": 1753170537,
+        "narHash": "sha256-vnaU7xkEWXQ/Bg+IkZT+hkF3h/ZFQ31IFEURpoT8ew8=",
         "owner": "darksoil-studio",
         "repo": "holochain-playground",
-        "rev": "9962a33ce1d00c9d0a32724644032852dd88a083",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "holochain-playground",
-        "type": "github"
-      }
-    },
-    "playground_3": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1748941883,
-        "narHash": "sha256-YeLySFcUnDpbJPaNn5UF5LE3DlIYRlJLmknqqy7GHws=",
-        "owner": "darksoil-studio",
-        "repo": "holochain-playground",
-        "rev": "9962a33ce1d00c9d0a32724644032852dd88a083",
+        "rev": "464d4220865aefd91cf9db19399dfa435c919db7",
         "type": "github"
       },
       "original": {
         "owner": "darksoil-studio",
         "ref": "main-0.5",
         "repo": "holochain-playground",
-        "type": "github"
-      }
-    },
-    "playground_4": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1748941883,
-        "narHash": "sha256-YeLySFcUnDpbJPaNn5UF5LE3DlIYRlJLmknqqy7GHws=",
-        "owner": "darksoil-studio",
-        "repo": "holochain-playground",
-        "rev": "9962a33ce1d00c9d0a32724644032852dd88a083",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "holochain-playground",
-        "type": "github"
-      }
-    },
-    "private-event-sourcing-zome": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "friends-zome",
-          "holochain-utils"
-        ],
-        "linked-devices-zome": "linked-devices-zome",
-        "nixpkgs": [
-          "p2p-shipyard",
-          "friends-zome",
-          "private-event-sourcing-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1755946915,
-        "narHash": "sha256-A1r2E2Ho4Tz6F8bBluVmHzHZdeDlM8ygpjz7Zqv8hz8=",
-        "owner": "darksoil-studio",
-        "repo": "private-event-sourcing-zome",
-        "rev": "c2c030a62d22255f900c292a8243233d9f9b79a9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "private-event-sourcing-zome",
-        "type": "github"
-      }
-    },
-    "private-event-sourcing-zome_2": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "messenger-zome",
-          "holochain-utils"
-        ],
-        "linked-devices-zome": "linked-devices-zome_3",
-        "nixpkgs": [
-          "p2p-shipyard",
-          "messenger-zome",
-          "private-event-sourcing-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1755946915,
-        "narHash": "sha256-A1r2E2Ho4Tz6F8bBluVmHzHZdeDlM8ygpjz7Zqv8hz8=",
-        "owner": "darksoil-studio",
-        "repo": "private-event-sourcing-zome",
-        "rev": "c2c030a62d22255f900c292a8243233d9f9b79a9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "private-event-sourcing-zome",
-        "type": "github"
-      }
-    },
-    "profiles-zome": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "profiles-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752660669,
-        "narHash": "sha256-lbdIsj+Pa5WTtmdDt3/xp7YoHakEp0S/wi1HTeSLJPM=",
-        "owner": "darksoil-studio",
-        "repo": "profiles-zome",
-        "rev": "f8cdf6f37bafbc44c888e9dbc95f31854d27e048",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "profiles-zome",
-        "type": "github"
-      }
-    },
-    "profiles-zome_2": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "holochain-utils"
-        ],
-        "holonix": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "holonix"
-        ],
-        "linked-devices-zome": "linked-devices-zome_4",
-        "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holonix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752592273,
-        "narHash": "sha256-+7+24Dj20pKcM1oSHTLvOH1RPpnBixtpsA8PiIyOF9A=",
-        "owner": "darksoil-studio",
-        "repo": "profiles-zome",
-        "rev": "7ac0ee79b4b4a63e725d22f7606776f2fafee03b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "profiles-zome",
-        "type": "github"
-      }
-    },
-    "profiles-zome_3": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "holochain-utils"
-        ],
-        "holonix": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "holonix"
-        ],
-        "linked-devices-zome": "linked-devices-zome_5",
-        "nixpkgs": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holonix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752592273,
-        "narHash": "sha256-+7+24Dj20pKcM1oSHTLvOH1RPpnBixtpsA8PiIyOF9A=",
-        "owner": "darksoil-studio",
-        "repo": "profiles-zome",
-        "rev": "7ac0ee79b4b4a63e725d22f7606776f2fafee03b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "profiles-zome",
-        "type": "github"
-      }
-    },
-    "profiles-zome_4": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "holochain-utils"
-        ],
-        "holonix": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "holonix"
-        ],
-        "linked-devices-zome": "linked-devices-zome_6",
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome",
-          "holonix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752592273,
-        "narHash": "sha256-+7+24Dj20pKcM1oSHTLvOH1RPpnBixtpsA8PiIyOF9A=",
-        "owner": "darksoil-studio",
-        "repo": "profiles-zome",
-        "rev": "7ac0ee79b4b4a63e725d22f7606776f2fafee03b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "profiles-zome",
-        "type": "github"
-      }
-    },
-    "push-notifications-service": {
-      "inputs": {
-        "clone-manager": "clone-manager",
-        "crane": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "holochain-utils",
-          "crane"
-        ],
-        "garnix-lib": "garnix-lib_2",
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "service-providers": "service-providers"
-      },
-      "locked": {
-        "lastModified": 1756800965,
-        "narHash": "sha256-YwfIdiV0HJdztrb2fK88OHhqTmK2UG2JfPCfuxD9cA8=",
-        "owner": "darksoil-studio",
-        "repo": "push-notifications-service",
-        "rev": "4ee81ec4900247bb22bb8c4843b027244071c84d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "push-notifications-service",
-        "type": "github"
-      }
-    },
-    "roles-zome": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "holochain-utils"
-        ],
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "profiles-zome",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "notifications-zome": "notifications-zome",
-        "profiles-zome": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752663611,
-        "narHash": "sha256-FY+ZwX8XrM712AU52W2rTdIcxadMvr6iDNHpJ6n8qV4=",
-        "owner": "darksoil-studio",
-        "repo": "roles-zome",
-        "rev": "81f78d97363c8b26b00925099a20668daa5bf4e9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "roles-zome",
-        "type": "github"
-      }
-    },
-    "roles-zome_2": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "roles-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "notifications-zome": "notifications-zome_2",
-        "profiles-zome": [
-          "p2p-shipyard",
-          "profiles-zome"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752663611,
-        "narHash": "sha256-FY+ZwX8XrM712AU52W2rTdIcxadMvr6iDNHpJ6n8qV4=",
-        "owner": "darksoil-studio",
-        "repo": "roles-zome",
-        "rev": "81f78d97363c8b26b00925099a20668daa5bf4e9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "roles-zome",
-        "type": "github"
-      }
-    },
-    "roles-zome_3": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "holochain-utils"
-        ],
-        "linked-devices-zome": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "profiles-zome",
-          "linked-devices-zome"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "notifications-zome": "notifications-zome_3",
-        "profiles-zome": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "profiles-zome"
-        ]
-      },
-      "locked": {
-        "lastModified": 1752663611,
-        "narHash": "sha256-FY+ZwX8XrM712AU52W2rTdIcxadMvr6iDNHpJ6n8qV4=",
-        "owner": "darksoil-studio",
-        "repo": "roles-zome",
-        "rev": "81f78d97363c8b26b00925099a20668daa5bf4e9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "roles-zome",
         "type": "github"
       }
     },
@@ -2085,25 +375,20 @@
         "garnix-lib": "garnix-lib",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs_2",
-        "p2p-shipyard": "p2p-shipyard",
-        "rust-overlay": "rust-overlay_5"
+        "rust-overlay": "rust-overlay",
+        "tauri-plugin-holochain": "tauri-plugin-holochain"
       }
     },
     "rust-overlay": {
       "inputs": {
-        "nixpkgs": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "holonix",
-          "nixpkgs"
-        ]
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1755830208,
-        "narHash": "sha256-fMa/Hcg+4O2h+kl3gNPjtGSWPI8NtCl3LYMsejK6qGA=",
+        "lastModified": 1762396738,
+        "narHash": "sha256-BarSecuxtzp1boERdABLkkoxQTi6s/V33lJwUbWLrLY=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "802a7b97f8ff672ba2dec70c9e354f51f844e796",
+        "rev": "c63598992afd54d215d54f2b764adc0484c2b159",
         "type": "github"
       },
       "original": {
@@ -2115,163 +400,49 @@
     "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
+          "tauri-plugin-holochain",
           "holonix",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1751251399,
-        "narHash": "sha256-y+viCuy/eKKpkX1K2gDvXIJI/yzvy6zA3HObapz9XZ0=",
+        "lastModified": 1755571033,
+        "narHash": "sha256-V8gmZBfMiFGCyGJQx/yO81LFJ4d/I5Jxs2id96rLxrM=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "b22d5ee8c60ed1291521f2dde48784edd6bf695b",
+        "rev": "95487740bb7ac11553445e9249041a6fa4b5eccf",
         "type": "github"
       },
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_3": {
-      "inputs": {
-        "nixpkgs": [
-          "p2p-shipyard",
-          "roles-zome",
-          "notifications-zome",
-          "holonix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1751251399,
-        "narHash": "sha256-y+viCuy/eKKpkX1K2gDvXIJI/yzvy6zA3HObapz9XZ0=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "b22d5ee8c60ed1291521f2dde48784edd6bf695b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_4": {
-      "inputs": {
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "roles-zome",
-          "notifications-zome",
-          "holonix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1751251399,
-        "narHash": "sha256-y+viCuy/eKKpkX1K2gDvXIJI/yzvy6zA3HObapz9XZ0=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "b22d5ee8c60ed1291521f2dde48784edd6bf695b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_5": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_7"
-      },
-      "locked": {
-        "lastModified": 1762310305,
-        "narHash": "sha256-EW7xlGJnCW3mKujn/F8me52NXB4nBtabArsRNwehtHM=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "4e8e5dfb8e649d3e05d9a173ce9a9cb0498e89c2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "safehold": {
-      "inputs": {
-        "clone-manager": "clone-manager_2",
-        "crane": [
-          "p2p-shipyard",
-          "safehold",
-          "holochain-utils",
-          "crane"
-        ],
-        "garnix-lib": "garnix-lib_3",
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "service-providers": "service-providers_2"
-      },
-      "locked": {
-        "lastModified": 1756800994,
-        "narHash": "sha256-RYY4MI0OD+xmPPwpw/tlHiborrb1pAXX3Y/1Rb16OxM=",
-        "owner": "darksoil-studio",
-        "repo": "safehold",
-        "rev": "c019aa7405d3985ec16d709eb156b0bb20ad9238",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "safehold",
         "type": "github"
       }
     },
     "scaffolding": {
       "inputs": {
         "crane": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "scaffolding",
           "holonix",
           "crane"
         ],
         "holochain-nix-builders": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "holochain-nix-builders"
         ],
         "holonix": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "holonix"
         ],
         "nixpkgs": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "scaffolding",
           "holonix",
           "nixpkgs"
         ],
         "rust-overlay": [
-          "p2p-shipyard",
-          "holochain-utils",
+          "tauri-plugin-holochain",
           "scaffolding",
           "holonix",
           "rust-overlay"
@@ -2292,168 +463,41 @@
         "type": "github"
       }
     },
-    "service-providers": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "push-notifications-service",
-          "service-providers",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "roles-zome": "roles-zome"
-      },
-      "locked": {
-        "lastModified": 1756750321,
-        "narHash": "sha256-ucPHeUzQlCxqwZRsEGBeAIDKDjGES7xQFhRXbc0fldc=",
-        "owner": "darksoil-studio",
-        "repo": "service-providers",
-        "rev": "b4717c4c981030483cc10f6ba7b331b63b2bd00d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "service-providers",
-        "type": "github"
-      }
-    },
-    "service-providers_2": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "safehold",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "safehold",
-          "service-providers",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "roles-zome": "roles-zome_3"
-      },
-      "locked": {
-        "lastModified": 1756750321,
-        "narHash": "sha256-ucPHeUzQlCxqwZRsEGBeAIDKDjGES7xQFhRXbc0fldc=",
-        "owner": "darksoil-studio",
-        "repo": "service-providers",
-        "rev": "b4717c4c981030483cc10f6ba7b331b63b2bd00d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "service-providers",
-        "type": "github"
-      }
-    },
-    "service-providers_3": {
-      "inputs": {
-        "holochain-utils": [
-          "p2p-shipyard",
-          "holochain-utils"
-        ],
-        "nixpkgs": [
-          "p2p-shipyard",
-          "service-providers",
-          "holochain-utils",
-          "nixpkgs"
-        ],
-        "roles-zome": [
-          "p2p-shipyard",
-          "roles-zome"
-        ]
-      },
-      "locked": {
-        "lastModified": 1756750321,
-        "narHash": "sha256-ucPHeUzQlCxqwZRsEGBeAIDKDjGES7xQFhRXbc0fldc=",
-        "owner": "darksoil-studio",
-        "repo": "service-providers",
-        "rev": "b4717c4c981030483cc10f6ba7b331b63b2bd00d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "darksoil-studio",
-        "ref": "main-0.5",
-        "repo": "service-providers",
-        "type": "github"
-      }
-    },
     "tauri-plugin-holochain": {
       "inputs": {
         "crane": [
-          "p2p-shipyard",
-          "holochain-utils",
           "tauri-plugin-holochain",
           "holonix",
           "crane"
         ],
-        "holochain-nix-builders": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "holochain-nix-builders"
-        ],
-        "holonix": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "holonix"
-        ],
+        "holochain-nix-builders": "holochain-nix-builders",
+        "holonix": "holonix",
         "nixpkgs": [
-          "p2p-shipyard",
-          "holochain-utils",
           "tauri-plugin-holochain",
           "holonix",
           "nixpkgs"
         ],
         "rust-overlay": [
-          "p2p-shipyard",
-          "holochain-utils",
           "tauri-plugin-holochain",
           "holonix",
           "rust-overlay"
         ],
-        "scaffolding": [
-          "p2p-shipyard",
-          "holochain-utils",
-          "scaffolding"
-        ],
-        "webkitnixpkgs": "webkitnixpkgs"
+        "scaffolding": "scaffolding",
+        "webkitnixpkgs": [
+          "nixpkgs"
+        ]
       },
       "locked": {
-        "lastModified": 1756109559,
+        "lastModified": 1756109544,
         "narHash": "sha256-r+Pwd2chZrzvY63HJ/qa7c1/zGAhZtKjCDMEZN+QTUs=",
         "owner": "darksoil-studio",
         "repo": "tauri-plugin-holochain",
-        "rev": "e987ae89c534a9e8c851d03a4e6cf80f228f303b",
+        "rev": "976441f0a822e0c68c4067c46d280adc232ffbea",
         "type": "github"
       },
       "original": {
         "owner": "darksoil-studio",
-        "ref": "main-0.5",
         "repo": "tauri-plugin-holochain",
-        "type": "github"
-      }
-    },
-    "webkitnixpkgs": {
-      "locked": {
-        "lastModified": 1709246466,
-        "narHash": "sha256-jN8Y5Zv2tNUKIGuSqhm8yIMn2x6jhMQvNwKYduvKxjU=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "ed4db9c6c75079ff3570a9e3eb6806c8f692dc26",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "ed4db9c6c75079ff3570a9e3eb6806c8f692dc26",
         "type": "github"
       }
     }

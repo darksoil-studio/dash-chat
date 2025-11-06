@@ -1,4 +1,4 @@
-import { ReactivePromise, reactive } from 'signalium';
+import { reactive } from 'signalium';
 
 import type { LogsStore } from './p2panda/logs-store';
 import type { SimplifiedOperation } from './p2panda/simplified-types';
@@ -16,10 +16,16 @@ export class UsersStore {
 		public client: IUsersClient,
 	) {}
 
+	myPubKey = reactive(async () => {
+		const pk = await this.logsStore.myPubKey();
+		console.log('al',pk)
+		return pk;
+	});
+
 	me = reactive(async () => {
 		const myPubKey = await this.logsStore.myPubKey();
 
-		return this.users(myPubKey);
+		return await this.users(myPubKey);
 	});
 
 	users = reactive(async (userId: UserId) => {

@@ -1,20 +1,20 @@
 import type { UnsubscribeFunction } from 'emittery';
 import type { SimplifiedOperation } from './simplified-types';
-import type { PublicKey, TopicId } from './types';
+import type { PublicKey } from './types';
 
-export interface LogsClient<TOPIC, PAYLOAD> {
+export interface LogsClient<TOPIC_ID, PAYLOAD> {
 	myPubKey(): Promise<PublicKey>;
 
-	getAuthorsForTopic(topicId: TopicId): Promise<PublicKey[]>;
+	getAuthorsForTopic(topicId: TOPIC_ID): Promise<PublicKey[]>;
 
 	getLog(
-		topicId: TOPIC,
+		topicId: TOPIC_ID,
 		author: PublicKey,
 	): Promise<SimplifiedOperation<PAYLOAD>[]>;
 
 	onNewOperation(
 		handler: (
-			topicId: TopicId,
+			topicId: TOPIC_ID,
 			operation: SimplifiedOperation<PAYLOAD>,
 		) => void,
 	): UnsubscribeFunction;

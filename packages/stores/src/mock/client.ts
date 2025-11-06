@@ -19,7 +19,7 @@ export function hash<T>(obj: T): Hash {
 	return blake2bHex(JSON.stringify(obj));
 }
 
-export class LocalStorageLogsClient implements LogsClient {
+export class LocalStorageLogsClient implements LogsClient<string, any> {
 	emitter = new Emittery();
 
 	constructor(protected _myPubKey: PublicKey) {}

@@ -3,37 +3,11 @@
 // See: https://svelte.dev/docs/kit/single-page-apps
 // See: https://v2.tauri.app/start/frontend/sveltekit/ for more info
 import adapter from '@sveltejs/adapter-static';
-import { sveltePreprocess } from 'svelte-preprocess';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: [
-		sveltePreprocess({
-			babel: {
-				presets: [
-					// [
-					// 	'@babel/preset-env',
-					// 	{
-					// 		loose: true,
-					// 		modules: false,
-					// 		targets: {
-					// 			esmodules: true,
-					// 		},
-					// 	},
-					// ],
-				],
-				// plugins: [],
-			},
-		}),
-		// {
-		// 	name: 'a',
-		// 	markup: ({ content }) => {
-		// 		console.log('hey', content);
-		// 	},
-		// 	script: ({ content }) => console.log('hey', content),
-		// },
-	],
-
+	preprocess: vitePreprocess(),
 	kit: {
 		adapter: adapter({
 			fallback: 'index.html',

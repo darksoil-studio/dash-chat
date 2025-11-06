@@ -5,12 +5,14 @@
 		LogsStore,
 		TauriLogsClient,
 		UsersClient,
+		type TopicId,
+		type Payload,
 	} from 'dash-chat-stores';
-	import { useSignal } from '../stores/use-signal';
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
+	let { children } = $props();
 
-	const logsClient = new TauriLogsClient();
-	const logsStore = new LogsStore(logsClient);
+	const logsClient = new TauriLogsClient<TopicId, Payload>();
+	const logsStore = new LogsStore<TopicId, Payload>(logsClient);
 
 	const usersClient = new UsersClient();
 	const usersStore = new UsersStore(logsStore, usersClient);
@@ -18,10 +20,9 @@
 	setContext('users-store', usersStore);
 </script>
 
-<main class="container">
+<main class="container column" style="flex: 1">
 	<SplashscreenPrompt>
-		<slot>
-		</slot>
+		{@render children()}
 	</SplashscreenPrompt>
 </main>
 
