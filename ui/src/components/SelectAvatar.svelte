@@ -1,11 +1,11 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import '@awesome.me/webawesome/dist/components/tooltip/tooltip.js';
-	import {resizeAndExport} from '../utils/image'
+	import { resizeAndExport } from '../utils/image';
 
 	let avatarSize = 300;
 
-	let { avatar = $bindable() }: {avatar: string | undefined} = $props();
+	let { avatar = $bindable() }: { avatar: string | undefined } = $props();
 	let uploading = $state(false);
 	let avatarFilePicker: HTMLInputElement;
 
@@ -40,18 +40,20 @@
 	<div
 		class="column"
 		style="align-items: center; height: 50px"
-		onclick={() => {
-			avatar = undefined;
-		}}
+		onclick={() => avatarFilePicker.click()}
 	>
-			<wa-avatar id="avatar" image={avatar} alt="Avatar" shape="circle" initials=""
-			></wa-avatar>
-		<wa-tooltip for="avatar">Clear</wa-tooltip
-		>
+		<wa-avatar
+			id="avatar"
+			image={avatar}
+			alt="Avatar"
+			shape="circle"
+			initials=""
+		></wa-avatar>
 	</div>
 {:else}
 	<div class="column" style="align-items: center;">
 		<wa-button
+			class="circle"
 			variant="default"
 			disabled={uploading}
 			loading={uploading}

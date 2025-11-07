@@ -5,7 +5,7 @@
 	import { getContext } from 'svelte';
 	import type { UsersStore } from 'dash-chat-stores';
 	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
-	import { useSignal } from '../stores/use-signal';
+	import { useReactivePromise} from '../stores/use-signal';
 
 	const usersStore: UsersStore = getContext('users-store');
 	let nickname: string | undefined;
@@ -19,7 +19,7 @@
 		splashscreenDismissed.dismiss();
 	}
 	
-	const me = useSignal(usersStore.me)
+	const me = useReactivePromise(usersStore.me)
 </script>
 
 <wa-input

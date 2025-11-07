@@ -18,7 +18,6 @@ export class UsersStore {
 
 	myPubKey = reactive(async () => {
 		const pk = await this.logsStore.myPubKey();
-		console.log('al',pk)
 		return pk;
 	});
 

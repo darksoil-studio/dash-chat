@@ -2,12 +2,12 @@
 	import '@awesome.me/webawesome/dist/components/spinner/spinner.js'
 	import type { UsersStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
-	import { useSignal } from '../stores/use-signal';
+	import { useReactivePromise} from '../stores/use-signal';
 	import CreateProfile from '../profiles/CreateProfile.svelte';
 
 	const usersStore: UsersStore = getContext('users-store');
 
-	const me = useSignal(usersStore.me);
+	const me = useReactivePromise(usersStore.me);
 </script>
 
 {#await $me}
