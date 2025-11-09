@@ -21,7 +21,7 @@ use base64::{Engine, prelude::BASE64_STANDARD};
 use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
-pub use node::{Node, NodeConfig, Notification};
+pub use node::{Node, NodeConfig, NodeLocalData, Notification};
 pub use operation::*;
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;

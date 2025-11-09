@@ -4,16 +4,13 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use futures::FutureExt;
 use p2panda_core::{Body, Hash, Header, PublicKey, RawOperation};
-use p2panda_net::TopicId;
 use p2panda_store::{LogStore, MemoryStore, OperationStore};
-use rand::Rng;
 
 use crate::{
     operation::{Extensions, Payload},
     testing::AliasedId,
-    topic::{DashChatTopicId, LogId, Topic},
+    topic::{LogId, Topic},
     *,
 };
 
@@ -40,11 +37,7 @@ impl OpStore {
             .operations
             .iter()
             .filter(|(_, (t, _, _, _))| {
-                topics.is_empty()
-                    || topics
-                        .iter()
-                        .find(|topic| DashChatTopicId::from(Hash::from_bytes(topic.id())).eq(t))
-                        .is_some()
+                topics.is_empty() || topics.iter().find(|topic| **topic == t).is_some()
             })
             .collect::<Vec<_>>();
         ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.alias(), header.seq_num));
@@ -62,6 +55,7 @@ impl OpStore {
                     }
                     Some(Payload::Inbox(invitation)) => format!("{:?}", invitation),
                     Some(Payload::Announcements(announcements)) => format!("{:?}", announcements),
+                    Some(Payload::Private(private)) => format!("{:?}", private),
                     None => "_".to_string(),
                 };
                 if topics.len() == 1 {

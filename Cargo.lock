@@ -1423,6 +1423,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "base64 0.22.1",
+ "blake3",
  "dashchat-node",
  "derive_more 1.0.0",
  "futures",

@@ -5,10 +5,11 @@
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
 	import Avatar from '../components/Avatar.svelte';
+	import AddFriend from '../friends/AddFriend.svelte';
 
 	const usersStore: UsersStore = getContext('users-store');
 
-	const myPubKey = useReactivePromise (usersStore.myPubKey);
+	const myPubKey = useReactivePromise(usersStore.myPubKey);
 </script>
 
 {#await $myPubKey then myPubKey}
@@ -18,12 +19,15 @@
 				<Avatar userId={myPubKey}></Avatar>
 			</a>
 		</div>
+
+		<a href="/friends">
+			<wa-button>Friends</wa-button>
+		</a>
 	</div>
 {/await}
 
 <style>
-a {
-	cursor: pointer;
-}
-
+	a {
+		cursor: pointer;
+	}
 </style>

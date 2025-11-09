@@ -68,6 +68,7 @@ impl Node {
             }
             Payload::Announcements(_) => (vec![], vec![]),
             Payload::Inbox(_) => (vec![], vec![]),
+            Payload::Private(_) => (vec![], vec![]),
         };
 
         deps.extend(space_deps.into_iter());
@@ -91,6 +92,7 @@ impl Node {
                 Payload::Chat(msgs) => msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>(),
                 Payload::Inbox(_) => vec![],
                 Payload::Announcements(_) => vec![],
+                Payload::Private(_) => vec![],
             };
             let pk = PK::from(header.public_key);
             tracing::info!(

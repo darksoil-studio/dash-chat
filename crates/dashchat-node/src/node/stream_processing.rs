@@ -280,8 +280,9 @@ impl Node {
         is_author: bool,
     ) -> anyhow::Result<()> {
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
-        match (topic, &payload) {
-            (Topic::Chat(chat_id), Some(Payload::Chat(msgs))) => {
+        match &payload {
+            Some(Payload::Chat(msgs)) => {
+                let chat_id = ChatId::new(topic.id());
                 let mut chats = self.nodestate.chats.write().await;
                 let chat = chats.entry(chat_id).or_insert(Chat::new(chat_id));
                 tracing::info!(
@@ -344,8 +345,10 @@ impl Node {
                 }
             }
 
-            (Topic::Inbox(public_key), Some(Payload::Inbox(invitation))) => {
-                if public_key != self.public_key().into() {
+            Some(Payload::Inbox(invitation)) => {
+                // The topic is the pub key
+                let public_key = PublicKey::from_bytes(&topic.id()).expect("invalid public key");
+                if public_key != self.public_key() {
                     // not for me, ignore
                     return Ok(());
                 }
@@ -361,12 +364,16 @@ impl Node {
                 }
             }
 
-            (Topic::Announcements(_), Some(Payload::Announcements(_))) => {
+            Some(Payload::Announcements(_)) => {
                 // Nothing to do.
             }
 
-            (topic, payload) => {
-                tracing::error!(?topic, ?payload, "unhandled topic/payload");
+            Some(Payload::Private(_)) => {
+                // Nothing to do.
+            }
+
+            None => {
+                tracing::error!(?topic, "no payload");
             }
         }
         Ok(())

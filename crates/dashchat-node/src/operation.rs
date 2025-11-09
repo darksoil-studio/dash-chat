@@ -3,6 +3,7 @@ use p2panda_core::{Body, Extension, PruneFlag};
 use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
+use crate::friend::Friend;
 use crate::spaces::SpaceControlMessage;
 use crate::topic::LogId;
 use crate::{AsBody, Cbor};
@@ -34,16 +35,30 @@ pub enum InboxPayload {
     Friend,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, derive_more::Deref, derive_more::From)]
+pub struct ChatPayload(pub Vec<SpaceControlMessage>);
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum PrivatePayload {
+    AddFriend(Friend),
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum Payload {
+    /// Pushing data out to my friends.
     Announcements(AnnouncementsPayload),
-    Inbox(InboxPayload),
-    Chat(ChatPayload),
-}
 
-#[derive(Clone, Debug, Serialize, Deserialize, derive_more::Deref, derive_more::From)]
-pub struct ChatPayload(pub Vec<SpaceControlMessage>);
+    /// Data sent to someone who is not your friend
+    Inbox(InboxPayload),
+
+    /// Group chat data
+    Chat(ChatPayload),
+
+    /// Data only seen within your private device group.
+    /// No other person sees these.
+    Private(PrivatePayload),
+}
 
 impl Cbor for Payload {}
 impl AsBody for Payload {}

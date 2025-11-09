@@ -17,68 +17,53 @@ use serde::{Deserialize, Serialize};
     PartialEq,
     PartialOrd,
     Ord,
-    derive_more::Display,
+    derive_more::Deref,
 )]
-#[display("{:?}", self)]
-pub enum Topic {
-    Chat(ChatId),
-    Inbox(PK),
-    Announcements(PK),
+pub struct Topic([u8; 32]);
+
+impl Topic {
+    /// The topic ID is the unique chat ID.
+    pub fn chat(chat_id: ChatId) -> Self {
+        Self(chat_id.0)
+    }
+
+    /// The topic ID is the public key.
+    /// This is convenient so that the pub key doesn't need to be stored elsewhere.
+    /// However, maybe eventually we want to change this to a hash.
+    pub fn inbox(public_key: impl Into<p2panda_core::PublicKey>) -> Self {
+        Self(public_key.into().as_bytes().clone().try_into().unwrap())
+    }
+
+    /// The topic ID is the hashed public key.
+    /// This is to prevent collisions with the inbox topic, which also uses the public key.
+    pub fn announcements(public_key: impl Into<p2panda_core::PublicKey>) -> Self {
+        let hash = blake3::hash(public_key.into().as_bytes());
+        Self(hash.into())
+    }
+
+    /// The topic ID is unique.
+    pub fn private(topic_id: PrivateTopicId) -> Self {
+        Self(topic_id)
+    }
 }
 
 impl TopicId for Topic {
     fn id(&self) -> [u8; 32] {
-        match self {
-            Topic::Chat(chat_id) => **chat_id,
-            Topic::Inbox(public_key) => *public_key.as_bytes(),
-            Topic::Announcements(public_key) => *public_key.as_bytes(),
-        }
+        self.0
     }
 }
+
+pub type PrivateTopicId = [u8; 32];
 
 impl From<ChatId> for Topic {
     fn from(chat_id: ChatId) -> Self {
-        Topic::Chat(chat_id)
+        Topic::chat(chat_id)
     }
 }
 
-impl From<Topic> for DashChatTopicId {
-    fn from(topic: Topic) -> Self {
-        DashChatTopicId::from(Hash::from_bytes(topic.id().clone()))
-    }
-}
-
-
-impl From<Hash> for DashChatTopicId {
-    fn from(hash: Hash) -> Self {
-        DashChatTopicId(hash)
-    }
-}
+pub type DashChatTopicId = Topic;
 
 impl TopicQuery for Topic {}
-
-#[derive(
-    Clone,
-    Debug,
-    Copy,
-    Hash,
-    Eq,
-    PartialEq,
-    PartialOrd,
-    Ord,
-    serde::Serialize,
-    serde::Deserialize,
-    // derive_more::Display,
-)]
-pub struct DashChatTopicId(pub Hash);
-
-impl TopicQuery for DashChatTopicId {}
-
-impl TopicId for DashChatTopicId {
-    fn id(&self) -> [u8; 32] {
-        self.0.as_bytes().clone()
-    }
-}
 
 pub type LogId = DashChatTopicId;
 

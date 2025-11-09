@@ -42,7 +42,7 @@ async fn test_profiles() {
                 .op_store
                 .get_log(
                     &alice.public_key(),
-                    &Topic::Announcements(alice.public_key()).into(),
+                    &Topic::announcements(alice.public_key()).into(),
                     None,
                 )
                 .await

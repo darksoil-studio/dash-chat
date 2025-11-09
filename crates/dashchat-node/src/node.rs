@@ -74,6 +74,21 @@ pub struct NodeState {
     friends: Arc<RwLock<HashMap<PK, Friend>>>,
 }
 
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+pub struct NodeLocalData {
+    pub private_key: PrivateKey,
+    pub device_group_id: crate::topic::PrivateTopicId,
+}
+
+impl NodeLocalData {
+    pub fn random() -> Self {
+        Self {
+            private_key: PrivateKey::new(),
+            device_group_id: rand::random(),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Node {
     pub op_store: OpStore,
@@ -99,13 +114,17 @@ pub struct Node {
 }
 
 impl Node {
-    #[tracing::instrument(skip_all, fields(me = ?PK::from(private_key.public_key())))]
+    #[tracing::instrument(skip_all, fields(me = ?PK::from(data.private_key.public_key())))]
     pub async fn new(
-        private_key: PrivateKey,
+        data: NodeLocalData,
         config: NodeConfig,
         notification_tx: Option<mpsc::Sender<Notification>>,
     ) -> Result<Self> {
         let rng = Rng::default();
+        let NodeLocalData {
+            private_key,
+            device_group_id,
+        } = data;
         let credentials = p2panda_spaces::Credentials::from_keys(
             private_key.clone(),
             SecretKey::from_rng(&rng).context("Failed to generate secret key")?,
@@ -119,7 +138,7 @@ impl Node {
 
         // TODO: unnecessary
         author_store
-            .add_author(Topic::Inbox(public_key.clone()).into(), public_key)
+            .add_author(Topic::inbox(public_key.clone()), public_key)
             .await;
 
         // let relay_url = RELAY_ENDPOINT.parse()?;
@@ -137,14 +156,14 @@ impl Node {
                     while let Some(Ok(peer)) = new_peers.next().await {
                         let pubkey = PK::from_bytes(peer.node_addr.node_id.as_bytes()).unwrap();
                         if author_store
-                            .authors(&Topic::Inbox(pubkey.clone()).into())
+                            .authors(&Topic::inbox(pubkey.clone()))
                             .await
                             .map(|authors| !authors.contains(&me))
                             .unwrap_or(true)
                         {
                             tracing::debug!("new peer: {}", pubkey);
                             author_store
-                                .add_author(Topic::Inbox(pubkey.clone()).into(), me)
+                                .add_author(Topic::inbox(pubkey.clone()), me)
                                 .await;
                         }
                     }
@@ -204,12 +223,11 @@ impl Node {
             },
         };
 
-        // // TODO: this doesn't seem to make a difference
-        // manager.register_member(&node.me().await?.into()).await?;
-
-        node.initialize_topic(Topic::Announcements(public_key), true)
+        node.initialize_topic(Topic::private(device_group_id), true)
             .await?;
-        node.initialize_topic(Topic::Inbox(public_key), false)
+        node.initialize_topic(Topic::announcements(public_key), true)
+            .await?;
+        node.initialize_topic(Topic::inbox(public_key), false)
             .await?;
 
         // TODO: locally store list of groups and initialize them when the node starts
@@ -252,7 +270,7 @@ impl Node {
     /// Create a new chat Space, and subscribe to the Topic for this chat.
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     pub async fn create_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
-        self.initialize_topic(Topic::Chat(chat_id), true).await?;
+        self.initialize_topic(Topic::chat(chat_id), true).await?;
 
         let (_space, msgs, _event) = self
             .manager
@@ -266,7 +284,7 @@ impl Node {
 
         let _header = self
             .author_operation(
-                Topic::Chat(chat_id),
+                Topic::chat(chat_id),
                 Payload::Chat(msgs.into()),
                 Some(&format!("create_group/space-control({})", chat_id.alias())),
             )
@@ -280,7 +298,7 @@ impl Node {
     /// -- you're not fully a member until someone adds you.
     #[tracing::instrument(skip_all, parent = None, fields(me = ?self.public_key()))]
     pub async fn join_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
-        self.initialize_topic(Topic::Chat(chat_id), true).await
+        self.initialize_topic(Topic::chat(chat_id), true).await
     }
 
     #[cfg(feature = "testing")]
@@ -291,7 +309,7 @@ impl Node {
 
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
         self.author_operation(
-            Topic::Announcements(self.public_key().into()),
+            Topic::announcements(self.public_key()),
             Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
             Some(&format!("set_profile({})", self.public_key().alias())),
         )
@@ -315,7 +333,7 @@ impl Node {
 
         let _header = self
             .author_operation(
-                Topic::Inbox(pubkey),
+                Topic::inbox(pubkey),
                 Payload::Inbox(InboxPayload::JoinGroup(chat_id)),
                 Some(&format!("add_member/invitation({})", chat_id.alias())),
             )
@@ -323,7 +341,7 @@ impl Node {
 
         let _header = self
             .author_operation(
-                Topic::Chat(chat_id),
+                Topic::chat(chat_id),
                 Payload::Chat(ChatPayload::from(msgs)),
                 Some(&format!("add_member/space-control({})", chat_id.alias())),
             )
@@ -421,13 +439,13 @@ impl Node {
             .await
             .map_err(|e| anyhow!("Failed to register friend: {e:?}"))?;
 
-        self.initialize_topic(Topic::Announcements(public_key.clone()), false)
+        self.initialize_topic(Topic::announcements(public_key.clone()), false)
             .await?;
-        self.initialize_topic(Topic::Inbox(public_key), true)
+        self.initialize_topic(Topic::inbox(public_key), true)
             .await?;
 
         self.author_operation(
-            Topic::Inbox(public_key.clone()),
+            Topic::inbox(public_key.clone()),
             Payload::Inbox(InboxPayload::Friend),
             Some(&format!("add_friend/invitation({})", public_key.alias())),
         )

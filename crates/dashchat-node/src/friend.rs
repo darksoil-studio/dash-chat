@@ -4,7 +4,7 @@ use p2panda_spaces::ActorId;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Friend {}
 
 #[derive(Clone, Debug, Serialize, Deserialize, derive_more::From)]

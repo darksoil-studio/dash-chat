@@ -1,6 +1,6 @@
 use tauri::{Emitter, Manager};
 
-use crate::commands::logs::{SimplifiedHeader, SimplifiedOperation, simplify};
+use crate::commands::logs::{simplify, SimplifiedHeader, SimplifiedOperation};
 
 mod commands;
 mod utils;
@@ -54,10 +54,10 @@ pub fn run() {
             let handle = app.handle().clone();
 
             tauri::async_runtime::block_on(async move {
-                let private_key = dashchat_node::PrivateKey::new();
+                let local_data = dashchat_node::NodeLocalData::random();
                 let config = dashchat_node::NodeConfig::default();
                 let (notification_tx, mut notification_rx) = tokio::sync::mpsc::channel(100);
-                let node = dashchat_node::Node::new(private_key, config, Some(notification_tx))
+                let node = dashchat_node::Node::new(local_data, config, Some(notification_tx))
                     .await
                     .expect("Failed to create node");
 

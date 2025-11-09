@@ -26,14 +26,14 @@
 {#await $me}
 	<wa-spinner> </wa-spinner>
 {:then me}
-		<wa-card class="center-in-desktop" style="margin: var(--wa-space-m);">
-			<div class="row" style="align-items: center; gap: var(--wa-space-s)">
-				<wa-avatar
-					image={me?.profile?.avatar}
-					initials={me?.profile?.name.slice(0, 2)}
-				>
-				</wa-avatar>
-				{me?.profile?.name}
-			</div>
-		</wa-card>
+	<wa-card class="center-in-desktop" style="margin: var(--wa-space-m);">
+		<div class="row" style="align-items: center; gap: var(--wa-space-s)">
+			<wa-avatar
+				image={me?.profile?.avatar}
+				initials={me?.profile?.name.slice(0, 2)}
+			>
+			</wa-avatar>
+			{me?.profile?.name}
+		</div>
+	</wa-card>
 {/await}
