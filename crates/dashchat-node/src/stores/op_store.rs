@@ -47,15 +47,13 @@ impl OpStore {
                     .clone()
                     .map(|body| Payload::try_from_body(&body).unwrap())
                 {
-                    Some(Payload::Chat(msgs)) => {
+                    Some(Payload::Chat(ChatPayload::Space(msgs))) => {
                         format!(
                             "{:?}",
                             msgs.iter().map(|m| m.arg_type()).collect::<Vec<_>>()
                         )
                     }
-                    Some(Payload::Inbox(invitation)) => format!("{:?}", invitation),
-                    Some(Payload::Announcements(announcements)) => format!("{:?}", announcements),
-                    Some(Payload::Private(private)) => format!("{:?}", private),
+                    Some(p) => format!("{p:?}"),
                     None => "_".to_string(),
                 };
                 if topics.len() == 1 {

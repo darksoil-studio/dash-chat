@@ -203,9 +203,9 @@ impl Node {
             },
         };
 
-        node.initialize_topic(Topic::private(device_group_id).aliased("private!"), true)
+        node.initialize_topic(Topic::private(device_group_id).aliased("private"), true)
             .await?;
-        node.initialize_topic(Topic::announcements(public_key).aliased("announce!"), true)
+        node.initialize_topic(Topic::announcements(public_key).aliased("announce"), true)
             .await?;
 
         for topic in active_inbox_topics.read().await.iter() {
@@ -318,7 +318,7 @@ impl Node {
         let _header = self
             .author_operation(
                 Topic::chat(chat_id),
-                Payload::Chat(msgs.into()),
+                Payload::Chat(ChatPayload::Space(msgs.into())),
                 Some(&format!("create_group/space-control({})", chat_id.alias())),
             )
             .await?;
@@ -368,7 +368,7 @@ impl Node {
         let _header = self
             .author_operation(
                 self.direct_chat_id(pubkey),
-                Payload::Inbox(InboxPayload::JoinGroup(chat_id)),
+                Payload::Chat(ChatPayload::JoinGroup(chat_id)),
                 Some(&format!("add_member/invitation({})", chat_id.alias())),
             )
             .await?;
@@ -376,7 +376,7 @@ impl Node {
         let _header = self
             .author_operation(
                 Topic::chat(chat_id),
-                Payload::Chat(ChatPayload::from(msgs)),
+                Payload::Chat(ChatPayload::Space(msgs)),
                 Some(&format!("add_member/space-control({})", chat_id.alias())),
             )
             .await?;

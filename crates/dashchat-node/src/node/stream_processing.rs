@@ -225,7 +225,7 @@ impl Node {
         let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
 
         match payload.as_ref() {
-            Some(Payload::Chat(ChatPayload(msgs))) => {
+            Some(Payload::Chat(ChatPayload::Space(msgs))) => {
                 let mut sd = self.space_dependencies.write().await;
                 for msg in msgs {
                     sd.insert(msg.id(), hash.clone());
@@ -281,7 +281,7 @@ impl Node {
     ) -> anyhow::Result<()> {
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match &payload {
-            Some(Payload::Chat(msgs)) => {
+            Some(Payload::Chat(ChatPayload::Space(msgs))) => {
                 let chat_id = ChatId::new(topic.id());
                 let mut chats = self.nodestate.chats.write().await;
                 let chat = chats.entry(chat_id).or_insert(Chat::new(chat_id));
@@ -345,16 +345,15 @@ impl Node {
                 }
             }
 
+            Some(Payload::Chat(ChatPayload::JoinGroup(chat_id))) => {
+                self.join_group(*chat_id).await?;
+                // TODO: maybe close down the chat tasks if we are kicked out?
+            }
+
             Some(Payload::Inbox(invitation)) => {
                 // FIXME: reinstate this check
-                // if !self
-                //     .local_data
-                //     .active_inbox_topics
-                //     .read()
-                //     .await
-                //     .iter()
-                //     .any(|it| it.topic == topic)
-                if false {
+                let active_topics = self.local_data.active_inbox_topics.read().await;
+                if !active_topics.iter().any(|it| it.topic == topic) {
                     // not for me, ignore
                     return Ok(());
                 }
@@ -364,10 +363,6 @@ impl Node {
                     "received invitation message"
                 );
                 match invitation {
-                    InboxPayload::JoinGroup(chat_id) => {
-                        self.join_group(*chat_id).await?;
-                        // TODO: maybe close down the chat tasks if we are kicked out?
-                    }
                     InboxPayload::Friend => {
                         // Nothing to do.
                     }

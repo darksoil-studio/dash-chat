@@ -28,14 +28,15 @@ pub trait AliasedId: ShortId {
     where
         Self: Sized,
     {
-        let existing = ALIASES.lock().unwrap().insert(
-            self.as_bytes().to_vec(),
-            if Self::SHOW_SHORT_ID {
-                format!("⟪{}|{}⟫", self.short(), alias)
-            } else {
-                format!("⟪{}‖{}⟫", <Self as ShortId>::PREFIX, alias)
-            },
-        );
+        let alias = if Self::SHOW_SHORT_ID {
+            format!("⟪{}|{}⟫", self.short(), alias)
+        } else {
+            format!("⟪{}‖{}⟫", <Self as ShortId>::PREFIX, alias)
+        };
+        let existing = ALIASES
+            .lock()
+            .unwrap()
+            .insert(self.as_bytes().to_vec(), alias.clone());
         if let Some(existing) = existing {
             if existing != alias {
                 tracing::warn!(?existing, ?alias, "alias already exists, replacing");

@@ -34,38 +34,44 @@ impl Node {
         let mut sd = self.space_dependencies.write().await;
 
         let (ids, space_deps): (Vec<OperationId>, Vec<Hash>) = match &payload {
-            Payload::Chat(msgs) => {
-                let ids = msgs.iter().map(|msg| msg.id()).collect::<Vec<_>>();
-                let deps = msgs
-                .iter()
-                .flat_map(|msg| {
-                        tracing::debug!(
-                            id = msg.id().alias(),
-                            argtype = ?msg.arg_type(),
-                            batch = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                            deps = ?msg.dependencies().iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                            "authoring space msg",
-                        );
-                        msg.dependencies()
-                    })
-                    .flat_map(|dep| match sd.get(&dep) {
-                        Some(hash) => Some(hash.clone()),
-                        None => {
-                            // If the msg is part of the set being committed, it's ok
-                            if !ids.contains(&dep) {
-                                tracing::error!(
-                                    dep = dep.alias(),
-                                    deps = ?sd.keys().map(|k| k.alias()).collect::<Vec<_>>(),
-                                    ids = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                                    "space dep should have been seen already"
+            Payload::Chat(p) => {
+                match p {
+                    ChatPayload::Space(msgs) => {
+                        let ids = msgs.iter().map(|msg| msg.id()).collect::<Vec<_>>();
+                        let deps = msgs
+                        .iter()
+                        .flat_map(|msg| {
+                                tracing::debug!(
+                                    id = msg.id().alias(),
+                                    argtype = ?msg.arg_type(),
+                                    batch = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
+                                    deps = ?msg.dependencies().iter().map(|id| id.alias()).collect::<Vec<_>>(),
+                                    "authoring space msg",
                                 );
-                                panic!("space dep should have been seen already")
-                            }
-                            None
-                        }
-                    })
-                    .collect();
-                (ids, deps)
+                                msg.dependencies()
+                            })
+                            .flat_map(|dep| match sd.get(&dep) {
+                                Some(hash) => Some(hash.clone()),
+                                None => {
+                                    // If the msg is part of the set being committed, it's ok
+                                    if !ids.contains(&dep) {
+                                        tracing::error!(
+                                            dep = dep.alias(),
+                                            deps = ?sd.keys().map(|k| k.alias()).collect::<Vec<_>>(),
+                                            ids = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
+                                            "space dep should have been seen already"
+                                        );
+                                        panic!("space dep should have been seen already")
+                                    }
+                                    None
+                                }
+                            })
+                            .collect();
+                        (ids, deps)
+                    }
+
+                    ChatPayload::JoinGroup(chat_id) => (vec![], vec![]),
+                }
             }
             Payload::Announcements(_) => (vec![], vec![]),
             Payload::Inbox(_) => (vec![], vec![]),
@@ -90,7 +96,10 @@ impl Node {
 
         {
             let space_msgs = match &payload {
-                Payload::Chat(msgs) => msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>(),
+                Payload::Chat(ChatPayload::Space(msgs)) => {
+                    msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>()
+                }
+                Payload::Chat(ChatPayload::JoinGroup(_)) => vec![],
                 Payload::Inbox(_) => vec![],
                 Payload::Announcements(_) => vec![],
                 Payload::Private(_) => vec![],

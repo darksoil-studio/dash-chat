@@ -28,15 +28,24 @@ pub enum AnnouncementsPayload {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
-    /// Instructs the recipient to subscribe to the group chat topic.
-    JoinGroup(ChatId),
-
     /// Invites the recipient to add the sender as a friend.
     Friend,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, derive_more::Deref, derive_more::From)]
-pub struct ChatPayload(pub Vec<SpaceControlMessage>);
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum ChatPayload {
+    /// Space control messages, including actual chat messages
+    Space(Vec<SpaceControlMessage>),
+    /// Instructs the recipient to subscribe to the group chat topic.
+    /// This is only sent in direct chat messages, not groups.
+    JoinGroup(ChatId),
+}
+
+impl From<Vec<SpaceControlMessage>> for ChatPayload {
+    fn from(msgs: Vec<SpaceControlMessage>) -> Self {
+        Self::Space(msgs)
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum PrivatePayload {

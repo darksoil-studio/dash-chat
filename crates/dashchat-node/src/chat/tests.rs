@@ -36,7 +36,7 @@ async fn test_group_2() {
         .await
         .unwrap();
 
-    let chat_id = ChatId::random().aliased("onlychat");
+    let chat_id = ChatId::random();
     alice.create_group(chat_id).await.unwrap();
 
     alice
@@ -55,7 +55,7 @@ async fn test_group_2() {
         .watch_for(Duration::from_secs(5), |n| {
             matches!(
                 n.payload,
-                Payload::Inbox(InboxPayload::JoinGroup(id)) if id == chat_id
+                Payload::Chat(ChatPayload::JoinGroup(id)) if id == chat_id
             )
         })
         .await
@@ -149,7 +149,7 @@ async fn test_group_3() {
     // carol.add_friend(alice.me().await.unwrap()).await.unwrap();
 
     println!("\n==> alice creates group\n");
-    let chat_id = ChatId::random().aliased("onlychat");
+    let chat_id = ChatId::random();
     alice.create_group(chat_id).await.unwrap();
     println!("\n==> alice adds bobbi\n");
     alice
