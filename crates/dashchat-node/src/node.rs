@@ -74,8 +74,8 @@ pub type Orderer = PartialOrder<
 
 #[derive(Clone)]
 pub struct NodeState {
-    chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
-    friends: Arc<RwLock<HashMap<PK, Friend>>>,
+    pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
+    pub(crate) friends: Arc<RwLock<HashMap<PK, Friend>>>,
 }
 
 #[derive(Clone)]
@@ -104,7 +104,7 @@ pub struct Node {
     author_store: AuthorStore<LogId>,
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
-    manager: DashManager,
+    pub(crate) manager: DashManager,
     /// mapping from space operations to header hashes, so that dependencies
     /// can be declared
     space_dependencies: Arc<RwLock<HashMap<OperationId, p2panda_core::Hash>>>,
@@ -116,7 +116,7 @@ pub struct Node {
 
     /// TODO: some of the stuff in here is only for testing.
     /// The channel senders are needed but any stateful stuff should go.
-    nodestate: NodeState,
+    pub(crate) nodestate: NodeState,
 }
 
 impl Node {
@@ -294,7 +294,12 @@ impl Node {
         })
     }
 
-    pub fn direct_chat_id(&self, pk: PK) -> Topic {
+    /// Get the topic for a direct chat between two public keys.
+    ///
+    /// The topic is the hashed sorted public keys.
+    /// Anyone who knows the two public keys can derive the same topic.
+    // TODO: is this a problem? Should we use a random topic instead?
+    pub fn direct_chat_topic(&self, pk: PK) -> Topic {
         let me = self.public_key().into();
         let topic = Topic::chat(ChatId::direct_chat([me, pk]));
         if me > pk {
@@ -337,12 +342,6 @@ impl Node {
         self.initialize_topic(Topic::chat(chat_id), true).await
     }
 
-    #[cfg(feature = "testing")]
-    pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
-        let groups = self.nodestate.chats.read().await.keys().cloned().collect();
-        Ok(groups)
-    }
-
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
         self.author_operation(
             Topic::announcements(self.public_key()),
@@ -369,7 +368,7 @@ impl Node {
 
         let _header = self
             .author_operation(
-                self.direct_chat_id(pubkey),
+                self.direct_chat_topic(pubkey),
                 Payload::Chat(ChatPayload::JoinGroup(chat_id)),
                 Some(&format!("add_member/invitation({})", chat_id.alias())),
             )
@@ -384,18 +383,6 @@ impl Node {
             .await?;
 
         Ok(())
-    }
-
-    pub async fn get_members(
-        &self,
-        chat_id: ChatId,
-    ) -> anyhow::Result<Vec<(p2panda_spaces::ActorId, Access)>> {
-        if let Some(space) = self.manager.space(chat_id).await? {
-            Ok(space.members().await?)
-        } else {
-            tracing::warn!("Chat has no Space: {chat_id}");
-            Ok(vec![])
-        }
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
@@ -489,7 +476,7 @@ impl Node {
         self.initialize_topic(friend.inbox_topic.topic.aliased("inbox"), true)
             .await?;
 
-        self.initialize_topic(self.direct_chat_id(public_key), true)
+        self.initialize_topic(self.direct_chat_topic(public_key), true)
             .await?;
 
         self.author_operation(
@@ -507,12 +494,6 @@ impl Node {
         .await?;
 
         Ok(public_key)
-    }
-
-    #[cfg(feature = "testing")]
-    pub async fn get_friends(&self) -> anyhow::Result<Vec<PK>> {
-        let friends = self.nodestate.friends.read().await;
-        Ok(friends.keys().cloned().collect())
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]

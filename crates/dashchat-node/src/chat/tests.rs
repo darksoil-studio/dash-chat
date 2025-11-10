@@ -12,10 +12,11 @@ const TRACING_FILTER: &str =
 async fn test_group_2() {
     crate::testing::setup_tracing(TRACING_FILTER);
 
-    println!("nodes:");
     let (alice, _alice_rx) = TestNode::new(NodeConfig::default(), Some("alice")).await;
-    println!("alice: {:?}", alice.public_key().short());
     let (bobbi, mut bobbi_rx) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
+
+    println!("nodes:");
+    println!("alice: {:?}", alice.public_key().short());
     println!("bobbi: {:?}", bobbi.public_key().short());
 
     introduce_and_wait([&alice.network, &bobbi.network]).await;

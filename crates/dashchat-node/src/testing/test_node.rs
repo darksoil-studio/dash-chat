@@ -3,10 +3,11 @@ use std::{
     time::{Duration, Instant},
 };
 
+use p2panda_auth::Access;
 use tokio::sync::mpsc::Receiver;
 
 use crate::{
-    NodeConfig, Notification, ShortId,
+    ChatId, NodeConfig, Notification, ShortId,
     node::{Node, NodeLocalData},
     testing::{AliasedId, introduce},
     topic::Topic,
@@ -29,6 +30,23 @@ impl TestNode {
                 .unwrap(),
         );
         (node, Watcher(notification_rx))
+    }
+
+    pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
+        let groups = self.nodestate.chats.read().await.keys().cloned().collect();
+        Ok(groups)
+    }
+
+    pub async fn get_members(
+        &self,
+        chat_id: ChatId,
+    ) -> anyhow::Result<Vec<(p2panda_spaces::ActorId, Access)>> {
+        if let Some(space) = self.manager.space(chat_id).await? {
+            Ok(space.members().await?)
+        } else {
+            tracing::warn!("Chat has no Space: {chat_id}");
+            Ok(vec![])
+        }
     }
 }
 
