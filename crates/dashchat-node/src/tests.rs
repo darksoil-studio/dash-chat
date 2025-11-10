@@ -4,7 +4,7 @@ use p2panda_store::LogStore;
 
 use crate::{
     payload::{AnnouncementsPayload, Payload, Profile},
-    testing::{AliasedId, *},
+    testing::*,
     topic::Topic,
     *,
 };

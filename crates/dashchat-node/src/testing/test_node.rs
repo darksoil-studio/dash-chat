@@ -7,7 +7,7 @@ use p2panda_auth::Access;
 use tokio::sync::mpsc::Receiver;
 
 use crate::{
-    ChatId, NodeConfig, Notification, ShortId,
+    ChatId, NodeConfig, Notification, PK, ShortId,
     node::{Node, NodeLocalData},
     testing::{AliasedId, introduce},
     topic::Topic,
@@ -47,6 +47,11 @@ impl TestNode {
             tracing::warn!("Chat has no Space: {chat_id}");
             Ok(vec![])
         }
+    }
+
+    pub async fn get_friends(&self) -> anyhow::Result<Vec<PK>> {
+        let friends = self.nodestate.friends.read().await;
+        Ok(friends.keys().cloned().collect())
     }
 }
 

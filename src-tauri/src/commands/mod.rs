@@ -1,4 +1,4 @@
-use dashchat_node::{Node, PK};
+use dashchat_node::Node;
 use p2panda_core::PublicKey;
 use tauri::{command, State};
 

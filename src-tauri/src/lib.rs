@@ -1,6 +1,6 @@
 use tauri::{Emitter, Manager};
 
-use crate::commands::logs::{simplify, SimplifiedHeader, SimplifiedOperation};
+use crate::commands::logs::{SimplifiedHeader, SimplifiedOperation};
 
 mod commands;
 mod utils;
@@ -38,7 +38,7 @@ pub fn run() {
             }
             #[cfg(not(mobile))]
             {
-                let h = app.handle();
+                let _h = app.handle();
                 // app.handle()
                 //     .plugin(tauri_plugin_single_instance::init(move |app, argv, cwd| {
                 //         // h.emit(
