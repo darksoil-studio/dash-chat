@@ -21,19 +21,18 @@ pub struct InboxTopic {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, derive_more::From)]
-pub struct MemberCode(LongTermKeyBundle, ActorId);
+pub struct MemberCode {
+    pub actor_id: ActorId,
+    pub key_bundle: LongTermKeyBundle,
+}
 
 impl MemberCode {
-    pub fn new(key_bundle: LongTermKeyBundle, actor_id: ActorId) -> Self {
-        Self(key_bundle, actor_id)
-    }
-
     pub fn id(&self) -> ActorId {
-        self.1
+        self.actor_id
     }
 
     pub fn key_bundle(&self) -> &LongTermKeyBundle {
-        &self.0
+        &self.key_bundle
     }
 }
 
@@ -59,7 +58,10 @@ impl FromStr for Friend {
 
 impl From<p2panda_spaces::Member> for MemberCode {
     fn from(member: p2panda_spaces::Member) -> Self {
-        Self(member.key_bundle().clone(), member.id())
+        Self {
+            key_bundle: member.key_bundle().clone(),
+            actor_id: member.id(),
+        }
     }
 }
 

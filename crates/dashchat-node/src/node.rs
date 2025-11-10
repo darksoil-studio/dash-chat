@@ -30,7 +30,7 @@ use tracing::Instrument;
 
 use crate::chat::{Chat, ChatId};
 use crate::chat::{ChatMessage, ChatMessageContent};
-use crate::friend::{Friend, InboxTopic, MemberCode};
+use crate::friend::{Friend, InboxTopic};
 use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
     decode_gossip_message, encode_gossip_message,
@@ -289,7 +289,7 @@ impl Node {
         topics.insert(inbox_topic.clone());
         self.initialize_topic(inbox_topic.topic, false).await?;
         Ok(Friend {
-            member_code: MemberCode::new(me.key_bundle().clone(), me.id()),
+            member_code: me.into(),
             inbox_topic,
         })
     }

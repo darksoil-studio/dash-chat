@@ -1,16 +1,18 @@
+#![feature(bool_to_result)]
+
 use std::time::Duration;
 
 use p2panda_auth::Access;
 use p2panda_net::ResyncConfiguration;
 
-use crate::{payload::Payload, testing::*, topic::Topic, *};
+use dashchat_node::{testing::*, *};
 
 const TRACING_FILTER: &str =
     "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
-    crate::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER);
 
     let (alice, _alice_rx) = TestNode::new(NodeConfig::default(), Some("alice")).await;
     let (bobbi, mut bobbi_rx) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
@@ -101,8 +103,10 @@ async fn test_group_2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_3() {
-    crate::testing::setup_tracing("warn,dashchat_node=warn,p2panda_stream=info,p2panda_net=error");
-    // crate::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(
+        "warn,dashchat_node=warn,p2panda_stream=info,p2panda_net=error",
+    );
+    // dashchat::testing::setup_tracing(TRACING_FILTER);
 
     let node_config = NodeConfig {
         resync: ResyncConfiguration::new().interval(10).poll_interval(1),

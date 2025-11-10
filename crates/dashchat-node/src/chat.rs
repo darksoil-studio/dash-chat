@@ -3,9 +3,6 @@ pub use message::*;
 use p2panda_spaces::traits::SpaceId;
 use rand::Rng;
 
-#[cfg(test)]
-mod tests;
-
 use std::{collections::BTreeSet, convert::Infallible, str::FromStr};
 
 use serde::{Deserialize, Serialize};

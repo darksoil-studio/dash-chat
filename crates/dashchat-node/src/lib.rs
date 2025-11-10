@@ -9,9 +9,6 @@ mod stores;
 mod topic;
 mod util;
 
-#[cfg(test)]
-mod tests;
-
 pub mod polestar;
 
 #[cfg(feature = "testing")]

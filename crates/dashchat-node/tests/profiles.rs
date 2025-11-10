@@ -2,19 +2,14 @@ use std::time::Duration;
 
 use p2panda_store::LogStore;
 
-use crate::{
-    payload::{AnnouncementsPayload, Payload, Profile},
-    testing::*,
-    topic::Topic,
-    *,
-};
+use dashchat_node::{testing::*, *};
 
 const TRACING_FILTER: &str =
     "dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_profiles() {
-    crate::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER);
 
     println!("nodes:");
     let (alice, _) = TestNode::new(NodeConfig::default(), Some("alice")).await;
