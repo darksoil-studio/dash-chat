@@ -36,8 +36,15 @@ pub enum InboxPayload {
 pub enum ChatPayload {
     /// Space control messages, including actual chat messages
     Space(Vec<SpaceControlMessage>),
+
     /// Instructs the recipient to subscribe to the group chat topic.
-    /// This is only sent in direct chat messages, not groups.
+    /// This is only sent in direct chat messages.
+    /// It's invalid to send in a group chat, because you must be
+    /// friends with the recipient for this to be actionable.
+    ///
+    /// The reason for including this message in the ChatPayload
+    /// is that it can only be sent to friends, and we want it to be
+    /// long-lasting, so using an Inbox is not an option.
     JoinGroup(ChatId),
 }
 
@@ -61,7 +68,7 @@ pub enum Payload {
     /// Data sent to someone who is not your friend
     Inbox(InboxPayload),
 
-    /// Group chat data
+    /// Group chat data, including direct 1:1 chats
     Chat(ChatPayload),
 
     /// Data only seen within your private device group.

@@ -345,7 +345,11 @@ impl Node {
                 }
             }
 
+            //
             Some(Payload::Chat(ChatPayload::JoinGroup(chat_id))) => {
+                // XXX: The group should not be auto-joined!
+                // TODO: for testing, pull this out into a notification handler, which simulates UI
+                //       behavior like accepting group invitations.
                 self.join_group(*chat_id).await?;
                 // TODO: maybe close down the chat tasks if we are kicked out?
             }
