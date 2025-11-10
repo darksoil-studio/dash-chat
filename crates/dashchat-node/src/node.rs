@@ -40,7 +40,7 @@ use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::{AliasedId, alias_space_messages};
 use crate::topic::{DashChatTopicId, LogId, Topic};
-use crate::{AsBody, Cbor, PK, PrivatePayload, timestamp_now};
+use crate::{AsBody, Cbor, DeviceGroupPayload, PK, timestamp_now};
 
 pub use stream_processing::Notification;
 
@@ -82,7 +82,7 @@ pub struct NodeState {
 #[derive(Clone)]
 pub struct NodeLocalData {
     pub private_key: PrivateKey,
-    pub device_group_id: crate::topic::PrivateTopicId,
+    pub device_group_id: crate::topic::DeviceGroupId,
     pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
 }
 
@@ -203,8 +203,11 @@ impl Node {
             },
         };
 
-        node.initialize_topic(Topic::private(device_group_id).aliased("private"), true)
-            .await?;
+        node.initialize_topic(
+            Topic::device_group(device_group_id).aliased("device_group"),
+            true,
+        )
+        .await?;
         node.initialize_topic(Topic::announcements(public_key).aliased("announce"), true)
             .await?;
 
@@ -457,7 +460,7 @@ impl Node {
     }
 
     fn local_topic(&self) -> Topic {
-        Topic::private(self.local_data.device_group_id)
+        Topic::device_group(self.local_data.device_group_id)
     }
 
     /// Store someone as a friend, and:
@@ -492,7 +495,7 @@ impl Node {
 
         self.author_operation(
             self.local_topic(),
-            Payload::Private(PrivatePayload::AddFriend(friend.clone())),
+            Payload::DeviceGroup(DeviceGroupPayload::AddFriend(friend.clone())),
             Some(&format!("add_friend/invitation({})", public_key.alias())),
         )
         .await?;

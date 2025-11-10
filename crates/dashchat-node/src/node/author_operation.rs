@@ -75,7 +75,7 @@ impl Node {
             }
             Payload::Announcements(_) => (vec![], vec![]),
             Payload::Inbox(_) => (vec![], vec![]),
-            Payload::Private(_) => (vec![], vec![]),
+            Payload::DeviceGroup(_) => (vec![], vec![]),
         };
 
         deps.extend(space_deps.into_iter());
@@ -102,7 +102,7 @@ impl Node {
                 Payload::Chat(ChatPayload::JoinGroup(_)) => vec![],
                 Payload::Inbox(_) => vec![],
                 Payload::Announcements(_) => vec![],
-                Payload::Private(_) => vec![],
+                Payload::DeviceGroup(_) => vec![],
             };
             let pk = PK::from(header.public_key);
             tracing::info!(

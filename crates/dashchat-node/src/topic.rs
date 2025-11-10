@@ -41,7 +41,7 @@ impl Topic {
     }
 
     /// The topic ID is unique.
-    pub fn private(topic_id: PrivateTopicId) -> Self {
+    pub fn device_group(topic_id: DeviceGroupId) -> Self {
         Self(topic_id)
     }
 }
@@ -52,7 +52,7 @@ impl TopicId for Topic {
     }
 }
 
-pub type PrivateTopicId = [u8; 32];
+pub type DeviceGroupId = [u8; 32];
 
 impl From<ChatId> for Topic {
     fn from(chat_id: ChatId) -> Self {

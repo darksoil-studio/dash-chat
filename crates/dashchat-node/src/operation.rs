@@ -55,7 +55,7 @@ impl From<Vec<SpaceControlMessage>> for ChatPayload {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum PrivatePayload {
+pub enum DeviceGroupPayload {
     AddFriend(Friend),
 }
 
@@ -73,7 +73,7 @@ pub enum Payload {
 
     /// Data only seen within your private device group.
     /// No other person sees these.
-    Private(PrivatePayload),
+    DeviceGroup(DeviceGroupPayload),
 }
 
 impl Cbor for Payload {}
