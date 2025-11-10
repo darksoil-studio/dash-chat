@@ -66,7 +66,7 @@ impl Node {
             }
         });
 
-        let pubkey = self.public_key();
+        let _pubkey = self.public_key();
         // Decode and ingest the p2panda operations.
         let stream = stream
             .decode()
@@ -83,7 +83,7 @@ impl Node {
             .inspect(move |(header, _, _)| {
                 // let h = &operation.header;
                 let h = &header;
-                let deps = h
+                let _deps = h
                     .previous
                     .iter()
                     .map(|h| h.alias())

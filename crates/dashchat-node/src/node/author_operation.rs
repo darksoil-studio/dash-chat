@@ -1,5 +1,4 @@
 use p2panda_core::{Hash, Operation};
-use p2panda_net::TopicId;
 use p2panda_spaces::{OperationId, traits::AuthoredMessage};
 use p2panda_stream::operation::IngestResult;
 
@@ -70,7 +69,7 @@ impl Node {
                         (ids, deps)
                     }
 
-                    ChatPayload::JoinGroup(chat_id) => (vec![], vec![]),
+                    ChatPayload::JoinGroup(_chat_id) => (vec![], vec![]),
                 }
             }
             Payload::Announcements(_) => (vec![], vec![]),

@@ -1,6 +1,5 @@
-use dashchat_node::{DashChatTopicId, Header, Node, Payload, Topic};
+use dashchat_node::{DashChatTopicId, Header, Node};
 use p2panda_core::{cbor::decode_cbor, Body, Hash, PublicKey};
-use p2panda_net::TopicId;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
