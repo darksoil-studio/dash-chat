@@ -1,5 +1,6 @@
-use crate::PK;
 use crate::chat::ChatId;
+use crate::friend::InboxTopic;
+use crate::{PK, friend::Friend};
 
 use p2panda_core::Hash;
 use p2panda_net::TopicId;
@@ -27,11 +28,9 @@ impl Topic {
         Self(chat_id.0)
     }
 
-    /// The topic ID is the public key.
-    /// This is convenient so that the pub key doesn't need to be stored elsewhere.
-    /// However, maybe eventually we want to change this to a hash.
-    pub fn inbox(public_key: impl Into<p2panda_core::PublicKey>) -> Self {
-        Self(public_key.into().as_bytes().clone().try_into().unwrap())
+    /// The topic ID is randomly generated for each new Friend code (QR code).
+    pub fn inbox() -> Self {
+        Self(rand::random())
     }
 
     /// The topic ID is the hashed public key.

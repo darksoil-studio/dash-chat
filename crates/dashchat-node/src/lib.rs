@@ -140,7 +140,9 @@ pub trait Cbor: serde::Serialize + serde::de::DeserializeOwned {
 
 pub trait AsBody: Cbor {
     fn try_into_body(&self) -> Result<p2panda_core::Body, p2panda_core::cbor::EncodeError> {
-        Ok(p2panda_core::Body::new(self.as_bytes()?.as_slice()))
+        let bytes = self.as_bytes()?;
+        dbg!(bytes.len());
+        Ok(p2panda_core::Body::new(bytes.as_slice()))
     }
 
     fn try_from_body(body: &p2panda_core::Body) -> Result<Self, p2panda_core::cbor::DecodeError> {

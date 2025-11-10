@@ -32,6 +32,7 @@ impl Node {
         alias: Option<&str>,
     ) -> Result<Header<Extensions>, anyhow::Error> {
         let mut sd = self.space_dependencies.write().await;
+
         let (ids, space_deps): (Vec<OperationId>, Vec<Hash>) = match &payload {
             Payload::Chat(msgs) => {
                 let ids = msgs.iter().map(|msg| msg.id()).collect::<Vec<_>>();
@@ -75,7 +76,7 @@ impl Node {
 
         let operation = create_operation(
             &self.op_store,
-            &self.private_key,
+            &self.local_data.private_key,
             topic.clone(),
             payload.clone(),
             deps.clone(),
@@ -196,6 +197,7 @@ pub(crate) async fn create_operation(
     };
 
     let timestamp = timestamp_now();
+
     let mut header = Header {
         version: 1,
         public_key,
@@ -208,6 +210,7 @@ pub(crate) async fn create_operation(
         previous: deps,
         extensions,
     };
+
     header.sign(private_key);
 
     Ok(Operation {

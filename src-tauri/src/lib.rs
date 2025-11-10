@@ -54,7 +54,7 @@ pub fn run() {
             let handle = app.handle().clone();
 
             tauri::async_runtime::block_on(async move {
-                let local_data = dashchat_node::NodeLocalData::random();
+                let local_data = dashchat_node::NodeLocalData::new_random();
                 let config = dashchat_node::NodeConfig::default();
                 let (notification_tx, mut notification_rx) = tokio::sync::mpsc::channel(100);
                 let node = dashchat_node::Node::new(local_data, config, Some(notification_tx))

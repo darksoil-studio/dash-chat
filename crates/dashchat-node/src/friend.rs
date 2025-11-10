@@ -1,14 +1,26 @@
+use chrono::{DateTime, Utc};
 use p2panda_core::cbor::{decode_cbor, encode_cbor};
 use p2panda_encryption::key_bundle::LongTermKeyBundle;
 use p2panda_spaces::ActorId;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
+use crate::Topic;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Friend {}
+#[serde(into = "String", try_from = "String")]
+pub struct Friend {
+    pub member_code: MemberCode,
+    pub inbox_topic: InboxTopic,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct InboxTopic {
+    pub expires_at: DateTime<Utc>,
+    pub topic: Topic,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, derive_more::From)]
-#[serde(into = "String", try_from = "String")]
 pub struct MemberCode(LongTermKeyBundle, ActorId);
 
 impl MemberCode {
@@ -25,19 +37,23 @@ impl MemberCode {
     }
 }
 
-impl std::fmt::Display for MemberCode {
+impl std::fmt::Display for Friend {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let bytes = encode_cbor(&(self.0.clone(), self.1)).map_err(|_| std::fmt::Error)?;
+        let bytes =
+            encode_cbor(&(&self.member_code, &self.inbox_topic)).map_err(|_| std::fmt::Error)?;
         write!(f, "{}", hex::encode(bytes))
     }
 }
 
-impl FromStr for MemberCode {
+impl FromStr for Friend {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let bytes = hex::decode(s)?;
-        let (long_term_key_bundle, actor_id) = decode_cbor(bytes.as_slice())?;
-        Ok(Self(long_term_key_bundle, actor_id))
+        let (member_code, inbox_topic) = decode_cbor(bytes.as_slice())?;
+        Ok(Friend {
+            member_code,
+            inbox_topic,
+        })
     }
 }
 
@@ -53,15 +69,15 @@ impl From<MemberCode> for p2panda_spaces::Member {
     }
 }
 
-impl From<MemberCode> for String {
-    fn from(code: MemberCode) -> Self {
+impl From<Friend> for String {
+    fn from(code: Friend) -> Self {
         code.to_string()
     }
 }
 
-impl TryFrom<String> for MemberCode {
+impl TryFrom<String> for Friend {
     type Error = anyhow::Error;
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(MemberCode::from_str(&value).unwrap())
+        Ok(Friend::from_str(&value).unwrap())
     }
 }

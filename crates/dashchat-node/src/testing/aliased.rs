@@ -7,6 +7,8 @@ use crate::{ShortId, spaces::SpaceControlMessage};
 static ALIASES: LazyLock<Mutex<HashMap<Vec<u8>, String>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
+/// Add an alias to each space message with uniform naming.
+/// Useful for debugging.
 pub fn alias_space_messages<'a>(
     prefix: &str,
     msgs: impl IntoIterator<Item = &'a SpaceControlMessage>,

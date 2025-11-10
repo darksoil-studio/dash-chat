@@ -10,7 +10,7 @@ use std::{collections::BTreeSet, convert::Infallible, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{ShortId, testing::AliasedId};
+use crate::{PK, ShortId, testing::AliasedId};
 
 #[derive(Clone, Debug)]
 pub struct Chat {
@@ -42,6 +42,18 @@ pub struct ChatId(pub [u8; 32]);
 impl ChatId {
     pub fn new(topic_id: [u8; 32]) -> Self {
         Self(topic_id)
+    }
+
+    /// The chat ID for direct chat between two public keys
+    /// is the hash of the sorted keys.
+    /// This lets both parties derive the same chat ID from the same two keys,
+    /// but gives no information about what this topic is for.
+    pub fn direct_chat(mut pks: [PK; 2]) -> Self {
+        pks.sort();
+        let mut hasher = blake3::Hasher::new();
+        hasher.update(pks[0].0.as_bytes());
+        hasher.update(pks[1].0.as_bytes());
+        Self(hasher.finalize().into())
     }
 
     pub fn random() -> Self {

@@ -346,9 +346,13 @@ impl Node {
             }
 
             Some(Payload::Inbox(invitation)) => {
-                // The topic is the pub key
-                let public_key = PublicKey::from_bytes(&topic.id()).expect("invalid public key");
-                if public_key != self.public_key() {
+                // TODO: need to check against the actual up to date active inbox topics
+                if !self
+                    .local_data
+                    .active_inbox_topics
+                    .iter()
+                    .any(|it| it.topic == topic)
+                {
                     // not for me, ignore
                     return Ok(());
                 }

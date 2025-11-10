@@ -27,13 +27,22 @@ async fn test_group_2() {
 
     println!("peers see each other");
 
-    alice.add_friend(bobbi.me().await.unwrap()).await.unwrap();
-    bobbi.add_friend(alice.me().await.unwrap()).await.unwrap();
+    alice
+        .add_friend(bobbi.new_friend_code().await.unwrap())
+        .await
+        .unwrap();
+    bobbi
+        .add_friend(alice.new_friend_code().await.unwrap())
+        .await
+        .unwrap();
 
     let chat_id = ChatId::random().aliased("onlychat");
     alice.create_group(chat_id).await.unwrap();
 
-    alice.add_member(chat_id, bobbi.public_key().into()).await.unwrap();
+    alice
+        .add_member(chat_id, bobbi.public_key().into())
+        .await
+        .unwrap();
 
     bobbi_rx
         .watch_for(Duration::from_secs(5), |n| {
@@ -101,6 +110,7 @@ async fn test_group_3() {
 
     let node_config = NodeConfig {
         resync: ResyncConfiguration::new().interval(10).poll_interval(1),
+        friend_code_expiry: chrono::Duration::days(7),
     };
     let cfg = ClusterConfig {
         poll_interval: Duration::from_millis(500),
@@ -117,10 +127,22 @@ async fn test_group_3() {
     println!("carol:    {:?}", carol.public_key().short());
 
     // alice -- bobbi -- carol (bobbi is the pivot)
-    alice.add_friend(bobbi.me().await.unwrap()).await.unwrap();
-    bobbi.add_friend(alice.me().await.unwrap()).await.unwrap();
-    bobbi.add_friend(carol.me().await.unwrap()).await.unwrap();
-    carol.add_friend(bobbi.me().await.unwrap()).await.unwrap();
+    alice
+        .add_friend(bobbi.new_friend_code().await.unwrap())
+        .await
+        .unwrap();
+    bobbi
+        .add_friend(alice.new_friend_code().await.unwrap())
+        .await
+        .unwrap();
+    bobbi
+        .add_friend(carol.new_friend_code().await.unwrap())
+        .await
+        .unwrap();
+    carol
+        .add_friend(bobbi.new_friend_code().await.unwrap())
+        .await
+        .unwrap();
 
     // NOTE: not needed! "friendship" is transitive.
     // alice.add_friend(carol.me().await.unwrap()).await.unwrap();
@@ -130,7 +152,10 @@ async fn test_group_3() {
     let chat_id = ChatId::random().aliased("onlychat");
     alice.create_group(chat_id).await.unwrap();
     println!("\n==> alice adds bobbi\n");
-    alice.add_member(chat_id, bobbi.public_key().into()).await.unwrap();
+    alice
+        .add_member(chat_id, bobbi.public_key().into())
+        .await
+        .unwrap();
 
     // Bob has joined the group via his inbox topic and is a manager
     wait_for(
@@ -186,7 +211,10 @@ async fn test_group_3() {
     assert_eq!(alice.get_messages(chat_id).await.unwrap().len(), 2);
 
     println!("\n==> bobbi adds carol\n");
-    bobbi.add_member(chat_id, carol.public_key().into()).await.unwrap();
+    bobbi
+        .add_member(chat_id, carol.public_key().into())
+        .await
+        .unwrap();
 
     consistency([&alice, &bobbi, &carol], &tt, &cfg)
         .await

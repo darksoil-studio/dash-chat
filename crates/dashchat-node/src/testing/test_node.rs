@@ -3,7 +3,6 @@ use std::{
     time::{Duration, Instant},
 };
 
-use p2panda_core::PrivateKey;
 use tokio::sync::mpsc::Receiver;
 
 use crate::{
@@ -19,11 +18,7 @@ pub struct TestNode(Node);
 
 impl TestNode {
     pub async fn new(config: NodeConfig, alias: Option<&str>) -> (Self, Watcher<Notification>) {
-        let private_key = PrivateKey::new();
-        let local_data = NodeLocalData {
-            private_key,
-            device_group_id: rand::random(),
-        };
+        let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = alias {
             local_data.private_key.public_key().aliased(alias);
