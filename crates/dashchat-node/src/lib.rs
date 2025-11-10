@@ -17,7 +17,6 @@ pub mod polestar;
 #[cfg(feature = "testing")]
 pub mod testing;
 
-use base64::{Engine, prelude::BASE64_STANDARD};
 use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
@@ -26,7 +25,6 @@ pub use operation::*;
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 use p2panda_spaces::OperationId;
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
 pub use topic::{DashChatTopicId, Topic};
 
 use crate::testing::AliasedId;
@@ -141,7 +139,6 @@ pub trait Cbor: serde::Serialize + serde::de::DeserializeOwned {
 pub trait AsBody: Cbor {
     fn try_into_body(&self) -> Result<p2panda_core::Body, p2panda_core::cbor::EncodeError> {
         let bytes = self.as_bytes()?;
-        dbg!(bytes.len());
         Ok(p2panda_core::Body::new(bytes.as_slice()))
     }
 

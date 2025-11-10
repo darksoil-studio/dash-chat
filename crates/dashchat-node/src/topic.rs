@@ -1,14 +1,10 @@
-use crate::chat::ChatId;
-use crate::friend::InboxTopic;
-use crate::{PK, friend::Friend};
+use crate::{ShortId, chat::ChatId, testing::AliasedId};
 
-use p2panda_core::Hash;
 use p2panda_net::TopicId;
 use p2panda_sync::TopicQuery;
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Debug,
     Copy,
     Clone,
     Serialize,
@@ -19,7 +15,11 @@ use serde::{Deserialize, Serialize};
     PartialOrd,
     Ord,
     derive_more::Deref,
+    derive_more::Display,
+    derive_more::Debug,
 )]
+#[display("{}", hex::encode(self.0))]
+#[debug("{}", self.alias())]
 pub struct Topic([u8; 32]);
 
 impl Topic {
@@ -65,6 +65,21 @@ pub type DashChatTopicId = Topic;
 impl TopicQuery for Topic {}
 
 pub type LogId = DashChatTopicId;
+
+impl ShortId for Topic {
+    const PREFIX: &'static str = "T";
+    fn short(&self) -> String {
+        let mut k = self.to_string();
+        k.truncate(8);
+        format!("{}|{}", Self::PREFIX, k)
+    }
+}
+
+impl AliasedId for Topic {
+    fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
 
 // impl Serialize for DashChatTopicId {
 //     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {

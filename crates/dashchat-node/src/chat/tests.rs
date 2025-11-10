@@ -11,7 +11,7 @@ use crate::{
 };
 
 const TRACING_FILTER: &str =
-    "dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
+    "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
@@ -61,7 +61,7 @@ async fn test_group_2() {
         .await
         .unwrap();
 
-    // Bob has joined the group via his inbox topic
+    // Bobbi has joined the group via his inbox topic
     wait_for(
         Duration::from_millis(100),
         Duration::from_secs(5),
@@ -157,7 +157,7 @@ async fn test_group_3() {
         .await
         .unwrap();
 
-    // Bob has joined the group via his inbox topic and is a manager
+    // Bobbi has joined the group via his inbox topic and is a manager
     wait_for(
         Duration::from_millis(100),
         Duration::from_secs(10),

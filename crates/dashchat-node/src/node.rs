@@ -79,11 +79,11 @@ pub struct NodeState {
     friends: Arc<RwLock<HashMap<PK, Friend>>>,
 }
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Clone)]
 pub struct NodeLocalData {
     pub private_key: PrivateKey,
     pub device_group_id: crate::topic::PrivateTopicId,
-    pub active_inbox_topics: BTreeSet<InboxTopic>,
+    pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
 }
 
 impl NodeLocalData {
@@ -91,7 +91,7 @@ impl NodeLocalData {
         Self {
             private_key: PrivateKey::new(),
             device_group_id: rand::random(),
-            active_inbox_topics: BTreeSet::new(),
+            active_inbox_topics: Arc::new(RwLock::new(BTreeSet::new())),
         }
     }
 }
@@ -203,13 +203,14 @@ impl Node {
             },
         };
 
-        node.initialize_topic(Topic::private(device_group_id), true)
+        node.initialize_topic(Topic::private(device_group_id).aliased("private!"), true)
             .await?;
-        node.initialize_topic(Topic::announcements(public_key), true)
+        node.initialize_topic(Topic::announcements(public_key).aliased("announce!"), true)
             .await?;
 
-        for topic in active_inbox_topics.iter() {
-            node.initialize_topic(topic.topic.clone(), false).await?;
+        for topic in active_inbox_topics.read().await.iter() {
+            node.initialize_topic(topic.topic.clone().aliased("inbox!"), false)
+                .await?;
         }
 
         let author_store = author_store.clone();
@@ -223,14 +224,16 @@ impl Node {
                 while let Some(Ok(peer)) = new_peers.next().await {
                     let pubkey = PK::from_bytes(peer.node_addr.node_id.as_bytes()).unwrap();
 
-                    for topic in active_inbox_topics.iter() {
+                    let mut topics = active_inbox_topics.write().await;
+                    topics.retain(|it| it.expires_at > Utc::now());
+                    for topic in topics.iter() {
                         if author_store
                             .authors(&topic.topic)
                             .await
                             .map(|authors| !authors.contains(&me))
                             .unwrap_or(true)
                         {
-                            tracing::debug!("new peer: {}", pubkey);
+                            tracing::debug!(?pubkey, ?topic, "new peer");
                             author_store.add_author(topic.topic.clone(), me).await;
                         }
                     }
@@ -272,25 +275,38 @@ impl Node {
         }
     }
 
+    /// Create a new friend QR code with configured expiry time,
+    /// subscribe to the inbox topic for it, and register the topic as active.
     pub async fn new_friend_code(&self) -> anyhow::Result<Friend> {
         let me = self.manager.me().await?;
+        let mut topics = self.local_data.active_inbox_topics.write().await;
+        let inbox_topic = InboxTopic {
+            topic: Topic::inbox().aliased("inbox"),
+            expires_at: Utc::now() + self.config.friend_code_expiry,
+        };
+        topics.insert(inbox_topic.clone());
+        self.initialize_topic(inbox_topic.topic, false).await?;
         Ok(Friend {
             member_code: MemberCode::new(me.key_bundle().clone(), me.id()),
-            inbox_topic: InboxTopic {
-                topic: Topic::inbox(),
-                expires_at: Utc::now() + self.config.friend_code_expiry,
-            },
+            inbox_topic,
         })
     }
 
     pub fn direct_chat_id(&self, pk: PK) -> Topic {
-        Topic::chat(ChatId::direct_chat([self.public_key().into(), pk]))
+        let me = self.public_key().into();
+        let topic = Topic::chat(ChatId::direct_chat([me, pk]));
+        if me > pk {
+            topic.aliased(&format!("direct({},{})", pk, me))
+        } else {
+            topic.aliased(&format!("direct({},{})", me, pk))
+        }
     }
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     pub async fn create_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
-        self.initialize_topic(Topic::chat(chat_id), true).await?;
+        self.initialize_topic(Topic::chat(chat_id).aliased("chat"), true)
+            .await?;
 
         let (_space, msgs, _event) = self
             .manager
@@ -315,6 +331,7 @@ impl Node {
     /// -- you're not fully a member until someone adds you.
     #[tracing::instrument(skip_all, parent = None, fields(me = ?self.public_key()))]
     pub async fn join_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
+        tracing::info!(?chat_id, "joined group");
         self.initialize_topic(Topic::chat(chat_id), true).await
     }
 
@@ -435,8 +452,8 @@ impl Node {
         Ok((message, header))
     }
 
-    pub fn public_key(&self) -> PublicKey {
-        self.local_data.private_key.public_key()
+    pub fn public_key(&self) -> PK {
+        self.local_data.private_key.public_key().into()
     }
 
     fn local_topic(&self) -> Topic {
@@ -460,9 +477,17 @@ impl Node {
             .register_member(&spaces_member)
             .await
             .map_err(|e| anyhow!("Failed to register friend: {e:?}"))?;
-        self.initialize_topic(Topic::announcements(public_key.clone()), false)
+
+        self.initialize_topic(
+            Topic::announcements(public_key.clone()).aliased("announce"),
+            false,
+        )
+        .await?;
+
+        self.initialize_topic(friend.inbox_topic.topic.aliased("inbox"), true)
             .await?;
-        self.initialize_topic(friend.inbox_topic.topic, true)
+
+        self.initialize_topic(self.direct_chat_id(public_key), true)
             .await?;
 
         self.author_operation(

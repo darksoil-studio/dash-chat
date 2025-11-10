@@ -37,7 +37,9 @@ pub trait AliasedId: ShortId {
             },
         );
         if let Some(existing) = existing {
-            tracing::warn!(?existing, "alias already exists, replacing");
+            if existing != alias {
+                tracing::warn!(?existing, ?alias, "alias already exists, replacing");
+            }
         }
         self
     }

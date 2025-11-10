@@ -166,7 +166,7 @@ impl ConsistencyReport {
 #[derive(derive_more::Deref, derive_more::DerefMut)]
 pub struct Watcher<T>(Receiver<T>);
 
-impl<T> Watcher<T> {
+impl<T: std::fmt::Debug> Watcher<T> {
     pub async fn watch_for(
         &mut self,
         timeout: tokio::time::Duration,
@@ -178,6 +178,7 @@ impl<T> Watcher<T> {
         loop {
             tokio::select! {
                 item = self.0.recv() => {
+                    tracing::debug!(?item, "watcher received item");
                     match item {
                         Some(item) if f(&item) => return Ok(item),
                         Some(_) => continue,

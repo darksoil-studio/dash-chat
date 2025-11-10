@@ -89,11 +89,11 @@ impl Node {
                     .map(|h| h.alias())
                     .collect::<Vec<_>>()
                     .join(", ");
-                if !deps.is_empty() {
-                    println!("▎{} : {} -> [{}]", pubkey.alias(), h.hash().alias(), deps);
-                } else {
-                    println!("▎{} : {}", pubkey.alias(), h.hash().alias());
-                }
+                // if !deps.is_empty() {
+                //     println!("▎{} : {} -> [{}]", pubkey.alias(), h.hash().alias(), deps);
+                // } else {
+                //     println!("▎{} : {}", pubkey.alias(), h.hash().alias());
+                // }
             })
             .ingest(self.op_store.clone(), 128)
             .filter_map(|result| async {
@@ -234,7 +234,7 @@ impl Node {
             _ => {}
         }
 
-        tracing::trace!(?payload, "RECEIVED OPERATION");
+        tracing::debug!(?payload, "RECEIVED PAYLOAD");
 
         if let Err(err) = self
             .process_payload(topic, &header, payload.as_ref(), is_author)
@@ -346,24 +346,30 @@ impl Node {
             }
 
             Some(Payload::Inbox(invitation)) => {
-                // TODO: need to check against the actual up to date active inbox topics
-                if !self
-                    .local_data
-                    .active_inbox_topics
-                    .iter()
-                    .any(|it| it.topic == topic)
-                {
+                // FIXME: reinstate this check
+                // if !self
+                //     .local_data
+                //     .active_inbox_topics
+                //     .read()
+                //     .await
+                //     .iter()
+                //     .any(|it| it.topic == topic)
+                if false {
                     // not for me, ignore
                     return Ok(());
                 }
-                tracing::debug!(?invitation, "received invitation message");
+                tracing::info!(
+                    ?invitation,
+                    from = header.public_key.alias(),
+                    "received invitation message"
+                );
                 match invitation {
                     InboxPayload::JoinGroup(chat_id) => {
                         self.join_group(*chat_id).await?;
                         // TODO: maybe close down the chat tasks if we are kicked out?
                     }
                     InboxPayload::Friend => {
-                        tracing::debug!("received friend invitation from: {:?}", header.public_key);
+                        // Nothing to do.
                     }
                 }
             }
