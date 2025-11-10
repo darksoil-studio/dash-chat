@@ -12,7 +12,7 @@ use p2panda_stream::partial::operations::PartialOrder;
 use serde::{Deserialize, Serialize};
 use tokio_stream::Stream;
 
-use crate::{operation::InboxPayload, spaces::ArgType, testing::AliasedId, topic::LogId};
+use crate::{payload::InboxPayload, spaces::ArgType, testing::AliasedId, topic::LogId};
 
 use super::*;
 

@@ -3,7 +3,7 @@ use std::time::Duration;
 use p2panda_store::LogStore;
 
 use crate::{
-    operation::{AnnouncementsPayload, Payload, Profile},
+    payload::{AnnouncementsPayload, Payload, Profile},
     testing::{AliasedId, *},
     topic::Topic,
     *,

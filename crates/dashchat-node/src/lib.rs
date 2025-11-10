@@ -3,7 +3,7 @@
 mod chat;
 mod friend;
 mod node;
-mod operation;
+mod payload;
 mod spaces;
 mod stores;
 mod topic;
@@ -21,10 +21,10 @@ use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
 pub use node::{Node, NodeConfig, NodeLocalData, Notification};
-pub use operation::*;
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 use p2panda_spaces::OperationId;
+pub use payload::*;
 pub use topic::{DashChatTopicId, Topic};
 
 use crate::testing::AliasedId;

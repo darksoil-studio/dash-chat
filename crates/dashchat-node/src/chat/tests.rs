@@ -3,12 +3,7 @@ use std::time::Duration;
 use p2panda_auth::Access;
 use p2panda_net::ResyncConfiguration;
 
-use crate::{
-    operation::Payload,
-    testing::{AliasedId, *},
-    topic::Topic,
-    *,
-};
+use crate::{payload::Payload, testing::*, topic::Topic, *};
 
 const TRACING_FILTER: &str =
     "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";

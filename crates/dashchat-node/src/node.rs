@@ -16,7 +16,6 @@ use p2panda_encryption::crypto::x25519::SecretKey;
 use p2panda_net::config::GossipConfig;
 use p2panda_net::{
     FromNetwork, Network, NetworkBuilder, ResyncConfiguration, SyncConfiguration, ToNetwork,
-    TopicId,
 };
 use p2panda_spaces::OperationId;
 use p2panda_spaces::event::Event;
@@ -32,7 +31,7 @@ use tracing::Instrument;
 use crate::chat::{Chat, ChatId};
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::friend::{Friend, InboxTopic, MemberCode};
-use crate::operation::{
+use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
     decode_gossip_message, encode_gossip_message,
 };
