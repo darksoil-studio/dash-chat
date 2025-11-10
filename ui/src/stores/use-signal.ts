@@ -1,4 +1,5 @@
 import { type ReactiveFn, ReactivePromise, watcher } from 'signalium';
+import { setTracing } from 'signalium/debug';
 import { type Readable } from 'svelte/store';
 
 export function useSignal<T, Args extends unknown[]>(
@@ -36,13 +37,20 @@ export function useReactivePromise<T, Args extends unknown[]>(
 	v: ReactiveFn<ReactivePromise<T>, Args>,
 	...args: Args
 ): Readable<ReactivePromise<T>> {
-	const w = watcher(() => {
-		const value = v(...args);
-		const s = (value as any)['_signal'];
-		const version = (value as any)['value'];
+	const w = watcher(
+		() => {
+			const value = v(...args);
+			const s = (value as any)['_signal'];
+			const version = (value as any)['value'];
 
-		return value;
-	});
+			return value;
+		},
+		{
+			// TODO: write a more optimized version of the equality evaluator?
+			equals: () => false,
+		},
+	);
+
 	return {
 		subscribe: set => {
 			set(new ReactivePromise<T>(r => {}));
