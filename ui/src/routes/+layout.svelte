@@ -7,6 +7,8 @@
 		UsersClient,
 		type TopicId,
 		type Payload,
+		FriendsClient,
+		FriendsStore
 	} from 'dash-chat-stores';
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
 	let { children } = $props();
@@ -16,8 +18,11 @@
 
 	const usersClient = new UsersClient();
 	const usersStore = new UsersStore(logsStore, usersClient);
-
 	setContext('users-store', usersStore);
+
+	const friendsClient= new FriendsClient();
+	const friendsStore= new FriendsStore(logsStore, friendsClient);
+	setContext('friends-store', friendsStore);
 </script>
 
 <main class="container column" style="flex: 1">

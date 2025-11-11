@@ -1,7 +1,6 @@
-import type { Message, MessageContent, MessageId } from "./types";
 
-// // Store tied to a specific peer chat
-// export interface PeerChatStore {
+// // Store tied to a specific direct messages chat
+export interface DirectMessagesChatStore {
 // 	// Get the peer for this chat
 // 	peer(): AsyncSignal<UserId>;
 	
@@ -20,4 +19,4 @@ import type { Message, MessageContent, MessageId } from "./types";
 
 // 	// Receive typing indicator signal
 // 	onTypingIndicatorSignal(): UnsubscribeFn;
-// }
+}

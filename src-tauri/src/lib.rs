@@ -18,6 +18,8 @@ pub fn run() {
             commands::logs::get_log,
             commands::logs::get_authors,
             commands::profile::set_profile,
+            commands::friends::my_member_code,
+            commands::friends::add_friend,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

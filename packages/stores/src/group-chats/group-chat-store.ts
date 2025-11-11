@@ -1,5 +1,4 @@
-import type { Message, MessageContent, MessageId } from "./types";
-import { UserId } from "./users-client";
+import { UserId } from "../users-client";
 
 export interface GroupInfo {
 	name: string;

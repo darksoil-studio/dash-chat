@@ -13,17 +13,20 @@
 
 {#await $myPubKey then myPubKey}
 	<div class="column" style="flex: 1">
-		<div class="row" style="margin: var(--wa-space-xs)">
+		<div class="top-bar">
 			<a href="/my-profile">
 				<Avatar userId={myPubKey}></Avatar>
 			</a>
+			<div style="flex: 1">
+				</div>
+				<wa-button class="circle" href="/friends" appearance="plain">
+					<wa-icon name="user-group">
+					</wa-icon>
+				</wa-button>
 		</div>
 	</div>
 {/await}
 
 <style>
-a {
-	cursor: pointer;
-}
 
 </style>
