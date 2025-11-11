@@ -1,6 +1,10 @@
-use crate::{ShortId, chat::ChatId, testing::AliasedId};
+use crate::{
+    chat::ChatId,
+    testing::{AliasedId, ShortId},
+};
 
 use p2panda_net::TopicId;
+use p2panda_spaces::ActorId;
 use p2panda_sync::TopicQuery;
 use serde::{Deserialize, Serialize};
 
@@ -35,14 +39,14 @@ impl Topic {
 
     /// The topic ID is the hashed public key.
     /// This is to prevent collisions with the inbox topic, which also uses the public key.
-    pub fn announcements(public_key: impl Into<p2panda_core::PublicKey>) -> Self {
-        let hash = blake3::hash(public_key.into().as_bytes());
+    pub fn announcements(actor: ActorId) -> Self {
+        let hash = blake3::hash(actor.as_bytes());
         Self(hash.into())
     }
 
     /// The topic ID is unique.
     pub fn device_group(topic_id: DeviceGroupId) -> Self {
-        Self(topic_id)
+        Self(topic_id.0)
     }
 }
 
@@ -52,7 +56,7 @@ impl TopicId for Topic {
     }
 }
 
-pub type DeviceGroupId = [u8; 32];
+pub type DeviceGroupId = ChatId;
 
 impl From<ChatId> for Topic {
     fn from(chat_id: ChatId) -> Self {

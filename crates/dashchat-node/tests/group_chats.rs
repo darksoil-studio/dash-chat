@@ -35,10 +35,10 @@ async fn test_group_2() {
         .unwrap();
 
     let chat_id = ChatId::random();
-    alice.create_group(chat_id).await.unwrap();
+    alice.create_space(chat_id).await.unwrap();
 
     alice
-        .add_member(chat_id, bobbi.public_key().into())
+        .add_member(chat_id, bobbi.chat_actor_id().into())
         .await
         .unwrap();
 
@@ -150,10 +150,10 @@ async fn test_group_3() {
 
     println!("\n==> alice creates group\n");
     let chat_id = ChatId::random();
-    alice.create_group(chat_id).await.unwrap();
+    alice.create_space(chat_id).await.unwrap();
     println!("\n==> alice adds bobbi\n");
     alice
-        .add_member(chat_id, bobbi.public_key().into())
+        .add_member(chat_id, bobbi.chat_actor_id().into())
         .await
         .unwrap();
 
@@ -166,7 +166,7 @@ async fn test_group_3() {
                 space
                     .members()
                     .await
-                    .map(|m| m.contains(&(bobbi.public_key().into(), Access::manage())))
+                    .map(|m| m.contains(&(bobbi.chat_actor_id(), Access::manage())))
                     .unwrap_or(false)
                     .ok_or("not a manager")
             } else {
@@ -212,7 +212,7 @@ async fn test_group_3() {
 
     println!("\n==> bobbi adds carol\n");
     bobbi
-        .add_member(chat_id, carol.public_key().into())
+        .add_member(chat_id, carol.chat_actor_id().into())
         .await
         .unwrap();
 
@@ -229,7 +229,7 @@ async fn test_group_3() {
                 space
                     .members()
                     .await
-                    .map(|m| m.contains(&(carol.public_key().into(), Access::manage())))
+                    .map(|m| m.contains(&(carol.chat_actor_id(), Access::manage())))
                     .unwrap_or(false)
                     .ok_or("not a manager")
             } else {

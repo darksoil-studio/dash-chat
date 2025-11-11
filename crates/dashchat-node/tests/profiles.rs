@@ -43,7 +43,7 @@ async fn test_profiles() {
                 .op_store
                 .get_log(
                     &alice.public_key(),
-                    &Topic::announcements(alice.public_key()).into(),
+                    &Topic::announcements(alice.chat_actor_id()).into(),
                     None,
                 )
                 .await

@@ -144,39 +144,6 @@ pub trait AsBody: Cbor {
     }
 }
 
-pub trait ShortId {
-    const PREFIX: &'static str;
-
-    fn short(&self) -> String;
-}
-
-impl ShortId for p2panda_core::Hash {
-    const PREFIX: &'static str = "H";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
-    }
-}
-
-impl ShortId for p2panda_core::PublicKey {
-    const PREFIX: &'static str = "PK";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
-    }
-}
-
-impl ShortId for OperationId {
-    const PREFIX: &'static str = "OP";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
-    }
-}
-
 pub fn timestamp_now() -> u64 {
     use std::time::SystemTime;
     SystemTime::now()

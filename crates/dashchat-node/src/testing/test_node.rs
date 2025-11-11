@@ -7,9 +7,9 @@ use p2panda_auth::Access;
 use tokio::sync::mpsc::Receiver;
 
 use crate::{
-    ChatId, NodeConfig, Notification, PK, ShortId,
+    ChatId, NodeConfig, Notification, PK,
     node::{Node, NodeLocalData},
-    testing::{AliasedId, introduce},
+    testing::{AliasedId, ShortId, introduce},
     topic::Topic,
 };
 

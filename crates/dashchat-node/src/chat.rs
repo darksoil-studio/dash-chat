@@ -1,13 +1,16 @@
 mod message;
 pub use message::*;
-use p2panda_spaces::traits::SpaceId;
+use p2panda_spaces::{ActorId, traits::SpaceId};
 use rand::Rng;
 
 use std::{collections::BTreeSet, convert::Infallible, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{PK, ShortId, testing::AliasedId};
+use crate::{
+    PK,
+    testing::{AliasedId, ShortId},
+};
 
 #[derive(Clone, Debug)]
 pub struct Chat {
@@ -45,11 +48,11 @@ impl ChatId {
     /// is the hash of the sorted keys.
     /// This lets both parties derive the same chat ID from the same two keys,
     /// but gives no information about what this topic is for.
-    pub fn direct_chat(mut pks: [PK; 2]) -> Self {
+    pub fn direct_chat(mut pks: [ActorId; 2]) -> Self {
         pks.sort();
         let mut hasher = blake3::Hasher::new();
-        hasher.update(pks[0].0.as_bytes());
-        hasher.update(pks[1].0.as_bytes());
+        hasher.update(pks[0].as_bytes());
+        hasher.update(pks[1].as_bytes());
         Self(hasher.finalize().into())
     }
 
@@ -70,6 +73,14 @@ impl ShortId for ChatId {
         let mut k = self.to_string();
         k.truncate(8);
         format!("{}|{}", Self::PREFIX, k)
+    }
+}
+
+impl AliasedId for ChatId {
+    const SHOW_SHORT_ID: bool = false;
+
+    fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
     }
 }
 

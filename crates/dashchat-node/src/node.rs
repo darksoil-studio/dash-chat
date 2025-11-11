@@ -17,8 +17,8 @@ use p2panda_net::config::GossipConfig;
 use p2panda_net::{
     FromNetwork, Network, NetworkBuilder, ResyncConfiguration, SyncConfiguration, ToNetwork,
 };
-use p2panda_spaces::OperationId;
 use p2panda_spaces::event::Event;
+use p2panda_spaces::{ActorId, OperationId};
 use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::partial::operations::PartialOrder;
 use p2panda_stream::{DecodeExt, IngestExt};
@@ -76,6 +76,7 @@ pub type Orderer = PartialOrder<
 pub struct NodeState {
     pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
     pub(crate) friends: Arc<RwLock<HashMap<PK, Friend>>>,
+    pub(crate) device_group_actor: ActorId,
 }
 
 #[derive(Clone)]
@@ -87,9 +88,10 @@ pub struct NodeLocalData {
 
 impl NodeLocalData {
     pub fn new_random() -> Self {
+        let private_key = PrivateKey::new();
         Self {
-            private_key: PrivateKey::new(),
-            device_group_id: rand::random(),
+            private_key,
+            device_group_id: ChatId::random(),
             active_inbox_topics: Arc::new(RwLock::new(BTreeSet::new())),
         }
     }
@@ -183,6 +185,18 @@ impl Node {
             .await
             .unwrap();
 
+        let actor = manager.id();
+
+        let (device_group_actor, device_group_msgs) = {
+            let (space, msgs, _event) = manager
+                .create_space(device_group_id, &[(actor, Access::manage())])
+                .await?;
+
+            alias_space_messages("create_device_group", msgs.iter());
+
+            (space.group_id().await?, msgs)
+        };
+
         let op_store = OpStore::new(op_store);
         let node = Self {
             op_store: op_store.clone(),
@@ -199,16 +213,45 @@ impl Node {
             nodestate: NodeState {
                 chats: Arc::new(RwLock::new(HashMap::new())),
                 friends: Arc::new(RwLock::new(HashMap::new())),
+                device_group_actor,
             },
         };
+
+        {
+            // let _header = node
+            //     .author_operation(
+            //         Topic::device_group(device_group_id),
+            //         Payload::DeviceGroup(DeviceGroupPayload::CreateDeviceGroup),
+            //         Some(&format!(
+            //             "create_device_group/space-control({})",
+            //             device_group_id.alias()
+            //         )),
+            //     )
+            //     .await?;
+
+            let _header = node
+                .author_operation(
+                    Topic::device_group(device_group_id),
+                    Payload::Chat(ChatPayload::Space(device_group_msgs.into())),
+                    Some(&format!(
+                        "create_device_group/space-control({})",
+                        device_group_id.alias()
+                    )),
+                )
+                .await?;
+        }
 
         node.initialize_topic(
             Topic::device_group(device_group_id).aliased("device_group"),
             true,
         )
         .await?;
-        node.initialize_topic(Topic::announcements(public_key).aliased("announce"), true)
-            .await?;
+
+        node.initialize_topic(
+            Topic::announcements(node.chat_actor_id()).aliased("announce"),
+            true,
+        )
+        .await?;
 
         for topic in active_inbox_topics.read().await.iter() {
             node.initialize_topic(topic.topic.clone().aliased("inbox!"), false)
@@ -280,7 +323,8 @@ impl Node {
     /// Create a new friend QR code with configured expiry time,
     /// subscribe to the inbox topic for it, and register the topic as active.
     pub async fn new_friend_code(&self) -> anyhow::Result<Friend> {
-        let me = self.manager.me().await?;
+        let key_bundle = self.manager.me().await?.key_bundle().clone();
+        let member = p2panda_spaces::Member::new(self.chat_actor_id(), key_bundle);
         let mut topics = self.local_data.active_inbox_topics.write().await;
         let inbox_topic = InboxTopic {
             topic: Topic::inbox().aliased("inbox"),
@@ -289,9 +333,13 @@ impl Node {
         topics.insert(inbox_topic.clone());
         self.initialize_topic(inbox_topic.topic, false).await?;
         Ok(Friend {
-            member_code: me.into(),
+            member_code: member.into(),
             inbox_topic,
         })
+    }
+
+    pub fn chat_actor_id(&self) -> ActorId {
+        self.nodestate.device_group_actor
     }
 
     /// Get the topic for a direct chat between two public keys.
@@ -299,25 +347,25 @@ impl Node {
     /// The topic is the hashed sorted public keys.
     /// Anyone who knows the two public keys can derive the same topic.
     // TODO: is this a problem? Should we use a random topic instead?
-    pub fn direct_chat_topic(&self, pk: PK) -> Topic {
-        let me = self.public_key().into();
-        let topic = Topic::chat(ChatId::direct_chat([me, pk]));
-        if me > pk {
-            topic.aliased(&format!("direct({},{})", pk, me))
+    pub fn direct_chat_topic(&self, other: ActorId) -> Topic {
+        let me = self.chat_actor_id();
+        let topic = Topic::chat(ChatId::direct_chat([me, other]));
+        if me > other {
+            topic.aliased(&format!("direct({},{})", other, me))
         } else {
-            topic.aliased(&format!("direct({},{})", me, pk))
+            topic.aliased(&format!("direct({},{})", me, other))
         }
     }
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn create_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
+    pub async fn create_space(&self, chat_id: ChatId) -> anyhow::Result<()> {
         self.initialize_topic(Topic::chat(chat_id).aliased("chat"), true)
             .await?;
 
         let (_space, msgs, _event) = self
             .manager
-            .create_space(chat_id, &[(self.public_key().into(), Access::manage())])
+            .create_space(chat_id, &[(self.chat_actor_id(), Access::manage())])
             .await?;
 
         alias_space_messages("create_group", msgs.iter());
@@ -344,7 +392,7 @@ impl Node {
 
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
         self.author_operation(
-            Topic::announcements(self.public_key()),
+            Topic::announcements(self.chat_actor_id()),
             Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
             Some(&format!("set_profile({})", self.public_key().alias())),
         )
@@ -354,21 +402,21 @@ impl Node {
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn add_member(&self, chat_id: ChatId, pubkey: PK) -> anyhow::Result<()> {
+    pub async fn add_member(&self, chat_id: ChatId, actor: ActorId) -> anyhow::Result<()> {
         let (msgs, _events) = self
             .manager
             .space(chat_id)
             .await?
             .ok_or_else(|| anyhow!("Chat has no Space: {chat_id}"))?
             // TODO: we need an access level for only adding but not removing members
-            .add(pubkey.into(), Access::manage())
+            .add(actor, Access::manage())
             .await?;
 
         alias_space_messages("add_member", msgs.iter());
 
         let _header = self
             .author_operation(
-                self.direct_chat_topic(pubkey),
+                self.direct_chat_topic(actor),
                 Payload::Chat(ChatPayload::JoinGroup(chat_id)),
                 Some(&format!("add_member/invitation({})", chat_id.alias())),
             )
@@ -445,7 +493,7 @@ impl Node {
         self.local_data.private_key.public_key().into()
     }
 
-    fn local_topic(&self) -> Topic {
+    fn device_group_topic(&self) -> Topic {
         Topic::device_group(self.local_data.device_group_id)
     }
 
@@ -455,45 +503,42 @@ impl Node {
     /// - store them in the friends map
     /// - send an invitation to them to do the same
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn add_friend(&self, friend: Friend) -> anyhow::Result<PK> {
+    pub async fn add_friend(&self, friend: Friend) -> anyhow::Result<ActorId> {
         tracing::debug!("adding friend: {:?}", friend);
         let member = friend.member_code.clone();
-        let public_key = PK::try_from(member.id()).expect("actor id is public key");
+        let actor = member.id();
 
         // Register the member in the spaces manager
-        let spaces_member = p2panda_spaces::Member::new(member.id(), member.key_bundle().clone());
+        let spaces_member = p2panda_spaces::Member::new(actor, member.key_bundle().clone());
         self.manager
             .register_member(&spaces_member)
             .await
             .map_err(|e| anyhow!("Failed to register friend: {e:?}"))?;
 
-        self.initialize_topic(
-            Topic::announcements(public_key.clone()).aliased("announce"),
-            false,
-        )
-        .await?;
+        self.initialize_topic(Topic::announcements(actor).aliased("announce"), false)
+            .await?;
 
         self.initialize_topic(friend.inbox_topic.topic.aliased("inbox"), true)
             .await?;
 
-        self.initialize_topic(self.direct_chat_topic(public_key), true)
+        self.initialize_topic(self.direct_chat_topic(actor), true)
             .await?;
 
         self.author_operation(
-            self.local_topic(),
+            self.device_group_topic(),
             Payload::DeviceGroup(DeviceGroupPayload::AddFriend(friend.clone())),
-            Some(&format!("add_friend/invitation({})", public_key.alias())),
+            Some(&format!("add_friend/invitation({})", actor.alias())),
         )
         .await?;
 
         self.author_operation(
             friend.inbox_topic.topic,
             Payload::Inbox(InboxPayload::Friend),
-            Some(&format!("add_friend/invitation({})", public_key.alias())),
+            Some(&format!("add_friend/invitation({})", actor.alias())),
         )
         .await?;
 
-        Ok(public_key)
+        Ok(actor)
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
