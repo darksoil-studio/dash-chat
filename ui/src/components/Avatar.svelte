@@ -1,23 +1,23 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/skeleton/skeleton.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
-	import type { UsersStore, UserId } from 'dash-chat-stores';
+	import type { UsersStore, UserId, ContactsStore, PublicKey } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
 
-	let { userId }: { userId: UserId } = $props();
+	let { publicKey }: { publicKey: PublicKey} = $props();
 
-	const usersStore: UsersStore = getContext('users-store');
+	const contactsStore: ContactsStore = getContext('contacts-store');
 
-	const user = useReactivePromise(usersStore.users, userId);
+	const profile= useReactivePromise(contactsStore.profiles, publicKey);
 </script>
 
-{#await $user}
+{#await $profile}
 	<wa-skeleton> </wa-skeleton>
-{:then user}
+{:then profile}
 	<wa-avatar
-		image={user?.profile?.avatar}
-		initials={user?.profile?.name.slice(0, 2)}
+		image={profile?.avatar}
+		initials={profile?.name.slice(0, 2)}
 	>
 	</wa-avatar>
 {/await}

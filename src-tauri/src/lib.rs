@@ -1,6 +1,6 @@
 use tauri::{Emitter, Manager};
 
-use crate::commands::logs::{SimplifiedHeader, SimplifiedOperation, simplify};
+use crate::commands::logs::{SimplifiedHeader, SimplifiedOperation};
 
 mod commands;
 mod utils;
@@ -18,8 +18,13 @@ pub fn run() {
             commands::logs::get_log,
             commands::logs::get_authors,
             commands::profile::set_profile,
-            commands::friends::my_member_code,
-            commands::friends::add_friend,
+            commands::contacts::my_member_code,
+            commands::contacts::add_contact,
+            commands::contacts::get_contacts,
+            commands::chats::create_group,
+            commands::chats::get_groups,
+            commands::group_chat::add_member,
+            commands::group_chat::send_message,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

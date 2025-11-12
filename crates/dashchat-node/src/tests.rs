@@ -24,8 +24,8 @@ async fn test_profiles() {
 
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
-    alice.add_friend(bobbi.me().await.unwrap()).await.unwrap();
-    bobbi.add_friend(alice.me().await.unwrap()).await.unwrap();
+    alice.add_contact(bobbi.me().await.unwrap()).await.unwrap();
+    bobbi.add_contact(alice.me().await.unwrap()).await.unwrap();
 
     let profile = Profile {
         name: "Alice".to_string(),

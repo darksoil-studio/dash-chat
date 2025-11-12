@@ -1,7 +1,7 @@
 #![feature(bool_to_result)]
 
 mod chat;
-mod friend;
+mod contact;
 mod node;
 mod operation;
 mod spaces;
@@ -22,7 +22,7 @@ use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
 pub use node::{Node, NodeConfig, Notification};
-pub use friend::MemberCode;
+pub use contact::MemberCode;
 pub use operation::*;
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;

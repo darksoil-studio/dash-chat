@@ -53,10 +53,13 @@ pub fn simplify(
     header: Header,
     body: Option<Body>,
 ) -> Result<SimplifiedOperation, String> {
+
+    log::error!("ayaa {body:?}");
     let body: Option<serde_json::Value> = match body {
         Some(b) => decode_cbor(&b.to_bytes()[..]).map_err(|err| format!("{err:?}"))?,
         None => None,
     };
+    log::error!("ayaa2 {body:?}");
 
     let operation = SimplifiedOperation {
         // hash,

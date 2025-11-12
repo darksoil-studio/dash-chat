@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import {
-		UsersStore,
+		ChatsClient,
+		ChatsStore,
 		LogsStore,
 		TauriLogsClient,
-		UsersClient,
 		type TopicId,
 		type Payload,
-		FriendsClient,
-		FriendsStore
+		ContactsClient,
+		ContactsStore,
 	} from 'dash-chat-stores';
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
 	let { children } = $props();
@@ -16,13 +16,13 @@
 	const logsClient = new TauriLogsClient<TopicId, Payload>();
 	const logsStore = new LogsStore<TopicId, Payload>(logsClient);
 
-	const usersClient = new UsersClient();
-	const usersStore = new UsersStore(logsStore, usersClient);
-	setContext('users-store', usersStore);
+	const contactsClient = new ContactsClient();
+	const contactsStore = new ContactsStore(logsStore, contactsClient);
+	setContext('contacts-store', contactsStore);
 
-	const friendsClient= new FriendsClient();
-	const friendsStore= new FriendsStore(logsStore, friendsClient);
-	setContext('friends-store', friendsStore);
+	const chatsClient = new ChatsClient();
+	const chatsStore = new ChatsStore(logsStore, chatsClient);
+	setContext('chats-store', chatsStore);
 </script>
 
 <main class="container column" style="flex: 1">

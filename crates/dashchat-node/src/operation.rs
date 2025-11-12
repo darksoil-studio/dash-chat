@@ -30,8 +30,8 @@ pub enum InboxPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
     JoinGroup(ChatId),
 
-    /// Invites the recipient to add the sender as a friend.
-    Friend,
+    /// Invites the recipient to add the sender as a contact.
+    Contact,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

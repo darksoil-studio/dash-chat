@@ -30,7 +30,7 @@ use tracing::Instrument;
 
 use crate::chat::{Chat, ChatId};
 use crate::chat::{ChatMessage, ChatMessageContent};
-use crate::friend::{Friend, MemberCode};
+use crate::contact::{Contact, MemberCode};
 use crate::operation::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
     decode_gossip_message, encode_gossip_message,
@@ -71,7 +71,7 @@ pub type Orderer = PartialOrder<
 #[derive(Clone)]
 pub struct NodeState {
     chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
-    friends: Arc<RwLock<HashMap<PK, Friend>>>,
+    contacts: Arc<RwLock<HashMap<PK, Contact>>>,
 }
 
 #[derive(Clone)]
@@ -200,7 +200,7 @@ impl Node {
             gossip: Arc::new(RwLock::new(HashMap::new())),
             nodestate: NodeState {
                 chats: Arc::new(RwLock::new(HashMap::new())),
-                friends: Arc::new(RwLock::new(HashMap::new())),
+                contacts: Arc::new(RwLock::new(HashMap::new())),
             },
         };
 
@@ -404,14 +404,14 @@ impl Node {
         self.private_key.public_key()
     }
 
-    /// Store someone as a friend, and:
+    /// Store someone as a contact, and:
     /// - register their spaces keybundle so we can add them to spaces
     /// - subscribe to their inbox
-    /// - store them in the friends map
+    /// - store them in the contacts map
     /// - send an invitation to them to do the same
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn add_friend(&self, member: MemberCode) -> anyhow::Result<PK> {
-        tracing::debug!("adding friend: {:?}", member);
+    pub async fn add_contact(&self, member: MemberCode) -> anyhow::Result<PK> {
+        tracing::debug!("adding contact: {:?}", member);
         let public_key = PK::try_from(member.id()).expect("actor id is public key");
 
         // Register the member in the spaces manager
@@ -419,7 +419,7 @@ impl Node {
         self.manager
             .register_member(&spaces_member)
             .await
-            .map_err(|e| anyhow!("Failed to register friend: {e:?}"))?;
+            .map_err(|e| anyhow!("Failed to register contact: {e:?}"))?;
 
         self.initialize_topic(Topic::Announcements(public_key.clone()), false)
             .await?;
@@ -428,24 +428,29 @@ impl Node {
 
         self.author_operation(
             Topic::Inbox(public_key.clone()),
-            Payload::Inbox(InboxPayload::Friend),
-            Some(&format!("add_friend/invitation({})", public_key.alias())),
+            Payload::Inbox(InboxPayload::Contact),
+            Some(&format!("add_contact/invitation({})", public_key.alias())),
         )
         .await?;
+        self.nodestate
+            .contacts
+            .write()
+            .await
+            .insert(public_key.clone(), Contact {});
 
         Ok(public_key)
     }
 
     #[cfg(feature = "testing")]
-    pub async fn get_friends(&self) -> anyhow::Result<Vec<PK>> {
-        let friends = self.nodestate.friends.read().await;
-        Ok(friends.keys().cloned().collect())
+    pub async fn get_contacts(&self) -> anyhow::Result<Vec<PK>> {
+        let contacts = self.nodestate.contacts.read().await;
+        Ok(contacts.keys().cloned().collect())
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn remove_friend(&self, public_key: PK) -> anyhow::Result<()> {
+    pub async fn remove_contact(&self, public_key: PK) -> anyhow::Result<()> {
         // TODO: shutdown inbox task, etc.
-        self.nodestate.friends.write().await.remove(&public_key);
+        self.nodestate.contacts.write().await.remove(&public_key);
         Ok(())
     }
 

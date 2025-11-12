@@ -355,8 +355,8 @@ impl Node {
                         self.join_group(*chat_id).await?;
                         // TODO: maybe close down the chat tasks if we are kicked out?
                     }
-                    InboxPayload::Friend => {
-                        tracing::debug!("received friend invitation from: {:?}", header.public_key);
+                    InboxPayload::Contact => {
+                        tracing::debug!("received contact invitation from: {:?}", header.public_key);
                     }
                 }
             }

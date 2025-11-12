@@ -27,8 +27,8 @@ async fn test_group_2() {
 
     println!("peers see each other");
 
-    alice.add_friend(bobbi.me().await.unwrap()).await.unwrap();
-    bobbi.add_friend(alice.me().await.unwrap()).await.unwrap();
+    alice.add_contact(bobbi.me().await.unwrap()).await.unwrap();
+    bobbi.add_contact(alice.me().await.unwrap()).await.unwrap();
 
     let chat_id = ChatId::random().aliased("onlychat");
     alice.create_group(chat_id).await.unwrap();
@@ -37,7 +37,7 @@ async fn test_group_2() {
 
     bobbi_rx
         .watch_for(Duration::from_secs(5), |n| {
-            matches!(n.payload, Payload::Inbox(InboxPayload::Friend))
+            matches!(n.payload, Payload::Inbox(InboxPayload::Contact))
         })
         .await
         .unwrap();
@@ -117,14 +117,14 @@ async fn test_group_3() {
     println!("carol:    {:?}", carol.public_key().short());
 
     // alice -- bobbi -- carol (bobbi is the pivot)
-    alice.add_friend(bobbi.me().await.unwrap()).await.unwrap();
-    bobbi.add_friend(alice.me().await.unwrap()).await.unwrap();
-    bobbi.add_friend(carol.me().await.unwrap()).await.unwrap();
-    carol.add_friend(bobbi.me().await.unwrap()).await.unwrap();
+    alice.add_contact(bobbi.me().await.unwrap()).await.unwrap();
+    bobbi.add_contact(alice.me().await.unwrap()).await.unwrap();
+    bobbi.add_contact(carol.me().await.unwrap()).await.unwrap();
+    carol.add_contact(bobbi.me().await.unwrap()).await.unwrap();
 
-    // NOTE: not needed! "friendship" is transitive.
-    // alice.add_friend(carol.me().await.unwrap()).await.unwrap();
-    // carol.add_friend(alice.me().await.unwrap()).await.unwrap();
+    // NOTE: not needed! "contactship" is transitive.
+    // alice.add_contact(carol.me().await.unwrap()).await.unwrap();
+    // carol.add_contact(alice.me().await.unwrap()).await.unwrap();
 
     println!("\n==> alice creates group\n");
     let chat_id = ChatId::random().aliased("onlychat");

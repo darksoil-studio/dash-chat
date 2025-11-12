@@ -3,17 +3,17 @@
 	import '@awesome.me/webawesome/dist/components/card/card.js';
 	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import { getContext } from 'svelte';
-	import type { UsersStore } from 'dash-chat-stores';
+	import type { ContactsStore } from 'dash-chat-stores';
 	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 	import '@darksoil-studio/holochain-elements/dist/elements/select-avatar.js';
 	import SelectAvatar from '../components/SelectAvatar.svelte';
 
-	const usersStore: UsersStore = getContext('users-store');
+	const contactsStore: ContactsStore = getContext('contacts-store');
 	let nickname: string | undefined;
 	let avatar: string | undefined
 
 	async function setProfile() {
-		await usersStore.client.setProfile({
+		await contactsStore.client.setProfile({
 			name: nickname!,
 			avatar,
 		});

@@ -2,6 +2,8 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import '@awesome.me/webawesome/dist/components/tooltip/tooltip.js';
 	import { resizeAndExport } from '../utils/image';
+	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { mdiPlus } from '@mdi/js';
 
 	let avatarSize = 300;
 
@@ -59,7 +61,7 @@
 			loading={uploading}
 			onclick={() => avatarFilePicker.click()}
 		>
-			<wa-icon name="plus" label="Add avatar image"></wa-icon>
+			<wa-icon src={wrapPathInSvg(mdiPlus)} label="Add avatar image"></wa-icon>
 		</wa-button>
 	</div>
 {/if}
