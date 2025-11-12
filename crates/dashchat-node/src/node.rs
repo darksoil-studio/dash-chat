@@ -323,6 +323,12 @@ impl Node {
     /// Create a new friend QR code with configured expiry time,
     /// subscribe to the inbox topic for it, and register the topic as active.
     pub async fn new_friend_code(&self) -> anyhow::Result<Friend> {
+        let space = self
+            .manager
+            .space(self.local_data.device_group_id)
+            .await?
+            .expect("Device group has no space");
+
         let key_bundle = self.manager.me().await?.key_bundle().clone();
         let member = p2panda_spaces::Member::new(self.chat_actor_id(), key_bundle);
         let mut topics = self.local_data.active_inbox_topics.write().await;
@@ -509,7 +515,7 @@ impl Node {
         let actor = member.id();
 
         // Register the member in the spaces manager
-        let spaces_member = p2panda_spaces::Member::new(actor, member.key_bundle().clone());
+        let spaces_member = member.into();
         self.manager
             .register_member(&spaces_member)
             .await
