@@ -592,6 +592,19 @@ impl Node {
         self.initialize_topic(Topic::device_group(friend.chat_actor_id), false)
             .await?;
 
+        // XXX: there should be a better way to wait for the device group to be created,
+        //      and this may never happen if the friend is not online.
+        let mut attempts = 0;
+        while self.manager.group(actor).await?.is_none() {
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+            attempts += 1;
+            if attempts > 20 {
+                return Err(anyhow!(
+                    "Failed to register friend's device group. Try again later."
+                ));
+            }
+        }
+
         self.initialize_topic(Topic::announcements(actor).aliased("announce"), false)
             .await?;
 
@@ -616,9 +629,6 @@ impl Node {
             )
             .await?;
         }
-
-        // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-        todo!("a sleep here lets the device group messages come through");
 
         // Only the initiator of friendship should create the direct chat space
         if friend.share_intent == ShareIntent::AddFriend && friend.inbox_topic.is_none() {
