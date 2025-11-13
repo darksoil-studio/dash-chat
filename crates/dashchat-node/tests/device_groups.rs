@@ -1,10 +1,5 @@
 #![feature(bool_to_result)]
 
-use std::time::Duration;
-
-use p2panda_auth::Access;
-use p2panda_net::ResyncConfiguration;
-
 use dashchat_node::{testing::*, *};
 
 const TRACING_FILTER: &str =
@@ -26,19 +21,14 @@ async fn device_group_solo() {
     println!("peers see each other");
 
     alice
-        .add_friend(alicia.new_friend_code().await.unwrap())
-        .await
-        .unwrap();
-    alicia
-        .add_friend(alice.new_friend_code().await.unwrap())
+        .add_friend(
+            alicia
+                .new_qr_code(ShareIntent::AddDevice, true)
+                .await
+                .unwrap(),
+        )
         .await
         .unwrap();
 
-    let chat_id = ChatId::random();
-    alice.create_space(chat_id).await.unwrap();
-
-    alice
-        .add_member(chat_id, alicia.public_key().into())
-        .await
-        .unwrap();
+    todo!("accept");
 }

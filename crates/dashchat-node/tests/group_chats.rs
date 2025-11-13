@@ -1,3 +1,6 @@
+//! NOTE: these tests don't test the full proper friendship flow
+//! in that they don't use the inbox.
+
 #![feature(bool_to_result)]
 
 use std::time::Duration;
@@ -26,16 +29,26 @@ async fn test_group_2() {
     println!("peers see each other");
 
     alice
-        .add_friend(bobbi.new_friend_code().await.unwrap())
+        .add_friend(
+            bobbi
+                .new_qr_code(ShareIntent::AddFriend, false)
+                .await
+                .unwrap(),
+        )
         .await
         .unwrap();
     bobbi
-        .add_friend(alice.new_friend_code().await.unwrap())
+        .add_friend(
+            alice
+                .new_qr_code(ShareIntent::AddFriend, false)
+                .await
+                .unwrap(),
+        )
         .await
         .unwrap();
 
     let chat_id = ChatId::random();
-    alice.create_space(chat_id).await.unwrap();
+    alice.create_group_chat_space(chat_id).await.unwrap();
 
     alice
         .add_member(chat_id, bobbi.chat_actor_id().into())
@@ -44,7 +57,7 @@ async fn test_group_2() {
 
     bobbi_rx
         .watch_for(Duration::from_secs(5), |n| {
-            matches!(n.payload, Payload::Inbox(InboxPayload::Friend))
+            matches!(n.payload, Payload::Inbox(InboxPayload::Friend(_)))
         })
         .await
         .unwrap();
@@ -128,19 +141,39 @@ async fn test_group_3() {
 
     // alice -- bobbi -- carol (bobbi is the pivot)
     alice
-        .add_friend(bobbi.new_friend_code().await.unwrap())
+        .add_friend(
+            bobbi
+                .new_qr_code(ShareIntent::AddFriend, false)
+                .await
+                .unwrap(),
+        )
         .await
         .unwrap();
     bobbi
-        .add_friend(alice.new_friend_code().await.unwrap())
+        .add_friend(
+            alice
+                .new_qr_code(ShareIntent::AddFriend, false)
+                .await
+                .unwrap(),
+        )
         .await
         .unwrap();
     bobbi
-        .add_friend(carol.new_friend_code().await.unwrap())
+        .add_friend(
+            carol
+                .new_qr_code(ShareIntent::AddFriend, false)
+                .await
+                .unwrap(),
+        )
         .await
         .unwrap();
     carol
-        .add_friend(bobbi.new_friend_code().await.unwrap())
+        .add_friend(
+            bobbi
+                .new_qr_code(ShareIntent::AddFriend, false)
+                .await
+                .unwrap(),
+        )
         .await
         .unwrap();
 
@@ -150,7 +183,7 @@ async fn test_group_3() {
 
     println!("\n==> alice creates group\n");
     let chat_id = ChatId::random();
-    alice.create_space(chat_id).await.unwrap();
+    alice.create_group_chat_space(chat_id).await.unwrap();
     println!("\n==> alice adds bobbi\n");
     alice
         .add_member(chat_id, bobbi.chat_actor_id().into())

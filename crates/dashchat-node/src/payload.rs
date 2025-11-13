@@ -3,7 +3,7 @@ use p2panda_core::{Body, Extension, PruneFlag};
 use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
-use crate::friend::Friend;
+use crate::friend::QrCode;
 use crate::spaces::SpaceControlMessage;
 use crate::topic::LogId;
 use crate::{AsBody, Cbor};
@@ -29,7 +29,7 @@ pub enum AnnouncementsPayload {
 #[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
     /// Invites the recipient to add the sender as a friend.
-    Friend,
+    Friend(QrCode),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -56,7 +56,7 @@ impl From<Vec<SpaceControlMessage>> for ChatPayload {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum DeviceGroupPayload {
-    AddFriend(Friend),
+    AddFriend(QrCode),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

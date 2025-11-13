@@ -48,7 +48,7 @@ impl Node {
             .network
             .subscribe(DashChatTopicId::from(topic).clone())
             .await?;
-        tracing::debug!(?topic, "subscribed to topic");
+        tracing::info!(?topic, "subscribed to topic");
 
         let stream = ReceiverStream::new(network_rx);
         let stream = stream.filter_map(|event| async {
@@ -234,7 +234,7 @@ impl Node {
             _ => {}
         }
 
-        tracing::debug!(?payload, "RECEIVED PAYLOAD");
+        tracing::trace!(?payload, "RECEIVED PAYLOAD");
 
         if let Err(err) = self
             .process_payload(topic, &header, payload.as_ref(), is_author)
@@ -366,7 +366,7 @@ impl Node {
                     "received invitation message"
                 );
                 match invitation {
-                    InboxPayload::Friend => {
+                    InboxPayload::Friend(_) => {
                         // Nothing to do.
                     }
                 }

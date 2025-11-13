@@ -17,6 +17,7 @@ pub mod testing;
 use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
+pub use friend::{QrCode, ShareIntent};
 pub use node::{Node, NodeConfig, NodeLocalData, Notification};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;

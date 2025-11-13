@@ -20,13 +20,18 @@ async fn test_profiles() {
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
     alice
-        .add_friend(bobbi.new_friend_code().await.unwrap())
+        .add_friend(
+            bobbi
+                .new_qr_code(ShareIntent::AddFriend, true)
+                .await
+                .unwrap(),
+        )
         .await
         .unwrap();
-    bobbi
-        .add_friend(alice.new_friend_code().await.unwrap())
-        .await
-        .unwrap();
+    // bobbi
+    //     .add_friend(alice.new_qr_code(ShareIntent::AddFriend).await.unwrap())
+    //     .await
+    //     .unwrap();
 
     let profile = Profile {
         name: "Alice".to_string(),

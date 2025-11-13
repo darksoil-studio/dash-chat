@@ -4,18 +4,22 @@ use std::{
 };
 
 use p2panda_auth::Access;
+use p2panda_spaces::ActorId;
 use tokio::sync::mpsc::Receiver;
 
 use crate::{
-    ChatId, NodeConfig, Notification, PK,
+    ChatId, DeviceGroupPayload, NodeConfig, Notification, PK, Payload,
     node::{Node, NodeLocalData},
-    testing::{AliasedId, ShortId, introduce},
+    testing::{AliasedId, ShortId, behavior::Behavior, introduce},
     topic::Topic,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
-#[debug("TestNode({})", self.0.public_key().alias())]
-pub struct TestNode(Node);
+#[debug("TestNode({})", self.node.public_key().alias())]
+pub struct TestNode {
+    #[deref]
+    node: Node,
+}
 
 impl TestNode {
     pub async fn new(config: NodeConfig, alias: Option<&str>) -> (Self, Watcher<Notification>) {
@@ -24,12 +28,17 @@ impl TestNode {
         if let Some(alias) = alias {
             local_data.private_key.public_key().aliased(alias);
         }
-        let node = Self(
-            Node::new(local_data, config, Some(notification_tx))
+        let node = Self {
+            node: Node::new(local_data, config, Some(notification_tx))
                 .await
                 .unwrap(),
-        );
+        };
         (node, Watcher(notification_rx))
+    }
+
+    pub async fn behavior(config: NodeConfig, alias: Option<&str>) -> Behavior {
+        let (node, notification_rx) = Self::new(config, alias).await;
+        Behavior::new(node, notification_rx)
     }
 
     pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
@@ -49,9 +58,19 @@ impl TestNode {
         }
     }
 
-    pub async fn get_friends(&self) -> anyhow::Result<Vec<PK>> {
-        let friends = self.nodestate.friends.read().await;
-        Ok(friends.keys().cloned().collect())
+    pub async fn get_friends(&self) -> anyhow::Result<Vec<ActorId>> {
+        let ids = self
+            .get_interleaved_logs(self.device_group_topic())
+            .await?
+            .into_iter()
+            .filter_map(|(_, payload)| match payload {
+                Some(Payload::DeviceGroup(DeviceGroupPayload::AddFriend(qr))) => {
+                    Some(qr.chat_actor_id)
+                }
+                _ => None,
+            })
+            .collect();
+        Ok(ids)
     }
 }
 
@@ -91,7 +110,7 @@ impl<const N: usize> TestCluster<N> {
     pub async fn introduce_all(&self) {
         let nodes = self
             .iter()
-            .map(|(node, _)| &node.0.network)
+            .map(|(node, _)| &node.network)
             .collect::<Vec<_>>();
         introduce(nodes).await;
     }
@@ -190,6 +209,31 @@ impl ConsistencyReport {
 pub struct Watcher<T>(Receiver<T>);
 
 impl<T: std::fmt::Debug> Watcher<T> {
+    pub async fn watch_mapped<R>(
+        &mut self,
+        timeout: tokio::time::Duration,
+        f: impl Fn(&T) -> Option<R>,
+    ) -> anyhow::Result<R> {
+        let timeout = tokio::time::sleep(timeout);
+        tokio::pin!(timeout);
+
+        loop {
+            tokio::select! {
+                item = self.0.recv() => {
+                    tracing::debug!(?item, "watcher received item");
+                    match item {
+                        Some(item) => match f(&item) {
+                            Some(r) => return Ok(r),
+                            None => continue,
+                        },
+                        None => return Err(anyhow::anyhow!("channel closed")),
+                    }
+                }
+                _ = &mut timeout => return Err(anyhow::anyhow!("timeout")),
+            }
+        }
+    }
+
     pub async fn watch_for(
         &mut self,
         timeout: tokio::time::Duration,
@@ -203,8 +247,11 @@ impl<T: std::fmt::Debug> Watcher<T> {
                 item = self.0.recv() => {
                     tracing::debug!(?item, "watcher received item");
                     match item {
-                        Some(item) if f(&item) => return Ok(item),
-                        Some(_) => continue,
+                        Some(item) => if f(&item) {
+                            return Ok(item)
+                        } else {
+                            continue
+                        },
                         None => return Err(anyhow::anyhow!("channel closed")),
                     }
                 }

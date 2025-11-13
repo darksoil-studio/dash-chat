@@ -1,3 +1,4 @@
+mod behavior;
 mod ext;
 mod introduce;
 mod test_node;

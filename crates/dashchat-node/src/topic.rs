@@ -33,7 +33,7 @@ impl Topic {
     }
 
     /// The topic ID is randomly generated for each new Friend code (QR code).
-    pub fn inbox() -> Self {
+    pub fn random() -> Self {
         Self(rand::random())
     }
 
@@ -45,8 +45,8 @@ impl Topic {
     }
 
     /// The topic ID is unique.
-    pub fn device_group(topic_id: DeviceGroupId) -> Self {
-        Self(topic_id.0)
+    pub fn device_group(topic_id: DeviceGroupTopic) -> Self {
+        Self(*topic_id.as_bytes())
     }
 }
 
@@ -56,7 +56,7 @@ impl TopicId for Topic {
     }
 }
 
-pub type DeviceGroupId = ChatId;
+pub type DeviceGroupTopic = ActorId;
 
 impl From<ChatId> for Topic {
     fn from(chat_id: ChatId) -> Self {
