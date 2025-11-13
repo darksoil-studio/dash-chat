@@ -8,13 +8,13 @@ use std::{collections::BTreeSet, convert::Infallible, str::FromStr};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    PK,
+    PK, Topic,
     testing::{AliasedId, ShortId},
 };
 
 #[derive(Clone, Debug)]
 pub struct Chat {
-    pub(crate) id: ChatId,
+    pub(crate) id: Topic,
 
     /// The processed decrypted messages for this chat.
     pub(crate) messages: BTreeSet<ChatMessage>,
@@ -33,91 +33,5 @@ impl Chat {
     }
 }
 
-#[derive(
-    Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, derive_more::Deref,
-)]
-#[serde(into = "String", try_from = "String")]
-pub struct ChatId(pub [u8; 32]);
-
-impl ChatId {
-    pub fn new(topic_id: [u8; 32]) -> Self {
-        Self(topic_id)
-    }
-
-    /// The chat ID for direct chat between two public keys
-    /// is the hash of the sorted keys.
-    /// This lets both parties derive the same chat ID from the same two keys,
-    /// but gives no information about what this topic is for.
-    pub fn direct_chat(mut pks: [ActorId; 2]) -> Self {
-        pks.sort();
-        let mut hasher = blake3::Hasher::new();
-        hasher.update(pks[0].as_bytes());
-        hasher.update(pks[1].as_bytes());
-        Self(hasher.finalize().into())
-    }
-
-    pub fn random() -> Self {
-        Self(rand::random())
-    }
-
-    pub fn from_rng(rng: &mut impl Rng) -> Self {
-        Self(rng.random())
-    }
-}
-
-impl SpaceId for ChatId {}
-
-impl ShortId for ChatId {
-    const PREFIX: &'static str = "Ch";
-    fn short(&self) -> String {
-        let mut k = self.to_string();
-        k.truncate(8);
-        format!("{}|{}", Self::PREFIX, k)
-    }
-}
-
-impl AliasedId for ChatId {
-    const SHOW_SHORT_ID: bool = false;
-
-    fn as_bytes(&self) -> &[u8] {
-        self.0.as_ref()
-    }
-}
-
-impl From<ChatId> for String {
-    fn from(chat_id: ChatId) -> Self {
-        chat_id.to_string()
-    }
-}
-
-impl TryFrom<String> for ChatId {
-    type Error = Infallible;
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(ChatId::from_str(&value).unwrap())
-    }
-}
-
-impl std::fmt::Display for ChatId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", hex::encode(self.0))
-    }
-}
-
-impl std::fmt::Debug for ChatId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.alias())
-    }
-}
-
-impl FromStr for ChatId {
-    type Err = anyhow::Error;
-
-    fn from_str(topic: &str) -> Result<Self, Self::Err> {
-        // maybe base64?
-        Ok(Self(
-            hex::decode(topic)?
-                .try_into()
-                .map_err(|e| anyhow::anyhow!("Invalid ChatId: {e:?}"))?,
-        ))
-    }
-}
+// TODO: remove
+pub type ChatId = Topic;

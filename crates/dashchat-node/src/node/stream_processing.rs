@@ -282,7 +282,7 @@ impl Node {
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match &payload {
             Some(Payload::Chat(ChatPayload::Space(msgs))) => {
-                let chat_id = ChatId::new(topic.id());
+                let chat_id = topic;
                 let mut chats = self.nodestate.chats.write().await;
                 let chat = chats.entry(chat_id).or_insert(Chat::new(chat_id));
                 tracing::info!(
@@ -390,7 +390,7 @@ impl Node {
     async fn process_chat_event(
         &self,
         chat: &mut Chat,
-        event: Event<ChatId, ()>,
+        event: Event<Topic, ()>,
     ) -> anyhow::Result<()> {
         match event {
             Event::Application { data, .. } => {

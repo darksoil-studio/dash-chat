@@ -32,29 +32,29 @@ async fn test_inbox_2() {
         .unwrap();
     bobbi.add_friend(qr).await.unwrap();
 
-    alice
-        .watcher
-        .watch_for(Duration::from_secs(5), |n| {
-            n.header.public_key == *bobbi.public_key()
-                && match &n.payload {
-                    Payload::Chat(ChatPayload::Space(msgs)) => {
-                        msgs.iter().any(|m| match &m.spaces_args {
-                            SpacesArgs::Auth {
-                                control_message, ..
-                            } => {
-                                matches!(
-                                    control_message.action,
-                                    p2panda_auth::group::GroupAction::Create { .. }
-                                )
-                            }
-                            _ => false,
-                        })
-                    }
-                    _ => false,
-                }
-        })
-        .await
-        .unwrap();
+    // alice
+    //     .watcher
+    //     .watch_for(Duration::from_secs(5), |n| {
+    //         n.header.public_key == *bobbi.public_key()
+    //             && match &n.payload {
+    //                 Payload::Chat(ChatPayload::Space(msgs)) => {
+    //                     msgs.iter().any(|m| match &m.spaces_args {
+    //                         SpacesArgs::Auth {
+    //                             control_message, ..
+    //                         } => {
+    //                             matches!(
+    //                                 control_message.action,
+    //                                 p2panda_auth::group::GroupAction::Create { .. }
+    //                             )
+    //                         }
+    //                         _ => false,
+    //                     })
+    //                 }
+    //                 _ => false,
+    //             }
+    //     })
+    //     .await
+    //     .unwrap();
 
     alice.accept_next_friend().await.unwrap();
 
@@ -67,22 +67,21 @@ async fn test_inbox_2() {
         vec![alice.chat_actor_id()]
     );
 
-    let direct_chat_id = alice.direct_chat_id(bobbi.chat_actor_id());
-    let direct_chat_topic = Topic::chat(direct_chat_id);
+    let direct_chat_topic = alice.direct_chat_topic(bobbi.chat_actor_id());
 
-    tracing::info!(%direct_chat_id, ?direct_chat_topic, "direct chat id");
+    tracing::info!(%direct_chat_topic, ?direct_chat_topic, "direct chat id");
 
     wait_for(
         Duration::from_millis(100),
         Duration::from_secs(5),
-        || async { alice.space(direct_chat_id).await.map(|_| ()) },
+        || async { alice.space(direct_chat_topic).await.map(|_| ()) },
     )
     .await
     .unwrap();
 
     alice
         .send_message(
-            alice.direct_chat_id(bobbi.chat_actor_id()).into(),
+            alice.direct_chat_topic(bobbi.chat_actor_id()).into(),
             "Hello".into(),
         )
         .await

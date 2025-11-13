@@ -1,3 +1,4 @@
+use crate::Topic;
 use crate::chat::ChatId;
 use crate::spaces::SpaceControlMessage;
 
@@ -5,7 +6,7 @@ use crate::spaces::SpaceControlMessage;
 impl From<ChatId> for p2panda_spaces::test_utils::TestSpaceId {
     fn from(chat_id: ChatId) -> Self {
         // Convert the first 8 bytes of the ChatId to a usize
-        let bytes = chat_id.0;
+        let bytes = *chat_id;
         let mut result = 0u64;
         for (i, &byte) in bytes.iter().enumerate().take(8) {
             result |= (byte as u64) << (i * 8);
@@ -20,7 +21,7 @@ impl From<p2panda_spaces::test_utils::TestSpaceId> for ChatId {
         let mut bytes = [0u8; 32];
         let id_bytes = test_id.to_le_bytes();
         bytes[..id_bytes.len()].copy_from_slice(&id_bytes);
-        ChatId(bytes)
+        Topic::chat(bytes)
     }
 }
 

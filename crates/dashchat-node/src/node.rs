@@ -28,7 +28,7 @@ use tokio::task;
 use tokio_stream::{StreamExt, wrappers::ReceiverStream};
 use tracing::Instrument;
 
-use crate::chat::{Chat, ChatId};
+use crate::chat::Chat;
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::friend::{InboxTopic, QrCode, ShareIntent};
 use crate::payload::{
@@ -74,7 +74,7 @@ pub type Orderer = PartialOrder<
 
 #[derive(Clone)]
 pub struct NodeState {
-    pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
+    pub(crate) chats: Arc<RwLock<HashMap<Topic, Chat>>>,
     pub(crate) friends: Arc<RwLock<HashMap<PK, QrCode>>>,
     pub(crate) chat_actor_id: ActorId,
 }
@@ -84,7 +84,7 @@ pub struct NodeLocalData {
     pub private_key: PrivateKey,
     /// Used to create the device group space
     // TODO: maybe not needed to be stored, the important thing is the topic?
-    pub device_space_id: ChatId,
+    pub device_space_id: Topic,
     pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
 }
 
@@ -93,7 +93,7 @@ impl NodeLocalData {
         let private_key = PrivateKey::new();
         Self {
             private_key,
-            device_space_id: ChatId::random(),
+            device_space_id: Topic::random(),
             active_inbox_topics: Arc::new(RwLock::new(BTreeSet::new())),
         }
     }
@@ -221,7 +221,8 @@ impl Node {
         };
 
         node.initialize_topic(
-            Topic::device_group(chat_actor_id).aliased("device_group"),
+            Topic::device_group(chat_actor_id)
+                .aliased(&format!("device_group({})", public_key.alias())),
             true,
         )
         .await?;
@@ -382,9 +383,9 @@ impl Node {
     /// The topic is the hashed sorted public keys.
     /// Anyone who knows the two public keys can derive the same topic.
     // TODO: is this a problem? Should we use a random topic instead?
-    pub fn direct_chat_id(&self, other: ActorId) -> ChatId {
+    pub fn direct_chat_topic(&self, other: ActorId) -> Topic {
         let me = self.chat_actor_id();
-        let topic = ChatId::direct_chat([me, other]);
+        let topic = Topic::direct_chat([me, other]);
         if me > other {
             topic.aliased(&format!("direct({},{})", other, me))
         } else {
@@ -394,13 +395,12 @@ impl Node {
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn create_group_chat_space(&self, chat_id: ChatId) -> anyhow::Result<()> {
-        let topic = Topic::chat(chat_id);
+    pub async fn create_group_chat_space(&self, topic: Topic) -> anyhow::Result<()> {
         self.initialize_topic(topic.aliased("chat"), true).await?;
 
         let (_space, msgs, _event) = self
             .manager
-            .create_space(chat_id, &[(self.chat_actor_id(), Access::manage())])
+            .create_space(topic, &[(self.chat_actor_id(), Access::manage())])
             .await?;
 
         alias_space_messages("create_group", msgs.iter());
@@ -409,11 +409,11 @@ impl Node {
             .author_operation(
                 topic,
                 Payload::Chat(ChatPayload::Space(msgs.into())),
-                Some(&format!("create_group/space-control({})", chat_id.alias())),
+                Some(&format!("create_group/space-control({})", topic.alias())),
             )
             .await?;
 
-        tracing::info!(?chat_id, ?topic, "created group chat space");
+        tracing::info!(?topic, ?topic, "created group chat space");
 
         Ok(())
     }
@@ -422,15 +422,14 @@ impl Node {
     /// Note that only one node should create the space!
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     pub async fn create_direct_chat_space(&self, other: ActorId) -> anyhow::Result<()> {
-        let chat_id = self.direct_chat_id(other);
-        let topic = Topic::chat(chat_id);
+        let topic = self.direct_chat_topic(other);
 
         self.initialize_topic(topic.aliased("chat"), true).await?;
 
         let (_space, msgs, _event) = self
             .manager
             .create_space(
-                chat_id,
+                topic,
                 &[
                     (self.chat_actor_id(), Access::manage()),
                     (other, Access::manage()),
@@ -444,11 +443,11 @@ impl Node {
             .author_operation(
                 topic,
                 Payload::Chat(ChatPayload::Space(msgs.into())),
-                Some(&format!("create_group/space-control({})", chat_id.alias())),
+                Some(&format!("create_group/space-control({})", topic.alias())),
             )
             .await?;
 
-        tracing::info!(?chat_id, ?topic, "created direct chat space");
+        tracing::info!(?topic, ?topic, "created direct chat space");
 
         Ok(())
     }
@@ -457,9 +456,9 @@ impl Node {
     /// This needs to be accompanied by being added as a member of the chat Space by an existing member
     /// -- you're not fully a member until someone adds you.
     #[tracing::instrument(skip_all, parent = None, fields(me = ?self.public_key()))]
-    pub async fn join_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
-        tracing::info!(?chat_id, "joined group");
-        self.initialize_topic(Topic::chat(chat_id), true).await
+    pub async fn join_group(&self, topic: Topic) -> anyhow::Result<()> {
+        tracing::info!(?topic, "joined group");
+        self.initialize_topic(topic, true).await
     }
 
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
@@ -474,14 +473,12 @@ impl Node {
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn add_member(&self, chat_id: ChatId, actor: ActorId) -> anyhow::Result<()> {
-        let topic = Topic::chat(chat_id);
-
+    pub async fn add_member(&self, topic: Topic, actor: ActorId) -> anyhow::Result<()> {
         let (msgs, _events) = self
             .manager
-            .space(chat_id)
+            .space(topic)
             .await?
-            .ok_or_else(|| anyhow!("Chat has no Space: {chat_id}"))?
+            .ok_or_else(|| anyhow!("Chat has no Space: {topic}"))?
             // TODO: we need an access level for only adding but not removing members
             .add(actor, Access::manage())
             .await?;
@@ -490,9 +487,9 @@ impl Node {
 
         let _header = self
             .author_operation(
-                Topic::chat(self.direct_chat_id(actor)),
-                Payload::Chat(ChatPayload::JoinGroup(chat_id)),
-                Some(&format!("add_member/invitation({})", chat_id.alias())),
+                self.direct_chat_topic(actor),
+                Payload::Chat(ChatPayload::JoinGroup(topic)),
+                Some(&format!("add_member/invitation({})", topic.alias())),
             )
             .await?;
 
@@ -500,7 +497,7 @@ impl Node {
             .author_operation(
                 topic,
                 Payload::Chat(ChatPayload::Space(msgs)),
-                Some(&format!("add_member/space-control({})", chat_id.alias())),
+                Some(&format!("add_member/space-control({})", topic.alias())),
             )
             .await?;
 
@@ -509,11 +506,11 @@ impl Node {
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     #[cfg(feature = "testing")]
-    pub async fn get_messages(&self, chat_id: ChatId) -> anyhow::Result<Vec<ChatMessage>> {
+    pub async fn get_messages(&self, topic: Topic) -> anyhow::Result<Vec<ChatMessage>> {
         let chats = self.nodestate.chats.read().await;
         let chat = chats
-            .get(&chat_id)
-            .ok_or_else(|| anyhow!("Chat not found: {chat_id}"))?;
+            .get(&topic)
+            .ok_or_else(|| anyhow!("Chat not found: {topic}"))?;
 
         let mut msgs: Vec<ChatMessage> = chat.messages.iter().cloned().collect();
         let original = msgs.clone();
@@ -526,14 +523,14 @@ impl Node {
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     pub async fn send_message(
         &self,
-        chat_id: ChatId,
+        topic: Topic,
         message: ChatMessageContent,
     ) -> anyhow::Result<(ChatMessage, Header<Extensions>)> {
         let space = self
             .manager
-            .space(chat_id)
+            .space(topic)
             .await?
-            .ok_or_else(|| anyhow!("Chat has no Space: {chat_id}"))?;
+            .ok_or_else(|| anyhow!("Chat has no Space: {topic}"))?;
 
         // NOTE: duplication of timestamp and author
         let message = ChatMessage {
@@ -546,7 +543,7 @@ impl Node {
 
         alias_space_messages("send_message", vec![&encrypted]);
 
-        let topic = chat_id.into();
+        let topic = topic.into();
 
         let header = self
             .author_operation(
@@ -554,7 +551,7 @@ impl Node {
                 Payload::Chat(vec![encrypted].into()),
                 Some(&format!(
                     "send_message/encrypted(chat={}, msg={})",
-                    chat_id.alias(),
+                    topic.alias(),
                     encrypted_hash.alias()
                 )),
             )
@@ -598,7 +595,7 @@ impl Node {
         self.initialize_topic(Topic::announcements(actor).aliased("announce"), false)
             .await?;
 
-        self.initialize_topic(Topic::chat(self.direct_chat_id(actor)), true)
+        self.initialize_topic(self.direct_chat_topic(actor), true)
             .await?;
 
         self.author_operation(
@@ -620,6 +617,9 @@ impl Node {
             .await?;
         }
 
+        // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+        todo!("a sleep here lets the device group messages come through");
+
         // Only the initiator of friendship should create the direct chat space
         if friend.share_intent == ShareIntent::AddFriend && friend.inbox_topic.is_none() {
             self.create_direct_chat_space(actor).await?;
@@ -634,8 +634,8 @@ impl Node {
         todo!("add tombstone to friends list");
     }
 
-    pub async fn space(&self, chat_id: ChatId) -> anyhow::Result<DashSpace> {
-        let space = self.manager.space(chat_id).await?;
-        space.ok_or_else(|| anyhow!("Chat has no Space: {chat_id}"))
+    pub async fn space(&self, topic: Topic) -> anyhow::Result<DashSpace> {
+        let space = self.manager.space(topic).await?;
+        space.ok_or_else(|| anyhow!("Chat has no Space: {topic}"))
     }
 }

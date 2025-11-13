@@ -26,10 +26,24 @@ use serde::{Deserialize, Serialize};
 #[debug("{}", self.alias())]
 pub struct Topic([u8; 32]);
 
+impl p2panda_spaces::traits::SpaceId for Topic {}
+
 impl Topic {
     /// The topic ID is the unique chat ID.
-    pub fn chat(chat_id: ChatId) -> Self {
-        Self(chat_id.0)
+    pub fn chat(chat_id: [u8; 32]) -> Self {
+        Self(chat_id)
+    }
+
+    /// The chat ID for direct chat between two public keys
+    /// is the hash of the sorted keys.
+    /// This lets both parties derive the same chat ID from the same two keys,
+    /// but gives no information about what this topic is for.
+    pub fn direct_chat(mut pks: [ActorId; 2]) -> Self {
+        pks.sort();
+        let mut hasher = blake3::Hasher::new();
+        hasher.update(pks[0].as_bytes());
+        hasher.update(pks[1].as_bytes());
+        Self(hasher.finalize().into())
     }
 
     /// The topic ID is randomly generated for each new Friend code (QR code).
@@ -58,12 +72,6 @@ impl TopicId for Topic {
 
 pub type DeviceGroupTopic = ActorId;
 
-impl From<ChatId> for Topic {
-    fn from(chat_id: ChatId) -> Self {
-        Topic::chat(chat_id)
-    }
-}
-
 pub type DashChatTopicId = Topic;
 
 impl TopicQuery for Topic {}
@@ -82,6 +90,32 @@ impl ShortId for Topic {
 impl AliasedId for Topic {
     fn as_bytes(&self) -> &[u8] {
         self.0.as_ref()
+    }
+}
+
+impl From<Topic> for String {
+    fn from(topic: Topic) -> Self {
+        topic.to_string()
+    }
+}
+
+impl TryFrom<String> for Topic {
+    type Error = anyhow::Error;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Ok(std::str::FromStr::from_str(&value)?)
+    }
+}
+
+impl std::str::FromStr for Topic {
+    type Err = anyhow::Error;
+
+    fn from_str(topic: &str) -> Result<Self, Self::Err> {
+        // maybe base64?
+        Ok(Self(
+            hex::decode(topic)?
+                .try_into()
+                .map_err(|e| anyhow::anyhow!("Invalid Topic: {e:?}"))?,
+        ))
     }
 }
 
