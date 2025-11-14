@@ -32,30 +32,6 @@ async fn test_inbox_2() {
         .unwrap();
     bobbi.add_friend(qr).await.unwrap();
 
-    // alice
-    //     .watcher
-    //     .watch_for(Duration::from_secs(5), |n| {
-    //         n.header.public_key == *bobbi.public_key()
-    //             && match &n.payload {
-    //                 Payload::Chat(ChatPayload::Space(msgs)) => {
-    //                     msgs.iter().any(|m| match &m.spaces_args {
-    //                         SpacesArgs::Auth {
-    //                             control_message, ..
-    //                         } => {
-    //                             matches!(
-    //                                 control_message.action,
-    //                                 p2panda_auth::group::GroupAction::Create { .. }
-    //                             )
-    //                         }
-    //                         _ => false,
-    //                     })
-    //                 }
-    //                 _ => false,
-    //             }
-    //     })
-    //     .await
-    //     .unwrap();
-
     alice.accept_next_friend().await.unwrap();
 
     assert_eq!(
