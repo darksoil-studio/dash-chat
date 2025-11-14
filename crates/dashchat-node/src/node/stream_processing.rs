@@ -183,24 +183,14 @@ impl Node {
         topic: Topic,
         operation: Operation<Extensions>,
     ) -> anyhow::Result<()> {
-        let mut ordering = self.ordering.write().await;
-        ordering
-            .entry(topic)
-            .or_insert(PartialOrder::new(self.op_store.clone(), Default::default()))
-            .process(operation)
-            .await?;
+        self.ordering.write().await.process(operation).await?;
         Ok(())
     }
 
     pub async fn next_ordering(&self, topic: Topic) -> anyhow::Result<Vec<Operation<Extensions>>> {
         let mut ordering = self.ordering.write().await;
         let mut next = vec![];
-        while let Some(op) = ordering
-            .entry(topic)
-            .or_insert(PartialOrder::new(self.op_store.clone(), Default::default()))
-            .next()
-            .await?
-        {
+        while let Some(op) = ordering.next().await? {
             next.push(op);
         }
         Ok(next)
