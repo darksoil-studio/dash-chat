@@ -37,36 +37,52 @@ impl Node {
                 match p {
                     ChatPayload::Space(msgs) => {
                         let ids = msgs.iter().map(|msg| msg.id()).collect::<Vec<_>>();
-                        let deps = msgs
+                        let op_deps = msgs
                         .iter()
                         .flat_map(|msg| {
-                                tracing::debug!(
-                                    id = msg.id().alias(),
-                                    argtype = ?msg.arg_type(),
-                                    batch = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                                    deps = ?msg.dependencies().iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                                    "authoring space msg",
-                                );
-                                msg.dependencies()
-                            })
-                            .flat_map(|dep| match sd.get(&dep) {
-                                Some(hash) => Some(hash.clone()),
-                                None => {
-                                    // If the msg is part of the set being committed, it's ok
-                                    if !ids.contains(&dep) {
-                                        tracing::error!(
-                                            dep = dep.alias(),
-                                            deps = ?sd.keys().map(|k| k.alias()).collect::<Vec<_>>(),
-                                            ids = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                                            "space dep should have been seen already"
-                                        );
-                                        panic!("space dep should have been seen already")
-                                    }
-                                    None
+                            tracing::debug!(
+                                id = msg.id().alias(),
+                                argtype = ?msg.arg_type(),
+                                batch = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
+                                deps = ?msg.dependencies().iter().map(|id| id.alias()).collect::<Vec<_>>(),
+                                "authoring space msg",
+                            );
+                            msg.dependencies()
+                        });
+
+                        let mut header_deps = vec![];
+                        for dep in op_deps {
+                            // If the msg is part of the set being committed, it's ok
+                            if ids.contains(&dep) {
+                                continue;
+                            }
+
+                            let mut attempts = 0;
+                            loop {
+                                if let Some(hash) = sd.get(&dep) {
+                                    header_deps.push(hash.clone());
+                                    break;
                                 }
-                            })
-                            .collect();
-                        (ids, deps)
+
+                                // XXX: If the dep is not part of some already seen header,
+                                // as a last ditch effort, let's wait a bit in case the dep
+                                // comes in the next few seconds...
+
+                                if attempts > 10 {
+                                    tracing::error!(
+                                        dep = dep.alias(),
+                                        deps = ?sd.keys().map(|k| k.alias()).collect::<Vec<_>>(),
+                                        ids = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
+                                        "space dep should have been seen already",
+                                    );
+                                    panic!("space dep should have been seen already");
+                                }
+                                attempts += 1;
+                                tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                            }
+                        }
+
+                        (ids, header_deps)
                     }
 
                     ChatPayload::JoinGroup(_chat_id) => (vec![], vec![]),
