@@ -1,4 +1,8 @@
+use std::pin::Pin;
+
+use futures::Stream;
 use futures::StreamExt;
+use futures::stream::SelectAll;
 use p2panda_core::Operation;
 use p2panda_spaces::{
     group::GroupError,
@@ -8,7 +12,8 @@ use p2panda_spaces::{
     types::AuthGroupError,
 };
 use serde::{Deserialize, Serialize};
-use tokio_stream::Stream;
+use tokio::task;
+use tracing::Instrument;
 
 use crate::{
     payload::InboxPayload,
@@ -66,7 +71,6 @@ impl Node {
             }
         });
 
-        let _pubkey = self.public_key();
         // Decode and ingest the p2panda operations.
         let stream = stream
             .decode()
@@ -90,69 +94,91 @@ impl Node {
                 }
             });
 
-        let author_store = self.author_store.clone();
-        self.spawn_stream_process_loop(stream, author_store);
+        self.stream_tx
+            .send(Pin::from(Box::new(stream)))
+            .await
+            .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
 
         self.gossip.write().await.insert(topic.into(), network_tx);
 
         Ok(())
     }
 
-    fn spawn_stream_process_loop(
+    pub fn spawn_stream_process_loop(
         &self,
-        stream: impl Stream<Item = Operation<Extensions>> + Send + 'static,
-        author_store: AuthorStore<LogId>,
+        mut stream_rx: mpsc::Receiver<
+            Pin<Box<dyn Stream<Item = Operation<Extensions>> + Send + 'static>>,
+        >,
+        _author_store: AuthorStore<LogId>,
     ) {
         let node = self.clone();
-        let mut stream = Box::pin(stream);
 
         task::spawn(
             async move {
                 let node = node.clone();
-                tracing::debug!("stream process loop started");
-                while let Some(operation) = stream.next().await {
-                    let hash = operation.hash;
-                    let log_id = operation.header.extensions.log_id;
+                let mut streams = SelectAll::new();
 
-                    if let Err(err) = node.process_ordering(operation).await {
-                        tracing::error!(?err, "process ordering error");
-                        continue;
-                    }
+                loop {
+                    tokio::select! {
+                        Some(stream) = stream_rx.recv() => {
+                            // Stream is already Pin<Box<...>> from the channel, push directly
+                            streams.push(stream);
+                        }
 
-                    // FIXME: this can include operations for other logs!
-                    // need to refactor to have only a single stream, merged from each topic subscription
-                    let reordered = node
-                        .next_ordering()
-                        .await
-                        .map_err(|err| {
-                            tracing::error!(?err, "next ordering error");
-                        })
-                        .unwrap_or_default();
-                    // dbg!(&reordered.iter().map(|o| o.hash.alias()).collect::<Vec<_>>());
-
-                    // let reordered = vec![operation];
-
-                    for operation in reordered {
-                        match node
-                            .process_operation(operation, author_store.clone(), false)
-                            .await
-                        {
-                            Ok(()) => (),
-                            Err(err) => {
-                                tracing::error!(
-                                    ?log_id,
-                                    hash = hash.alias(),
-                                    ?err,
-                                    "process operation error"
-                                )
+                        Some(from_network) = streams.next() => {
+                            // Process the FromNetwork item here
+                            if let Err(err) = node.process_stream_item(from_network).await {
+                                tracing::error!(?err, "process stream item error");
                             }
+                        }
+
+                        else => {
+                            // Both stream_rx is closed and streams is exhausted
+                            break;
                         }
                     }
                 }
-                tracing::warn!("stream process loop ended");
             }
             .instrument(tracing::info_span!("stream_process_loop")),
         );
+    }
+
+    async fn process_stream_item(&self, operation: Operation<Extensions>) -> anyhow::Result<()> {
+        let hash = operation.hash;
+        let log_id = operation.header.extensions.log_id;
+
+        if let Err(err) = self.process_ordering(operation).await {
+            tracing::error!(?err, "process ordering error");
+        }
+
+        let reordered = self
+            .next_ordering()
+            .await
+            .map_err(|err| {
+                tracing::error!(?err, "next ordering error");
+            })
+            .unwrap_or_default();
+        // dbg!(&reordered.iter().map(|o| o.hash.alias()).collect::<Vec<_>>());
+
+        // let reordered = vec![operation];
+
+        for operation in reordered {
+            match self
+                .process_operation(operation, self.author_store.clone(), false)
+                .await
+            {
+                Ok(()) => (),
+                Err(err) => {
+                    tracing::error!(
+                        ?log_id,
+                        hash = hash.alias(),
+                        ?err,
+                        "process operation error"
+                    )
+                }
+            }
+        }
+        Ok(())
     }
 
     pub async fn process_ordering(&self, operation: Operation<Extensions>) -> anyhow::Result<()> {
@@ -214,6 +240,13 @@ impl Node {
 
         self.op_store.mark_op_processed(log_id, &hash);
 
+        // XXX: don't repair this often.
+        let repair_required = self.manager.spaces_repair_required().await?;
+        if !repair_required.is_empty() {
+            tracing::warn!(missing = repair_required.len(), "spaces repair required");
+            self.manager.repair_spaces(&repair_required).await?;
+        }
+
         anyhow::Ok(())
     }
 
@@ -260,7 +293,7 @@ impl Node {
                     if is_author && msg.arg_type() != ArgType::Application {
                         continue;
                     }
-                    tracing::debug!(opid = msg.id().alias(), "processing space msg");
+                    tracing::info!(opid = msg.id().alias(), "SM: processing space msg");
                     self.spaces_store.set_message(&msg.id(), &msg).await?;
                     match self.manager.process(msg).await {
                         Ok(events) => {

@@ -14,8 +14,9 @@ pub fn alias_space_messages<'a>(
     msgs: impl IntoIterator<Item = &'a SpaceControlMessage>,
 ) {
     for (i, msg) in msgs.into_iter().enumerate() {
-        msg.id()
-            .aliased(format!("{prefix}/{i}/{:?}", msg.arg_type()).as_str());
+        msg.id().aliased(
+            format!("{prefix}/{}/{i}/{:?}", msg.author().alias(), msg.arg_type()).as_str(),
+        );
     }
 }
 

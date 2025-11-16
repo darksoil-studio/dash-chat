@@ -2,13 +2,16 @@ mod author_operation;
 mod stream_processing;
 
 use std::collections::{BTreeSet, HashMap};
+use std::pin::Pin;
 use std::sync::Arc;
 
 use anyhow::{Context, Result, anyhow};
 use chrono::{Duration, Utc};
+use futures::Stream;
+use futures::stream::FuturesUnordered;
 use p2panda_auth::Access;
 use p2panda_core::cbor::encode_cbor;
-use p2panda_core::{Body, Header, PrivateKey, PublicKey};
+use p2panda_core::{Body, Header, Operation, PrivateKey, PublicKey};
 use p2panda_discovery::Discovery;
 use p2panda_discovery::mdns::LocalDiscovery;
 use p2panda_encryption::Rng;
@@ -116,6 +119,9 @@ pub struct Node {
     local_data: NodeLocalData,
     notification_tx: Option<mpsc::Sender<Notification>>,
 
+    /// Add new subscription streams
+    stream_tx: mpsc::Sender<Pin<Box<dyn Stream<Item = Operation<Extensions>> + Send + 'static>>>,
+
     gossip: Arc<RwLock<HashMap<LogId, mpsc::Sender<ToNetwork>>>>,
 
     /// TODO: some of the stuff in here is only for testing.
@@ -200,6 +206,8 @@ impl Node {
             (space.group_id().await?, msgs)
         };
 
+        let (stream_tx, mut stream_rx) = mpsc::channel(100);
+
         let op_store = OpStore::new(op_store);
         let node = Self {
             op_store: op_store.clone(),
@@ -215,6 +223,7 @@ impl Node {
             config,
             local_data,
             notification_tx,
+            stream_tx,
             gossip: Arc::new(RwLock::new(HashMap::new())),
             nodestate: NodeState {
                 chats: Arc::new(RwLock::new(HashMap::new())),
@@ -222,6 +231,8 @@ impl Node {
                 chat_actor_id,
             },
         };
+
+        node.spawn_stream_process_loop(stream_rx, author_store.clone());
 
         node.initialize_topic(
             Topic::device_group(chat_actor_id)
@@ -428,16 +439,31 @@ impl Node {
     pub async fn create_direct_chat_space(&self, other: ActorId) -> anyhow::Result<()> {
         let topic = self.direct_chat_topic(other);
 
+        let my_actor = self.chat_actor_id();
         self.initialize_topic(topic.aliased("chat"), true).await?;
+
+        tracing::info!(
+            my_actor = my_actor.alias(),
+            other = other.alias(),
+            "creating direct chat space"
+        );
+
+        let g1 = self.manager.group(my_actor).await?;
+        let g2 = self.manager.group(other).await?;
+        if g1.is_none() {
+            tracing::error!(my_actor = my_actor.alias(), "group not found for my actor");
+            return Err(anyhow!("group not found for my actor"));
+        }
+        if g2.is_none() {
+            tracing::error!(other = other.alias(), "group not found for other actor");
+            return Err(anyhow!("group not found for other actor"));
+        }
 
         let (_space, msgs, _event) = self
             .manager
             .create_space(
                 topic.into(),
-                &[
-                    (self.chat_actor_id(), Access::manage()),
-                    (other, Access::manage()),
-                ],
+                &[(my_actor, Access::manage()), (other, Access::manage())],
             )
             .await?;
 
