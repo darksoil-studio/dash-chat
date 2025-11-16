@@ -4,9 +4,9 @@ mod chat;
 mod friend;
 mod node;
 mod payload;
-mod spaces;
-mod stores;
-mod topic;
+pub mod spaces;
+pub mod stores;
+pub mod topic;
 mod util;
 
 pub mod polestar;
@@ -21,7 +21,6 @@ pub use friend::{QrCode, ShareIntent};
 pub use node::{Node, NodeConfig, NodeLocalData, Notification};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
-use p2panda_spaces::OperationId;
 pub use payload::*;
 pub use topic::{DashChatTopicId, Topic};
 

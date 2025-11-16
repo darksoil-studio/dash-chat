@@ -1,6 +1,7 @@
 mod behavior;
 mod ext;
 mod introduce;
+pub mod manager;
 mod test_node;
 
 pub use ext::*;
