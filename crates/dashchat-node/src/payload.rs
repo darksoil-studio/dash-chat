@@ -6,11 +6,17 @@ use crate::chat::ChatId;
 use crate::friend::QrCode;
 use crate::spaces::SpaceControlMessage;
 use crate::topic::LogId;
-use crate::{AsBody, Cbor};
+use crate::{AsBody, Cbor, Topic};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Extensions {
     pub log_id: LogId,
+}
+
+impl Extensions {
+    pub fn topic(&self) -> Topic<crate::topic::kind::Untyped> {
+        Topic::untyped(*self.log_id)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

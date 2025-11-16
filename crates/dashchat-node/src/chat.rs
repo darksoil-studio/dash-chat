@@ -1,20 +1,13 @@
 mod message;
+use std::collections::BTreeSet;
+
 pub use message::*;
-use p2panda_spaces::{ActorId, traits::SpaceId};
-use rand::Rng;
 
-use std::{collections::BTreeSet, convert::Infallible, str::FromStr};
-
-use serde::{Deserialize, Serialize};
-
-use crate::{
-    PK, Topic,
-    testing::{AliasedId, ShortId},
-};
+use crate::Topic;
 
 #[derive(Clone, Debug)]
 pub struct Chat {
-    pub(crate) id: Topic,
+    pub(crate) id: Topic<crate::topic::kind::Chat>,
 
     /// The processed decrypted messages for this chat.
     pub(crate) messages: BTreeSet<ChatMessage>,
@@ -33,5 +26,5 @@ impl Chat {
     }
 }
 
-// TODO: remove
-pub type ChatId = Topic;
+pub type ChatId = Topic<crate::topic::kind::Chat>;
+pub type ChatTopic = ChatId;

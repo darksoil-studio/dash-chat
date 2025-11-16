@@ -2,7 +2,7 @@ use p2panda_core::{Hash, Operation};
 use p2panda_spaces::{OperationId, traits::AuthoredMessage};
 use p2panda_stream::operation::IngestResult;
 
-use crate::topic::LogId;
+use crate::topic::{LogId, TopicKind};
 use crate::{AsBody, testing::AliasedId};
 use crate::{polestar as p, timestamp_now};
 
@@ -12,9 +12,9 @@ pub type OpStore = p2panda_store::MemoryStore<LogId, Extensions>;
 
 impl Node {
     #[tracing::instrument(skip_all)]
-    pub(super) async fn author_operation(
+    pub(super) async fn author_operation<K: TopicKind>(
         &self,
-        topic: Topic,
+        topic: Topic<K>,
         payload: Payload,
         alias: Option<&str>,
     ) -> Result<Header<Extensions>, anyhow::Error> {
@@ -23,9 +23,9 @@ impl Node {
     }
 
     #[tracing::instrument(skip_all)]
-    pub(super) async fn author_operation_with_deps(
+    pub(super) async fn author_operation_with_deps<K: TopicKind>(
         &self,
-        topic: Topic,
+        topic: Topic<K>,
         payload: Payload,
         mut deps: Vec<p2panda_core::Hash>,
         alias: Option<&str>,
@@ -87,7 +87,9 @@ impl Node {
             deps.clone(),
         )
         .await?;
-        let Operation { header, body, hash } = operation.clone();
+
+        let Operation { header, body, hash } = operation;
+        let log_id = header.extensions.log_id;
 
         if let Some(alias) = alias {
             header.hash().aliased(alias);
@@ -134,16 +136,16 @@ impl Node {
                 assert_eq!(hash, hash2);
 
                 // NOTE: if we fail to process here, incoming operations will be stuck as pending!
-                self.process_ordering(topic, operation).await?;
+                self.process_ordering(op.clone()).await?;
 
-                self.process_operation(topic, op, self.author_store.clone(), true)
+                self.process_operation(op, self.author_store.clone(), true)
                     .await?;
 
                 // self.notify_payload(&header, &payload).await?;
-                tracing::debug!(?topic, hash = hash.alias(), "authored operation");
+                tracing::debug!(?log_id, hash = hash.alias(), "authored operation");
 
                 p::emit(p::Action::AuthorOp {
-                    topic,
+                    log_id,
                     hash: hash.clone(),
                 });
             }
@@ -163,7 +165,7 @@ impl Node {
               // }
         }
 
-        match self.gossip.read().await.get(&topic) {
+        match self.gossip.read().await.get(&header.extensions.log_id) {
             Some(gossip) => {
                 gossip
                     .send(ToNetwork::Message {
@@ -180,10 +182,10 @@ impl Node {
     }
 }
 
-pub(crate) async fn create_operation(
+pub(crate) async fn create_operation<K: TopicKind>(
     store: &OpStore,
     private_key: &PrivateKey,
-    topic: Topic,
+    topic: Topic<K>,
     payload: Payload,
     deps: Vec<p2panda_core::Hash>,
 ) -> Result<Operation<Extensions>, anyhow::Error> {

@@ -21,7 +21,7 @@ impl From<p2panda_spaces::test_utils::TestSpaceId> for ChatId {
         let mut bytes = [0u8; 32];
         let id_bytes = test_id.to_le_bytes();
         bytes[..id_bytes.len()].copy_from_slice(&id_bytes);
-        Topic::chat(bytes)
+        Topic::untyped(bytes).recast()
     }
 }
 

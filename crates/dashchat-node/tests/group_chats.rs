@@ -9,6 +9,7 @@ use p2panda_auth::Access;
 use p2panda_net::ResyncConfiguration;
 
 use dashchat_node::{testing::*, *};
+use p2panda_store::LogId;
 
 const TRACING_FILTER: &str =
     "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
@@ -210,8 +211,7 @@ async fn test_group_3() {
     .await
     .unwrap();
 
-    let topic: Topic = chat_id.into();
-    let tt = [topic];
+    let tt = [chat_id.into()];
 
     println!("\n==> alice sends message\n");
     alice
@@ -234,8 +234,16 @@ async fn test_group_3() {
         .unwrap();
 
     consistency([&alice, &bobbi], &tt, &cfg).await.unwrap();
-    assert!(bobbi.op_store.is_op_processed(&topic, &bobbi_header.hash()));
-    assert!(alice.op_store.is_op_processed(&topic, &bobbi_header.hash()));
+    assert!(
+        bobbi
+            .op_store
+            .is_op_processed(&chat_id.into(), &bobbi_header.hash())
+    );
+    assert!(
+        alice
+            .op_store
+            .is_op_processed(&chat_id.into(), &bobbi_header.hash())
+    );
 
     assert_eq!(
         alice.get_messages(chat_id).await.unwrap(),

@@ -38,8 +38,8 @@ use crate::payload::{
 use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::{AliasedId, alias_space_messages};
-use crate::topic::{DashChatTopicId, LogId, Topic};
-use crate::{AsBody, Cbor, DeviceGroupPayload, PK, timestamp_now};
+use crate::topic::{LogId, Topic, kind};
+use crate::{AsBody, ChatId, DeviceGroupPayload, PK, timestamp_now};
 
 pub use stream_processing::Notification;
 
@@ -74,7 +74,7 @@ pub type Orderer = PartialOrder<
 
 #[derive(Clone)]
 pub struct NodeState {
-    pub(crate) chats: Arc<RwLock<HashMap<Topic, Chat>>>,
+    pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
     pub(crate) friends: Arc<RwLock<HashMap<PK, QrCode>>>,
     pub(crate) chat_actor_id: ActorId,
 }
@@ -84,7 +84,7 @@ pub struct NodeLocalData {
     pub private_key: PrivateKey,
     /// Used to create the device group space
     // TODO: maybe not needed to be stored, the important thing is the topic?
-    pub device_space_id: Topic,
+    pub device_space_id: ChatId,
     pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
 }
 
@@ -93,7 +93,7 @@ impl NodeLocalData {
         let private_key = PrivateKey::new();
         Self {
             private_key,
-            device_space_id: Topic::random(),
+            device_space_id: ChatId::random(),
             active_inbox_topics: Arc::new(RwLock::new(BTreeSet::new())),
         }
     }
@@ -116,7 +116,7 @@ pub struct Node {
     local_data: NodeLocalData,
     notification_tx: Option<mpsc::Sender<Notification>>,
 
-    gossip: Arc<RwLock<HashMap<Topic, mpsc::Sender<ToNetwork>>>>,
+    gossip: Arc<RwLock<HashMap<LogId, mpsc::Sender<ToNetwork>>>>,
 
     /// TODO: some of the stuff in here is only for testing.
     /// The channel senders are needed but any stateful stuff should go.
@@ -145,7 +145,7 @@ impl Node {
         let mdns = LocalDiscovery::new();
 
         let op_store = MemoryStore::<LogId, Extensions>::new();
-        let author_store: AuthorStore<DashChatTopicId> = AuthorStore::new();
+        let author_store: AuthorStore<LogId> = AuthorStore::new();
 
         let sync_protocol = LogSyncProtocol::new(author_store.clone(), op_store.clone());
         let sync_config = SyncConfiguration::new(sync_protocol).resync(config.resync.clone());
@@ -276,17 +276,17 @@ impl Node {
                 while let Some(Ok(peer)) = new_peers.next().await {
                     let pubkey = PK::from_bytes(peer.node_addr.node_id.as_bytes()).unwrap();
 
-                    let mut topics = active_inbox_topics.write().await;
-                    topics.retain(|it| it.expires_at > Utc::now());
-                    for topic in topics.iter() {
+                    let mut inboxes = active_inbox_topics.write().await;
+                    inboxes.retain(|it| it.expires_at > Utc::now());
+                    for inbox in inboxes.iter() {
                         if author_store
-                            .authors(&topic.topic)
+                            .authors(&inbox.topic.into())
                             .await
                             .map(|authors| !authors.contains(&me))
                             .unwrap_or(true)
                         {
-                            tracing::debug!(?pubkey, ?topic, "new peer");
-                            author_store.add_author(topic.topic.clone(), me).await;
+                            tracing::debug!(?pubkey, ?inbox, "new peer");
+                            author_store.add_author(inbox.topic.into(), me).await;
                         }
                     }
                 }
@@ -359,7 +359,7 @@ impl Node {
         let mut topics = self.local_data.active_inbox_topics.write().await;
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
-                topic: Topic::random().aliased("inbox"),
+                topic: Topic::inbox().aliased("inbox"),
                 expires_at: Utc::now() + self.config.friend_code_expiry,
             };
             self.initialize_topic(inbox_topic.topic, false).await?;
@@ -386,7 +386,7 @@ impl Node {
     /// The topic is the hashed sorted public keys.
     /// Anyone who knows the two public keys can derive the same topic.
     // TODO: is this a problem? Should we use a random topic instead?
-    pub fn direct_chat_topic(&self, other: ActorId) -> Topic {
+    pub fn direct_chat_topic(&self, other: ActorId) -> Topic<kind::DirectChat> {
         let me = self.chat_actor_id();
         let topic = Topic::direct_chat([me, other]);
         if me > other {
@@ -398,7 +398,8 @@ impl Node {
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn create_group_chat_space(&self, topic: Topic) -> anyhow::Result<()> {
+    pub async fn create_group_chat_space(&self, topic: impl Into<ChatId>) -> anyhow::Result<()> {
+        let topic = topic.into();
         self.initialize_topic(topic.aliased("chat"), true).await?;
 
         let (_space, msgs, _event) = self
@@ -432,7 +433,7 @@ impl Node {
         let (_space, msgs, _event) = self
             .manager
             .create_space(
-                topic,
+                topic.into(),
                 &[
                     (self.chat_actor_id(), Access::manage()),
                     (other, Access::manage()),
@@ -459,9 +460,9 @@ impl Node {
     /// This needs to be accompanied by being added as a member of the chat Space by an existing member
     /// -- you're not fully a member until someone adds you.
     #[tracing::instrument(skip_all, parent = None, fields(me = ?self.public_key()))]
-    pub async fn join_group(&self, topic: Topic) -> anyhow::Result<()> {
-        tracing::info!(?topic, "joined group");
-        self.initialize_topic(topic, true).await
+    pub async fn join_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
+        tracing::info!(?chat_id, "joined group");
+        self.initialize_topic(chat_id, true).await
     }
 
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
@@ -476,7 +477,8 @@ impl Node {
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn add_member(&self, topic: Topic, actor: ActorId) -> anyhow::Result<()> {
+    pub async fn add_member(&self, topic: impl Into<ChatId>, actor: ActorId) -> anyhow::Result<()> {
+        let topic = topic.into();
         let (msgs, _events) = self
             .manager
             .space(topic)
@@ -509,26 +511,42 @@ impl Node {
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     #[cfg(feature = "testing")]
-    pub async fn get_messages(&self, topic: Topic) -> anyhow::Result<Vec<ChatMessage>> {
-        let chats = self.nodestate.chats.read().await;
-        let chat = chats
-            .get(&topic)
-            .ok_or_else(|| anyhow!("Chat not found: {topic}"))?;
+    pub async fn get_messages(&self, topic: impl Into<ChatId>) -> anyhow::Result<Vec<ChatMessage>> {
+        let chat_id = topic.into();
+        Ok(self
+            .get_interleaved_logs(chat_id.into())
+            .await?
+            .into_iter()
+            .flat_map(|(header, payload)| match payload {
+                Some(Payload::Chat(ChatPayload::Space(msgs))) => {
+                    use crate::spaces::SpacesArgs;
 
-        let mut msgs: Vec<ChatMessage> = chat.messages.iter().cloned().collect();
-        let original = msgs.clone();
-        msgs.sort();
-        assert_eq!(msgs, original);
-
-        Ok(msgs)
+                    msgs.into_iter()
+                        .filter_map(|m| match m.spaces_args {
+                            SpacesArgs::Application { ciphertext, .. } => Some(ChatMessage {
+                                content: ChatMessageContent::from(format!(
+                                    "TODO: decrypt ciphertext: len={}",
+                                    ciphertext.len()
+                                )),
+                                author: PK::from(header.public_key),
+                                timestamp: header.timestamp,
+                            }),
+                            _ => None,
+                        })
+                        .collect::<Vec<_>>()
+                }
+                _ => vec![],
+            })
+            .collect())
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     pub async fn send_message(
         &self,
-        topic: Topic,
+        topic: impl Into<ChatId>,
         message: ChatMessageContent,
     ) -> anyhow::Result<(ChatMessage, Header<Extensions>)> {
+        let topic = topic.into();
         let space = self
             .manager
             .space(topic)
@@ -567,7 +585,7 @@ impl Node {
         self.local_data.private_key.public_key().into()
     }
 
-    pub fn device_group_topic(&self) -> Topic {
+    pub fn device_group_topic(&self) -> Topic<kind::DeviceGroup> {
         Topic::device_group(self.nodestate.chat_actor_id)
     }
 
@@ -580,6 +598,7 @@ impl Node {
     pub async fn add_friend(&self, friend: QrCode) -> anyhow::Result<ActorId> {
         tracing::debug!("adding friend: {:?}", friend);
         let member = friend.member_code.clone();
+        let member_id = member.id();
         let actor = friend.chat_actor_id;
 
         // Register the member in the spaces manager
@@ -598,12 +617,23 @@ impl Node {
         // XXX: there should be a better way to wait for the device group to be created,
         //      and this may never happen if the friend is not online.
         let mut attempts = 0;
-        while self.manager.group(actor).await?.is_none() {
+        loop {
+            if let Some(group) = self.manager.group(actor).await? {
+                if group
+                    .members()
+                    .await?
+                    .iter()
+                    .map(|(id, _)| *id)
+                    .any(|id| id == member_id)
+                {
+                    break;
+                }
+            }
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
             attempts += 1;
             if attempts > 20 {
                 return Err(anyhow!(
-                    "Failed to register friend's device group. Try again later."
+                    "Failed to register friend's device group in 5s. Try again later."
                 ));
             }
         }
@@ -647,7 +677,8 @@ impl Node {
         todo!("add tombstone to friends list");
     }
 
-    pub async fn space(&self, topic: Topic) -> anyhow::Result<DashSpace> {
+    pub async fn space(&self, topic: impl Into<ChatId>) -> anyhow::Result<DashSpace> {
+        let topic = topic.into();
         let space = self.manager.space(topic).await?;
         space.ok_or_else(|| anyhow!("Chat has no Space: {topic}"))
     }

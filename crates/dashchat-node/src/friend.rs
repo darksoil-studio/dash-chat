@@ -48,7 +48,7 @@ pub enum ShareIntent {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct InboxTopic {
     pub expires_at: DateTime<Utc>,
-    pub topic: Topic,
+    pub topic: Topic<crate::topic::kind::Inbox>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, derive_more::From)]
@@ -143,7 +143,7 @@ mod tests {
                 ),
             },
             inbox_topic: Some(InboxTopic {
-                topic: Topic::random(),
+                topic: Topic::inbox(),
                 expires_at: Utc::now() + chrono::Duration::seconds(3600),
             }),
             chat_actor_id: ActorId::from_bytes(&[44; 32]).unwrap(),

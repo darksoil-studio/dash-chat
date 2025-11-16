@@ -11,7 +11,7 @@ use crate::{
     ChatId, DeviceGroupPayload, NodeConfig, Notification, PK, Payload,
     node::{Node, NodeLocalData},
     testing::{AliasedId, ShortId, behavior::Behavior, introduce},
-    topic::Topic,
+    topic::{LogId, Topic},
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
@@ -60,7 +60,7 @@ impl TestNode {
 
     pub async fn get_friends(&self) -> anyhow::Result<Vec<ActorId>> {
         let ids = self
-            .get_interleaved_logs(self.device_group_topic())
+            .get_interleaved_logs(self.device_group_topic().into())
             .await?
             .into_iter()
             .filter_map(|(_, payload)| match payload {
@@ -126,18 +126,18 @@ impl<const N: usize> TestCluster<N> {
 
     pub async fn consistency(
         &self,
-        topics: impl IntoIterator<Item = &Topic>,
+        log_ids: impl IntoIterator<Item = &LogId>,
     ) -> anyhow::Result<()> {
-        consistency(self.nodes().await.iter(), topics, &self.config).await
+        consistency(self.nodes().await.iter(), log_ids, &self.config).await
     }
 }
 
 pub async fn consistency(
     nodes: impl IntoIterator<Item = &TestNode>,
-    topics: impl IntoIterator<Item = &Topic>,
+    log_ids: impl IntoIterator<Item = &LogId>,
     config: &ClusterConfig,
 ) -> anyhow::Result<()> {
-    let topics = topics.into_iter().collect::<HashSet<_>>();
+    let log_ids = log_ids.into_iter().collect::<HashSet<_>>();
     let nodes = nodes.into_iter().collect::<Vec<_>>();
     wait_for(config.poll_interval, config.poll_timeout, || async {
         // TODO: Fix this when we have a proper way to access operations
@@ -147,10 +147,10 @@ pub async fn consistency(
             .map(|node| {
                 let ops = node.op_store.processed_ops.read().unwrap();
 
-                topics
+                log_ids
                     .iter()
-                    .flat_map(|topic| {
-                        ops.get(topic)
+                    .flat_map(|log_id| {
+                        ops.get(log_id)
                             .cloned()
                             .unwrap_or_default()
                             .into_iter()
@@ -182,7 +182,7 @@ pub async fn consistency(
             println!(
                 ">>> {:?}\n{}\n",
                 n.public_key(),
-                n.op_store.report(topics.clone())
+                n.op_store.report(log_ids.clone())
             );
         }
         println!("consistency report: {:#?}", diffs);

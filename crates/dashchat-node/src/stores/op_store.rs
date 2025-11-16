@@ -19,7 +19,7 @@ pub struct OpStore {
     #[deref]
     #[deref_mut]
     store: MemoryStore<LogId, Extensions>,
-    pub processed_ops: Arc<RwLock<HashMap<Topic, HashSet<Hash>>>>,
+    pub processed_ops: Arc<RwLock<HashMap<LogId, HashSet<Hash>>>>,
 }
 
 impl OpStore {
@@ -30,14 +30,14 @@ impl OpStore {
         }
     }
 
-    pub fn report<'a>(&self, topics: impl IntoIterator<Item = &'a Topic>) -> String {
-        let topics = topics.into_iter().collect::<Vec<_>>();
+    pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
+        let log_ids = log_ids.into_iter().collect::<Vec<_>>();
         let s = self.store.read_store();
         let mut ops = s
             .operations
             .iter()
-            .filter(|(_, (t, _, _, _))| {
-                topics.is_empty() || topics.iter().find(|topic| **topic == t).is_some()
+            .filter(|(_, (l, _, _, _))| {
+                log_ids.is_empty() || log_ids.iter().find(|log_id| **log_id == l).is_some()
             })
             .collect::<Vec<_>>();
         ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.alias(), header.seq_num));
@@ -56,7 +56,7 @@ impl OpStore {
                     Some(p) => format!("{p:?}"),
                     None => "_".to_string(),
                 };
-                if topics.len() == 1 {
+                if log_ids.len() == 1 {
                     format!(
                         "• {} {:2} {} : {}",
                         header.public_key.alias(),
@@ -80,20 +80,20 @@ impl OpStore {
             .join("\n")
     }
 
-    pub fn mark_op_processed(&self, topic: &Topic, hash: &Hash) {
+    pub fn mark_op_processed(&self, log_id: LogId, hash: &Hash) {
         self.processed_ops
             .write()
             .unwrap()
-            .entry(topic.clone())
+            .entry(log_id)
             .or_default()
             .insert(hash.clone());
     }
 
-    pub fn is_op_processed(&self, topic: &Topic, hash: &Hash) -> bool {
+    pub fn is_op_processed(&self, log_id: &LogId, hash: &Hash) -> bool {
         self.processed_ops
             .read()
             .unwrap()
-            .get(topic)
+            .get(log_id)
             .map(|s| s.contains(hash))
             .unwrap_or(false)
     }
