@@ -67,6 +67,16 @@ impl TestNode {
             .collect();
         Ok(ids)
     }
+
+    pub async fn initialized_topics(&self) -> BTreeSet<LogId> {
+        self.node
+            .initialized_topics
+            .read()
+            .await
+            .keys()
+            .cloned()
+            .collect::<BTreeSet<_>>()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -215,7 +225,6 @@ impl<T: std::fmt::Debug> Watcher<T> {
         loop {
             tokio::select! {
                 item = self.0.recv() => {
-                    tracing::debug!(?item, "watcher received item");
                     match item {
                         Some(item) => match f(&item) {
                             Some(r) => return Ok(r),
@@ -240,7 +249,6 @@ impl<T: std::fmt::Debug> Watcher<T> {
         loop {
             tokio::select! {
                 item = self.0.recv() => {
-                    tracing::debug!(?item, "watcher received item");
                     match item {
                         Some(item) => if f(&item) {
                             return Ok(item)

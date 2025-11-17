@@ -123,7 +123,7 @@ pub struct Node {
     /// Add new subscription streams
     stream_tx: mpsc::Sender<Pin<Box<dyn Stream<Item = Operation<Extensions>> + Send + 'static>>>,
 
-    initialized_topics: Arc<RwLock<HashMap<LogId, mpsc::Sender<ToNetwork>>>>,
+    pub(crate) initialized_topics: Arc<RwLock<HashMap<LogId, mpsc::Sender<ToNetwork>>>>,
 
     /// TODO: some of the stuff in here is only for testing.
     /// The channel senders are needed but any stateful stuff should go.
@@ -449,18 +449,10 @@ impl Node {
         };
 
         tracing::debug!(
-            g1 = ?g1
-                .members()
-                .await?
-                .iter()
-                .map(|(id, _)| id.alias())
-                .collect::<Vec<_>>(),
-            g2 = ?g2
-                .members()
-                .await?
-                .iter()
-                .map(|(id, _)| id.alias())
-                .collect::<Vec<_>>(),
+            g1_id = ?g1.id().alias(),
+            g2_id = ?g2.id().alias(),
+            g1_members = ?g1.members().await?.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>(),
+            g2_members = ?g2.members().await?.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>(),
             "group members"
         );
 
@@ -682,12 +674,19 @@ impl Node {
                 ));
             }
         }
+        // XXX: sleep a little more
+        tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
 
         self.initialize_topic(Topic::announcements(actor).aliased("announce"), false)
             .await?;
 
-        self.initialize_topic(self.direct_chat_topic(actor), true)
-            .await?;
+        let direct_topic = self.direct_chat_topic(actor);
+        self.initialize_topic(direct_topic, true).await?;
+
+        // TODO: needed?
+        self.author_store
+            .add_author(direct_topic.into(), contact.member_code.id())
+            .await;
 
         self.author_operation(
             self.device_group_topic(),

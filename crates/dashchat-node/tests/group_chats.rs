@@ -18,8 +18,8 @@ const TRACING_FILTER: &str =
 async fn test_group_2() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, false);
 
-    let (alice, _alice_rx) = TestNode::new(NodeConfig::default(), Some("alice")).await;
-    let (bobbi, mut bobbi_rx) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
+    let mut alice = TestNode::behavior(NodeConfig::default(), Some("alice")).await;
+    let mut bobbi = TestNode::behavior(NodeConfig::default(), Some("bobbi")).await;
 
     println!("nodes:");
     println!("alice: {:?}", alice.public_key().short());
@@ -30,23 +30,22 @@ async fn test_group_2() {
     println!("peers see each other");
 
     alice
-        .add_contact(
-            bobbi
-                .new_qr_code(ShareIntent::AddContact, false)
-                .await
-                .unwrap(),
-        )
+        .initiate_and_establish_contact(&mut bobbi, ShareIntent::AddContact)
         .await
         .unwrap();
-    bobbi
-        .add_contact(
-            alice
-                .new_qr_code(ShareIntent::AddContact, false)
-                .await
-                .unwrap(),
-        )
-        .await
-        .unwrap();
+
+    assert!(
+        alice
+            .initialized_topics()
+            .await
+            .contains(&alice.direct_chat_topic(bobbi.chat_actor_id()).into())
+    );
+    assert!(
+        bobbi
+            .initialized_topics()
+            .await
+            .contains(&bobbi.direct_chat_topic(alice.chat_actor_id()).into())
+    );
 
     let chat_id = GroupChatId::random();
     alice.create_group_chat_space(chat_id).await.unwrap();
@@ -56,22 +55,7 @@ async fn test_group_2() {
         .await
         .unwrap();
 
-    bobbi_rx
-        .watch_for(Duration::from_secs(5), |n| {
-            matches!(n.payload, Payload::Inbox(InboxPayload::Contact(_)))
-        })
-        .await
-        .unwrap();
-
-    bobbi_rx
-        .watch_for(Duration::from_secs(5), |n| {
-            matches!(
-                n.payload,
-                Payload::Chat(ChatPayload::JoinGroup(id)) if id == chat_id.into()
-            )
-        })
-        .await
-        .unwrap();
+    bobbi.accept_next_group_invitation().await.unwrap();
 
     // Bobbi has joined the group via his inbox topic
     wait_for(

@@ -83,12 +83,22 @@ impl DashManager {
         Vec<SpaceControlMessage>,
         Vec<Event<ChatId, TestConditions>>,
     )> {
-        tracing::info!(topic = topic.alias(), "SM: creating space");
+        let initial = initial_members
+            .iter()
+            .map(|(id, _)| id.alias())
+            .collect::<Vec<_>>();
+        tracing::info!(topic = topic.alias(), ?initial, "SM: creating space");
         let topic = topic.into();
-        if !CREATED_SPACES.lock().unwrap().insert(topic) {
-            panic!("Space already created: {}", topic.alias());
+
+        {
+            if !CREATED_SPACES.lock().unwrap().insert(topic) {
+                panic!("Space already created: {}", topic.alias());
+            }
         }
+
+        println!("STACK OVERFLOW HERE");
         let (space, msgs, _event) = self.manager.create_space(topic, initial_members).await?;
+        println!("CAN'T SEE THIS CUZ STACK OVERFLOWED");
         Ok((space, msgs, _event))
     }
 }
