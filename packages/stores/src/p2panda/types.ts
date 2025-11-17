@@ -52,3 +52,19 @@ export interface Header<E = void> {
 
 export type Body = Uint8Array;
 
+export interface Lifetime {
+	not_before: number;
+	not_after: number;
+}
+
+export type ActorId = PublicKey;
+
+export type PreKey = [PublicKey, Lifetime];
+
+export type XSignature = string; // TODO: check this is correct
+
+export interface LongTermKeyBundle {
+	identity_key: PublicKey;
+	signed_prekey: PreKey;
+	prekey_signature: XSignature;
+}

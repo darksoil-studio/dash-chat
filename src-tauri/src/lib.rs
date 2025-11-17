@@ -18,6 +18,12 @@ pub fn run() {
             commands::logs::get_log,
             commands::logs::get_authors,
             commands::profile::set_profile,
+            commands::contacts::create_contact_code,
+            commands::contacts::add_contact,
+            // commands::chats::create_group,
+            commands::group_chat::add_member,
+            commands::group_chat::send_message,
+            commands::group_chat::get_messages,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

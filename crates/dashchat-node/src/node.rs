@@ -34,7 +34,7 @@ use tracing::Instrument;
 
 use crate::chat::Chat;
 use crate::chat::{ChatMessage, ChatMessageContent};
-use crate::friend::{InboxTopic, QrCode, ShareIntent};
+use crate::contact::{InboxTopic, QrCode, ShareIntent};
 use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
     decode_gossip_message, encode_gossip_message,
@@ -56,7 +56,7 @@ const MAX_MESSAGE_SIZE: usize = 1000 * 10; // 10kb max. UDP payload size
 #[derive(Clone, Debug)]
 pub struct NodeConfig {
     pub resync: ResyncConfiguration,
-    pub friend_code_expiry: Duration,
+    pub contact_code_expiry: Duration,
 }
 
 impl Default for NodeConfig {
@@ -64,7 +64,7 @@ impl Default for NodeConfig {
         let resync = ResyncConfiguration::new().interval(3).poll_interval(1);
         Self {
             resync,
-            friend_code_expiry: Duration::days(7),
+            contact_code_expiry: Duration::days(7),
         }
     }
 }
@@ -79,7 +79,7 @@ pub type Orderer = PartialOrder<
 #[derive(Clone)]
 pub struct NodeState {
     pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
-    pub(crate) friends: Arc<RwLock<HashMap<PK, QrCode>>>,
+    pub(crate) contacts: Arc<RwLock<HashMap<PK, QrCode>>>,
     pub(crate) chat_actor_id: ActorId,
 }
 
@@ -228,7 +228,7 @@ impl Node {
             gossip: Arc::new(RwLock::new(HashMap::new())),
             nodestate: NodeState {
                 chats: Arc::new(RwLock::new(HashMap::new())),
-                friends: Arc::new(RwLock::new(HashMap::new())),
+                contacts: Arc::new(RwLock::new(HashMap::new())),
                 chat_actor_id,
             },
         };
@@ -360,7 +360,7 @@ impl Node {
         }
     }
 
-    /// Create a new friend QR code with configured expiry time,
+    /// Create a new contact QR code with configured expiry time,
     /// subscribe to the inbox topic for it, and register the topic as active.
     pub async fn new_qr_code(
         &self,
@@ -372,7 +372,7 @@ impl Node {
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
                 topic: Topic::inbox().aliased("inbox"),
-                expires_at: Utc::now() + self.config.friend_code_expiry,
+                expires_at: Utc::now() + self.config.contact_code_expiry,
             };
             self.initialize_topic(inbox_topic.topic, false).await?;
             topics.insert(inbox_topic.clone());
@@ -562,7 +562,7 @@ impl Node {
                                     "TODO: decrypt ciphertext: len={}",
                                     ciphertext.len()
                                 )),
-                                author: PK::from(header.public_key),
+                                author: header.public_key,
                                 timestamp: header.timestamp,
                             }),
                             _ => None,
@@ -623,33 +623,33 @@ impl Node {
         Topic::device_group(self.nodestate.chat_actor_id)
     }
 
-    /// Store someone as a friend, and:
+    /// Store someone as a contact, and:
     /// - register their spaces keybundle so we can add them to spaces
     /// - subscribe to their inbox
-    /// - store them in the friends map
+    /// - store them in the contacts map
     /// - send an invitation to them to do the same
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn add_friend(&self, friend: QrCode) -> anyhow::Result<ActorId> {
-        tracing::debug!("adding friend: {:?}", friend);
-        let member = friend.member_code.clone();
+    pub async fn add_contact(&self, contact: QrCode) -> anyhow::Result<ActorId> {
+        tracing::debug!("adding contact: {:?}", contact);
+        let member = contact.member_code.clone();
         let member_id = member.id();
-        let actor = friend.chat_actor_id;
+        let actor = contact.chat_actor_id;
 
         // Register the member in the spaces manager
         let spaces_member = member.into();
         self.manager
             .register_member(&spaces_member)
             .await
-            .map_err(|e| anyhow!("Failed to register friend: {e:?}"))?;
+            .map_err(|e| anyhow!("Failed to register contact: {e:?}"))?;
 
         // Must subscribe to the new member's device group in order to receive their
         // group control messages.
         // TODO: is this idempotent? If not we must make sure to do this only once.
-        self.initialize_topic(Topic::device_group(friend.chat_actor_id), false)
+        self.initialize_topic(Topic::device_group(contact.chat_actor_id), false)
             .await?;
 
         // XXX: there should be a better way to wait for the device group to be created,
-        //      and this may never happen if the friend is not online.
+        //      and this may never happen if the contact is not online.
         let mut attempts = 0;
         loop {
             if let Some(group) = self.manager.group(actor).await? {
@@ -667,7 +667,7 @@ impl Node {
             attempts += 1;
             if attempts > 20 {
                 return Err(anyhow!(
-                    "Failed to register friend's device group in 5s. Try again later."
+                    "Failed to register contact's device group in 5s. Try again later."
                 ));
             }
         }
@@ -680,25 +680,25 @@ impl Node {
 
         self.author_operation(
             self.device_group_topic(),
-            Payload::DeviceGroup(DeviceGroupPayload::AddFriend(friend.clone())),
-            Some(&format!("add_friend/invitation({})", actor.alias())),
+            Payload::DeviceGroup(DeviceGroupPayload::AddContact(contact.clone())),
+            Some(&format!("add_contact/invitation({})", actor.alias())),
         )
         .await?;
 
-        if let Some(inbox_topic) = friend.inbox_topic.clone() {
+        if let Some(inbox_topic) = contact.inbox_topic.clone() {
             self.initialize_topic(inbox_topic.topic.aliased("inbox"), true)
                 .await?;
-            let qr = self.new_qr_code(ShareIntent::AddFriend, false).await?;
+            let qr = self.new_qr_code(ShareIntent::AddContact, false).await?;
             self.author_operation(
                 inbox_topic.topic,
-                Payload::Inbox(InboxPayload::Friend(qr)),
-                Some(&format!("add_friend/invitation({})", actor.alias())),
+                Payload::Inbox(InboxPayload::Contact(qr)),
+                Some(&format!("add_contact/invitation({})", actor.alias())),
             )
             .await?;
         }
 
-        // Only the initiator of friendship should create the direct chat space
-        if friend.share_intent == ShareIntent::AddFriend && friend.inbox_topic.is_none() {
+        // Only the initiator of contactship should create the direct chat space
+        if contact.share_intent == ShareIntent::AddContact  && contact.inbox_topic.is_none() {
             self.create_direct_chat_space(actor).await?;
         }
 
@@ -706,9 +706,9 @@ impl Node {
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
-    pub async fn remove_friend(&self, chat_actor_id: ActorId) -> anyhow::Result<()> {
+    pub async fn remove_contact(&self, chat_actor_id: ActorId) -> anyhow::Result<()> {
         // TODO: shutdown inbox task, etc.
-        todo!("add tombstone to friends list");
+        todo!("add tombstone to contacts list");
     }
 
     pub async fn space(&self, topic: impl Into<ChatId>) -> anyhow::Result<DashSpace> {

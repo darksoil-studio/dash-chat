@@ -19,19 +19,19 @@ impl Behavior {
         Self { node, watcher }
     }
 
-    pub async fn accept_next_friend(&mut self) -> anyhow::Result<QrCode> {
+    pub async fn accept_next_contact(&mut self) -> anyhow::Result<QrCode> {
         let qr = self
             .watcher
             .watch_mapped(Duration::from_secs(5), |n: &Notification| {
-                let Payload::Inbox(InboxPayload::Friend(qr)) = &n.payload else {
+                let Payload::Inbox(InboxPayload::Contact(qr)) = &n.payload else {
                     return None;
                 };
                 Some(qr.clone())
             })
             .await
-            .context("no friend invitation found")?;
+            .context("no contact invitation found")?;
 
-        self.node.add_friend(qr.clone()).await?;
+        self.node.add_contact(qr.clone()).await?;
         Ok(qr)
     }
 

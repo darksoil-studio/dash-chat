@@ -3,7 +3,7 @@ use p2panda_core::{Body, Extension, PruneFlag};
 use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
-use crate::friend::QrCode;
+use crate::contact::QrCode;
 use crate::spaces::SpaceControlMessage;
 use crate::topic::LogId;
 use crate::{AsBody, Cbor, Topic};
@@ -34,8 +34,8 @@ pub enum AnnouncementsPayload {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
-    /// Invites the recipient to add the sender as a friend.
-    Friend(QrCode),
+    /// Invites the recipient to add the sender as a contact.
+    Contact(QrCode),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -46,10 +46,10 @@ pub enum ChatPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
     /// This is only sent in direct chat messages.
     /// It's invalid to send in a group chat, because you must be
-    /// friends with the recipient for this to be actionable.
+    /// contacts with the recipient for this to be actionable.
     ///
     /// The reason for including this message in the ChatPayload
-    /// is that it can only be sent to friends, and we want it to be
+    /// is that it can only be sent to contacts, and we want it to be
     /// long-lasting, so using an Inbox is not an option.
     JoinGroup(ChatId),
 }
@@ -62,16 +62,16 @@ impl From<Vec<SpaceControlMessage>> for ChatPayload {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum DeviceGroupPayload {
-    AddFriend(QrCode),
+    AddContact(QrCode),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum Payload {
-    /// Pushing data out to my friends.
+    /// Pushing data out to my contacts.
     Announcements(AnnouncementsPayload),
 
-    /// Data sent to someone who is not your friend
+    /// Data sent to someone who is not your contact
     Inbox(InboxPayload),
 
     /// Group chat data, including direct 1:1 chats

@@ -362,7 +362,7 @@ impl Node {
                     "received invitation message"
                 );
                 match invitation {
-                    InboxPayload::Friend(_) => {
+                    InboxPayload::Contact(_) => {
                         // Nothing to do.
                     }
                 }

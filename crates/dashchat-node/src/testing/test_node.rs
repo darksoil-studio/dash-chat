@@ -53,13 +53,13 @@ impl TestNode {
         Ok(self.space(chat_id).await?.members().await?)
     }
 
-    pub async fn get_friends(&self) -> anyhow::Result<Vec<ActorId>> {
+    pub async fn get_contacts(&self) -> anyhow::Result<Vec<ActorId>> {
         let ids = self
             .get_interleaved_logs(self.device_group_topic().into())
             .await?
             .into_iter()
             .filter_map(|(_, payload)| match payload {
-                Some(Payload::DeviceGroup(DeviceGroupPayload::AddFriend(qr))) => {
+                Some(Payload::DeviceGroup(DeviceGroupPayload::AddContact(qr))) => {
                     Some(qr.chat_actor_id)
                 }
                 _ => None,

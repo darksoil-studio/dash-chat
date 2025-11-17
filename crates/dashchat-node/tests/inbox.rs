@@ -23,19 +23,19 @@ async fn test_inbox_2() {
     println!("peers see each other");
 
     let qr = alice
-        .new_qr_code(ShareIntent::AddFriend, true)
+        .new_qr_code(ShareIntent::AddContact, true)
         .await
         .unwrap();
-    bobbi.add_friend(qr).await.unwrap();
+    bobbi.add_contact(qr).await.unwrap();
 
-    alice.accept_next_friend().await.unwrap();
+    alice.accept_next_contact().await.unwrap();
 
     assert_eq!(
-        alice.get_friends().await.unwrap(),
+        alice.get_contacts().await.unwrap(),
         vec![bobbi.chat_actor_id()]
     );
     assert_eq!(
-        bobbi.get_friends().await.unwrap(),
+        bobbi.get_contacts().await.unwrap(),
         vec![alice.chat_actor_id()]
     );
 

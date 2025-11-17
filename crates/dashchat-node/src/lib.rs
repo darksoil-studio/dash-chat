@@ -1,7 +1,7 @@
 #![feature(bool_to_result)]
 
 mod chat;
-mod friend;
+mod contact;
 mod node;
 mod payload;
 pub mod spaces;
@@ -17,7 +17,7 @@ pub mod testing;
 use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
-pub use friend::{QrCode, ShareIntent};
+pub use contact::{QrCode, ShareIntent};
 pub use node::{Node, NodeConfig, NodeLocalData, Notification};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;

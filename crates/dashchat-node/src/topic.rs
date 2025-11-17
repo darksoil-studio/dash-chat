@@ -66,7 +66,7 @@ pub mod kind {
     // QR code specific
     topic_kind!(Inbox);
     // Stores linked devices
-    // TODO: where does local state (settings, friends, etc.) across devices?
+    // TODO: where does local state (settings, contacts, etc.) across devices?
     topic_kind!(DeviceGroup);
     // Chat messages but also group invitations
     topic_kind!(DirectChat);
@@ -186,7 +186,7 @@ impl Topic<kind::DirectChat> {
 }
 
 impl Topic<kind::Inbox> {
-    /// The topic ID is randomly generated for each new Friend code (QR code).
+    /// The topic ID is randomly generated for each new Contact code (QR code).
     pub fn inbox() -> Self {
         Self::new(rand::random())
     }

@@ -30,18 +30,18 @@ async fn test_group_2() {
     println!("peers see each other");
 
     alice
-        .add_friend(
+        .add_contact(
             bobbi
-                .new_qr_code(ShareIntent::AddFriend, false)
+                .new_qr_code(ShareIntent::AddContact, false)
                 .await
                 .unwrap(),
         )
         .await
         .unwrap();
     bobbi
-        .add_friend(
+        .add_contact(
             alice
-                .new_qr_code(ShareIntent::AddFriend, false)
+                .new_qr_code(ShareIntent::AddContact, false)
                 .await
                 .unwrap(),
         )
@@ -58,7 +58,7 @@ async fn test_group_2() {
 
     bobbi_rx
         .watch_for(Duration::from_secs(5), |n| {
-            matches!(n.payload, Payload::Inbox(InboxPayload::Friend(_)))
+            matches!(n.payload, Payload::Inbox(InboxPayload::Contact(_)))
         })
         .await
         .unwrap();
@@ -125,7 +125,7 @@ async fn test_group_3() {
 
     let node_config = NodeConfig {
         resync: ResyncConfiguration::new().interval(10).poll_interval(1),
-        friend_code_expiry: chrono::Duration::days(7),
+        contact_code_expiry: chrono::Duration::days(7),
     };
     let cfg = ClusterConfig {
         poll_interval: Duration::from_millis(500),
@@ -143,45 +143,45 @@ async fn test_group_3() {
 
     // alice -- bobbi -- carol (bobbi is the pivot)
     alice
-        .add_friend(
+        .add_contact(
             bobbi
-                .new_qr_code(ShareIntent::AddFriend, false)
+                .new_qr_code(ShareIntent::AddContact, false)
                 .await
                 .unwrap(),
         )
         .await
         .unwrap();
     bobbi
-        .add_friend(
+        .add_contact(
             alice
-                .new_qr_code(ShareIntent::AddFriend, false)
+                .new_qr_code(ShareIntent::AddContact, false)
                 .await
                 .unwrap(),
         )
         .await
         .unwrap();
     bobbi
-        .add_friend(
+        .add_contact(
             carol
-                .new_qr_code(ShareIntent::AddFriend, false)
+                .new_qr_code(ShareIntent::AddContact, false)
                 .await
                 .unwrap(),
         )
         .await
         .unwrap();
     carol
-        .add_friend(
+        .add_contact(
             bobbi
-                .new_qr_code(ShareIntent::AddFriend, false)
+                .new_qr_code(ShareIntent::AddContact, false)
                 .await
                 .unwrap(),
         )
         .await
         .unwrap();
 
-    // NOTE: not needed! "friendship" is transitive.
-    // alice.add_friend(carol.me().await.unwrap()).await.unwrap();
-    // carol.add_friend(alice.me().await.unwrap()).await.unwrap();
+    // NOTE: not needed! "contactship" is transitive.
+    // alice.add_contact(carol.me().await.unwrap()).await.unwrap();
+    // carol.add_contact(alice.me().await.unwrap()).await.unwrap();
 
     println!("\n==> alice creates group\n");
     let chat_id = ChatId::random();
