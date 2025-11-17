@@ -27,4 +27,3 @@ impl Chat {
 }
 
 pub type ChatId = Topic<crate::topic::kind::Chat>;
-pub type ChatTopic = ChatId;

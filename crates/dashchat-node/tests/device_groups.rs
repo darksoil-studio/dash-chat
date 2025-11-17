@@ -7,7 +7,7 @@ const TRACING_FILTER: &str =
 
 #[tokio::test(flavor = "multi_thread")]
 async fn device_group_solo() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     let (alice, _alice_rx) = TestNode::new(NodeConfig::default(), Some("alice")).await;
     let (alicia, mut _alicia_rx) = TestNode::new(NodeConfig::default(), Some("alicia")).await;

@@ -1,3 +1,4 @@
+mod api;
 mod author_operation;
 mod stream_processing;
 
@@ -111,7 +112,7 @@ pub struct Node {
     author_store: AuthorStore<LogId>,
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
-    pub(crate) manager: DashManager,
+    manager: DashManager,
     /// mapping from space operations to header hashes, so that dependencies
     /// can be declared
     space_dependencies: Arc<RwLock<HashMap<OperationId, p2panda_core::Hash>>>,
@@ -201,7 +202,7 @@ impl Node {
                 .create_space(device_space_id, &[(manager.id(), Access::manage())])
                 .await?;
 
-            alias_space_messages("create_device_group", msgs.iter());
+            alias_space_messages("create_device_group", device_space_id, msgs.iter());
 
             (space.group_id().await?, msgs)
         };
@@ -401,9 +402,9 @@ impl Node {
         let me = self.chat_actor_id();
         let topic = Topic::direct_chat([me, other]);
         if me > other {
-            topic.aliased(&format!("direct({},{})", other, me))
+            topic.aliased(&format!("direct({},{})", other.alias(), me.alias()))
         } else {
-            topic.aliased(&format!("direct({},{})", me, other))
+            topic.aliased(&format!("direct({},{})", me.alias(), other.alias()))
         }
     }
 
@@ -411,20 +412,23 @@ impl Node {
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     pub async fn create_group_chat_space(&self, topic: impl Into<ChatId>) -> anyhow::Result<()> {
         let topic = topic.into();
-        self.initialize_topic(topic.aliased("chat"), true).await?;
+        self.initialize_topic(topic, true).await?;
 
         let (_space, msgs, _event) = self
             .manager
             .create_space(topic, &[(self.chat_actor_id(), Access::manage())])
             .await?;
 
-        alias_space_messages("create_group", msgs.iter());
+        alias_space_messages("create_group_chat", topic, msgs.iter());
 
         let _header = self
             .author_operation(
                 topic,
                 Payload::Chat(ChatPayload::Space(msgs.into())),
-                Some(&format!("create_group/space-control({})", topic.alias())),
+                Some(&format!(
+                    "create_group_chat/space-control({})",
+                    topic.alias()
+                )),
             )
             .await?;
 
@@ -440,7 +444,7 @@ impl Node {
         let topic = self.direct_chat_topic(other);
 
         let my_actor = self.chat_actor_id();
-        self.initialize_topic(topic.aliased("chat"), true).await?;
+        self.initialize_topic(topic, true).await?;
 
         tracing::info!(
             my_actor = my_actor.alias(),
@@ -467,13 +471,16 @@ impl Node {
             )
             .await?;
 
-        alias_space_messages("create_group", msgs.iter());
+        alias_space_messages("create_direct_chat", topic.into(), msgs.iter());
 
         let _header = self
             .author_operation(
                 topic,
                 Payload::Chat(ChatPayload::Space(msgs.into())),
-                Some(&format!("create_group/space-control({})", topic.alias())),
+                Some(&format!(
+                    "create_direct_chat/space-control({})",
+                    topic.alias()
+                )),
             )
             .await?;
 
@@ -515,7 +522,7 @@ impl Node {
             .add(actor, Access::write())
             .await?;
 
-        alias_space_messages("add_member", msgs.iter());
+        alias_space_messages("add_member", topic, msgs.iter());
 
         let _header = self
             .author_operation(
@@ -589,7 +596,7 @@ impl Node {
         let encrypted = space.publish(&encode_cbor(&message.clone())?).await?;
         let encrypted_hash = encrypted.hash.clone();
 
-        alias_space_messages("send_message", vec![&encrypted]);
+        alias_space_messages("send_message", topic, vec![&encrypted]);
 
         let topic = topic.into();
 

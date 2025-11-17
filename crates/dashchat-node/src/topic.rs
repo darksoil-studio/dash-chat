@@ -237,14 +237,15 @@ impl<K: TopicKind> TopicId for Topic<K> {
 
 impl<K: TopicKind> ShortId for Topic<K> {
     const PREFIX: &'static str = "T";
-    fn short(&self) -> String {
-        let mut k = self.to_string();
-        k.truncate(8);
-        format!("{}:{}|{}", Self::PREFIX, K::default(), k)
+
+    fn prefix() -> String {
+        format!("{}:{}", Self::PREFIX, K::default())
     }
 }
 
 impl<K: TopicKind> AliasedId for Topic<K> {
+    const SHOW_SHORT_ID: bool = false;
+
     fn as_bytes(&self) -> &[u8] {
         self.id.as_ref()
     }

@@ -50,12 +50,7 @@ impl TestNode {
         &self,
         chat_id: ChatId,
     ) -> anyhow::Result<Vec<(p2panda_spaces::ActorId, Access)>> {
-        if let Some(space) = self.manager.space(chat_id).await? {
-            Ok(space.members().await?)
-        } else {
-            tracing::warn!("Chat has no Space: {chat_id}");
-            Ok(vec![])
-        }
+        Ok(self.space(chat_id).await?.members().await?)
     }
 
     pub async fn get_friends(&self) -> anyhow::Result<Vec<ActorId>> {

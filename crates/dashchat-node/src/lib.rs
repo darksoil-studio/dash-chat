@@ -42,57 +42,6 @@ use crate::testing::AliasedId;
 )]
 pub struct PK(p2panda_core::PublicKey);
 
-// impl Serialize for PK {
-//     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-//         serializer.collect_str(&base64::display::Base64Display::new(
-//             self.0.as_bytes(),
-//             &BASE64_STANDARD,
-//         ))
-//     }
-// }
-
-// use std::convert::TryInto;
-
-// fn to_fixed_size_array<T>(v: Vec<T>) -> Result<[T; 32], String> {
-//     let boxed_slice = v.into_boxed_slice();
-//     let boxed_array: Box<[T; 32]> = match boxed_slice.try_into() {
-//         Ok(ba) => ba,
-//         Err(o) => Err(format!(
-//             "Expected a Vec of length {} but it was {}",
-//             4,
-//             o.len()
-//         ))?,
-//     };
-//     Ok(*boxed_array)
-// }
-
-// impl<'de> Deserialize<'de> for PK {
-//     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-//         struct Vis;
-//         impl serde::de::Visitor<'_> for Vis {
-//             type Value = PK;
-
-//             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-//                 formatter.write_str("a base64 string")
-//             }
-
-//             fn visit_str<E: Error>(self, v: &str) -> Result<Self::Value, E> {
-//                 let bytes: Vec<u8> = base64::decode(v).map_err(Error::custom)?;
-//                 let byte_array: [u8; 32] = to_fixed_size_array(bytes).map_err(Error::custom)?;
-
-//                 let public_key =
-//                     p2panda_core::PublicKey::from_bytes(&byte_array).map_err(Error::custom)?;
-//                 let pk = PK(public_key);
-//                 Ok(pk)
-
-//                 // .map(|bytes| )
-//                 // .map_err(Error::custom)
-//             }
-//         }
-//         deserializer.deserialize_str(Vis)
-//     }
-// }
-
 impl std::fmt::Debug for PK {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", AliasedId::alias(&self.0))

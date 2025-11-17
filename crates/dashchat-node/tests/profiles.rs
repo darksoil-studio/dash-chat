@@ -9,7 +9,7 @@ const TRACING_FILTER: &str =
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_profiles() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     println!("nodes:");
     let (alice, _) = TestNode::new(NodeConfig::default(), Some("alice")).await;

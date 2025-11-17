@@ -16,7 +16,7 @@ const TRACING_FILTER: &str =
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER, false);
 
     let (alice, _alice_rx) = TestNode::new(NodeConfig::default(), Some("alice")).await;
     let (bobbi, mut bobbi_rx) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
@@ -119,6 +119,7 @@ async fn test_group_2() {
 async fn test_group_3() {
     dashchat_node::testing::setup_tracing(
         "warn,dashchat_node=warn,p2panda_stream=info,p2panda_net=error",
+        true,
     );
     // dashchat::testing::setup_tracing(TRACING_FILTER);
 

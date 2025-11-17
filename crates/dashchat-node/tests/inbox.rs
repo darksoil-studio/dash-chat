@@ -9,7 +9,7 @@ const TRACING_FILTER: &str =
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_inbox_2() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     let mut alice = TestNode::behavior(NodeConfig::default(), Some("alice")).await;
     let mut bobbi = TestNode::behavior(NodeConfig::default(), Some("bobbi")).await;
