@@ -1,6 +1,5 @@
-use dashchat_node::{ChatPayload, DashChatTopicId, Header, Node, Payload, Topic};
+use dashchat_node::{DashChatTopicId, Header, Node, Payload};
 use p2panda_core::{cbor::decode_cbor, Body, Hash, PublicKey};
-use p2panda_net::TopicId;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -75,74 +74,6 @@ pub fn simplify(
 
     Ok(operation)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-#[tauri::command]
-pub async fn get_spaces_log(
-    topic_id: DashChatTopicId,
-    author: PublicKey,
-    node: State<'_, Node>,
-) -> Result<Vec<SimplifiedOperation>, String> {
-}
-/// ---
-#[tauri::command]
-pub async fn get_group_chat_log(
-    topic_id: DashChatTopicId,
-    author: PublicKey,
-    node: State<'_, Node>,
-) -> Result<Vec<SimplifiedOperation>, String> {
-}
-#[tauri::command]
-pub async fn get_device_group_log(
-    topic_id: DashChatTopicId,
-    author: PublicKey,
-    node: State<'_, Node>,
-) -> Result<Vec<SimplifiedOperation>, String> {
-}
-#[tauri::command]
-pub async fn get_direct_messages_log(
-    topic_id: DashChatTopicId,
-    author: PublicKey,
-    node: State<'_, Node>,
-) -> Result<Vec<SimplifiedOperation>, String> {
-}
-#[tauri::command]
-pub async fn get_announcements_log(
-    topic_id: DashChatTopicId,
-    author: PublicKey,
-    node: State<'_, Node>,
-) -> Result<Vec<SimplifiedOperation>, String> {
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #[tauri::command]
 pub async fn get_log(

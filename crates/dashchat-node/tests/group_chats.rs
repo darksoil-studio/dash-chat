@@ -1,43 +1,64 @@
+//! NOTE: these tests don't test the full proper friendship flow
+//! in that they don't use the inbox.
+
+#![feature(bool_to_result)]
+
 use std::time::Duration;
 
 use p2panda_auth::Access;
 use p2panda_net::ResyncConfiguration;
 
-use crate::{
-    operation::Payload,
-    testing::{AliasedId, *},
-    topic::Topic,
-    *,
-};
+use dashchat_node::{testing::*, *};
+use p2panda_store::LogId;
 
 const TRACING_FILTER: &str =
-    "dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
+    "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
-    crate::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER);
+
+    let (alice, _alice_rx) = TestNode::new(NodeConfig::default(), Some("alice")).await;
+    let (bobbi, mut bobbi_rx) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
 
     println!("nodes:");
-    let (alice, _alice_rx) = TestNode::new(NodeConfig::default(), Some("alice")).await;
     println!("alice: {:?}", alice.public_key().short());
-    let (bobbi, mut bobbi_rx) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
     println!("bobbi: {:?}", bobbi.public_key().short());
 
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
     println!("peers see each other");
 
-    alice.add_contact(bobbi.me().await.unwrap()).await.unwrap();
-    bobbi.add_contact(alice.me().await.unwrap()).await.unwrap();
+    alice
+        .add_contact(
+            bobbi
+                .new_qr_code(ShareIntent::AddContact, false)
+                .await
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    bobbi
+        .add_contact(
+            alice
+                .new_qr_code(ShareIntent::AddContact, false)
+                .await
+                .unwrap(),
+        )
+        .await
+        .unwrap();
 
-    let chat_id = ChatId::random().aliased("onlychat");
-    alice.create_group(chat_id).await.unwrap();
+    let chat_id = ChatId::random();
+    alice.create_group_chat_space(chat_id).await.unwrap();
 
-    alice.add_member(chat_id, bobbi.public_key().into()).await.unwrap();
+    alice
+        .add_member(chat_id, bobbi.chat_actor_id().into())
+        .await
+        .unwrap();
 
     bobbi_rx
         .watch_for(Duration::from_secs(5), |n| {
-            matches!(n.payload, Payload::Inbox(InboxPayload::Contact))
+            matches!(n.payload, Payload::Inbox(InboxPayload::Contact(_)))
         })
         .await
         .unwrap();
@@ -46,13 +67,13 @@ async fn test_group_2() {
         .watch_for(Duration::from_secs(5), |n| {
             matches!(
                 n.payload,
-                Payload::Inbox(InboxPayload::JoinGroup(id)) if id == chat_id
+                Payload::Chat(ChatPayload::JoinGroup(id)) if id == chat_id
             )
         })
         .await
         .unwrap();
 
-    // Bob has joined the group via his inbox topic
+    // Bobbi has joined the group via his inbox topic
     wait_for(
         Duration::from_millis(100),
         Duration::from_secs(5),
@@ -96,11 +117,14 @@ async fn test_group_2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_3() {
-    crate::testing::setup_tracing("warn,dashchat_node=warn,p2panda_stream=info,p2panda_net=error");
-    // crate::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(
+        "warn,dashchat_node=warn,p2panda_stream=info,p2panda_net=error",
+    );
+    // dashchat::testing::setup_tracing(TRACING_FILTER);
 
     let node_config = NodeConfig {
         resync: ResyncConfiguration::new().interval(10).poll_interval(1),
+        contact_code_expiry: chrono::Duration::days(7),
     };
     let cfg = ClusterConfig {
         poll_interval: Duration::from_millis(500),
@@ -117,22 +141,57 @@ async fn test_group_3() {
     println!("carol:    {:?}", carol.public_key().short());
 
     // alice -- bobbi -- carol (bobbi is the pivot)
-    alice.add_contact(bobbi.me().await.unwrap()).await.unwrap();
-    bobbi.add_contact(alice.me().await.unwrap()).await.unwrap();
-    bobbi.add_contact(carol.me().await.unwrap()).await.unwrap();
-    carol.add_contact(bobbi.me().await.unwrap()).await.unwrap();
+    alice
+        .add_contact(
+            bobbi
+                .new_qr_code(ShareIntent::AddContact, false)
+                .await
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    bobbi
+        .add_contact(
+            alice
+                .new_qr_code(ShareIntent::AddContact, false)
+                .await
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    bobbi
+        .add_contact(
+            carol
+                .new_qr_code(ShareIntent::AddContact, false)
+                .await
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    carol
+        .add_contact(
+            bobbi
+                .new_qr_code(ShareIntent::AddContact, false)
+                .await
+                .unwrap(),
+        )
+        .await
+        .unwrap();
 
     // NOTE: not needed! "contactship" is transitive.
     // alice.add_contact(carol.me().await.unwrap()).await.unwrap();
     // carol.add_contact(alice.me().await.unwrap()).await.unwrap();
 
     println!("\n==> alice creates group\n");
-    let chat_id = ChatId::random().aliased("onlychat");
-    alice.create_group(chat_id).await.unwrap();
+    let chat_id = ChatId::random();
+    alice.create_group_chat_space(chat_id).await.unwrap();
     println!("\n==> alice adds bobbi\n");
-    alice.add_member(chat_id, bobbi.public_key().into()).await.unwrap();
+    alice
+        .add_member(chat_id, bobbi.chat_actor_id().into())
+        .await
+        .unwrap();
 
-    // Bob has joined the group via his inbox topic and is a manager
+    // Bobbi has joined the group via his inbox topic and is a manager
     wait_for(
         Duration::from_millis(100),
         Duration::from_secs(10),
@@ -141,7 +200,7 @@ async fn test_group_3() {
                 space
                     .members()
                     .await
-                    .map(|m| m.contains(&(bobbi.public_key().into(), Access::manage())))
+                    .map(|m| m.contains(&(bobbi.chat_actor_id(), Access::manage())))
                     .unwrap_or(false)
                     .ok_or("not a manager")
             } else {
@@ -152,8 +211,7 @@ async fn test_group_3() {
     .await
     .unwrap();
 
-    let topic: Topic = chat_id.into();
-    let tt = [topic];
+    let tt = [chat_id.into()];
 
     println!("\n==> alice sends message\n");
     alice
@@ -176,8 +234,16 @@ async fn test_group_3() {
         .unwrap();
 
     consistency([&alice, &bobbi], &tt, &cfg).await.unwrap();
-    assert!(bobbi.op_store.is_op_processed(&topic, &bobbi_header.hash()));
-    assert!(alice.op_store.is_op_processed(&topic, &bobbi_header.hash()));
+    assert!(
+        bobbi
+            .op_store
+            .is_op_processed(&chat_id.into(), &bobbi_header.hash())
+    );
+    assert!(
+        alice
+            .op_store
+            .is_op_processed(&chat_id.into(), &bobbi_header.hash())
+    );
 
     assert_eq!(
         alice.get_messages(chat_id).await.unwrap(),
@@ -186,7 +252,10 @@ async fn test_group_3() {
     assert_eq!(alice.get_messages(chat_id).await.unwrap().len(), 2);
 
     println!("\n==> bobbi adds carol\n");
-    bobbi.add_member(chat_id, carol.public_key().into()).await.unwrap();
+    bobbi
+        .add_member(chat_id, carol.chat_actor_id().into())
+        .await
+        .unwrap();
 
     consistency([&alice, &bobbi, &carol], &tt, &cfg)
         .await
@@ -201,7 +270,7 @@ async fn test_group_3() {
                 space
                     .members()
                     .await
-                    .map(|m| m.contains(&(carol.public_key().into(), Access::manage())))
+                    .map(|m| m.contains(&(carol.chat_actor_id(), Access::manage())))
                     .unwrap_or(false)
                     .ok_or("not a manager")
             } else {

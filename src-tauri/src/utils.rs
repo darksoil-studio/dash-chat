@@ -1,5 +1,7 @@
+#![allow(unused)]
+
 use anyhow::anyhow;
-use std::{collections::HashMap, time::Duration};
+use std::time::Duration;
 
 pub async fn with_retries<T>(
     condition: impl AsyncFn() -> anyhow::Result<T>,

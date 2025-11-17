@@ -30,6 +30,10 @@
 				<wa-icon src={wrapPathInSvg(mdiSquareEditOutline)}> </wa-icon>
 			</wa-button>
 		</div>
+
+		<a href="/friends">
+			<wa-button>Friends</wa-button>
+		</a>
 	</div>
 {/await}
 

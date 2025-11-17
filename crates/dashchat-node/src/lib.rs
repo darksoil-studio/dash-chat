@@ -3,31 +3,25 @@
 mod chat;
 mod contact;
 mod node;
-mod operation;
-mod spaces;
-mod stores;
-mod topic;
+mod payload;
+pub mod spaces;
+pub mod stores;
+pub mod topic;
 mod util;
-
-#[cfg(test)]
-mod tests;
 
 pub mod polestar;
 
 #[cfg(feature = "testing")]
 pub mod testing;
 
-use base64::{Engine, prelude::BASE64_STANDARD};
 use p2panda_core::IdentityError;
 
 pub use chat::{ChatId, ChatMessage, ChatMessageContent};
-pub use node::{Node, NodeConfig, Notification};
-pub use contact::MemberCode;
-pub use operation::*;
+pub use contact::{QrCode, ShareIntent};
+pub use node::{Node, NodeConfig, NodeLocalData, Notification};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
-use p2panda_spaces::OperationId;
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
+pub use payload::*;
 pub use topic::{DashChatTopicId, Topic};
 
 use crate::testing::AliasedId;
@@ -141,44 +135,12 @@ pub trait Cbor: serde::Serialize + serde::de::DeserializeOwned {
 
 pub trait AsBody: Cbor {
     fn try_into_body(&self) -> Result<p2panda_core::Body, p2panda_core::cbor::EncodeError> {
-        Ok(p2panda_core::Body::new(self.as_bytes()?.as_slice()))
+        let bytes = self.as_bytes()?;
+        Ok(p2panda_core::Body::new(bytes.as_slice()))
     }
 
     fn try_from_body(body: &p2panda_core::Body) -> Result<Self, p2panda_core::cbor::DecodeError> {
         Self::from_bytes(body.to_bytes().as_slice())
-    }
-}
-
-pub trait ShortId {
-    const PREFIX: &'static str;
-
-    fn short(&self) -> String;
-}
-
-impl ShortId for p2panda_core::Hash {
-    const PREFIX: &'static str = "H";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
-    }
-}
-
-impl ShortId for p2panda_core::PublicKey {
-    const PREFIX: &'static str = "PK";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
-    }
-}
-
-impl ShortId for OperationId {
-    const PREFIX: &'static str = "OP";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
     }
 }
 

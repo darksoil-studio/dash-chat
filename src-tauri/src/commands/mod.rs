@@ -12,5 +12,5 @@ pub mod group_chat;
 
 #[command]
 pub async fn my_pub_key(node: State<'_, Node>) -> Result<PublicKey, String> {
-    Ok(node.public_key())
+    Ok(node.public_key().into())
 }
