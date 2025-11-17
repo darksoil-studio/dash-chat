@@ -27,8 +27,6 @@ export class ContactsStore {
 		return await this.profiles(myPubKey);
 	});
 
-	myMemberCode = reactive(async () => this.client.myMemberCode());
-
 	profiles = reactive(async (publicKey: PublicKey) => {
 		const topicId = personalTopicFor(publicKey);
 		const operations = await this.logsStore.logsForAllAuthors(topicId);

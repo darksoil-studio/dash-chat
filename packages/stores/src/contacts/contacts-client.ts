@@ -10,22 +10,23 @@ export interface Profile {
 export type ContactRequestId = string;
 
 // export type MemberCode = [LongTermKeyBundle, ActorId];
-export type MemberCode = string;
+export type ContactCode = string;
 
 export interface IContactsClient {
 	/// Profiles
 
 	// Sets the profile for this user
 	setProfile(profile: Profile): Promise<void>;
-	
+
 	/// contacts
 
-	myMemberCode(): Promise<MemberCode>;
+	// Creates a new contact code to be shared
+	createContactCode(): Promise<ContactCode>;
 
-	getContacts(): Promise<Array<PublicKey>>;
+	// getContacts(): Promise<Array<PublicKey>>;
 
 	// Remove contact
-	addContact(memberCode: MemberCode): Promise<void>;
+	addContact(code: ContactCode): Promise<void>;
 
 	// Remove contact
 	// removeContact(contact: ContactId): Promise<void>;
@@ -52,19 +53,19 @@ export class ContactsClient implements IContactsClient {
 		});
 	}
 
-	myMemberCode(): Promise<MemberCode> {
-		return invoke('my_member_code');
+	createContactCode(): Promise<ContactCode> {
+		return invoke('create_contact_code');
 	}
 
-	addContact(memberCode: MemberCode): Promise<void> {
+	addContact(contactCode: ContactCode): Promise<void> {
 		return invoke('add_contact', {
-			memberCode,
+			contactCode,
 		});
 	}
 
-	getContacts(): Promise<Array<PublicKey>> {
-		return invoke('get_contacts');
-	}
+	// getContacts(): Promise<Array<PublicKey>> {
+	// 	return invoke('get_contacts');
+	// }
 
 	// removeContact(contactId: ContactId): Promise<void> {
 	// 	return invoke('remove_contact', {
