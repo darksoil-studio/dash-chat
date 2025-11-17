@@ -52,7 +52,7 @@
 {:then myProfile}
 	<wa-card style="margin: var(--wa-space-m)">
 		<div class="row" style="align-items: center; gap: var(--wa-space-s)">
-			<SelectAvatar bind:avatar></SelectAvatar>
+			<SelectAvatar bind:value={avatar} defaultValue={myProfile?.avatar}></SelectAvatar>
 
 			<wa-input
 				style="flex: 1"

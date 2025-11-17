@@ -26,7 +26,7 @@
 		<span class="title">Create Profile</span>
 
 		<div class="row" style="gap: var(--wa-space-xs)">
-			<SelectAvatar bind:avatar={avatar}>
+			<SelectAvatar bind:value={avatar}>
 			</SelectAvatar>
 
 			<wa-input

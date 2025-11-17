@@ -2,20 +2,26 @@
 	import '@awesome.me/webawesome/dist/components/textarea/textarea.js';
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/button/button.js';
+	import '@awesome.me/webawesome/dist/components/relative-time/relative-time.js';
+	import '@awesome.me/webawesome/dist/components/format-date/format-date.js';
 	import type WaTextarea from '@awesome.me/webawesome/dist/components/textarea/textarea.js';
 
 	import { useReactivePromise } from '../../../stores/use-signal';
 	import { getContext } from 'svelte';
-	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
+	import type { ChatsStore, ContactsStore } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiArrowLeft, mdiSend } from '@mdi/js';
 
 	const chatId = window.location.href.split('/').reverse()[0];
 
+	const contactsStore: ContactsStore = getContext('contacts-store');
+	const myPubKey = useReactivePromise(contactsStore.myPubKey);
+
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.groupChats(chatId);
 
 	const messages = useReactivePromise(store.messages);
+	const info = useReactivePromise(store.info);
 	let textarea: WaTextarea;
 
 	async function sendMessage() {
@@ -25,28 +31,105 @@
 		await store.sendMessage(message);
 		textarea.value = '';
 	}
+
+	// const lastMessage = messageSet[0][1];
+	// const timestamp = lastMessage.payload.timestamp / 1000;
+	// const date = new Date(timestamp);
+	const lessThanAMinuteAgo = (timestamp: number) =>
+		Date.now() - timestamp < 60 * 1000;
+	const moreThanAnHourAgo = (timestamp: number) =>
+		Date.now() - timestamp > 46 * 60 * 1000;
 </script>
 
-<div class="top-bar">
-	<wa-button
-		class="circle"
-		appearance="plain"
-		onclick={() => window.history.back()}
-	>
-			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+<div class="top-bar" style="gap: 0">
+	<wa-button class="circle" appearance="plain" href="/">
+		<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
 	</wa-button>
-	<span class="title" style="flex: 1"></span>
+
+	<wa-button
+		style="flex: 1"
+		href={`/group-chat/${chatId}/info`}
+		appearance="plain"
+	>
+		{#await $info then info}
+			<wa-avatar
+				slot="start"
+				image={info.avatar}
+				initials={info.name.slice(0, 2)}
+			>
+			</wa-avatar>
+			<span>{info.name}</span>
+		{/await}
+	</wa-button>
 </div>
 
-<div class="column center-in-desktop" style="gap: var(--wa-space-l)">
-	{#await $messages then messages}
-		{#each messages as message}
-			hey{message}
-		{/each}
-	{/await}
+<div
+	class="column center-in-desktop"
+	style="gap: var(--wa-space-l); flex: 1;  margin: var(--wa-space-m)"
+>
+	<div class="column" style="gap: var(--wa-space-m); flex: 1;">
+		{#await $myPubKey then myPubKey}
+			{#await $messages then messages}
+				{#each messages as message}
+					{#if myPubKey == message.author}
+						<wa-card style="align-self: end">
+							<div class="row" style="gap: var(--wa-space-s)">
+								<span>{message.content}</span>
+
+								{#if lessThanAMinuteAgo(message.timestamp)}
+									<span>now</span>
+								{:else if moreThanAnHourAgo(message.timestamp)}
+									<wa-format-date
+										hour="numeric"
+										minute="numeric"
+										hour-format="24"
+										date={new Date(message.timestamp)}
+									></wa-format-date>
+								{:else}
+									<wa-relative-time
+										style=""
+										sync
+										format="narrow"
+										date={new Date(message.timestamp)}
+									>
+									</wa-relative-time>
+								{/if}
+							</div></wa-card
+						>
+					{:else}
+						<wa-card style="align-self: start">
+							<div class="row" style="gap: var(--wa-space-s)">
+								<span>{message.content}</span>
+
+								{#if lessThanAMinuteAgo(message.timestamp)}
+									<span>now</span>
+								{:else if moreThanAnHourAgo(message.timestamp)}
+									<wa-format-date
+										hour="numeric"
+										minute="numeric"
+										hour-format="24"
+										date={new Date(message.timestamp)}
+									></wa-format-date>
+								{:else}
+									<wa-relative-time
+										style=""
+										sync
+										format="narrow"
+										date={new Date(message.timestamp)}
+									>
+									</wa-relative-time>
+								{/if}
+							</div></wa-card
+						>
+					{/if}
+				{/each}
+			{/await}
+		{/await}
+	</div>
 
 	<div class="row" style="align-items: center; gap: var(--wa-space-s)">
-		<wa-textarea resize="auto" rows="1" bind:this={textarea} style="flex: 1"> </wa-textarea>
+		<wa-textarea resize="auto" rows="1" bind:this={textarea} style="flex: 1">
+		</wa-textarea>
 
 		<wa-button class="circle" appearance="plain" onclick={sendMessage}>
 			<wa-icon src={wrapPathInSvg(mdiSend)}> </wa-icon>
@@ -55,4 +138,15 @@
 </div>
 
 <style>
+	wa-avatar {
+		--size: 2.5rem;
+	}
+
+	wa-button::part(label) {
+		flex: 1;
+	}
+
+	wa-card::part(body) {
+		padding: 8px;
+	}
 </style>

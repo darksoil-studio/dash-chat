@@ -15,7 +15,7 @@
 	async function receiveCode(e: InputEvent) {
 		await contactsStore.client.addContact(e.data!);
 
-		window.history.back();
+		// window.history.back();
 	}
 </script>
 

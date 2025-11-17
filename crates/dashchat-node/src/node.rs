@@ -15,7 +15,6 @@ use p2panda_encryption::crypto::x25519::SecretKey;
 use p2panda_net::config::GossipConfig;
 use p2panda_net::{
     FromNetwork, Network, NetworkBuilder, ResyncConfiguration, SyncConfiguration, ToNetwork,
-    TopicId,
 };
 use p2panda_spaces::OperationId;
 use p2panda_spaces::event::Event;

@@ -1,4 +1,4 @@
-import { reactive } from 'signalium';
+import { ReactivePromise, reactive } from 'signalium';
 
 import { GroupChatClient } from '../group-chats/group-chat-client';
 import { GroupChatStore } from '../group-chats/group-chat-store';
@@ -23,7 +23,7 @@ export class ChatsStore {
 	) {}
 
 	async createGroup(initialMembers: PublicKey[]): Promise<GroupChatStore> {
-		console.log('yaa')
+		console.log('yaa');
 		const chatId = random_hexadecimal(64);
 
 		await this.client.createGroup(chatId);
@@ -42,16 +42,42 @@ export class ChatsStore {
 			new GroupChatStore(this.logsStore, new GroupChatClient(), chatId),
 	);
 
-	allChatsIds = reactive(() => this.client.getGroups())
+	allChatsIds = reactive(() => this.client.getGroups());
 
-	allChatsSummaries = reactive(async ()=>{
-		const chats  = await this.allChatsIds();
+	allChatsSummaries = reactive(async () => {
+		const chatIds = await this.allChatsIds();
 
-	})
+		const summaries = await ReactivePromise.all(
+			chatIds.map(chatId => this.chatSummary(chatId)),
+		);
+		return summaries;
+	});
 
 	chatSummary = reactive((chatId: ChatId) => {
 		const groupChatStore = this.groupChats(chatId);
 
-		
-	})
+		return {
+			type: 'GroupChat',
+			name: 'mygroup',
+			chatId,
+			avatar: undefined,
+			lastEvent: {
+				summary: 'aaa',
+				timestamp: Date.now(),
+			},
+			unreadMessages: 1,
+		} as ChatSummary;
+	});
+}
+
+export interface ChatSummary {
+	type: 'GroupChat' | 'DirectMessagesChat';
+	chatId: string;
+	unreadMessages: number;
+	name: string;
+	avatar: string | undefined;
+	lastEvent: {
+		summary: string;
+		timestamp: number;
+	};
 }

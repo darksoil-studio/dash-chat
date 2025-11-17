@@ -25,6 +25,7 @@ pub fn run() {
             commands::chats::get_groups,
             commands::group_chat::add_member,
             commands::group_chat::send_message,
+            commands::group_chat::get_messages,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

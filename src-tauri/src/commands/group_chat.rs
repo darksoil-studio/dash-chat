@@ -1,4 +1,4 @@
-use dashchat_node::{ChatId, ChatMessageContent, Node};
+use dashchat_node::{ChatId, ChatMessage, ChatMessageContent, Node};
 use p2panda_core::PublicKey;
 use tauri::{command, State};
 
@@ -24,4 +24,14 @@ pub async fn send_message(
         .map_err(|e| format!("Failed to send message: {e:?}"))?;
 
     Ok(())
+}
+
+#[command]
+pub async fn get_messages(
+    chat_id: ChatId,
+    node: State<'_, Node>,
+) -> Result<Vec<ChatMessage>, String> {
+    node.get_messages(chat_id)
+        .await
+        .map_err(|e| format!("Failed to send message: {e:?}"))
 }
