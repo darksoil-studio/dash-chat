@@ -511,7 +511,8 @@ impl Node {
             .await?
             .ok_or_else(|| anyhow!("Chat has no Space: {topic}"))?
             // TODO: we need an access level for only adding but not removing members
-            .add(actor, Access::manage())
+            // TODO: even worse, we need to be able to add groups as managers at all!!!
+            .add(actor, Access::write())
             .await?;
 
         alias_space_messages("add_member", msgs.iter());

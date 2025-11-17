@@ -57,28 +57,21 @@ impl Node {
                                 continue;
                             }
 
-                            let mut attempts = 0;
-                            loop {
-                                if let Some(hash) = sd.get(&dep) {
+                            match sd.get(&dep) {
+                                Some(hash) => {
                                     header_deps.push(hash.clone());
                                     break;
                                 }
-
-                                // XXX: If the dep is not part of some already seen header,
-                                // as a last ditch effort, let's wait a bit in case the dep
-                                // comes in the next few seconds...
-
-                                if attempts > 10 {
+                                None => {
+                                    // XXX: This must not be allowed to happen, but for now
+                                    // let's hope for the best!
                                     tracing::error!(
                                         dep = dep.alias(),
                                         deps = ?sd.keys().map(|k| k.alias()).collect::<Vec<_>>(),
                                         ids = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
                                         "space dep should have been seen already",
                                     );
-                                    panic!("space dep should have been seen already");
                                 }
-                                attempts += 1;
-                                tokio::time::sleep(std::time::Duration::from_millis(500)).await;
                             }
                         }
 
