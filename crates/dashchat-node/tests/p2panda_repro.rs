@@ -1,4 +1,4 @@
-use dashchat_node::{ChatId, testing::manager::test_manager};
+use dashchat_node::{ChatId, DirectChatId, testing::manager::test_manager};
 use p2panda_auth::Access;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -41,7 +41,7 @@ async fn test_p2panda_repro() {
 
     let (sa, msa, esa) = alice
         .create_space(
-            ChatId::random(),
+            DirectChatId::direct_chat([ga.id(), gb.id()]),
             &[(ga.id(), Access::manage()), (gb.id(), Access::manage())],
         )
         .await

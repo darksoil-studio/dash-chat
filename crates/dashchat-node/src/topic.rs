@@ -80,6 +80,7 @@ pub mod kind {
     impl ChatTopicKind for Chat {}
     impl ChatTopicKind for GroupChat {}
     impl ChatTopicKind for DirectChat {}
+    impl ChatTopicKind for DeviceGroup {}
 }
 
 impl From<Topic<kind::GroupChat>> for Topic<kind::Chat> {
@@ -90,6 +91,12 @@ impl From<Topic<kind::GroupChat>> for Topic<kind::Chat> {
 
 impl From<Topic<kind::DirectChat>> for Topic<kind::Chat> {
     fn from(topic: Topic<kind::DirectChat>) -> Topic<kind::Chat> {
+        Topic::new(topic.id)
+    }
+}
+
+impl From<Topic<kind::DeviceGroup>> for Topic<kind::Chat> {
+    fn from(topic: Topic<kind::DeviceGroup>) -> Topic<kind::Chat> {
         Topic::new(topic.id)
     }
 }
@@ -158,16 +165,14 @@ impl<K: TopicKind> Topic<K> {
     }
 }
 
-impl Topic<kind::Chat> {
-    pub fn random() -> Self {
-        Self::new(rand::random())
-    }
-}
-
 impl Topic<kind::GroupChat> {
     /// The topic ID is the unique chat ID.
     pub fn group_chat(chat_id: [u8; 32]) -> Self {
         Self::new(chat_id)
+    }
+
+    pub fn random() -> Self {
+        Self::new(rand::random())
     }
 }
 
@@ -203,8 +208,8 @@ impl Topic<kind::Announcements> {
 
 impl Topic<kind::DeviceGroup> {
     /// The topic ID is unique.
-    pub fn device_group(actor: ActorId) -> Self {
-        Self::new(*actor.as_bytes())
+    pub fn random() -> Self {
+        Self::new(rand::random())
     }
 }
 
@@ -244,7 +249,7 @@ impl<K: TopicKind> ShortId for Topic<K> {
 }
 
 impl<K: TopicKind> AliasedId for Topic<K> {
-    const SHOW_SHORT_ID: bool = false;
+    const SHOW_SHORT_ID: bool = true;
 
     fn as_bytes(&self) -> &[u8] {
         self.id.as_ref()

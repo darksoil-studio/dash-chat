@@ -49,13 +49,19 @@ impl From<Header> for SimplifiedHeader {
 
 pub fn decode_spaces_args(spaces_args: SpacesArgs) -> Result<Option<serde_json::Value>, String> {
     match spaces_args {
-        p2panda_spaces::SpacesArgs::Application { space_id, space_dependencies, group_secret_id, nonce, ciphertext } => {
-            
-        },
+        p2panda_spaces::SpacesArgs::Application {
+            space_id,
+            space_dependencies,
+            group_secret_id,
+            nonce,
+            ciphertext,
+        } => {
+            todo!()
+        }
         // p2panda_spaces::SpacesArgs::Auth { control_message, auth_dependencies } => {
-            
+
         // },
-        _ => None
+        _ => todo!(),
     }
 }
 

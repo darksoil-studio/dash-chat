@@ -42,7 +42,13 @@ impl Node {
         topic: Topic<K>,
         is_author: bool,
     ) -> anyhow::Result<()> {
-        if self.gossip.read().await.contains_key(&topic.into()) {
+        // TODO: this has a race condition
+        if self
+            .initialized_topics
+            .read()
+            .await
+            .contains_key(&topic.into())
+        {
             return Ok(());
         }
 
@@ -99,7 +105,10 @@ impl Node {
             .await
             .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
 
-        self.gossip.write().await.insert(topic.into(), network_tx);
+        self.initialized_topics
+            .write()
+            .await
+            .insert(topic.into(), network_tx);
 
         Ok(())
     }
@@ -243,8 +252,8 @@ impl Node {
         // XXX: don't repair this often.
         let repair_required = self.manager.spaces_repair_required().await?;
         if !repair_required.is_empty() {
-            tracing::warn!(missing = repair_required.len(), "spaces repair required");
-            self.manager.repair_spaces(&repair_required).await?;
+            tracing::warn!(missing = ?repair_required, "spaces repair required");
+            // self.manager.repair_spaces(&repair_required).await?;
         }
 
         anyhow::Ok(())

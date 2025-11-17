@@ -48,7 +48,7 @@ async fn test_group_2() {
         .await
         .unwrap();
 
-    let chat_id = ChatId::random();
+    let chat_id = GroupChatId::random();
     alice.create_group_chat_space(chat_id).await.unwrap();
 
     alice
@@ -67,7 +67,7 @@ async fn test_group_2() {
         .watch_for(Duration::from_secs(5), |n| {
             matches!(
                 n.payload,
-                Payload::Chat(ChatPayload::JoinGroup(id)) if id == chat_id
+                Payload::Chat(ChatPayload::JoinGroup(id)) if id == chat_id.into()
             )
         })
         .await
@@ -82,7 +82,7 @@ async fn test_group_2() {
                 .get_groups()
                 .await
                 .unwrap()
-                .contains(&chat_id)
+                .contains(&chat_id.into())
                 .ok_or("chat not yet found")
         },
     )
@@ -184,7 +184,7 @@ async fn test_group_3() {
     // carol.add_contact(alice.me().await.unwrap()).await.unwrap();
 
     println!("\n==> alice creates group\n");
-    let chat_id = ChatId::random();
+    let chat_id = GroupChatId::random();
     alice.create_group_chat_space(chat_id).await.unwrap();
     println!("\n==> alice adds bobbi\n");
     alice

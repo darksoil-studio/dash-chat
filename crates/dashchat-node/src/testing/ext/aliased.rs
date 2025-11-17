@@ -11,7 +11,7 @@ static ALIASES: LazyLock<Mutex<HashMap<Vec<u8>, String>>> =
 /// Useful for debugging.
 pub fn alias_space_messages<'a>(
     prefix: &str,
-    id: ChatId,
+    id: impl Into<ChatId> + AliasedId + std::fmt::Debug,
     msgs: impl IntoIterator<Item = &'a SpaceControlMessage>,
 ) {
     for (i, msg) in msgs.into_iter().enumerate() {

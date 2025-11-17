@@ -59,7 +59,7 @@ async fn test_inbox_2() {
         .await
         .unwrap();
 
-    let chat_id = ChatId::random();
+    let chat_id = GroupChatId::random();
     alice.create_group_chat_space(chat_id).await.unwrap();
     alice
         .add_member(chat_id, bobbi.chat_actor_id().into())

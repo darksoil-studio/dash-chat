@@ -29,7 +29,7 @@ impl ShortId for p2panda_spaces::OperationId {
 }
 
 impl ShortId for p2panda_spaces::ActorId {
-    const PREFIX: &'static str = "AI";
+    const PREFIX: &'static str = "A";
 
     fn to_short_string(&self) -> String {
         self.to_hex()
