@@ -11,19 +11,19 @@
 	let nickname: string | undefined;
 	let avatar: string | undefined;
 
-	async function addFriend() {
-		// await usersStore.client.addFriend(nickname!);
+	async function addContact() {
+		// await usersStore.client.addContact(nickname!);
 	}
 </script>
 
 <wa-card>
 	<div class="column" style="gap: var(--wa-space-m)">
-		<span class="title">Add Friend</span>
+		<span class="title">Add Contact</span>
 
 		<div class="row" style="gap: var(--wa-space-xs)">
 			<input type="text" bind:value={nickname} />
 		</div>
 
-		<wa-button onclick={addFriend}>Add Friend </wa-button>
+		<wa-button onclick={addContact}>Add Contact </wa-button>
 	</div>
 </wa-card>

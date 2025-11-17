@@ -186,7 +186,7 @@ impl Topic<kind::DirectChat> {
 }
 
 impl Topic<kind::Inbox> {
-    /// The topic ID is randomly generated for each new Friend code (QR code).
+    /// The topic ID is randomly generated for each new Contact code (QR code).
     pub fn inbox() -> Self {
         Self::new(rand::random())
     }

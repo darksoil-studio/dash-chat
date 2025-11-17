@@ -31,8 +31,8 @@
 			</wa-button>
 		</div>
 
-		<a href="/friends">
-			<wa-button>Friends</wa-button>
+		<a href="/contacts">
+			<wa-button>Contacts</wa-button>
 		</a>
 	</div>
 {/await}

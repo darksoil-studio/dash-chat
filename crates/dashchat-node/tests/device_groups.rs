@@ -21,7 +21,7 @@ async fn device_group_solo() {
     println!("peers see each other");
 
     alice
-        .add_friend(
+        .add_contact(
             alicia
                 .new_qr_code(ShareIntent::AddDevice, true)
                 .await

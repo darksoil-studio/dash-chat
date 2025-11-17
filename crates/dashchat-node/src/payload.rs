@@ -34,7 +34,7 @@ pub enum AnnouncementsPayload {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
-    /// Invites the recipient to add the sender as a friend.
+    /// Invites the recipient to add the sender as a contact.
     Contact(QrCode),
 }
 
@@ -71,7 +71,7 @@ pub enum Payload {
     /// Pushing data out to my contacts.
     Announcements(AnnouncementsPayload),
 
-    /// Data sent to someone who is not your friend
+    /// Data sent to someone who is not your contact
     Inbox(InboxPayload),
 
     /// Group chat data, including direct 1:1 chats

@@ -359,7 +359,7 @@ impl Node {
         }
     }
 
-    /// Create a new friend QR code with configured expiry time,
+    /// Create a new contact QR code with configured expiry time,
     /// subscribe to the inbox topic for it, and register the topic as active.
     pub async fn new_qr_code(
         &self,
@@ -642,7 +642,7 @@ impl Node {
             .await?;
 
         // XXX: there should be a better way to wait for the device group to be created,
-        //      and this may never happen if the friend is not online.
+        //      and this may never happen if the contact is not online.
         let mut attempts = 0;
         loop {
             if let Some(group) = self.manager.group(actor).await? {
@@ -660,7 +660,7 @@ impl Node {
             attempts += 1;
             if attempts > 20 {
                 return Err(anyhow!(
-                    "Failed to register friend's device group in 5s. Try again later."
+                    "Failed to register contact's device group in 5s. Try again later."
                 ));
             }
         }
@@ -685,7 +685,7 @@ impl Node {
             self.author_operation(
                 inbox_topic.topic,
                 Payload::Inbox(InboxPayload::Contact(qr)),
-                Some(&format!("add_friend/invitation({})", actor.alias())),
+                Some(&format!("add_contact/invitation({})", actor.alias())),
             )
             .await?;
         }

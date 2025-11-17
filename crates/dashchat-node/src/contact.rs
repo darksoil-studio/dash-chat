@@ -21,7 +21,7 @@ use crate::Topic;
 /// their devices can participate in the chat. The ActorId of the group is the unified
 /// identity which that person uses to join chat groups.
 ///
-/// When adding a friend, no groups are joined, it's only for the purpose of exchanging
+/// When adding a contact, no groups are joined, it's only for the purpose of exchanging
 /// pubkeys and key bundles, so that chat groups can be joined in the future.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(into = "String", try_from = "String")]
@@ -35,7 +35,7 @@ pub struct QrCode {
     pub inbox_topic: Option<InboxTopic>,
     /// Actor ID to add to spaces
     pub chat_actor_id: ActorId,
-    /// The intent of the QR code: whether to add this node as a friend or a device.
+    /// The intent of the QR code: whether to add this node as a contact or a device.
     pub share_intent: ShareIntent,
 }
 
@@ -128,9 +128,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_friend_roundtrip() {
+    fn test_contact_roundtrip() {
         let pubkey = p2panda_encryption::crypto::x25519::PublicKey::from_bytes([11; 32]);
-        let friend = QrCode {
+        let contact = QrCode {
             member_code: MemberCode {
                 actor_id: ActorId::from_bytes(&[22; 32]).unwrap(),
                 key_bundle: LongTermKeyBundle::new(
@@ -149,9 +149,9 @@ mod tests {
             chat_actor_id: ActorId::from_bytes(&[44; 32]).unwrap(),
             share_intent: ShareIntent::AddDevice,
         };
-        let encoded = friend.to_string();
+        let encoded = contact.to_string();
         let decoded = QrCode::from_str(&encoded).unwrap();
 
-        assert_eq!(friend, decoded);
+        assert_eq!(contact, decoded);
     }
 }
