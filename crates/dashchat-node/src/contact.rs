@@ -53,6 +53,7 @@ pub struct InboxTopic {
     pub topic: Topic<crate::topic::kind::Inbox>,
 }
 
+/// Just add serialization around [`p2panda_spaces::Member`]`
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, derive_more::From)]
 pub struct MemberCode {
     pub actor_id: ActorId,

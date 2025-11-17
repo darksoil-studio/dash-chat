@@ -230,14 +230,21 @@ impl Node {
         .await?;
 
         node.initialize_topic(
-            Topic::announcements(node.chat_actor_id()).aliased("announce"),
+            Topic::announcements(node.chat_actor_id())
+                .aliased(&format!("announce({})", public_key.alias())),
             true,
         )
         .await?;
 
         for topic in active_inbox_topics.read().await.iter() {
-            node.initialize_topic(topic.topic.clone().aliased("inbox!"), false)
-                .await?;
+            node.initialize_topic(
+                topic
+                    .topic
+                    .clone()
+                    .aliased(&format!("inbox({})", public_key.alias())),
+                false,
+            )
+            .await?;
         }
 
         {
@@ -347,7 +354,7 @@ impl Node {
         let mut topics = self.local_data.active_inbox_topics.write().await;
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
-                topic: Topic::inbox().aliased("inbox"),
+                topic: Topic::inbox().aliased(&format!("inbox({})", self.public_key().alias())),
                 expires_at: Utc::now() + self.config.contact_code_expiry,
             };
             self.initialize_topic(inbox_topic.topic, false).await?;
@@ -690,8 +697,7 @@ impl Node {
         .await?;
 
         if let Some(inbox_topic) = contact.inbox_topic.clone() {
-            self.initialize_topic(inbox_topic.topic.aliased("inbox"), true)
-                .await?;
+            self.initialize_topic(inbox_topic.topic, true).await?;
             let qr = self.new_qr_code(ShareIntent::AddContact, false).await?;
             self.author_operation(
                 inbox_topic.topic,

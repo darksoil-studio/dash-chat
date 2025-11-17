@@ -59,7 +59,7 @@ impl Node {
         }
 
         let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.into()).await?;
-        tracing::info!(?topic, "subscribed to topic");
+        tracing::info!(?topic, "TOP: subscribed to topic");
 
         let stream = ReceiverStream::new(network_rx);
         let stream = stream.filter_map(|event| async {

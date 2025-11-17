@@ -54,6 +54,10 @@ pub trait AliasedId: ShortId {
             .unwrap()
             .get(self.as_bytes())
             .cloned()
-            .unwrap_or_else(|| format!("⟪{}⟫", self.short()))
+            .unwrap_or_else(|| self.default_alias())
+    }
+
+    fn default_alias(&self) -> String {
+        format!("⟪{}⟫", self.short())
     }
 }
