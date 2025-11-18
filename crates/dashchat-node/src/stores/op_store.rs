@@ -194,4 +194,22 @@ impl LogStore<LogId, Extensions> for OpStore {
             .delete_payloads(public_key, log_id, from, to)
             .await
     }
+
+    async fn get_log_size(
+        &self,
+        public_key: &PublicKey,
+        log_id: &LogId,
+        from: Option<u64>,
+    ) -> Result<Option<u64>, Self::Error> {
+        self.store.get_log_size(public_key, log_id, from).await
+    }
+
+    async fn get_log_hashes(
+        &self,
+        public_key: &PublicKey,
+        log_id: &LogId,
+        from: Option<u64>,
+    ) -> Result<Option<Vec<Hash>>, Self::Error> {
+        self.store.get_log_hashes(public_key, log_id, from).await
+    }
 }

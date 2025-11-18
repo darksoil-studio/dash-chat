@@ -12,11 +12,27 @@ use dashchat_node::{testing::*, *};
 use p2panda_store::LogId;
 
 const TRACING_FILTER: &str =
-    "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
+    "dashchat=debug,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info";
+
+// #[tokio::test(flavor = "multi_thread")]
+
+// #[test]
+// fn test_group_2() {
+//     tokio::runtime::Builder::new_current_thread()
+//         .enable_all()
+//         .thread_stack_size(32_000_000)
+//         .worker_threads(4)
+//         .build()
+//         .unwrap()
+//         .block_on(async {
+//             run_test_group_2().await;
+//         })
+// }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER, false);
+    // dashchat_node::testing::setup_tracing("dashchat_node=info,warn", true);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     let mut alice = TestNode::behavior(NodeConfig::default(), Some("alice")).await;
     let mut bobbi = TestNode::behavior(NodeConfig::default(), Some("bobbi")).await;

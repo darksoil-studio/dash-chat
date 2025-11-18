@@ -1,5 +1,7 @@
-use dashchat_node::{ChatId, DirectChatId, testing::manager::test_manager};
+use dashchat_node::{ChatId, DeviceGroupId, DirectChatId, testing::manager::test_manager};
 use p2panda_auth::Access;
+use p2panda_spaces::traits::AuthoredMessage;
+use p2panda_spaces::traits::MessageStore;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_p2panda_repro() {
@@ -17,23 +19,40 @@ async fn test_p2panda_repro() {
         .await
         .unwrap();
 
-    // Create personal groups
+    let alice_device_id = DeviceGroupId::random();
+    let bobbi_device_id = DeviceGroupId::random();
 
-    let (ga, mga, ega) = alice
-        .create_group(&[(alice.id(), Access::manage())])
+    // Create personal device spaces
+
+    let (ga, msgs_alice, _) = alice
+        .create_space(alice_device_id, &[(alice.id(), Access::manage())])
         .await
         .unwrap();
 
-    let (gb, mgb, egb) = bobbi
-        .create_group(&[(bobbi.id(), Access::manage())])
+    let (gb, msgs_bobbi, _) = bobbi
+        .create_space(bobbi_device_id, &[(bobbi.id(), Access::manage())])
         .await
         .unwrap();
 
-    for m in mga {
+    // "Sync" and process messages
+
+    // for m in msgs_alice.iter() {
+    //     alice.store.set_message(&m.id(), &m).await.unwrap();
+    //     alice.process(&m).await.unwrap();
+    // }
+
+    // for m in msgs_bobbi.iter() {
+    //     bobbi.store.set_message(&m.id(), &m).await.unwrap();
+    //     bobbi.process(&m).await.unwrap();
+    // }
+
+    for m in msgs_alice.iter() {
+        bobbi.store.set_message(&m.id(), &m).await.unwrap();
         bobbi.process(&m).await.unwrap();
     }
 
-    for m in mgb {
+    for m in msgs_bobbi.iter() {
+        alice.store.set_message(&m.id(), &m).await.unwrap();
         alice.process(&m).await.unwrap();
     }
 
@@ -41,8 +60,11 @@ async fn test_p2panda_repro() {
 
     let (sa, msa, esa) = alice
         .create_space(
-            DirectChatId::direct_chat([ga.id(), gb.id()]),
-            &[(ga.id(), Access::manage()), (gb.id(), Access::manage())],
+            DirectChatId::direct_chat([ga.group_id().await.unwrap(), gb.group_id().await.unwrap()]),
+            &[
+                (ga.group_id().await.unwrap(), Access::write()),
+                (gb.group_id().await.unwrap(), Access::write()),
+            ],
         )
         .await
         .unwrap();

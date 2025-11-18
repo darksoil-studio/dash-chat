@@ -165,6 +165,12 @@ impl<K: TopicKind> Topic<K> {
     }
 }
 
+impl Topic<kind::Chat> {
+    pub fn random() -> Self {
+        Self::new(rand::random())
+    }
+}
+
 impl Topic<kind::GroupChat> {
     /// The topic ID is the unique chat ID.
     pub fn group_chat(chat_id: [u8; 32]) -> Self {

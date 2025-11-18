@@ -40,6 +40,7 @@ pub type DashSpace = p2panda_spaces::space::Space<
 
 #[derive(Clone, derive_more::Deref)]
 pub struct DashManager {
+    #[deref]
     manager: Manager<
         ChatId,
         SpacesStore,
@@ -49,6 +50,7 @@ pub struct DashManager {
         TestConditions,
         StrongRemoveResolver<TestConditions>,
     >,
+    pub store: SpacesStore,
 }
 
 impl DashManager {
@@ -71,9 +73,13 @@ impl DashManager {
         let manager =
             Manager::new(spaces_store.clone(), key_store, forge, credentials, rng).await?;
 
-        Ok(Self { manager })
+        Ok(Self {
+            manager,
+            store: spaces_store,
+        })
     }
 
+    #[tracing::instrument(skip_all)]
     pub async fn create_space(
         &self,
         topic: impl Into<ChatId> + AliasedId,
@@ -96,9 +102,9 @@ impl DashManager {
             }
         }
 
-        println!("STACK OVERFLOW HERE");
-        let (space, msgs, _event) = self.manager.create_space(topic, initial_members).await?;
-        println!("CAN'T SEE THIS CUZ STACK OVERFLOWED");
+        // XXX: this future often overflows the stack, so we box it to put it on the heap
+        let (space, msgs, _event) =
+            Box::pin(self.manager.create_space(topic, initial_members)).await?;
         Ok((space, msgs, _event))
     }
 }

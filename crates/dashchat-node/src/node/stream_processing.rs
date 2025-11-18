@@ -253,7 +253,7 @@ impl Node {
         let repair_required = self.manager.spaces_repair_required().await?;
         if !repair_required.is_empty() {
             tracing::warn!(missing = ?repair_required, "spaces repair required");
-            self.manager.repair_spaces(&repair_required).await?;
+            // self.manager.repair_spaces(&repair_required).await?;
         }
 
         anyhow::Ok(())
