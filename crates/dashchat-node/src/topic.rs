@@ -204,16 +204,14 @@ impl Topic<kind::Inbox> {
 }
 
 impl Topic<kind::Announcements> {
-    /// The topic ID is the hashed public key.
-    /// This is to prevent collisions with the inbox topic, which also uses the public key.
+    /// The topic ID is the actor ID.
     pub fn announcements(actor: ActorId) -> Self {
-        let hash = blake3::hash(actor.as_bytes());
-        Self::new(hash.into())
+        Self::new(*actor.as_bytes())
     }
 }
 
 impl Topic<kind::DeviceGroup> {
-    /// The topic ID is unique.
+    /// The topic ID is random.
     pub fn random() -> Self {
         Self::new(rand::random())
     }

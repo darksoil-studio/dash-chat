@@ -86,7 +86,9 @@ pub struct NodeState {
 pub struct NodeLocalData {
     pub private_key: PrivateKey,
     /// Used to create the device group space
-    // TODO: maybe not needed to be stored, the important thing is the topic?
+    // TODO: use as space ID once device groups are even possible.
+    // for now this is only used as the topic for the device group's messages.
+    // see https://github.com/p2panda/p2panda/pull/871
     pub device_space_id: Topic<kind::DeviceGroup>,
     pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
 }
@@ -139,8 +141,8 @@ impl Node {
         let rng = Rng::default();
         let NodeLocalData {
             private_key,
-            device_space_id,
             active_inbox_topics,
+            device_space_id,
         } = local_data.clone();
         let public_key = PK::from(private_key.public_key());
 
@@ -185,13 +187,13 @@ impl Node {
         // manager.register_member(&manager.me().await?).await?;
 
         let (chat_actor_id, device_group_msgs) = {
-            let (space, msgs, _event) = manager
-                .create_space(device_space_id, &[(manager.id(), Access::manage())])
+            let (group, msgs, _event) = manager
+                .create_group(&[(manager.id(), Access::manage())])
                 .await?;
 
             alias_space_messages("create_device_group", device_space_id, msgs.iter());
 
-            (space.group_id().await?, msgs)
+            (group.id(), msgs)
         };
 
         let (stream_tx, mut stream_rx) = mpsc::channel(100);
@@ -644,27 +646,32 @@ impl Node {
         //      and this may never happen if the contact is not online.
         let mut attempts = 0;
         loop {
-            if let Some(space) = self.manager.space(contact.device_space_id.into()).await? {
-                if space
+            if let Some(group) = self.manager.group(contact.chat_actor_id).await? {
+                if group
                     .members()
                     .await?
                     .iter()
                     .map(|(id, _)| *id)
                     .any(|id| id == member_id)
-                    && self
-                        .manager
-                        .space(self.device_group_topic().into())
-                        .await?
-                        .expect("own device group space should exist")
-                        .members()
-                        .await?
-                        .iter()
-                        .map(|(id, _)| *id)
-                        .any(|id| id == self.public_key().into())
                 {
                     break;
                 }
             }
+
+            // // TODO: use this when spaces are possible again
+            // // see https://github.com/p2panda/p2panda/pull/871
+            // if let Some(space) = self.manager.space(contact.device_space_id.into()).await? {
+            //     if space
+            //         .members()
+            //         .await?
+            //         .iter()
+            //         .map(|(id, _)| *id)
+            //         .any(|id| id == member_id)
+            //     {
+            //         break;
+            //     }
+            // }
+
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
             attempts += 1;
             if attempts > 20 {
