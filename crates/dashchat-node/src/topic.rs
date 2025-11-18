@@ -116,13 +116,29 @@ impl From<Topic<kind::DeviceGroup>> for Topic<kind::Chat> {
     derive_more::Debug,
 )]
 #[display("{}", hex::encode(self.0))]
-#[debug("{}", hex::encode(self.0))]
+#[debug("{}", self.alias())]
 pub struct LogId([u8; 32]);
 
 impl p2panda_spaces::traits::SpaceId for LogId {}
 impl TopicQuery for LogId {}
 
 pub type DashChatTopicId = LogId;
+
+impl ShortId for LogId {
+    const PREFIX: &'static str = "L";
+
+    fn to_short_string(&self) -> String {
+        hex::encode(self.0)
+    }
+}
+
+impl AliasedId for LogId {
+    const SHOW_SHORT_ID: bool = true;
+
+    fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
 
 #[derive(
     Copy,

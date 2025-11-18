@@ -22,7 +22,6 @@ impl Node {
             .await
     }
 
-    #[tracing::instrument(skip_all)]
     pub(super) async fn author_operation_with_deps<K: TopicKind>(
         &self,
         topic: Topic<K>,
@@ -166,7 +165,12 @@ impl Node {
               // }
         }
 
-        match self.initialized_topics.read().await.get(&header.extensions.log_id) {
+        match self
+            .initialized_topics
+            .read()
+            .await
+            .get(&header.extensions.log_id)
+        {
             Some(gossip) => {
                 gossip
                     .send(ToNetwork::Message {

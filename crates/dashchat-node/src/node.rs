@@ -325,7 +325,8 @@ impl Node {
         match self.op_store.get_log(&author, &topic_id, None).await? {
             Some(log) => Ok(log),
             None => {
-                tracing::warn!("No log found for topic {topic_id:?} and author {author}");
+                let author = PK::from(author);
+                tracing::warn!("No log found for topic {topic_id:?} and author {author:?}");
                 Ok(vec![])
             }
         }
@@ -537,35 +538,48 @@ impl Node {
         Ok(())
     }
 
+    /// Get all messages for a chat from the logs.
+    // TODO: Store state instead of regenerating from the logs.
+    //       This will be necessary when we switch to double ratchet message encryption.
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
     #[cfg(feature = "testing")]
     pub async fn get_messages(&self, topic: impl Into<ChatId>) -> anyhow::Result<Vec<ChatMessage>> {
         let chat_id = topic.into();
-        Ok(self
-            .get_interleaved_logs(chat_id.into())
-            .await?
-            .into_iter()
-            .flat_map(|(header, payload)| match payload {
-                Some(Payload::Chat(ChatPayload::Space(msgs))) => {
-                    use crate::spaces::SpacesArgs;
+        let mut events = vec![];
+        let mut messages = vec![];
 
-                    msgs.into_iter()
-                        .filter_map(|m| match m.spaces_args {
-                            SpacesArgs::Application { ciphertext, .. } => Some(ChatMessage {
-                                content: ChatMessageContent::from(format!(
-                                    "TODO: decrypt ciphertext: len={}",
-                                    ciphertext.len()
-                                )),
-                                author: header.public_key,
-                                timestamp: header.timestamp,
-                            }),
-                            _ => None,
-                        })
-                        .collect::<Vec<_>>()
+        for (header, payload) in self.get_interleaved_logs(chat_id.into()).await? {
+            match payload {
+                Some(Payload::Chat(ChatPayload::Space(msgs))) => {
+                    for msg in msgs {
+                        use crate::spaces::SpacesArgs;
+
+                        match msg.spaces_args {
+                            SpacesArgs::Application { .. } => {
+                                let es = self.manager.process(&msg).await?;
+                                events.push((es, msg.author, msg.timestamp));
+                            }
+                            _ => {}
+                        }
+                    }
                 }
-                _ => vec![],
-            })
-            .collect())
+                _ => {}
+            }
+        }
+
+        for (events, author, timestamp) in events {
+            for event in events {
+                use crate::Cbor;
+                match event {
+                    Event::Application { space_id, data } => {
+                        messages.push(ChatMessage::from_bytes(&data)?)
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        Ok(messages)
     }
 
     #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
@@ -581,7 +595,8 @@ impl Node {
             .await?
             .ok_or_else(|| anyhow!("Chat has no Space: {topic}"))?;
 
-        // NOTE: duplication of timestamp and author
+        // NOTE: duplication of timestamp and author.
+        //       shouldn't we just encrypt the message itself since the rest is on the header?
         let message = ChatMessage {
             content: message,
             author: self.public_key().into(),
