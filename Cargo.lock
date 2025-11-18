@@ -4889,6 +4889,7 @@ dependencies = [
 [[package]]
 name = "p2panda-auth"
 version = "0.4.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "petgraph",
  "rand 0.9.2",
@@ -4900,6 +4901,7 @@ dependencies = [
 [[package]]
 name = "p2panda-core"
 version = "0.4.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "blake3",
  "ciborium",
@@ -4914,6 +4916,7 @@ dependencies = [
 [[package]]
 name = "p2panda-discovery"
 version = "0.4.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "anyhow",
  "base32",
@@ -4933,6 +4936,7 @@ dependencies = [
 [[package]]
 name = "p2panda-encryption"
 version = "0.4.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "chacha20poly1305",
  "curve25519-dalek",
@@ -4955,6 +4959,7 @@ dependencies = [
 [[package]]
 name = "p2panda-net"
 version = "0.4.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4981,6 +4986,7 @@ dependencies = [
 [[package]]
 name = "p2panda-spaces"
 version = "0.1.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "p2panda-auth",
  "p2panda-core",
@@ -4995,6 +5001,7 @@ dependencies = [
 [[package]]
 name = "p2panda-store"
 version = "0.4.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "p2panda-core",
  "thiserror 2.0.16",
@@ -5004,6 +5011,7 @@ dependencies = [
 [[package]]
 name = "p2panda-stream"
 version = "0.4.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "ciborium",
  "futures-channel",
@@ -5018,6 +5026,7 @@ dependencies = [
 [[package]]
 name = "p2panda-sync"
 version = "0.4.0"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#369197e51ec6d0637d0e65eb33c74711974483dd"
 dependencies = [
  "async-trait",
  "futures",
