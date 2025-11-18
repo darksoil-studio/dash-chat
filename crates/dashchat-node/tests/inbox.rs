@@ -11,8 +11,8 @@ const TRACING_FILTER: &str =
 async fn test_inbox_2() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
-    let mut alice = TestNode::behavior(NodeConfig::default(), Some("alice")).await;
-    let mut bobbi = TestNode::behavior(NodeConfig::default(), Some("bobbi")).await;
+    let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
+    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
 
     println!("nodes:");
     println!("alice: {:?}", alice.public_key().short());
@@ -22,13 +22,11 @@ async fn test_inbox_2() {
 
     println!("peers see each other");
 
-    let qr = alice
-        .new_qr_code(ShareIntent::AddContact, true)
+    alice
+        .behavior()
+        .initiate_and_establish_contact(&bobbi, ShareIntent::AddContact)
         .await
         .unwrap();
-    bobbi.add_contact(qr).await.unwrap();
-
-    alice.accept_next_contact().await.unwrap();
 
     assert_eq!(
         alice.get_contacts().await.unwrap(),
@@ -66,7 +64,11 @@ async fn test_inbox_2() {
         .await
         .unwrap();
 
-    bobbi.accept_next_group_invitation().await.unwrap();
+    bobbi
+        .behavior()
+        .accept_next_group_invitation()
+        .await
+        .unwrap();
 
     alice.send_message(chat_id, "Hello".into()).await.unwrap();
 }

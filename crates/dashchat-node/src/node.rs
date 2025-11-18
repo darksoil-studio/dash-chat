@@ -698,7 +698,7 @@ impl Node {
         // XXX: sleep a little more
         tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
 
-        self.initialize_topic(Topic::announcements(actor).aliased("announce"), false)
+        self.initialize_topic(Topic::announcements(actor), false)
             .await?;
 
         let direct_topic = self.direct_chat_topic(actor);

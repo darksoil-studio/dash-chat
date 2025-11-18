@@ -1,11 +1,12 @@
 use std::{
     collections::{BTreeSet, HashMap, HashSet},
+    sync::Arc,
     time::{Duration, Instant},
 };
 
 use p2panda_auth::Access;
 use p2panda_spaces::ActorId;
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::{Mutex, mpsc::Receiver};
 
 use crate::{
     ChatId, DeviceGroupPayload, NodeConfig, Notification, PK, Payload,
@@ -19,26 +20,26 @@ use crate::{
 pub struct TestNode {
     #[deref]
     node: Node,
+    pub watcher: Arc<Mutex<Watcher<Notification>>>,
 }
 
 impl TestNode {
-    pub async fn new(config: NodeConfig, alias: Option<&str>) -> (Self, Watcher<Notification>) {
+    pub async fn new(config: NodeConfig, alias: Option<&str>) -> Self {
         let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = alias {
             local_data.private_key.public_key().aliased(alias);
         }
-        let node = Self {
+        Self {
             node: Node::new(local_data, config, Some(notification_tx))
                 .await
                 .unwrap(),
-        };
-        (node, Watcher(notification_rx))
+            watcher: Arc::new(Mutex::new(Watcher(notification_rx))),
+        }
     }
 
-    pub async fn behavior(config: NodeConfig, alias: Option<&str>) -> Behavior {
-        let (node, notification_rx) = Self::new(config, alias).await;
-        Behavior::new(node, notification_rx)
+    pub fn behavior(&self) -> Behavior {
+        Behavior::new(self.clone())
     }
 
     pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
@@ -97,7 +98,7 @@ impl Default for ClusterConfig {
 #[derive(derive_more::Deref)]
 pub struct TestCluster<const N: usize> {
     #[deref]
-    nodes: [(TestNode, Watcher<Notification>); N],
+    nodes: [TestNode; N],
     pub config: ClusterConfig,
 }
 
@@ -113,17 +114,14 @@ impl<const N: usize> TestCluster<N> {
     }
 
     pub async fn introduce_all(&self) {
-        let nodes = self
-            .iter()
-            .map(|(node, _)| &node.network)
-            .collect::<Vec<_>>();
+        let nodes = self.iter().map(|node| &node.network).collect::<Vec<_>>();
         introduce(nodes).await;
     }
 
     pub async fn nodes(&self) -> [TestNode; N] {
         self.nodes
             .iter()
-            .map(|(node, _)| node.clone())
+            .map(|node| node.clone())
             .collect::<Vec<_>>()
             .try_into()
             .unwrap()

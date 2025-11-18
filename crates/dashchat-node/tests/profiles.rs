@@ -12,8 +12,8 @@ async fn test_profiles() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     println!("nodes:");
-    let (alice, _) = TestNode::new(NodeConfig::default(), Some("alice")).await;
-    let (bobbi, _) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
+    let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
+    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
     println!("alice: {:?}", alice.public_key().short());
     println!("bobbi: {:?}", bobbi.public_key().short());
 
@@ -28,10 +28,8 @@ async fn test_profiles() {
         )
         .await
         .unwrap();
-    // bobbi
-    //     .add_contact(alice.new_qr_code(ShareIntent::AddContact).await.unwrap())
-    //     .await
-    //     .unwrap();
+
+    bobbi.behavior().accept_next_contact().await.unwrap();
 
     let profile = Profile {
         name: "Alice".to_string(),

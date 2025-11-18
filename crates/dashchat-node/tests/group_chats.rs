@@ -34,8 +34,8 @@ async fn test_group_2() {
     // dashchat_node::testing::setup_tracing("dashchat_node=info,warn", true);
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
-    let mut alice = TestNode::behavior(NodeConfig::default(), Some("alice")).await;
-    let mut bobbi = TestNode::behavior(NodeConfig::default(), Some("bobbi")).await;
+    let mut alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
+    let mut bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
 
     println!("nodes:");
     println!("alice: {:?}", alice.public_key().short());
@@ -46,6 +46,7 @@ async fn test_group_2() {
     println!("peers see each other");
 
     alice
+        .behavior()
         .initiate_and_establish_contact(&mut bobbi, ShareIntent::AddContact)
         .await
         .unwrap();
@@ -71,7 +72,11 @@ async fn test_group_2() {
         .await
         .unwrap();
 
-    bobbi.accept_next_group_invitation().await.unwrap();
+    bobbi
+        .behavior()
+        .accept_next_group_invitation()
+        .await
+        .unwrap();
 
     // Bobbi has joined the group via his inbox topic
     wait_for(
