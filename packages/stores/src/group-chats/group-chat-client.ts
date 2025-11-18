@@ -4,12 +4,6 @@ import { LogsStore } from '../p2panda/logs-store';
 import { PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 
-export interface GroupInfo {
-	name: string;
-	description: string;
-	avatar_src: string | undefined;
-}
-
 export interface GroupMember {
 	publicKeys: Array<PublicKey>;
 	admin: boolean;

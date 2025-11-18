@@ -20,19 +20,19 @@ futures = "0.3"
 # p2panda-store = "0.3.1"
 # p2panda-stream = "0.3.1"
 # p2panda-sync = { version = "0.3.1", features = ["log-sync"] }
-p2panda-auth = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
-p2panda-core = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
-p2panda-encryption = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
-p2panda-discovery = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat", features = [
+p2panda-auth = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events" }
+p2panda-core = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events" }
+p2panda-encryption = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events" }
+p2panda-discovery = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events", features = [
   "mdns",
 ] }
-p2panda-net = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
-p2panda-store = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
-p2panda-stream = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
-p2panda-sync = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat", features = [
+p2panda-net = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events" }
+p2panda-store = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events" }
+p2panda-stream = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events" }
+p2panda-sync = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events", features = [
   "log-sync",
 ] }
-p2panda-spaces = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat", features = [
+p2panda-spaces = { git = "https://github.com/darksoil-studio/p2panda.git", branch = "dashchat-serialize-events", features = [
   "test_utils",
 ] }
 tokio = { version = "1.43.0", features = ["fs"] }

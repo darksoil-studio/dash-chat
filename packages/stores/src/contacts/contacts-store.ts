@@ -5,10 +5,7 @@ import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { PublicKey, TopicId } from '../p2panda/types';
 import { AnnouncementPayload, Payload } from '../types';
 import { IContactsClient, Profile } from './contacts-client';
-
-export function personalTopicFor(publicKey: PublicKey): TopicId {
-	return `${publicKey}`;
-}
+import { personalTopicFor } from '../topics';
 
 export class ContactsStore {
 	constructor(
@@ -29,6 +26,7 @@ export class ContactsStore {
 
 	profiles = reactive(async (publicKey: PublicKey) => {
 		const topicId = personalTopicFor(publicKey);
+
 		const operations = await this.logsStore.logsForAllAuthors(topicId);
 
 		const log: SimplifiedOperation<Payload>[] = operations[publicKey] || [];
@@ -57,19 +55,19 @@ export class ContactsStore {
 		return profile;
 	});
 
-	contacts = reactive(async () => this.client.getContacts());
+	// contacts = reactive(async () => this.client.getContacts());
 
-	profilesForAllContacts = reactive(async () => {
-		const contacts = await this.contacts();
+	// profilesForAllContacts = reactive(async () => {
+	// 	const contacts = await this.contacts();
 
-		const profiles = await ReactivePromise.all(
-			contacts.map(contact => this.profiles(contact)),
-		);
+	// 	const profiles = await ReactivePromise.all(
+	// 		contacts.map(contact => this.profiles(contact)),
+	// 	);
 
-		const profilesWithContacts: Array<[PublicKey, Profile]> = profiles
-			.filter(p => !!p)
-			.map((profile, i) => [contacts[i], profile]);
+	// 	const profilesWithContacts: Array<[PublicKey, Profile]> = profiles
+	// 		.filter(p => !!p)
+	// 		.map((profile, i) => [contacts[i], profile]);
 
-		return profilesWithContacts;
-	});
+	// 	return profilesWithContacts;
+	// });
 }

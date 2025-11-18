@@ -1,6 +1,8 @@
+use dashchat_node::Node;
+use p2panda_core::{cbor::encode_cbor, Body};
 use tauri::{Emitter, Manager};
 
-use crate::commands::logs::{SimplifiedHeader, SimplifiedOperation};
+use crate::commands::logs::{simplify, SimplifiedHeader, SimplifiedOperation};
 
 mod commands;
 mod utils;
@@ -74,18 +76,29 @@ pub fn run() {
                         // TODO: trigger new operation handler
                         println!("Received notification: {:?}", notification);
 
-                        let body = match serde_json::to_value(notification.payload) {
+                        let body = match encode_cbor(&notification.payload) {
                             Ok(body) => body,
                             Err(err) => {
                                 log::error!("Failed to serialize payload: {err:?}");
                                 continue;
                             }
                         };
+                        let node = handle.state::<Node>();
+                        let simplified_operation =
+                            match simplify(&node, notification.header, Some(Body::new(&body[..])))
+                                .await
+                            {
+                                Ok(o) => o,
+                                Err(err) => {
+                                    log::error!("Failed to simplify operation: {err:?}");
+                                    continue;
+                                }
+                            };
 
-                        let simplified_operation = SimplifiedOperation {
-                            header: SimplifiedHeader::from(notification.header),
-                            body: Some(body),
-                        };
+                        // let simplified_operation = SimplifiedOperation {
+                        //     header: SimplifiedHeader::from(notification.header),
+                        //     body: Some(body),
+                        // };
 
                         if let Err(err) =
                             handle.emit("p2panda://new-operation", simplified_operation)

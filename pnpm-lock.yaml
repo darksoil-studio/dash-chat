@@ -41,6 +41,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^2
         version: 2.8.0
+      '@webbuf/blake3':
+        specifier: ^3.0.28
+        version: 3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28)
       blakejs:
         specifier: ^1.2.1
         version: 1.2.1
@@ -53,6 +56,9 @@ importers:
       signalium:
         specifier: ^2.0.7
         version: 2.0.7
+      webbuf:
+        specifier: ^3.0.28
+        version: 3.0.28
     devDependencies:
       '@babel/cli':
         specifier: ^7.28.3
@@ -1160,6 +1166,38 @@ packages:
   '@typescript-eslint/visitor-keys@8.45.0':
     resolution: {integrity: sha512-qsaFBA3e09MIDAGFUrTk+dzqtfv1XPVz8t8d1f0ybTzrCY7BKiMC5cjrl1O/P7UmHsNyW90EYSkU/ZWpmXelag==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@webbuf/blake3@3.0.28':
+    resolution: {integrity: sha512-6yT6DvYSif9AnvOJlzoOz07uBpDtbZlfj00FVCbkFqRGK0yeR/MfnB3DxGgVTvwMKL+ehhcRAhqnphPFntxJ1Q==}
+    engines: {node: '>=20.8.0'}
+    peerDependencies:
+      '@webbuf/fixedbuf': ^3.0.28
+      '@webbuf/webbuf': ^3.0.28
+
+  '@webbuf/fixedbuf@3.0.28':
+    resolution: {integrity: sha512-kIR3VUjeVTVmSnGK9Z9Ej2LmLarBbn2Zcl5/SjV0pzDMzGTWSj9ALa56WYaYeqeemxfv8iaSqvX9WvwyEujUSA==}
+    engines: {node: '>=20.8.0'}
+    peerDependencies:
+      '@webbuf/webbuf': ^3.0.28
+
+  '@webbuf/numbers@3.0.28':
+    resolution: {integrity: sha512-8k56k5wv9ENL1z7c14a4mZu/rkvkVqveGV0sAC6FR+PqJCS0pq3sxxciHnaNUUBKV4wqe36PHY/+DJxoYSZr3g==}
+    engines: {node: '>=20.8.0'}
+    peerDependencies:
+      '@webbuf/fixedbuf': ^3.0.28
+      '@webbuf/webbuf': ^3.0.28
+
+  '@webbuf/rw@3.0.28':
+    resolution: {integrity: sha512-8NP+cMUi7fRcooqhS8fHw5Gu1K3uapPvUH9qra8BQOJEX2HFv8gdUpKLkApeXO7yh9eZpEwxfDvQZkeuA5tBZg==}
+    engines: {node: '>=20.8.0'}
+    peerDependencies:
+      '@webbuf/fixedbuf': ^3.0.28
+      '@webbuf/numbers': ^3.0.28
+      '@webbuf/webbuf': ^3.0.28
+
+  '@webbuf/webbuf@3.0.28':
+    resolution: {integrity: sha512-ugDgyhDMb/2U+rrHT4bL0PSMZva9eA/ATeLxHIoaVmvQ6hk7hBNAgc60nzuCmrwjYL+9L0cQe6xrGjostN2OPQ==}
+    engines: {node: '>=20.8.0'}
 
   '@webcomponents/template-shadowroot@0.1.0':
     resolution: {integrity: sha512-ry84Vft6xtRBbd4M/ptRodbOLodV5AD15TYhyRghCRgIcJJKmYmJ2v2BaaWxygENwh6Uq3zTfGPmlckKT/GXsQ==}
@@ -2342,6 +2380,10 @@ packages:
       vite:
         optional: true
 
+  webbuf@3.0.28:
+    resolution: {integrity: sha512-1szv8g4lR6wjSiUIO/13mLzwloidbNHlC4dh7inTVuA2FWvbNvIignrO1+XM77BqiDOVbnFJF4YfvSUPB1rsew==}
+    engines: {node: '>=20.8.0'}
+
   whatwg-encoding@2.0.0:
     resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
     engines: {node: '>=12'}
@@ -3386,6 +3428,28 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.45.0
       eslint-visitor-keys: 4.2.1
+
+  '@webbuf/blake3@3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28)':
+    dependencies:
+      '@webbuf/fixedbuf': 3.0.28(@webbuf/webbuf@3.0.28)
+      '@webbuf/webbuf': 3.0.28
+
+  '@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28)':
+    dependencies:
+      '@webbuf/webbuf': 3.0.28
+
+  '@webbuf/numbers@3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28)':
+    dependencies:
+      '@webbuf/fixedbuf': 3.0.28(@webbuf/webbuf@3.0.28)
+      '@webbuf/webbuf': 3.0.28
+
+  '@webbuf/rw@3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/numbers@3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28)':
+    dependencies:
+      '@webbuf/fixedbuf': 3.0.28(@webbuf/webbuf@3.0.28)
+      '@webbuf/numbers': 3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28)
+      '@webbuf/webbuf': 3.0.28
+
+  '@webbuf/webbuf@3.0.28': {}
 
   '@webcomponents/template-shadowroot@0.1.0': {}
 
@@ -4501,6 +4565,13 @@ snapshots:
   vitefu@1.1.1(vite@6.3.6(@types/node@24.10.0)):
     optionalDependencies:
       vite: 6.3.6(@types/node@24.10.0)
+
+  webbuf@3.0.28:
+    dependencies:
+      '@webbuf/fixedbuf': 3.0.28(@webbuf/webbuf@3.0.28)
+      '@webbuf/numbers': 3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28)
+      '@webbuf/rw': 3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/numbers@3.0.28(@webbuf/fixedbuf@3.0.28(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28))(@webbuf/webbuf@3.0.28)
+      '@webbuf/webbuf': 3.0.28
 
   whatwg-encoding@2.0.0:
     dependencies:

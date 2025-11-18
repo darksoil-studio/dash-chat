@@ -1,14 +1,11 @@
 use std::marker::PhantomData;
 
-use crate::{
-    chat::ChatId,
-    testing::{AliasedId, ShortId},
-};
+use crate::testing::{AliasedId, ShortId};
 
 use p2panda_net::TopicId;
 use p2panda_spaces::ActorId;
 use p2panda_sync::TopicQuery;
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{Deserialize, Serialize,  de::DeserializeOwned};
 
 pub trait TopicKind:
     Default
@@ -115,13 +112,9 @@ pub struct LogId([u8; 32]);
 impl p2panda_spaces::traits::SpaceId for LogId {}
 impl TopicQuery for LogId {}
 
-pub type DashChatTopicId = LogId;
-
 #[derive(
     Copy,
     Clone,
-    Serialize,
-    Deserialize,
     Hash,
     Eq,
     PartialEq,
@@ -137,7 +130,6 @@ pub struct Topic<K: TopicKind = kind::Untyped> {
     #[deref]
     id: [u8; 32],
 
-    #[serde(skip)]
     kind: PhantomData<K>,
 }
 
@@ -196,7 +188,9 @@ impl Topic<kind::Announcements> {
     /// The topic ID is the hashed public key.
     /// This is to prevent collisions with the inbox topic, which also uses the public key.
     pub fn announcements(actor: ActorId) -> Self {
+
         let hash = blake3::hash(actor.as_bytes());
+        println!("aaa {actor} {actor:?} {hash} {hash:?}");
         Self::new(hash.into())
     }
 }
@@ -276,52 +270,51 @@ impl std::str::FromStr for Topic {
     }
 }
 
-// impl Serialize for DashChatTopicId {
-//     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-//         serializer.collect_str(&base64::display::Base64Display::new(
-//             &self.0,
-//             &base64::prelude::BASE64_STANDARD,
-//         ))
-//     }
-// }
+impl<K: TopicKind> Serialize for Topic<K> {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        println!("serialize,{:?} {}",self.id,hex::encode(&self.id));
+        serializer.collect_str(&hex::encode(&self.id))
+    }
+}
 
-// use std::convert::TryInto;
+use std::convert::TryInto;
 
-// fn to_fixed_size_array<T>(v: Vec<T>) -> Result<[T; 32], String> {
-//     let boxed_slice = v.into_boxed_slice();
-//     let boxed_array: Box<[T; 32]> = match boxed_slice.try_into() {
-//         Ok(ba) => ba,
-//         Err(o) => Err(format!(
-//             "Expected a Vec of length {} but it was {}",
-//             4,
-//             o.len()
-//         ))?,
-//     };
-//     Ok(*boxed_array)
-// }
+fn to_fixed_size_array<T>(v: Vec<T>) -> Result<[T; 32], String> {
+    let boxed_slice = v.into_boxed_slice();
+    let boxed_array: Box<[T; 32]> = match boxed_slice.try_into() {
+        Ok(ba) => ba,
+        Err(o) => Err(format!(
+            "Expected a Vec of length {} but it was {}",
+            4,
+            o.len()
+        ))?,
+    };
+    Ok(*boxed_array)
+}
 
-// impl<'de> Deserialize<'de> for DashChatTopicId {
-//     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-//         struct Vis;
-//         impl serde::de::Visitor<'_> for Vis {
-//             type Value = DashChatTopicId;
+impl<'de, K: TopicKind> Deserialize<'de> for Topic<K> {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Vis<K> {
+          phantom_data: PhantomData<K>  
+        }
+        impl<K: TopicKind> serde::de::Visitor<'_> for Vis<K> {
+            type Value = Topic<K>;
 
-//             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-//                 formatter.write_str("a base64 string")
-//             }
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a hex string")
+            }
 
-//             fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<Self::Value, E> {
-//                 let bytes: Vec<u8> = base64::decode(v).map_err(serde::de::Error::custom)?;
-//                 let byte_array: [u8; 32] =
-//                     to_fixed_size_array(bytes).map_err(serde::de::Error::custom)?;
+            fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<Self::Value, E> {
+                let bytes: Vec<u8> = hex::decode(v).map_err(serde::de::Error::custom)?;
+                let byte_array: [u8; 32] =
+                    to_fixed_size_array(bytes).map_err(serde::de::Error::custom)?;
 
-//                 let topic_id = DashChatTopicId(byte_array);
-//                 Ok(topic_id)
-
-//                 // .map(|bytes| )
-//                 // .map_err(Error::custom)
-//             }
-//         }
-//         deserializer.deserialize_str(Vis)
-//     }
-// }
+                let topic_id:Topic<K> = Topic::new(byte_array);
+                Ok(topic_id)
+            }
+        }
+        deserializer.deserialize_str(Vis {
+            phantom_data: PhantomData::<K>
+        })
+    }
+}
