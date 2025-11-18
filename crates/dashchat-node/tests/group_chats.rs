@@ -122,11 +122,7 @@ async fn test_group_2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_3() {
-    dashchat_node::testing::setup_tracing(
-        "warn,dashchat_node=warn,p2panda_stream=info,p2panda_net=error",
-        true,
-    );
-    // dashchat::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     let node_config = NodeConfig {
         resync: ResyncConfiguration::new().interval(10).poll_interval(1),
@@ -148,39 +144,14 @@ async fn test_group_3() {
 
     // alice -- bobbi -- carol (bobbi is the pivot)
     alice
-        .add_contact(
-            bobbi
-                .new_qr_code(ShareIntent::AddContact, false)
-                .await
-                .unwrap(),
-        )
+        .behavior()
+        .initiate_and_establish_contact(&bobbi, ShareIntent::AddContact)
         .await
         .unwrap();
+
     bobbi
-        .add_contact(
-            alice
-                .new_qr_code(ShareIntent::AddContact, false)
-                .await
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    bobbi
-        .add_contact(
-            carol
-                .new_qr_code(ShareIntent::AddContact, false)
-                .await
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    carol
-        .add_contact(
-            bobbi
-                .new_qr_code(ShareIntent::AddContact, false)
-                .await
-                .unwrap(),
-        )
+        .behavior()
+        .initiate_and_establish_contact(&carol, ShareIntent::AddContact)
         .await
         .unwrap();
 
