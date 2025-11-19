@@ -222,7 +222,8 @@ impl Topic<kind::Inbox> {
 impl Topic<kind::Announcements> {
     /// The topic ID is the actor ID.
     pub fn announcements(actor: ActorId) -> Self {
-        Self::new(*actor.as_bytes())
+        let hash = blake3::hash(actor.as_bytes());
+        Self::new(hash.into())
     }
 }
 

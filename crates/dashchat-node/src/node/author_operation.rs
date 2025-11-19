@@ -18,7 +18,19 @@ impl Node {
         payload: Payload,
         alias: Option<&str>,
     ) -> Result<Header<Extensions>, anyhow::Error> {
-        self.author_operation_with_deps(topic, payload, vec![], alias)
+        self.author_operation_with_deps(topic, payload, vec![], alias, false)
+            .await
+    }
+
+    /// Author a space repair operation without processing it
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
+    pub(super) async fn author_repair_operation<K: TopicKind>(
+        &self,
+        topic: Topic<K>,
+        payload: Payload,
+        alias: Option<&str>,
+    ) -> Result<Header<Extensions>, anyhow::Error> {
+        self.author_operation_with_deps(topic, payload, vec![], alias, true)
             .await
     }
 
@@ -28,6 +40,7 @@ impl Node {
         payload: Payload,
         mut deps: Vec<p2panda_core::Hash>,
         alias: Option<&str>,
+        is_repair: bool,
     ) -> Result<Header<Extensions>, anyhow::Error> {
         let mut sd = self.space_dependencies.write().await;
 
@@ -138,7 +151,7 @@ impl Node {
                 // NOTE: if we fail to process here, incoming operations will be stuck as pending!
                 self.process_ordering(op.clone()).await?;
 
-                self.process_operation(op, self.author_store.clone(), true)
+                self.process_operation(op, self.author_store.clone(), true, is_repair)
                     .await?;
 
                 // self.notify_payload(&header, &payload).await?;

@@ -58,7 +58,7 @@ impl TestNode {
     pub async fn get_contacts(&self) -> anyhow::Result<Vec<ActorId>> {
         let group: DashGroup = self
             .manager
-            .group(self.chat_actor_id())
+            .group(self.repped_group().group)
             .await?
             .ok_or_else(|| anyhow::anyhow!("device group not found"))?;
         let members = group
@@ -155,7 +155,7 @@ pub async fn consistency(
 ) -> anyhow::Result<()> {
     let log_ids = log_ids.into_iter().collect::<HashSet<_>>();
     let nodes = nodes.into_iter().collect::<Vec<_>>();
-    wait_for(config.poll_interval, config.poll_timeout, || async {
+    wait_for_resetting(config.poll_interval, config.poll_timeout, || async {
         // TODO: Fix this when we have a proper way to access operations
         // The operations field is now private in the new p2panda-store version
         let sets = nodes
@@ -206,7 +206,7 @@ pub async fn consistency(
     })
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ConsistencyReport {
     sets: Vec<BTreeSet<String>>,
     diffs: HashMap<(usize, usize), isize>,
@@ -278,20 +278,62 @@ impl<T: std::fmt::Debug> Watcher<T> {
 pub async fn wait_for<F, E>(poll: Duration, timeout: Duration, f: impl Fn() -> F) -> Result<(), E>
 where
     F: Future<Output = Result<(), E>>,
-    E: std::fmt::Debug,
 {
     assert!(poll < timeout);
-    let start = Instant::now();
-    tracing::info!("=== awaiting consistency for up to {:?} ===", timeout);
+    let mut start = Instant::now();
+    tracing::info!("=== wait_for() up to {:?} ===", timeout);
     loop {
-        match f().await {
-            Ok(()) => break Ok(()),
-            Err(r) => {
+        let result = f().await;
+        match &result {
+            Ok(()) => break,
+            Err(_) => {
                 if start.elapsed() > timeout {
-                    return Err(r);
+                    return result;
                 }
+
                 tokio::time::sleep(poll).await;
             }
         }
     }
+    tracing::info!("=== wait_for() success after {:?} ===", start.elapsed());
+    Ok(())
+}
+
+pub async fn wait_for_resetting<F, E>(
+    poll: Duration,
+    timeout: Duration,
+    f: impl Fn() -> F,
+) -> Result<(), E>
+where
+    F: Future<Output = Result<(), E>>,
+    E: std::fmt::Debug + PartialEq,
+{
+    assert!(poll < timeout);
+    let mut start = Instant::now();
+    tracing::info!("=== wait_for_resetting() up to {:?} ===", timeout);
+    let mut previous = None;
+    loop {
+        let result = f().await;
+        match &result {
+            Ok(()) => break,
+            Err(_) => {
+                if start.elapsed() > timeout {
+                    return result;
+                }
+
+                if previous.as_ref() != Some(&result) {
+                    start = Instant::now();
+                }
+
+                previous = Some(result);
+
+                tokio::time::sleep(poll).await;
+            }
+        }
+    }
+    tracing::info!(
+        "=== wait_for_resetting() success after {:?} ===",
+        start.elapsed()
+    );
+    Ok(())
 }

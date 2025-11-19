@@ -113,8 +113,8 @@ impl DashManager {
         }
 
         // XXX: this future often overflows the stack, so we box it to put it on the heap
-        let (space, msgs, _event) =
-            Box::pin(self.manager.create_space(topic, initial_members)).await?;
+        let manager = self.manager.clone();
+        let (space, msgs, _event) = Box::pin(manager.create_space(topic, initial_members)).await?;
         Ok((space, msgs, _event))
     }
 }

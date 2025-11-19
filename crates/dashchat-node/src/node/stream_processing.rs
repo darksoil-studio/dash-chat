@@ -173,7 +173,7 @@ impl Node {
 
         for operation in reordered {
             match self
-                .process_operation(operation, self.author_store.clone(), false)
+                .process_operation(operation, self.author_store.clone(), false, false)
                 .await
             {
                 Ok(()) => (),
@@ -210,13 +210,13 @@ impl Node {
         operation: Operation<Extensions>,
         author_store: AuthorStore<LogId>,
         is_author: bool,
+        is_repair: bool,
     ) -> anyhow::Result<()> {
         let Operation { header, body, hash } = operation;
 
         let log_id = header.extensions.log_id;
 
-        // NOTE: this is very much needed!!
-        // TODO: this eventually needs to be more selective than just adding any old author
+        // XXX: this eventually needs to be more selective than just adding any old author
         author_store.add_author(log_id, header.public_key).await;
         tracing::debug!(?log_id, "adding author");
 
@@ -234,23 +234,30 @@ impl Node {
 
         tracing::trace!(?payload, "RECEIVED PAYLOAD");
 
-        if let Err(err) = self
-            .process_payload(&header, payload.as_ref(), is_author)
-            .await
-        {
-            tracing::error!(?payload, ?err, "process operation error");
-        }
+        if !is_repair {
+            if let Err(err) = self
+                .process_payload(&header, payload.as_ref(), is_author)
+                .await
+            {
+                tracing::error!(
+                    hash = header.hash().alias(),
+                    ?payload,
+                    ?err,
+                    "process operation error"
+                );
+            }
 
-        tracing::info!(hash = hash.alias(), "processed operation");
+            tracing::info!(hash = hash.alias(), "processed operation");
 
-        if let Some(payload) = payload.as_ref() {
-            self.notify_payload(&header, payload).await?;
+            if let Some(payload) = payload.as_ref() {
+                self.notify_payload(&header, payload).await?;
+            }
+
+            // XXX: don't repair this often.
+            // Box::pin(self.repair_spaces_and_publish()).await?;
         }
 
         self.op_store.mark_op_processed(log_id, &hash);
-
-        // XXX: don't repair this often.
-        Box::pin(self.repair_spaces_and_publish()).await?;
 
         anyhow::Ok(())
     }
@@ -262,7 +269,7 @@ impl Node {
             for space_id in repair_required {
                 let (msgs, _) = self.manager.repair_spaces(&vec![space_id]).await?;
                 let _header = self
-                    .author_operation(
+                    .author_repair_operation(
                         space_id,
                         Payload::Chat(ChatPayload::Space(msgs)),
                         Some(&format!("repair_space({})", space_id.alias())),
@@ -311,13 +318,21 @@ impl Node {
                     "processing space msgs"
                 );
                 for msg in msgs.iter() {
+                    // Skip already processed messages
+                    if self.spaces_store.message(&msg.id()).await?.is_some() {
+                        continue;
+                    }
+
+                    self.spaces_store.set_message(&msg.id(), &msg).await?;
+
                     // While authoring, all message types other than Application
                     // are already processed
                     if is_author && msg.arg_type() != ArgType::Application {
                         continue;
                     }
-                    tracing::info!(opid = msg.id().alias(), "SM: processing space msg");
-                    self.spaces_store.set_message(&msg.id(), &msg).await?;
+
+                    let opid = msg.id();
+                    tracing::info!(opid = opid.alias(), "SM: processing space msg");
                     match self.manager.process(msg).await {
                         Ok(events) => {
                             for (i, event) in events.into_iter().enumerate() {
@@ -359,7 +374,12 @@ impl Node {
                         }
 
                         Err(err) => {
-                            tracing::error!(?err, "space manager process error");
+                            tracing::error!(
+                                hash = header.hash().alias(),
+                                opid = opid.alias(),
+                                ?err,
+                                "space manager process error"
+                            );
                         }
                     }
                 }

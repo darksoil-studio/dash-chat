@@ -26,6 +26,7 @@ use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::partial::operations::PartialOrder;
 use p2panda_stream::{DecodeExt, IngestExt};
 use p2panda_sync::log_sync::LogSyncProtocol;
+use serde::{Deserialize, Serialize};
 use tokio::sync::{RwLock, mpsc};
 use tokio::task;
 use tokio_stream::{StreamExt, wrappers::ReceiverStream};
@@ -74,6 +75,18 @@ pub type Orderer = PartialOrder<
     OpStore,
     p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
 >;
+
+/// A group ID along with the individual "representative" for the group.
+///
+/// This is only necessary as a workaround for the fact that we can't add groups as managers.
+/// When adding a group as a manager, we need to add the group with Write access
+/// and an individual from that group as a Manager. When p2panda allows groups as managers,
+/// we don't need the "representative" anymore.
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct ReppedGroup {
+    pub group: ActorId,
+    pub individual: PK,
+}
 
 #[derive(Clone)]
 pub struct NodeState {
@@ -231,7 +244,7 @@ impl Node {
         .await?;
 
         node.initialize_topic(
-            Topic::announcements(node.chat_actor_id())
+            Topic::announcements(node.repped_group().group)
                 .aliased(&format!("announce({})", public_key.alias())),
             true,
         )
@@ -321,14 +334,22 @@ impl Node {
 
     pub async fn get_log(
         &self,
-        topic_id: LogId,
+        log_id: LogId,
         author: PublicKey,
     ) -> anyhow::Result<Vec<(Header<Extensions>, Option<Body>)>> {
-        match self.op_store.get_log(&author, &topic_id, None).await? {
+        let heights = self
+            .op_store
+            .get_log_heights(&log_id)
+            .await?
+            .into_iter()
+            .map(|(pk, height)| (PK::from(pk).alias(), height))
+            .collect::<Vec<_>>();
+        tracing::info!(?heights, "log HEIGHTS for {log_id:?}");
+        match self.op_store.get_log(&author, &log_id, None).await? {
             Some(log) => Ok(log),
             None => {
                 let author = PK::from(author);
-                tracing::warn!("No log found for topic {topic_id:?} and author {author:?}");
+                tracing::warn!("No log found for topic {log_id:?} and author {author:?}");
                 Ok(vec![])
             }
         }
@@ -372,7 +393,7 @@ impl Node {
             member_code: member.into(),
             inbox_topic,
             device_space_id: self.local_data.device_space_id.clone(),
-            chat_actor_id: self.chat_actor_id(),
+            chat_actor_id: self.repped_group().group,
             share_intent,
         })
     }
@@ -381,13 +402,20 @@ impl Node {
         self.nodestate.chat_actor_id
     }
 
+    pub fn repped_group(&self) -> ReppedGroup {
+        ReppedGroup {
+            group: self.chat_actor_id(),
+            individual: self.public_key(),
+        }
+    }
+
     /// Get the topic for a direct chat between two public keys.
     ///
     /// The topic is the hashed sorted public keys.
     /// Anyone who knows the two public keys can derive the same topic.
     // TODO: is this a problem? Should we use a random topic instead?
     pub fn direct_chat_topic(&self, other: ActorId) -> Topic<kind::DirectChat> {
-        let me = self.chat_actor_id();
+        let me = self.repped_group().group;
         let topic = Topic::direct_chat([me, other]);
         if me > other {
             topic.aliased(&format!("direct({},{})", other.alias(), me.alias()))
@@ -403,10 +431,17 @@ impl Node {
         topic: Topic<kind::GroupChat>,
     ) -> anyhow::Result<()> {
         self.initialize_topic(topic, true).await?;
+        let repped = self.repped_group();
 
         let (_space, msgs, _event) = self
             .manager
-            .create_space(topic, &[(self.chat_actor_id(), Access::manage())])
+            .create_space(
+                topic,
+                &[
+                    (repped.individual.into(), Access::manage()),
+                    (repped.group, Access::write()),
+                ],
+            )
             .await?;
 
         alias_space_messages("create_group_chat", topic, msgs.iter());
@@ -433,7 +468,7 @@ impl Node {
     pub async fn create_direct_chat_space(&self, other: ActorId) -> anyhow::Result<()> {
         let topic = self.direct_chat_topic(other);
 
-        let my_actor = self.chat_actor_id();
+        let my_actor = self.repped_group().group;
         self.initialize_topic(topic, true).await?;
 
         tracing::info!(
@@ -460,13 +495,11 @@ impl Node {
             "group members"
         );
 
-        let (_space, msgs, _event) = self
-            .manager
-            .create_space(
-                topic,
-                &[(my_actor, Access::write()), (other, Access::write())],
-            )
-            .await?;
+        let (_space, msgs, _event) = Box::pin(self.manager.create_space(
+            topic,
+            &[(my_actor, Access::write()), (other, Access::write())],
+        ))
+        .await?;
 
         alias_space_messages("create_direct_chat", topic, msgs.iter());
 
@@ -497,7 +530,7 @@ impl Node {
 
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
         self.author_operation(
-            Topic::announcements(self.chat_actor_id()),
+            Topic::announcements(self.repped_group().group),
             Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
             Some(&format!("set_profile({})", self.public_key().alias())),
         )
@@ -507,23 +540,37 @@ impl Node {
     }
 
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
-    pub async fn add_member(&self, topic: impl Into<ChatId>, actor: ActorId) -> anyhow::Result<()> {
+    pub async fn add_member(
+        &self,
+        topic: impl Into<ChatId>,
+        repped_group: ReppedGroup,
+    ) -> anyhow::Result<()> {
         let topic = topic.into();
-        let (msgs, _events) = self
+        let space = self
             .manager
             .space(topic)
             .await?
-            .ok_or_else(|| anyhow!("Chat has no Space: {topic}"))?
-            // TODO: we need an access level for only adding but not removing members
-            // TODO: even worse, we need to be able to add groups as managers at all!!!
-            .add(actor, Access::write())
+            .ok_or_else(|| anyhow!("Chat has no Space: {topic}"))?;
+
+        // TODO: we need an access level for only adding but not removing members
+        // TODO: even worse, we need to be able to add groups as managers at all!!!
+        //
+        // XXX: since we can't add groups as managers, we add the group with Write access
+        //      and the individual from that group as a Manager.
+        let (msgs1, _events) = space
+            .add(repped_group.individual.into(), Access::manage())
             .await?;
+        let (msgs2, _events) = space.add(repped_group.group, Access::write()).await?;
+
+        let mut msgs = vec![];
+        msgs.extend(msgs1);
+        msgs.extend(msgs2);
 
         alias_space_messages("add_member", topic, msgs.iter());
 
         let _header = self
             .author_operation(
-                self.direct_chat_topic(actor),
+                self.direct_chat_topic(repped_group.group),
                 Payload::Chat(ChatPayload::JoinGroup(topic)),
                 Some(&format!("add_member/invitation({})", topic.alias())),
             )
@@ -565,7 +612,12 @@ impl Node {
             })
             .collect::<Vec<_>>();
 
-        for (header, payload) in self.get_interleaved_logs(chat_id.into(), members).await? {
+        let authors = self.get_authors(chat_id.into()).await?;
+
+        for (header, payload) in self
+            .get_interleaved_logs(chat_id.into(), authors.into_iter().collect())
+            .await?
+        {
             match payload {
                 Some(Payload::Chat(ChatPayload::Space(msgs))) => {
                     for msg in msgs {

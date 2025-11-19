@@ -5,16 +5,9 @@
 
 use std::time::Duration;
 
-use p2panda_auth::Access;
-use p2panda_net::ResyncConfiguration;
-
 use dashchat_node::{testing::*, *};
-use p2panda_store::LogId;
 
 use anyhow::anyhow;
-
-const TRACING_FILTER: &str =
-    "dashchat=info,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info";
 
 // #[tokio::test(flavor = "multi_thread")]
 
@@ -34,22 +27,23 @@ const TRACING_FILTER: &str =
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
     // dashchat_node::testing::setup_tracing("dashchat_node=info,warn", true);
-    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
+    dashchat_node::testing::setup_tracing(
+        "dashchat=info,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info",
+        true,
+    );
 
-    let mut alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
-    let mut bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
+    let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
+    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
+
+    introduce_and_wait([&alice.network, &bobbi.network]).await;
 
     println!("nodes:");
     println!("alice: {:?}", alice.public_key().short());
     println!("bobbi: {:?}", bobbi.public_key().short());
 
-    introduce_and_wait([&alice.network, &bobbi.network]).await;
-
-    println!("peers see each other");
-
     alice
         .behavior()
-        .initiate_and_establish_contact(&mut bobbi, ShareIntent::AddContact)
+        .initiate_and_establish_contact(&bobbi, ShareIntent::AddContact)
         .await
         .unwrap();
 
@@ -68,9 +62,10 @@ async fn test_group_2() {
 
     let chat_id = GroupChatId::random();
     alice.create_group_chat_space(chat_id).await.unwrap();
+    alice.repair_spaces_and_publish().await.unwrap();
 
     alice
-        .add_member(chat_id, bobbi.chat_actor_id().into())
+        .add_member(chat_id, bobbi.repped_group())
         .await
         .unwrap();
 
@@ -82,7 +77,7 @@ async fn test_group_2() {
 
     // Bobbi has joined the group via his inbox topic
     wait_for(
-        Duration::from_millis(100),
+        Duration::from_millis(500),
         Duration::from_secs(5),
         || async {
             bobbi
@@ -97,6 +92,14 @@ async fn test_group_2() {
     .unwrap();
 
     alice.send_message(chat_id, "Hello".into()).await.unwrap();
+
+    // consistency(
+    //     [&alice, &bobbi],
+    //     &[chat_id.into()],
+    //     &ClusterConfig::default(),
+    // )
+    // .await
+    // .unwrap();
 
     wait_for(
         Duration::from_millis(100),
@@ -124,12 +127,13 @@ async fn test_group_2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_3() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
+    dashchat_node::testing::setup_tracing(
+        "dashchat=info,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info",
+        false,
+    );
 
-    let node_config = NodeConfig {
-        resync: ResyncConfiguration::new().interval(10).poll_interval(1),
-        contact_code_expiry: chrono::Duration::days(7),
-    };
+    let node_config = NodeConfig::default();
+
     let cfg = ClusterConfig {
         poll_interval: Duration::from_millis(500),
         poll_timeout: Duration::from_secs(10),
@@ -157,18 +161,19 @@ async fn test_group_3() {
         .await
         .unwrap();
 
-    // NOTE: not needed! "contactship" is transitive.
-    // alice.add_contact(carol.me().await.unwrap()).await.unwrap();
-    // carol.add_contact(alice.me().await.unwrap()).await.unwrap();
-
     println!("\n==> alice creates group\n");
+
     let chat_id = GroupChatId::random();
     alice.create_group_chat_space(chat_id).await.unwrap();
+
     println!("\n==> alice adds bobbi\n");
+
     alice
-        .add_member(chat_id, bobbi.chat_actor_id().into())
+        .add_member(chat_id, bobbi.repped_group())
         .await
         .unwrap();
+
+    println!("\n==> bobbi accepts invitation\n");
 
     bobbi
         .behavior()
@@ -200,6 +205,7 @@ async fn test_group_3() {
     let tt = [chat_id.into()];
 
     println!("\n==> alice sends message\n");
+
     let (_, alice_header) = alice
         .send_message(chat_id, "alice is my name".into())
         .await
@@ -240,7 +246,7 @@ async fn test_group_3() {
 
     println!("\n==> bobbi adds carol\n");
     bobbi
-        .add_member(chat_id, carol.chat_actor_id().into())
+        .add_member(chat_id, carol.repped_group())
         .await
         .unwrap();
 
