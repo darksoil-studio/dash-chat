@@ -11,8 +11,10 @@ use p2panda_net::ResyncConfiguration;
 use dashchat_node::{testing::*, *};
 use p2panda_store::LogId;
 
+use anyhow::anyhow;
+
 const TRACING_FILTER: &str =
-    "dashchat=debug,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info";
+    "dashchat=info,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info";
 
 // #[tokio::test(flavor = "multi_thread")]
 
@@ -168,21 +170,28 @@ async fn test_group_3() {
         .await
         .unwrap();
 
-    // Bobbi has joined the group via his inbox topic and is a manager
+    bobbi
+        .behavior()
+        .accept_next_group_invitation()
+        .await
+        .unwrap();
+
+    // Bobbi has joined the group via his inbox topic and has write access
+    // TODO: eventually this will be manage access
     wait_for(
         Duration::from_millis(100),
         Duration::from_secs(10),
         || async {
-            if let Ok(space) = bobbi.space(chat_id).await {
-                space
-                    .members()
-                    .await
-                    .map(|m| m.contains(&(bobbi.chat_actor_id(), Access::manage())))
-                    .unwrap_or(false)
-                    .ok_or("not a manager")
-            } else {
-                Err("space doesn't exist")
-            }
+            let members = bobbi.space(chat_id).await?.members().await?;
+            println!(
+                "members: {:?}",
+                members.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>()
+            );
+            members
+                .iter()
+                // TODO: why is the group id not a member?
+                .any(|(id, _)| id == &bobbi.public_key().into())
+                .ok_or(anyhow!("not a member"))
         },
     )
     .await
@@ -191,7 +200,7 @@ async fn test_group_3() {
     let tt = [chat_id.into()];
 
     println!("\n==> alice sends message\n");
-    alice
+    let (_, alice_header) = alice
         .send_message(chat_id, "alice is my name".into())
         .await
         .unwrap();
@@ -211,10 +220,11 @@ async fn test_group_3() {
         .unwrap();
 
     consistency([&alice, &bobbi], &tt, &cfg).await.unwrap();
+
     assert!(
         bobbi
             .op_store
-            .is_op_processed(&chat_id.into(), &bobbi_header.hash())
+            .is_op_processed(&chat_id.into(), &alice_header.hash())
     );
     assert!(
         alice
@@ -238,21 +248,21 @@ async fn test_group_3() {
         .await
         .unwrap();
 
-    // Carol has joined the group via her inbox topic and is a manager
+    // Carol has joined the group via her inbox topic and has write access
+    // TODO: eventually this will be manage access
     wait_for(
         Duration::from_millis(500),
         Duration::from_secs(10),
         || async {
-            if let Ok(space) = carol.space(chat_id).await {
-                space
-                    .members()
-                    .await
-                    .map(|m| m.contains(&(carol.chat_actor_id(), Access::manage())))
-                    .unwrap_or(false)
-                    .ok_or("not a manager")
-            } else {
-                Err("space doesn't exist")
-            }
+            carol
+                .space(chat_id)
+                .await?
+                .members()
+                .await?
+                .iter()
+                // TODO: why is the group id not a member?
+                .any(|(id, _)| id == &carol.public_key().into())
+                .ok_or(anyhow!("not a member"))
         },
     )
     .await

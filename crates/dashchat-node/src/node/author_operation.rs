@@ -11,7 +11,7 @@ use super::*;
 pub type OpStore = p2panda_store::MemoryStore<LogId, Extensions>;
 
 impl Node {
-    #[tracing::instrument(skip_all)]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
     pub(super) async fn author_operation<K: TopicKind>(
         &self,
         topic: Topic<K>,

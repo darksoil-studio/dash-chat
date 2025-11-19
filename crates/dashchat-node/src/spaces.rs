@@ -28,6 +28,16 @@ pub type TestConditions = ();
 static CREATED_SPACES: LazyLock<Mutex<HashSet<ChatId>>> =
     LazyLock::new(|| Mutex::new(HashSet::new()));
 
+pub type DashGroup = p2panda_spaces::group::Group<
+    ChatId,
+    SpacesStore,
+    TestKeyStore,
+    DashForge,
+    SpaceControlMessage,
+    TestConditions,
+    StrongRemoveResolver<TestConditions>,
+>;
+
 pub type DashSpace = p2panda_spaces::space::Space<
     ChatId,
     SpacesStore,
@@ -79,7 +89,7 @@ impl DashManager {
         })
     }
 
-    #[tracing::instrument(skip_all)]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
     pub async fn create_space(
         &self,
         topic: impl Into<ChatId> + AliasedId,

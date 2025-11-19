@@ -113,7 +113,7 @@ pub struct Node {
     author_store: AuthorStore<LogId>,
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
-    manager: DashManager,
+    pub(crate) manager: DashManager,
     /// mapping from space operations to header hashes, so that dependencies
     /// can be declared
     space_dependencies: Arc<RwLock<HashMap<OperationId, p2panda_core::Hash>>>,
@@ -132,7 +132,7 @@ pub struct Node {
 }
 
 impl Node {
-    #[tracing::instrument(skip_all, fields(me = ?PK::from(local_data.private_key.public_key())))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?PK::from(local_data.private_key.public_key()))))]
     pub async fn new(
         local_data: NodeLocalData,
         config: NodeConfig,
@@ -299,9 +299,10 @@ impl Node {
     pub async fn get_interleaved_logs(
         &self,
         topic_id: LogId,
+        authors: Vec<PublicKey>,
     ) -> anyhow::Result<Vec<(Header<Extensions>, Option<Payload>)>> {
         let mut logs = Vec::new();
-        for author in self.get_authors(topic_id).await? {
+        for author in authors {
             for (h, b) in self.get_log(topic_id, author).await? {
                 if let Some(body) = b {
                     if let Ok(payload) = Payload::try_from_body(&body) {
@@ -314,6 +315,7 @@ impl Node {
                 }
             }
         }
+        logs.sort_by_key(|(h, _)| h.timestamp);
         Ok(logs)
     }
 
@@ -395,7 +397,7 @@ impl Node {
     }
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
-    #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
     pub async fn create_group_chat_space(
         &self,
         topic: Topic<kind::GroupChat>,
@@ -427,7 +429,7 @@ impl Node {
 
     /// Create a new direct chat Space.
     /// Note that only one node should create the space!
-    #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
     pub async fn create_direct_chat_space(&self, other: ActorId) -> anyhow::Result<()> {
         let topic = self.direct_chat_topic(other);
 
@@ -487,7 +489,7 @@ impl Node {
     /// "Joining" a chat means subscribing to messages for that chat.
     /// This needs to be accompanied by being added as a member of the chat Space by an existing member
     /// -- you're not fully a member until someone adds you.
-    #[tracing::instrument(skip_all, parent = None, fields(me = ?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, parent = None, fields(me = ?self.public_key())))]
     pub async fn join_group(&self, chat_id: ChatId) -> anyhow::Result<()> {
         tracing::info!(?chat_id, "joined group");
         self.initialize_topic(chat_id, true).await
@@ -504,7 +506,7 @@ impl Node {
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
     pub async fn add_member(&self, topic: impl Into<ChatId>, actor: ActorId) -> anyhow::Result<()> {
         let topic = topic.into();
         let (msgs, _events) = self
@@ -541,14 +543,29 @@ impl Node {
     /// Get all messages for a chat from the logs.
     // TODO: Store state instead of regenerating from the logs.
     //       This will be necessary when we switch to double ratchet message encryption.
-    #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
     #[cfg(feature = "testing")]
     pub async fn get_messages(&self, topic: impl Into<ChatId>) -> anyhow::Result<Vec<ChatMessage>> {
         let chat_id = topic.into();
         let mut events = vec![];
         let mut messages = vec![];
 
-        for (header, payload) in self.get_interleaved_logs(chat_id.into()).await? {
+        let members = self
+            .space(chat_id)
+            .await?
+            .members()
+            .await?
+            .iter()
+            .filter_map(|(id, access)| {
+                if access.level >= p2panda_auth::AccessLevel::Write {
+                    Some(PK::from(*id).0)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+
+        for (header, payload) in self.get_interleaved_logs(chat_id.into(), members).await? {
             match payload {
                 Some(Payload::Chat(ChatPayload::Space(msgs))) => {
                     for msg in msgs {
@@ -582,7 +599,7 @@ impl Node {
         Ok(messages)
     }
 
-    #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
     pub async fn send_message(
         &self,
         topic: impl Into<ChatId>,
@@ -637,7 +654,7 @@ impl Node {
     /// - subscribe to their inbox
     /// - store them in the contacts map
     /// - send an invitation to them to do the same
-    #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
     pub async fn add_contact(&self, contact: QrCode) -> anyhow::Result<ActorId> {
         tracing::debug!("adding contact: {:?}", contact);
         let member = contact.member_code.clone();
@@ -735,7 +752,7 @@ impl Node {
         Ok(actor)
     }
 
-    #[tracing::instrument(skip_all, fields(me = ?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
     pub async fn remove_contact(&self, chat_actor_id: ActorId) -> anyhow::Result<()> {
         // TODO: shutdown inbox task, etc.
         todo!("add tombstone to contacts list");

@@ -18,7 +18,7 @@ impl Behavior {
         Self { node }
     }
 
-    #[tracing::instrument(skip_all, fields(me = ?self.node.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
     pub async fn initiate_and_establish_contact(
         &mut self,
         other: &TestNode,
@@ -30,7 +30,7 @@ impl Behavior {
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(me = ?self.node.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
     pub async fn accept_next_contact(&self) -> anyhow::Result<QrCode> {
         let qr = self
             .watcher
@@ -53,7 +53,7 @@ impl Behavior {
         Ok(qr)
     }
 
-    #[tracing::instrument(skip_all, fields(me = ?self.node.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
     pub async fn accept_next_group_invitation(&self) -> anyhow::Result<ChatId> {
         let chat_id = self
             .watcher

@@ -250,13 +250,27 @@ impl Node {
         self.op_store.mark_op_processed(log_id, &hash);
 
         // XXX: don't repair this often.
+        Box::pin(self.repair_spaces_and_publish()).await?;
+
+        anyhow::Ok(())
+    }
+
+    pub async fn repair_spaces_and_publish(&self) -> anyhow::Result<()> {
         let repair_required = self.manager.spaces_repair_required().await?;
         if !repair_required.is_empty() {
             tracing::warn!(missing = ?repair_required, "spaces repair required");
-            self.manager.repair_spaces(&repair_required).await?;
+            for space_id in repair_required {
+                let (msgs, _) = self.manager.repair_spaces(&vec![space_id]).await?;
+                let _header = self
+                    .author_operation(
+                        space_id,
+                        Payload::Chat(ChatPayload::Space(msgs)),
+                        Some(&format!("repair_space({})", space_id.alias())),
+                    )
+                    .await?;
+            }
         }
-
-        anyhow::Ok(())
+        Ok(())
     }
 
     pub async fn notify_payload(
@@ -276,7 +290,7 @@ impl Node {
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(me=?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me=?self.public_key())))]
     pub async fn process_payload(
         &self,
         // topic: Topic<K>,

@@ -11,6 +11,7 @@ use tokio::sync::{Mutex, mpsc::Receiver};
 use crate::{
     ChatId, DeviceGroupPayload, NodeConfig, Notification, PK, Payload,
     node::{Node, NodeLocalData},
+    spaces::DashGroup,
     testing::{AliasedId, ShortId, behavior::Behavior, introduce},
     topic::{LogId, Topic},
 };
@@ -55,8 +56,20 @@ impl TestNode {
     }
 
     pub async fn get_contacts(&self) -> anyhow::Result<Vec<ActorId>> {
+        let group: DashGroup = self
+            .manager
+            .group(self.chat_actor_id())
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("device group not found"))?;
+        let members = group
+            .members()
+            .await?
+            .into_iter()
+            .map(|(id, _)| PK::from(id).0)
+            .collect::<Vec<_>>();
+
         let ids = self
-            .get_interleaved_logs(self.device_group_topic().into())
+            .get_interleaved_logs(self.device_group_topic().into(), members)
             .await?
             .into_iter()
             .filter_map(|(_, payload)| match payload {
@@ -262,10 +275,10 @@ impl<T: std::fmt::Debug> Watcher<T> {
     }
 }
 
-pub async fn wait_for<F, R>(poll: Duration, timeout: Duration, f: impl Fn() -> F) -> Result<(), R>
+pub async fn wait_for<F, E>(poll: Duration, timeout: Duration, f: impl Fn() -> F) -> Result<(), E>
 where
-    F: Future<Output = Result<(), R>>,
-    R: std::fmt::Debug,
+    F: Future<Output = Result<(), E>>,
+    E: std::fmt::Debug,
 {
     assert!(poll < timeout);
     let start = Instant::now();

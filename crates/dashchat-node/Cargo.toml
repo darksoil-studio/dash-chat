@@ -54,6 +54,7 @@ pretty_assertions = "1.4.1"
 
 [features]
 default = ["testing"]
+instrument = []
 testing = []
 
 # [patch."https://github.com/maackle/p2panda.git"]
