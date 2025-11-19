@@ -50,7 +50,7 @@
 {#await $myProfile}
 	<wa-spinner> </wa-spinner>
 {:then myProfile}
-	<wa-card style="margin: var(--wa-space-m)">
+	<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
 		<div class="row" style="align-items: center; gap: var(--wa-space-s)">
 			<SelectAvatar bind:value={avatar} defaultValue={myProfile?.avatar}></SelectAvatar>
 

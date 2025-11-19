@@ -24,7 +24,7 @@ use crate::Topic;
 /// When adding a contact, no groups are joined, it's only for the purpose of exchanging
 /// pubkeys and key bundles, so that chat groups can be joined in the future.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(into = "String", try_from = "String")]
+// #[serde(into = "String", try_from = "String")]
 pub struct QrCode {
     /// Pubkey and key bundle of this node: allows adding this node to encrypted spaces.
     pub member_code: MemberCode,

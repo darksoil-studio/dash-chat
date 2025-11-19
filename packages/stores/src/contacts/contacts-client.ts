@@ -1,6 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
+// @ts-ignore
+import { decode, encode } from 'cbor-web';
 
-import { type PublicKey, type TopicId } from '../p2panda/types';
+import { ActorId, type PublicKey, type TopicId } from '../p2panda/types';
+import { ContactCode } from '../types';
 
 export interface Profile {
 	name: string;
@@ -9,11 +12,47 @@ export interface Profile {
 
 export type ContactRequestId = string;
 
-// export type MemberCode = [LongTermKeyBundle, ActorId];
-export type ContactCode = string;
+export function toHex(buffer: Uint8Array): string {
+	return Array.prototype.map
+		.call(buffer, x => ('00' + x.toString(16)).slice(-2))
+		.join('');
+}
+export function encodeContactCode(contactCode: ContactCode): string {
+	const bin = encode([
+		contactCode.member_code,
+		contactCode.inbox_topic,
+		contactCode.device_space_id,
+		contactCode.chat_actor_id,
+		contactCode.share_intent,
+	]);
+	return toHex(bin);
+}
+
+
+const fromHexString = (hexString: string) =>
+	Uint8Array.from(hexString.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+export function decodeContactCode(contactCodeString: string): ContactCode {
+	const bin = fromHexString(contactCodeString);
+	const [
+		member_code,
+		inbox_topic,
+		device_space_id,
+		chat_actor_id,
+		share_intent,
+	] = decode(bin);
+	return {
+		member_code,
+		inbox_topic,
+		device_space_id,
+		chat_actor_id,
+		share_intent,
+	};
+}
 
 export interface IContactsClient {
 	/// Profiles
+
+	myChatActorId(): Promise<ActorId>;
 
 	// Sets the profile for this user
 	setProfile(profile: Profile): Promise<void>;
@@ -47,6 +86,10 @@ export interface IContactsClient {
 }
 
 export class ContactsClient implements IContactsClient {
+	myChatActorId(): Promise<ActorId> {
+		return invoke('my_chat_actor_id');
+	}
+
 	async setProfile(profile: Profile): Promise<void> {
 		return invoke('set_profile', {
 			profile,

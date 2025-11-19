@@ -47,6 +47,9 @@ importers:
       blakejs:
         specifier: ^1.2.1
         version: 1.2.1
+      cbor-web:
+        specifier: ^10.0.11
+        version: 10.0.11
       emittery:
         specifier: ^1.2.0
         version: 1.2.0
@@ -1299,6 +1302,10 @@ packages:
 
   caniuse-lite@1.0.30001753:
     resolution: {integrity: sha512-Bj5H35MD/ebaOV4iDLqPEtiliTN29qkGtEHCwawWn4cYm+bPJM2NsaP30vtZcnERClMzp52J4+aw2UNbK4o+zw==}
+
+  cbor-web@10.0.11:
+    resolution: {integrity: sha512-bhhIZD2ycDtBWfZsuxri1t2djzzpQAqBpW2sxGWHElTZgaf3kTN3eKNIko0wkxv2OZ3Jl2J2ykhsnNMex8gxzw==}
+    engines: {node: '>=20'}
 
   cbor@10.0.11:
     resolution: {integrity: sha512-vIwORDd/WyB8Nc23o2zNN5RrtFGlR6Fca61TtjkUXueI3Jf2DOZDl1zsshvBntZ3wZHBM9ztjnkXSmzQDaq3WA==}
@@ -3546,6 +3553,8 @@ snapshots:
   callsites@3.1.0: {}
 
   caniuse-lite@1.0.30001753: {}
+
+  cbor-web@10.0.11: {}
 
   cbor@10.0.11:
     dependencies:

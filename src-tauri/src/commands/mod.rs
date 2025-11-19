@@ -4,6 +4,7 @@ use tauri::{command, State};
 
 pub mod logs;
 
+pub mod devices;
 pub mod contacts;
 pub mod profile;
 

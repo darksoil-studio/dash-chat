@@ -1,15 +1,15 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/skeleton/skeleton.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
-	import type { UsersStore, UserId, ContactsStore, PublicKey } from 'dash-chat-stores';
+	import type { ContactsStore, PublicKey } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
 
-	let { publicKey }: { publicKey: PublicKey} = $props();
+	let { chatActorId }: { chatActorId: PublicKey} = $props();
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
-	const profile= useReactivePromise(contactsStore.profiles, publicKey);
+	const profile= useReactivePromise(contactsStore.profiles, chatActorId);
 </script>
 
 {#await $profile}

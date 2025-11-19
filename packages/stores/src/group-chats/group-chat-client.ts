@@ -1,13 +1,8 @@
 import { invoke } from '@tauri-apps/api/core';
 
 import { LogsStore } from '../p2panda/logs-store';
-import { PublicKey, TopicId } from '../p2panda/types';
+import { ActorId, PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
-
-export interface GroupMember {
-	publicKeys: Array<PublicKey>;
-	admin: boolean;
-}
 
 export type ChatMessageContent = string;
 
@@ -18,8 +13,19 @@ export interface ChatMessage {
 }
 
 export interface IGroupChatClient {
+	/// Members
 	addMember(chatId: ChatId, member: PublicKey): Promise<void>;
+	removeMember(chatId: ChatId, member: PublicKey): Promise<void>;
+
+	promoteToAdministrator(chatId: ChatId, member: ActorId): Promise<void>;
+	demoteFromAdministrator(chatId: ChatId, member: ActorId): Promise<void>;
+
+	/// Messages
+
 	sendMessage(chatId: ChatId, content: ChatMessageContent): Promise<void>;
+
+	leaveGroup(): Promise<void>;
+	deleteGroup(): Promise<void>;
 }
 
 export class GroupChatClient implements IGroupChatClient {
@@ -29,12 +35,28 @@ export class GroupChatClient implements IGroupChatClient {
 			member,
 		});
 	}
+	async removeMember(chatId: ChatId, member: PublicKey): Promise<void> {}
 
 	sendMessage(chatId: ChatId, content: ChatMessageContent): Promise<void> {
 		return invoke('send_message', { chatId, content });
 	}
+	async promoteToAdministrator(
+		chatId: ChatId,
+		member: ActorId,
+	): Promise<void> {}
+	async demoteFromAdministrator(
+		chatId: ChatId,
+		member: ActorId,
+	): Promise<void> {}
+
+	async leaveGroup(): Promise<void> {
+	}
+
+	async deleteGroup(): Promise<void> {}
 }
 
+const sleep = (ms: number) =>
+	new Promise(r => setTimeout(() => r(undefined), ms));
 // // Store tied to a specific group chat
 // export interface GroupChatStore {
 // 	/// Info

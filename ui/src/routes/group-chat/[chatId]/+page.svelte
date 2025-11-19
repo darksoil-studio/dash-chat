@@ -15,8 +15,11 @@
 	const chatId = window.location.href.split('/').reverse()[0];
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	const myPubKey = useReactivePromise(contactsStore.myPubKey);
+	const myPubKey = {
+		subscribe: (set: any)=> Promise.resolve(set('no'))
+	};
 
+// useReactivePromise(contactsStore.myPubKey)
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.groupChats(chatId);
 

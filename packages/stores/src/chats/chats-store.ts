@@ -6,6 +6,7 @@ import { LogsStore } from '../p2panda/logs-store';
 import { PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 import { ChatsClient } from './chats-client';
+import { ContactsStore } from '../contacts/contacts-store';
 
 function random_hexadecimal(length: number) {
 	var result = '';
@@ -19,14 +20,14 @@ function random_hexadecimal(length: number) {
 export class ChatsStore {
 	constructor(
 		protected logsStore: LogsStore<TopicId, Payload>,
+		protected contactsStore: ContactsStore,
 		public client: ChatsClient,
 	) {}
 
 	async createGroup(initialMembers: PublicKey[]): Promise<GroupChatStore> {
-		console.log('yaa');
 		const chatId = random_hexadecimal(64);
 
-		await this.client.createGroup(chatId);
+		await this.client.createGroupChat(chatId);
 
 		const groupStore = this.groupChats(chatId);
 
@@ -39,13 +40,14 @@ export class ChatsStore {
 
 	groupChats = reactive(
 		(chatId: ChatId) =>
-			new GroupChatStore(this.logsStore, new GroupChatClient(), chatId),
+			new GroupChatStore(this.logsStore,this.contactsStore, new GroupChatClient(), chatId),
 	);
 
-	allChatsIds = reactive(() => this.client.getGroups());
+	allChatsIds = reactive(() => this.client.getGroupChats());
 
 	allChatsSummaries = reactive(async () => {
 		const chatIds = await this.allChatsIds();
+		console.log(chatIds)
 
 		const summaries = await ReactivePromise.all(
 			chatIds.map(chatId => this.chatSummary(chatId)),

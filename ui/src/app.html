@@ -34,10 +34,10 @@
 			wa-button.circle::part(base) {
 				border-radius: 50%;
 			}
-			
+
 			@media screen and (max-width: 600px) {
 			}
-			
+
 			@media screen and (min-width: 600px) {
 				.center-in-desktop {
 					align-self: center;
@@ -49,11 +49,21 @@
 				font-size: 24px;
 			}
 
-			wa-icon[slot="start"] {
+			wa-icon[slot='start'] {
 				font-size: 20px;
 			}
-			wa-icon[slot="end"] {
+			wa-icon[slot='end'] {
 				font-size: 20px;
+			}
+
+			wa-button::part(label) {
+				display: flex;
+				flex: 1
+			}
+
+			wa-drawer::part(body) {
+				display: flex;
+				flex-direction: column;
 			}
 		</style>
 

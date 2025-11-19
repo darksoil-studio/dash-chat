@@ -18,6 +18,10 @@
 		<wa-button class="circle" appearance="plain" href="/">
 			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
 		</wa-button>
+
+		<span class="title">My contacts</span>
+
+		
 		<div style="flex: 1"></div>
 		<wa-button class="circle" href="/add-contact" appearance="plain">
 			<wa-icon src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
@@ -29,7 +33,7 @@
 			<div class="column" style="gap: var(--wa-space-m)">
 				{#each contacts as [publicKey, profile]}
 					<div class="row" style="gap: var(--wa-space-s); align-items: center">
-						<Avatar {publicKey}></Avatar>
+						<Avatar chatActorId={publicKey}></Avatar>
 
 						{profile.name}
 					</div>{:else}<span>You don't have any contacts yet.</span>

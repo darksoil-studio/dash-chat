@@ -1,35 +1,36 @@
 import { ReactivePromise, reactive } from 'signalium';
 
+import { DevicesStore } from '../devices/devices-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
-import { PublicKey, TopicId } from '../p2panda/types';
+import { ActorId, PublicKey, TopicId } from '../p2panda/types';
+import { personalTopicFor } from '../topics';
 import { AnnouncementPayload, Payload } from '../types';
 import { IContactsClient, Profile } from './contacts-client';
-import { personalTopicFor } from '../topics';
 
 export class ContactsStore {
 	constructor(
 		protected logsStore: LogsStore<TopicId, Payload>,
+		protected devicesStore: DevicesStore,
 		public client: IContactsClient,
 	) {}
 
-	myPubKey = reactive(async () => {
-		const pk = await this.logsStore.myPubKey();
-		return pk;
-	});
+	myChatActorId = reactive(async () => await this.client.myChatActorId());
 
 	myProfile = reactive(async () => {
-		const myPubKey = await this.logsStore.myPubKey();
+		const myChatActorId = await this.myChatActorId();
 
-		return await this.profiles(myPubKey);
+		return await this.profiles(myChatActorId);
 	});
 
-	profiles = reactive(async (publicKey: PublicKey) => {
-		const topicId = personalTopicFor(publicKey);
+	profiles = reactive(async (actorId: ActorId) => {
+		const topicId = personalTopicFor(actorId);
 
 		const operations = await this.logsStore.logsForAllAuthors(topicId);
 
-		const log: SimplifiedOperation<Payload>[] = operations[publicKey] || [];
+		const log: SimplifiedOperation<Payload>[] =
+			Object.values(operations)[0] || [];
+			console.log(log)
 
 		const setProfiles: Array<[number, Profile]> = log
 			.filter(
@@ -55,19 +56,33 @@ export class ContactsStore {
 		return profile;
 	});
 
-	// contacts = reactive(async () => this.client.getContacts());
+	contactsActorIds = reactive(async () => {
+		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
 
-	// profilesForAllContacts = reactive(async () => {
-	// 	const contacts = await this.contacts();
+		const contacts: Set<ActorId> = new Set();
 
-	// 	const profiles = await ReactivePromise.all(
-	// 		contacts.map(contact => this.profiles(contact)),
-	// 	);
+		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+			for (const op of ops) {
+				if (op.body?.payload?.type === 'AddContact') {
+					contacts.add(op.body.payload.payload.chat_actor_id);
+				}
+			}
+		}
 
-	// 	const profilesWithContacts: Array<[PublicKey, Profile]> = profiles
-	// 		.filter(p => !!p)
-	// 		.map((profile, i) => [contacts[i], profile]);
+		return Array.from(contacts);
+	});
 
-	// 	return profilesWithContacts;
-	// });
+	profilesForAllContacts = reactive(async () => {
+		const contacts = await this.contactsActorIds();
+
+		const profiles = await ReactivePromise.all(
+			contacts.map(contact => this.profiles(contact)),
+		);
+
+		const profilesWithContacts: Array<[PublicKey, Profile]> = profiles
+			.filter(p => !!p)
+			.map((profile, i) => [contacts[i], profile]);
+
+		return profilesWithContacts;
+	});
 }

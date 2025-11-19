@@ -296,7 +296,6 @@ impl std::str::FromStr for Topic {
 
 impl<K: TopicKind> Serialize for Topic<K> {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        println!("serialize,{:?} {}",self.id,hex::encode(&self.id));
         serializer.collect_str(&hex::encode(&self.id))
     }
 }

@@ -452,13 +452,13 @@ impl Node {
             return Err(anyhow!("group not found for other actor"));
         };
 
-        tracing::debug!(
-            g1_id = ?g1.id().alias(),
-            g2_id = ?g2.id().alias(),
-            g1_members = ?g1.members().await?.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>(),
-            g2_members = ?g2.members().await?.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>(),
-            "group members"
-        );
+        // tracing::debug!(
+        //     g1_id = ?g1.id().alias(),
+        //     g2_id = ?g2.id().alias(),
+        //     g1_members = ?g1.members().await?.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>(),
+        //     g2_members = ?g2.members().await?.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>(),
+        //     "group members"
+        // );
 
         let (_space, msgs, _event) = self
             .manager
@@ -762,5 +762,11 @@ impl Node {
         let topic = topic.into();
         let space = self.manager.space(topic).await?;
         space.ok_or_else(|| anyhow!("Chat has no Space: {topic}"))
+    }
+
+    // TODO: remove this
+    pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
+        let groups = self.nodestate.chats.read().await.keys().cloned().collect();
+        Ok(groups)
     }
 }

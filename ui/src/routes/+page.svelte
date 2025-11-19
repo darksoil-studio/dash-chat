@@ -10,15 +10,15 @@
 	import AllChats from '../components/AllChats.svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	const myPubKey = useReactivePromise(contactsStore.myPubKey);
+	const myChatActorId= useReactivePromise(contactsStore.myChatActorId);
 
 </script>
 
-{#await $myPubKey then myPubKey}
+{#await $myChatActorId then myChatActorId}
 	<div class="column">
 		<div class="top-bar">
 			<a href="/my-profile">
-				<Avatar publicKey={myPubKey}></Avatar>
+				<Avatar chatActorId={myChatActorId}></Avatar>
 			</a>
 			<div style="flex: 1"></div>
 
@@ -31,9 +31,6 @@
 			</wa-button>
 		</div>
 
-		<a href="/contacts">
-			<wa-button>Contacts</wa-button>
-		</a>
 	</div>
 {/await}
 

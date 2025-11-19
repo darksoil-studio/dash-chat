@@ -21,7 +21,7 @@
 
 	let selectedContacts: Set<PublicKey> = new Set();
 
-	async function createGroup() {
+	async function createGroupChat() {
 		const contacts = Array.from(selectedContacts);
 
 		const groupStore = await chatsStore.createGroup(contacts);
@@ -41,7 +41,14 @@
 		</wa-button>
 		<span class="title" style="flex: 1">New group </span>
 
-		<wa-button appearance="plain" onclick={() => (currentPage = 'group-info')}>
+		<wa-button
+			appearance="plain"
+			onclick={() => {
+				currentPage = 'group-info';
+				console.log('aa', currentPage)
+
+			}}
+		>
 			Next
 			<wa-icon slot="end" src={wrapPathInSvg(mdiArrowRight)}> </wa-icon>
 		</wa-button>
@@ -66,7 +73,7 @@
 								class="row"
 								style="gap: var(--wa-space-s); align-items: center; margin-left: var(--wa-space-xs)"
 							>
-								<Avatar {publicKey}></Avatar>
+								<Avatar chatActorId={publicKey}></Avatar>
 
 								{profile.name}
 							</div>
@@ -83,13 +90,15 @@
 		<wa-button
 			class="circle"
 			appearance="plain"
-			onclick={() => (currentPage = 'members')}
+			onclick={() => {
+				currentPage = 'members';
+			}}
 		>
 			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
 		</wa-button>
 		<span class="title" style="flex: 1">New group</span>
 
-		<wa-button appearance="plain" onclick={createGroup}>
+		<wa-button appearance="plain" onclick={createGroupChat}>
 			<wa-icon slot="start" src={wrapPathInSvg(mdiAccountMultiplePlus)}>
 			</wa-icon>
 			Create group

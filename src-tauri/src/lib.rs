@@ -2,7 +2,7 @@ use dashchat_node::Node;
 use p2panda_core::{cbor::encode_cbor, Body};
 use tauri::{Emitter, Manager};
 
-use crate::commands::logs::{simplify, SimplifiedHeader, SimplifiedOperation};
+use crate::commands::logs::simplify;
 
 mod commands;
 mod utils;
@@ -20,9 +20,12 @@ pub fn run() {
             commands::logs::get_log,
             commands::logs::get_authors,
             commands::profile::set_profile,
+            commands::devices::my_device_group_topic,
+            commands::contacts::my_chat_actor_id,
             commands::contacts::create_contact_code,
             commands::contacts::add_contact,
-            // commands::chats::create_group,
+            commands::chats::get_group_chats,
+            commands::chats::create_group_chat,
             commands::group_chat::add_member,
             commands::group_chat::send_message,
             commands::group_chat::get_messages,

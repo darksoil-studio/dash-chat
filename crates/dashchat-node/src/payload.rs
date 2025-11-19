@@ -61,6 +61,7 @@ impl From<Vec<SpaceControlMessage>> for ChatPayload {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "type", content = "payload")]
 pub enum DeviceGroupPayload {
     AddContact(QrCode),
 }

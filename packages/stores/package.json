@@ -13,6 +13,7 @@
 		"@tauri-apps/api": "^2",
 		"@webbuf/blake3": "^3.0.28",
 		"blakejs": "^1.2.1",
+		"cbor-web": "^10.0.11",
 		"emittery": "^1.2.0",
 		"rimraf": "^6.1.0",
 		"signalium": "^2.0.7",
