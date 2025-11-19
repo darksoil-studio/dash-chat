@@ -195,21 +195,21 @@ impl LogStore<LogId, Extensions> for OpStore {
             .await
     }
 
-    fn get_log_size(
+    async fn get_log_size(
         &self,
         public_key: &PublicKey,
         log_id: &LogId,
         from: Option<u64>,
-    ) -> impl ::core::future::Future<Output = Result<Option<u64>, Self::Error>> + Send {
-        self.store.get_log_size(public_key, log_id, from)
+    ) -> Result<Option<u64>, Self::Error> {
+        self.store.get_log_size(public_key, log_id, from).await
     }
 
-    fn get_log_hashes(
+    async fn get_log_hashes(
         &self,
         public_key: &PublicKey,
         log_id: &LogId,
         from: Option<u64>,
-    ) -> impl ::core::future::Future<Output = Result<Option<Vec<Hash>>, Self::Error>> + Send {
-        self.store.get_log_hashes(public_key, log_id, from)
+    ) -> Result<Option<Vec<Hash>>, Self::Error> {
+        self.store.get_log_hashes(public_key, log_id, from).await
     }
 }

@@ -1,15 +1,17 @@
 use std::{
     collections::{BTreeSet, HashMap, HashSet},
+    sync::Arc,
     time::{Duration, Instant},
 };
 
 use p2panda_auth::Access;
 use p2panda_spaces::ActorId;
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::{Mutex, mpsc::Receiver};
 
 use crate::{
     ChatId, DeviceGroupPayload, NodeConfig, Notification, PK, Payload,
     node::{Node, NodeLocalData},
+    spaces::DashGroup,
     testing::{AliasedId, ShortId, behavior::Behavior, introduce},
     topic::{LogId, Topic},
 };
@@ -19,26 +21,26 @@ use crate::{
 pub struct TestNode {
     #[deref]
     node: Node,
+    pub watcher: Arc<Mutex<Watcher<Notification>>>,
 }
 
 impl TestNode {
-    pub async fn new(config: NodeConfig, alias: Option<&str>) -> (Self, Watcher<Notification>) {
+    pub async fn new(config: NodeConfig, alias: Option<&str>) -> Self {
         let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = alias {
             local_data.private_key.public_key().aliased(alias);
         }
-        let node = Self {
+        Self {
             node: Node::new(local_data, config, Some(notification_tx))
                 .await
                 .unwrap(),
-        };
-        (node, Watcher(notification_rx))
+            watcher: Arc::new(Mutex::new(Watcher(notification_rx))),
+        }
     }
 
-    pub async fn behavior(config: NodeConfig, alias: Option<&str>) -> Behavior {
-        let (node, notification_rx) = Self::new(config, alias).await;
-        Behavior::new(node, notification_rx)
+    pub fn behavior(&self) -> Behavior {
+        Behavior::new(self.clone())
     }
 
     pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
@@ -50,17 +52,24 @@ impl TestNode {
         &self,
         chat_id: ChatId,
     ) -> anyhow::Result<Vec<(p2panda_spaces::ActorId, Access)>> {
-        if let Some(space) = self.manager.space(chat_id).await? {
-            Ok(space.members().await?)
-        } else {
-            tracing::warn!("Chat has no Space: {chat_id}");
-            Ok(vec![])
-        }
+        Ok(self.space(chat_id).await?.members().await?)
     }
 
     pub async fn get_contacts(&self) -> anyhow::Result<Vec<ActorId>> {
+        let group: DashGroup = self
+            .manager
+            .group(self.chat_actor_id())
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("device group not found"))?;
+        let members = group
+            .members()
+            .await?
+            .into_iter()
+            .map(|(id, _)| PK::from(id).0)
+            .collect::<Vec<_>>();
+
         let ids = self
-            .get_interleaved_logs(self.device_group_topic().into())
+            .get_interleaved_logs(self.device_group_topic().into(), members)
             .await?
             .into_iter()
             .filter_map(|(_, payload)| match payload {
@@ -71,6 +80,16 @@ impl TestNode {
             })
             .collect();
         Ok(ids)
+    }
+
+    pub async fn initialized_topics(&self) -> BTreeSet<LogId> {
+        self.node
+            .initialized_topics
+            .read()
+            .await
+            .keys()
+            .cloned()
+            .collect::<BTreeSet<_>>()
     }
 }
 
@@ -92,7 +111,7 @@ impl Default for ClusterConfig {
 #[derive(derive_more::Deref)]
 pub struct TestCluster<const N: usize> {
     #[deref]
-    nodes: [(TestNode, Watcher<Notification>); N],
+    nodes: [TestNode; N],
     pub config: ClusterConfig,
 }
 
@@ -108,17 +127,14 @@ impl<const N: usize> TestCluster<N> {
     }
 
     pub async fn introduce_all(&self) {
-        let nodes = self
-            .iter()
-            .map(|(node, _)| &node.network)
-            .collect::<Vec<_>>();
+        let nodes = self.iter().map(|node| &node.network).collect::<Vec<_>>();
         introduce(nodes).await;
     }
 
     pub async fn nodes(&self) -> [TestNode; N] {
         self.nodes
             .iter()
-            .map(|(node, _)| node.clone())
+            .map(|node| node.clone())
             .collect::<Vec<_>>()
             .try_into()
             .unwrap()
@@ -220,7 +236,6 @@ impl<T: std::fmt::Debug> Watcher<T> {
         loop {
             tokio::select! {
                 item = self.0.recv() => {
-                    tracing::debug!(?item, "watcher received item");
                     match item {
                         Some(item) => match f(&item) {
                             Some(r) => return Ok(r),
@@ -245,7 +260,6 @@ impl<T: std::fmt::Debug> Watcher<T> {
         loop {
             tokio::select! {
                 item = self.0.recv() => {
-                    tracing::debug!(?item, "watcher received item");
                     match item {
                         Some(item) => if f(&item) {
                             return Ok(item)
@@ -261,10 +275,10 @@ impl<T: std::fmt::Debug> Watcher<T> {
     }
 }
 
-pub async fn wait_for<F, R>(poll: Duration, timeout: Duration, f: impl Fn() -> F) -> Result<(), R>
+pub async fn wait_for<F, E>(poll: Duration, timeout: Duration, f: impl Fn() -> F) -> Result<(), E>
 where
-    F: Future<Output = Result<(), R>>,
-    R: std::fmt::Debug,
+    F: Future<Output = Result<(), E>>,
+    E: std::fmt::Debug,
 {
     assert!(poll < timeout);
     let start = Instant::now();

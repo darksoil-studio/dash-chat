@@ -7,22 +7,40 @@ use anyhow::Context;
 use super::*;
 use crate::*;
 
-#[derive(derive_more::Deref)]
+#[derive(derive_more::Deref, derive_more::From)]
 pub struct Behavior {
     #[deref]
     node: TestNode,
-    pub watcher: Watcher<Notification>,
 }
 
 impl Behavior {
-    pub fn new(node: TestNode, watcher: Watcher<Notification>) -> Self {
-        Self { node, watcher }
+    pub fn new(node: TestNode) -> Self {
+        Self { node }
     }
 
-    pub async fn accept_next_contact(&mut self) -> anyhow::Result<QrCode> {
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
+    pub async fn initiate_and_establish_contact(
+        &mut self,
+        other: &TestNode,
+        share_intent: ShareIntent,
+    ) -> anyhow::Result<()> {
+        let qr = self.new_qr_code(share_intent, true).await?;
+        other.add_contact(qr).await?;
+        self.accept_next_contact().await?;
+        Ok(())
+    }
+
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
+    pub async fn accept_next_contact(&self) -> anyhow::Result<QrCode> {
         let qr = self
             .watcher
+            .lock()
+            .await
             .watch_mapped(Duration::from_secs(5), |n: &Notification| {
+                tracing::debug!(
+                    hash = n.header.hash().alias(),
+                    "checking for contact invitation"
+                );
                 let Payload::Inbox(InboxPayload::Contact(qr)) = &n.payload else {
                     return None;
                 };
@@ -35,10 +53,17 @@ impl Behavior {
         Ok(qr)
     }
 
-    pub async fn accept_next_group_invitation(&mut self) -> anyhow::Result<ChatId> {
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
+    pub async fn accept_next_group_invitation(&self) -> anyhow::Result<ChatId> {
         let chat_id = self
             .watcher
+            .lock()
+            .await
             .watch_mapped(Duration::from_secs(5), |n: &Notification| {
+                tracing::debug!(
+                    hash = n.header.hash().alias(),
+                    "checking for group invitation"
+                );
                 let Payload::Chat(ChatPayload::JoinGroup(chat_id)) = &n.payload else {
                     return None;
                 };

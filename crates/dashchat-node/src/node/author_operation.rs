@@ -11,7 +11,7 @@ use super::*;
 pub type OpStore = p2panda_store::MemoryStore<LogId, Extensions>;
 
 impl Node {
-    #[tracing::instrument(skip_all)]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
     pub(super) async fn author_operation<K: TopicKind>(
         &self,
         topic: Topic<K>,
@@ -22,7 +22,6 @@ impl Node {
             .await
     }
 
-    #[tracing::instrument(skip_all)]
     pub(super) async fn author_operation_with_deps<K: TopicKind>(
         &self,
         topic: Topic<K>,
@@ -37,16 +36,8 @@ impl Node {
                 match p {
                     ChatPayload::Space(msgs) => {
                         let ids = msgs.iter().map(|msg| msg.id()).collect::<Vec<_>>();
-                        let op_deps = msgs
-                        .iter()
-                        .flat_map(|msg| {
-                            tracing::debug!(
-                                id = msg.id().alias(),
-                                argtype = ?msg.arg_type(),
-                                batch = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                                deps = ?msg.dependencies().iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                                "authoring space msg",
-                            );
+                        let op_deps = msgs.iter().flat_map(|msg| {
+                            tracing::info!(msg = msg.id().alias(), "SM: authoring space msg");
                             msg.dependencies()
                         });
 
@@ -174,7 +165,12 @@ impl Node {
               // }
         }
 
-        match self.gossip.read().await.get(&header.extensions.log_id) {
+        match self
+            .initialized_topics
+            .read()
+            .await
+            .get(&header.extensions.log_id)
+        {
             Some(gossip) => {
                 gossip
                     .send(ToNetwork::Message {

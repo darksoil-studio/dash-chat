@@ -54,9 +54,10 @@ pretty_assertions = "1.4.1"
 
 [features]
 default = ["testing"]
+instrument = []
 testing = []
 
-[patch."https://github.com/maackle/p2panda.git"]
+# [patch."https://github.com/maackle/p2panda.git"]
 # p2panda-auth = { path = "/home/michael/gitfork/p2panda/p2panda-auth" }
 # p2panda-core = { path = "/home/michael/gitfork/p2panda/p2panda-core" }
 # p2panda-encryption = { path = "/home/michael/gitfork/p2panda/p2panda-encryption" }

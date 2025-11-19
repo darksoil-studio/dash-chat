@@ -77,6 +77,7 @@ pub mod kind {
     impl ChatTopicKind for Chat {}
     impl ChatTopicKind for GroupChat {}
     impl ChatTopicKind for DirectChat {}
+    impl ChatTopicKind for DeviceGroup {}
 }
 
 impl From<Topic<kind::GroupChat>> for Topic<kind::Chat> {
@@ -87,6 +88,12 @@ impl From<Topic<kind::GroupChat>> for Topic<kind::Chat> {
 
 impl From<Topic<kind::DirectChat>> for Topic<kind::Chat> {
     fn from(topic: Topic<kind::DirectChat>) -> Topic<kind::Chat> {
+        Topic::new(topic.id)
+    }
+}
+
+impl From<Topic<kind::DeviceGroup>> for Topic<kind::Chat> {
+    fn from(topic: Topic<kind::DeviceGroup>) -> Topic<kind::Chat> {
         Topic::new(topic.id)
     }
 }
@@ -106,11 +113,27 @@ impl From<Topic<kind::DirectChat>> for Topic<kind::Chat> {
     derive_more::Debug,
 )]
 #[display("{}", hex::encode(self.0))]
-#[debug("{}", hex::encode(self.0))]
+#[debug("{}", self.alias())]
 pub struct LogId([u8; 32]);
 
 impl p2panda_spaces::traits::SpaceId for LogId {}
 impl TopicQuery for LogId {}
+
+impl ShortId for LogId {
+    const PREFIX: &'static str = "L";
+
+    fn to_short_string(&self) -> String {
+        hex::encode(self.0)
+    }
+}
+
+impl AliasedId for LogId {
+    const SHOW_SHORT_ID: bool = true;
+
+    fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
 
 #[derive(
     Copy,
@@ -161,6 +184,10 @@ impl Topic<kind::GroupChat> {
     pub fn group_chat(chat_id: [u8; 32]) -> Self {
         Self::new(chat_id)
     }
+
+    pub fn random() -> Self {
+        Self::new(rand::random())
+    }
 }
 
 impl Topic<kind::DirectChat> {
@@ -185,20 +212,16 @@ impl Topic<kind::Inbox> {
 }
 
 impl Topic<kind::Announcements> {
-    /// The topic ID is the hashed public key.
-    /// This is to prevent collisions with the inbox topic, which also uses the public key.
+    /// The topic ID is the actor ID.
     pub fn announcements(actor: ActorId) -> Self {
-
-        let hash = blake3::hash(actor.as_bytes());
-        println!("aaa {actor} {actor:?} {hash} {hash:?}");
-        Self::new(hash.into())
+        Self::new(*actor.as_bytes())
     }
 }
 
 impl Topic<kind::DeviceGroup> {
-    /// The topic ID is unique.
-    pub fn device_group(actor: ActorId) -> Self {
-        Self::new(*actor.as_bytes())
+    /// The topic ID is random.
+    pub fn random() -> Self {
+        Self::new(rand::random())
     }
 }
 
@@ -231,14 +254,15 @@ impl<K: TopicKind> TopicId for Topic<K> {
 
 impl<K: TopicKind> ShortId for Topic<K> {
     const PREFIX: &'static str = "T";
-    fn short(&self) -> String {
-        let mut k = self.to_string();
-        k.truncate(8);
-        format!("{}:{}|{}", Self::PREFIX, K::default(), k)
+
+    fn prefix() -> String {
+        format!("{}:{}", Self::PREFIX, K::default())
     }
 }
 
 impl<K: TopicKind> AliasedId for Topic<K> {
+    const SHOW_SHORT_ID: bool = true;
+
     fn as_bytes(&self) -> &[u8] {
         self.id.as_ref()
     }

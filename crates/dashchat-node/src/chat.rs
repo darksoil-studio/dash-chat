@@ -27,4 +27,6 @@ impl Chat {
 }
 
 pub type ChatId = Topic<crate::topic::kind::Chat>;
-pub type ChatTopic = ChatId;
+pub type GroupChatId = Topic<crate::topic::kind::GroupChat>;
+pub type DirectChatId = Topic<crate::topic::kind::DirectChat>;
+pub type DeviceGroupId = Topic<crate::topic::kind::DeviceGroup>;

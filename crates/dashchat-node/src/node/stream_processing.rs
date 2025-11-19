@@ -42,7 +42,13 @@ impl Node {
         topic: Topic<K>,
         is_author: bool,
     ) -> anyhow::Result<()> {
-        if self.gossip.read().await.contains_key(&topic.into()) {
+        // TODO: this has a race condition
+        if self
+            .initialized_topics
+            .read()
+            .await
+            .contains_key(&topic.into())
+        {
             return Ok(());
         }
 
@@ -53,7 +59,7 @@ impl Node {
         }
 
         let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.into()).await?;
-        tracing::info!(?topic, "subscribed to topic");
+        tracing::info!(?topic, "TOP: subscribed to topic");
 
         let stream = ReceiverStream::new(network_rx);
         let stream = stream.filter_map(|event| async {
@@ -99,7 +105,10 @@ impl Node {
             .await
             .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
 
-        self.gossip.write().await.insert(topic.into(), network_tx);
+        self.initialized_topics
+            .write()
+            .await
+            .insert(topic.into(), network_tx);
 
         Ok(())
     }
@@ -241,13 +250,27 @@ impl Node {
         self.op_store.mark_op_processed(log_id, &hash);
 
         // XXX: don't repair this often.
-        let repair_required = self.manager.spaces_repair_required().await?;
-        if !repair_required.is_empty() {
-            tracing::warn!(missing = repair_required.len(), "spaces repair required");
-            self.manager.repair_spaces(&repair_required).await?;
-        }
+        Box::pin(self.repair_spaces_and_publish()).await?;
 
         anyhow::Ok(())
+    }
+
+    pub async fn repair_spaces_and_publish(&self) -> anyhow::Result<()> {
+        let repair_required = self.manager.spaces_repair_required().await?;
+        if !repair_required.is_empty() {
+            tracing::warn!(missing = ?repair_required, "spaces repair required");
+            for space_id in repair_required {
+                let (msgs, _) = self.manager.repair_spaces(&vec![space_id]).await?;
+                let _header = self
+                    .author_operation(
+                        space_id,
+                        Payload::Chat(ChatPayload::Space(msgs)),
+                        Some(&format!("repair_space({})", space_id.alias())),
+                    )
+                    .await?;
+            }
+        }
+        Ok(())
     }
 
     pub async fn notify_payload(
@@ -267,7 +290,7 @@ impl Node {
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(me=?self.public_key()))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me=?self.public_key())))]
     pub async fn process_payload(
         &self,
         // topic: Topic<K>,
@@ -343,10 +366,6 @@ impl Node {
             }
 
             Some(Payload::Chat(ChatPayload::JoinGroup(chat_id))) => {
-                // XXX: The group should not be auto-joined!
-                // TODO: for testing, pull this out into a notification handler, which simulates UI
-                //       behavior like accepting group invitations.
-                self.join_group(*chat_id).await?;
                 // TODO: maybe close down the chat tasks if we are kicked out?
             }
 

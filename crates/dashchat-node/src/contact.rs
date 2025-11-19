@@ -33,6 +33,8 @@ pub struct QrCode {
     /// code without an associated inbox, because after this exchange the two nodes
     /// can communicate directly.
     pub inbox_topic: Option<InboxTopic>,
+    /// Topic for the device group of this node.
+    pub device_space_id: Topic<crate::topic::kind::DeviceGroup>,
     /// Actor ID to add to spaces
     pub chat_actor_id: ActorId,
     /// The intent of the QR code: whether to add this node as a contact or a device.
@@ -51,6 +53,7 @@ pub struct InboxTopic {
     pub topic: Topic<crate::topic::kind::Inbox>,
 }
 
+/// Just add serialization around [`p2panda_spaces::Member`]`
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, derive_more::From)]
 pub struct MemberCode {
     pub actor_id: ActorId,
@@ -72,6 +75,7 @@ impl std::fmt::Display for QrCode {
         let bytes = encode_cbor(&(
             &self.member_code,
             &self.inbox_topic,
+            &self.device_space_id,
             &self.chat_actor_id,
             &self.share_intent,
         ))
@@ -84,11 +88,12 @@ impl FromStr for QrCode {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let bytes = hex::decode(s)?;
-        let (member_code, inbox_topic, chat_actor_id, share_intent) =
+        let (member_code, inbox_topic, device_space_id, chat_actor_id, share_intent) =
             decode_cbor(bytes.as_slice())?;
         Ok(QrCode {
             member_code,
             inbox_topic,
+            device_space_id,
             chat_actor_id,
             share_intent,
         })
@@ -125,6 +130,8 @@ impl TryFrom<String> for QrCode {
 
 #[cfg(test)]
 mod tests {
+    use crate::topic::kind;
+
     use super::*;
 
     #[test]
@@ -146,6 +153,7 @@ mod tests {
                 topic: Topic::inbox(),
                 expires_at: Utc::now() + chrono::Duration::seconds(3600),
             }),
+            device_space_id: Topic::<kind::DeviceGroup>::random(),
             chat_actor_id: ActorId::from_bytes(&[44; 32]).unwrap(),
             share_intent: ShareIntent::AddDevice,
         };

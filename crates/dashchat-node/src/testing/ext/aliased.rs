@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::LazyLock, sync::Mutex};
 
 use p2panda_spaces::traits::AuthoredMessage;
 
-use crate::{spaces::SpaceControlMessage, testing::ShortId};
+use crate::{ChatId, spaces::SpaceControlMessage, testing::ShortId};
 
 static ALIASES: LazyLock<Mutex<HashMap<Vec<u8>, String>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
@@ -11,12 +11,14 @@ static ALIASES: LazyLock<Mutex<HashMap<Vec<u8>, String>>> =
 /// Useful for debugging.
 pub fn alias_space_messages<'a>(
     prefix: &str,
+    id: impl Into<ChatId> + AliasedId + std::fmt::Debug,
     msgs: impl IntoIterator<Item = &'a SpaceControlMessage>,
 ) {
     for (i, msg) in msgs.into_iter().enumerate() {
-        msg.id().aliased(
-            format!("{prefix}/{}/{i}/{:?}", msg.author().alias(), msg.arg_type()).as_str(),
-        );
+        let author = msg.author().alias();
+        let arg_type = msg.arg_type();
+        msg.id()
+            .aliased(format!("{prefix}/{author}/{id:?}/{i}/{arg_type:?}").as_str());
     }
 }
 
@@ -32,7 +34,7 @@ pub trait AliasedId: ShortId {
         let alias = if Self::SHOW_SHORT_ID {
             format!("⟪{}|{}⟫", self.short(), alias)
         } else {
-            format!("⟪{}‖{}⟫", <Self as ShortId>::PREFIX, alias)
+            format!("⟪{}‖{}⟫", <Self as ShortId>::prefix(), alias)
         };
         let existing = ALIASES
             .lock()
@@ -52,6 +54,10 @@ pub trait AliasedId: ShortId {
             .unwrap()
             .get(self.as_bytes())
             .cloned()
-            .unwrap_or(self.short())
+            .unwrap_or_else(|| self.default_alias())
+    }
+
+    fn default_alias(&self) -> String {
+        format!("⟪{}⟫", self.short())
     }
 }

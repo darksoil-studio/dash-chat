@@ -6,37 +6,33 @@ pub use short_id::*;
 
 impl ShortId for p2panda_core::Hash {
     const PREFIX: &'static str = "H";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
+
+    fn to_short_string(&self) -> String {
+        self.to_hex()
     }
 }
 
 impl ShortId for p2panda_core::PublicKey {
     const PREFIX: &'static str = "PK";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
+
+    fn to_short_string(&self) -> String {
+        self.to_hex()
     }
 }
 
 impl ShortId for p2panda_spaces::OperationId {
     const PREFIX: &'static str = "OP";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
+
+    fn to_short_string(&self) -> String {
+        self.to_hex()
     }
 }
 
 impl ShortId for p2panda_spaces::ActorId {
-    const PREFIX: &'static str = "AI";
-    fn short(&self) -> String {
-        let mut s = self.to_hex();
-        s.truncate(8);
-        format!("{}|{s}", Self::PREFIX)
+    const PREFIX: &'static str = "A";
+
+    fn to_short_string(&self) -> String {
+        self.to_hex()
     }
 }
 
@@ -61,6 +57,8 @@ impl AliasedId for p2panda_core::PublicKey {
 }
 
 impl AliasedId for p2panda_spaces::OperationId {
+    const SHOW_SHORT_ID: bool = true;
+
     fn as_bytes(&self) -> &[u8] {
         self.as_bytes()
     }
