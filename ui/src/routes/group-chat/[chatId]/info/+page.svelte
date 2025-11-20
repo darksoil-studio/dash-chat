@@ -79,7 +79,7 @@
 				<div class="column" style="gap: var(--wa-space-m)">
 					{Object.keys(members).length} members
 					{#if me.admin}
-						<wa-button class="member-button" appearance="plain">
+						<wa-button class="fill member-button" appearance="plain">
 							<wa-icon
 								auto-width
 								style="font-size: 3rem"
@@ -93,7 +93,7 @@
 					{#each Object.entries(members) as [actorId, member]}
 						<wa-button
 							data-drawer={`open drawer-${actorId}`}
-							class="member-button"
+							class="fill member-button"
 							appearance="plain"
 						>
 							<wa-avatar
@@ -132,6 +132,16 @@
 
 								{#if me.admin && me.actorId !== member.actorId}
 									{#if member.admin}
+										<wa-button
+											class="fill"
+											appearance="plain"
+											data-dialog={`open demote-dialog-${member.actorId}`}
+										>
+											<wa-icon slot="start" src={wrapPathInSvg(mdiKeyVariant)}
+											></wa-icon>
+											Demote from administrator
+										</wa-button>
+
 										<wa-dialog
 											label="Demote from administrator"
 											id={`demote-dialog-${member.actorId}`}
@@ -150,37 +160,38 @@
 											<wa-button
 												slot="footer"
 												variant="danger"
-											onclick={async (e: CustomEvent) => {
-												const button = e.target as WaButton;
-												button.loading = true;
+												onclick={async (e: CustomEvent) => {
+													const button = e.target as WaButton;
+													button.loading = true;
 
-												try {
-													await groupChatStore.client.demoteFromAdministrator(
-														chatId,
-														member.actorId,
-													);
-													const dialog = document.getElementById(
-														`demote-dialog-${member.actorId}`,
-													) as WaDialog;
-													dialog.open = false;
-												} catch (e) {}
+													try {
+														await groupChatStore.client.demoteFromAdministrator(
+															chatId,
+															member.actorId,
+														);
+														const dialog = document.getElementById(
+															`demote-dialog-${member.actorId}`,
+														) as WaDialog;
+														dialog.open = false;
+													} catch (e) {}
 
-												button.loading = false;
-											}}
+													button.loading = false;
+												}}
 											>
 												Demote
 											</wa-button>
 										</wa-dialog>
-
+									{:else}
 										<wa-button
+											class="fill"
 											appearance="plain"
-											data-dialog={`open demote-dialog-${member.actorId}`}
+											data-dialog={`open promote-dialog-${member.actorId}`}
 										>
 											<wa-icon slot="start" src={wrapPathInSvg(mdiKeyVariant)}
 											></wa-icon>
-											Demote from administrator
+											Promote to administrator
 										</wa-button>
-									{:else}
+
 										<wa-dialog
 											label="Promote to administrator"
 											id={`promote-dialog-${member.actorId}`}
@@ -199,38 +210,38 @@
 											<wa-button
 												slot="footer"
 												variant="brand"
-											onclick={async (e: CustomEvent) => {
-												const button = e.target as WaButton;
-												button.loading = true;
+												onclick={async (e: CustomEvent) => {
+													const button = e.target as WaButton;
+													button.loading = true;
 
-												try {
-													await groupChatStore.client.promoteToAdministrator(
-														chatId,
-														member.actorId,
-													);
-													const dialog = document.getElementById(
-														`promote-dialog-${member.actorId}`,
-													) as WaDialog;
-													dialog.open = false;
-												} catch (e) {}
+													try {
+														await groupChatStore.client.promoteToAdministrator(
+															chatId,
+															member.actorId,
+														);
+														const dialog = document.getElementById(
+															`promote-dialog-${member.actorId}`,
+														) as WaDialog;
+														dialog.open = false;
+													} catch (e) {}
 
-												button.loading = false;
-											}}
+													button.loading = false;
+												}}
 											>
 												Promote
 											</wa-button>
 										</wa-dialog>
-
-										<wa-button
-											appearance="plain"
-											data-dialog={`open promote-dialog-${member.actorId}`}
-										>
-											<wa-icon slot="start" src={wrapPathInSvg(mdiKeyVariant)}
-											></wa-icon>
-											Promote to administrator
-										</wa-button>
 									{/if}
 
+									<wa-button
+										class="fill"
+										appearance="plain"
+										data-dialog={`open remove-dialog-${member.actorId}`}
+									>
+										<wa-icon slot="start" src={wrapPathInSvg(mdiDelete)}
+										></wa-icon>
+										Remove member
+									</wa-button>
 									<wa-dialog
 										label="Remove member"
 										id={`remove-dialog-${member.actorId}`}
@@ -267,15 +278,6 @@
 											Remove member
 										</wa-button>
 									</wa-dialog>
-
-									<wa-button
-										appearance="plain"
-										data-dialog={`open remove-dialog-${member.actorId}`}
-									>
-										<wa-icon slot="start" src={wrapPathInSvg(mdiDelete)}
-										></wa-icon>
-										Remove member
-									</wa-button>
 								{/if}
 							</div>
 						</wa-drawer>
@@ -285,6 +287,16 @@
 		{/await}
 
 		<div class="column" style="gap: var(--wa-space-m)">
+			<wa-button
+				class="fill"
+				variant="danger"
+				appearance="plain"
+				data-dialog="open leave-group-dialog"
+			>
+				<wa-icon src={wrapPathInSvg(mdiExport)} slot="start"></wa-icon>
+
+				Leave group
+			</wa-button>
 			<wa-dialog label="Leave group" id="leave-group-dialog">
 				<span>Are you sure you want to leave this group? </span>
 				<wa-button
@@ -317,15 +329,15 @@
 			</wa-dialog>
 
 			<wa-button
+				class="fill"
 				variant="danger"
 				appearance="plain"
-				data-dialog="open leave-group-dialog"
+				data-dialog="open delete-group-dialog"
 			>
-				<wa-icon src={wrapPathInSvg(mdiExport)} slot="start"></wa-icon>
+				<wa-icon src={wrapPathInSvg(mdiClose)} slot="start"></wa-icon>
 
-				Leave group
+				Delete group
 			</wa-button>
-
 			<wa-dialog label="Delete group" id="delete-group-dialog">
 				<span>Are you sure you want to delete this group? </span>
 				<wa-button
@@ -356,16 +368,6 @@
 					Delete group
 				</wa-button>
 			</wa-dialog>
-
-			<wa-button
-				variant="danger"
-				appearance="plain"
-				data-dialog="open delete-group-dialog"
-			>
-				<wa-icon src={wrapPathInSvg(mdiClose)} slot="start"></wa-icon>
-
-				Delete group
-			</wa-button>
 		</div>
 	</div>
 {/await}

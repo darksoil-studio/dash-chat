@@ -11,7 +11,7 @@ use futures::Stream;
 use futures::stream::FuturesUnordered;
 use p2panda_auth::Access;
 use p2panda_core::cbor::encode_cbor;
-use p2panda_core::{Body, Header, Operation, PrivateKey, PublicKey};
+use p2panda_core::{Body, Hash, Header, Operation, PrivateKey, PublicKey};
 use p2panda_discovery::Discovery;
 use p2panda_discovery::mdns::LocalDiscovery;
 use p2panda_encryption::Rng;
@@ -38,7 +38,7 @@ use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
     decode_gossip_message, encode_gossip_message,
 };
-use crate::spaces::{DashForge, DashManager, DashSpace};
+use crate::spaces::{DashForge, DashManager, DashSpace, TestConditions};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::{AliasedId, alias_space_messages};
 use crate::topic::{LogId, Topic, kind};
@@ -77,6 +77,8 @@ pub type Orderer = PartialOrder<
 
 #[derive(Clone)]
 pub struct NodeState {
+    pub spaces_events:
+        Arc<RwLock<HashMap<Hash, Vec<Event<ChatId, TestConditions>>>>>,
     pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
     pub(crate) contacts: Arc<RwLock<HashMap<PK, QrCode>>>,
     pub(crate) chat_actor_id: ActorId,
@@ -128,7 +130,7 @@ pub struct Node {
 
     /// TODO: some of the stuff in here is only for testing.
     /// The channel senders are needed but any stateful stuff should go.
-    pub(crate) nodestate: NodeState,
+    pub nodestate: NodeState,
 }
 
 impl Node {
@@ -216,6 +218,7 @@ impl Node {
             stream_tx,
             initialized_topics: Arc::new(RwLock::new(HashMap::new())),
             nodestate: NodeState {
+                spaces_events: Arc::new(RwLock::new(HashMap::new())),
                 chats: Arc::new(RwLock::new(HashMap::new())),
                 contacts: Arc::new(RwLock::new(HashMap::new())),
                 chat_actor_id,

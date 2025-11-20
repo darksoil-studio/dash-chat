@@ -112,7 +112,7 @@
 			<div class="row" style="gap: var(--wa-space-s); align-items: center">
 				<SelectAvatar></SelectAvatar>
 
-				<wa-input placeholder="Name"> </wa-input>
+				<wa-input placeholder="Name" style="flex: 1"> </wa-input>
 			</div>
 		</div>
 	</wa-card>

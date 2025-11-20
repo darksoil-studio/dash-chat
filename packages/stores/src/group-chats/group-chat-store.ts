@@ -26,7 +26,7 @@ export class GroupChatStore {
 	constructor(
 		protected logsStore: LogsStore<TopicId, Payload>,
 		protected contactsStore: ContactsStore,
-		protected client: GroupChatClient,
+		public client: GroupChatClient,
 		public chatId: ChatId,
 	) {}
 

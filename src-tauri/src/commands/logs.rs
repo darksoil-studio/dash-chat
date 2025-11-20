@@ -113,15 +113,15 @@ pub enum SimplifiedEvent {
 }
 
 pub fn simplify_event(
-    event: Event<ChatId, TestConditions>,
+    event: &Event<ChatId, TestConditions>,
 ) -> anyhow::Result<Option<SimplifiedEvent>> {
     match event {
         Event::Application { data, .. } => {
             let value: serde_json::Value = decode_cbor(&data[..])?;
             Ok(Some(SimplifiedEvent::Application(value)))
         }
-        Event::Group(g) => Ok(Some(SimplifiedEvent::Group(g))),
-        Event::Space(s) => Ok(Some(SimplifiedEvent::Space(s))),
+        Event::Group(g) => Ok(Some(SimplifiedEvent::Group(g.clone()))),
+        Event::Space(s) => Ok(Some(SimplifiedEvent::Space(s.clone()))),
         _ => Ok(None),
     }
 }
@@ -136,11 +136,15 @@ pub async fn simplify(
         Some(b) => {
             let payload: Payload = decode_cbor(&b.to_bytes()[..])?;
 
-            if let Some(spaces_messages) = spaces_messages(payload.clone()) {
+            if let Payload::Chat(dashchat_node::ChatPayload::Space(spaces_messages)) = payload {
                 let mut all_events: Vec<SimplifiedEvent> = vec![];
 
                 for message in spaces_messages {
-                    let events = node.manager.process(&message).await?;
+                    // let events = node.manager.process(&message).await?;
+                    let map = node.nodestate.spaces_events.read().await;
+                    let Some(events) = map.get(&message.hash) else {
+                        continue;
+                    };
                     let mut simplified_events = events
                         .into_iter()
                         .map(simplify_event)

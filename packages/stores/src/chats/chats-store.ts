@@ -47,7 +47,6 @@ export class ChatsStore {
 
 	allChatsSummaries = reactive(async () => {
 		const chatIds = await this.allChatsIds();
-		console.log(chatIds)
 
 		const summaries = await ReactivePromise.all(
 			chatIds.map(chatId => this.chatSummary(chatId)),
@@ -74,7 +73,7 @@ export class ChatsStore {
 
 export interface ChatSummary {
 	type: 'GroupChat' | 'DirectMessagesChat';
-	chatId: string;
+	chatId: TopicId;
 	unreadMessages: number;
 	name: string;
 	avatar: string | undefined;

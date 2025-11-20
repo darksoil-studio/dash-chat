@@ -103,7 +103,7 @@ impl Node {
         self.stream_tx
             .send(Pin::from(Box::new(stream)))
             .await
-            .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
+            .map_err(|e| anyhow::anyhow!("stream channel closed: {e}"))?;
 
         self.initialized_topics
             .write()
@@ -320,6 +320,12 @@ impl Node {
                     self.spaces_store.set_message(&msg.id(), &msg).await?;
                     match self.manager.process(msg).await {
                         Ok(events) => {
+                            self.nodestate
+                                .spaces_events
+                                .write()
+                                .await
+                                .insert(msg.hash, events.clone());
+
                             for (i, event) in events.into_iter().enumerate() {
                                 // TODO: need to get this from the space message, not the header!
                                 // because the welcome message could be passed from a differetn author
