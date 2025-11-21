@@ -60,10 +60,10 @@
 	</div>
 
 	{#await code then code}
-		<div class="column center-in-desktop" style="gap: var(--wa-space-m); ">
+		<div class="column center-in-desktop" style="gap: var(--wa-space-m); margin: var(--wa-space-m); ">
 			Share this code:
 
-			<wa-qr-code value={code} size="512" style="align-self: center"
+			<wa-qr-code value={code} size="300" style="align-self: center"
 			></wa-qr-code>
 
 			<div class="row" style="gap: var(--wa-space-s); align-items: center">

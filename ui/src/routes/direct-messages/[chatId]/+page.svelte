@@ -21,12 +21,11 @@
 		return ()=>{}}
 	};
 
-// useReactivePromise(contactsStore.myPubKey)
 	const chatsStore: ChatsStore = getContext('chats-store');
-	const store = chatsStore.groupChats(chatId);
+	const store = chatsStore.directMessagesChats(chatId);
 
 	const messages = useReactivePromise(store.messages);
-	const info = useReactivePromise(store.info);
+	const peerProfile= useReactivePromise(store.peerProfile);
 	let textarea: WaTextarea;
 
 	async function sendMessage() {
@@ -53,17 +52,17 @@
 
 	<wa-button
 		style="flex: 1"
-		href={`/group-chat/${chatId}/info`}
+		href={`/direct-messages/${chatId}/info`}
 		appearance="plain"
 	>
-		{#await $info then info}
+		{#await $peerProfile then profile}
 			<wa-avatar
 				slot="start"
-				image={info.avatar}
-				initials={info.name.slice(0, 2)}
+				image={profile.avatar}
+				initials={profile.name.slice(0, 2)}
 			>
 			</wa-avatar>
-			<span>{info.name}</span>
+			<span>{profile.name}</span>
 		{/await}
 	</wa-button>
 </div>

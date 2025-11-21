@@ -35,14 +35,21 @@
 		Date.now() - timestamp > 46 * 60 * 1000;
 </script>
 
-<div class="column" style="flex: 1; margin: var(--wa-space-m)">
+<div class="column" style="flex: 1;">
 	{#await $chatSummaries then summaries}
 		{#each summaries as summary}
-			<wa-button appearance="plain" href={`/group-chat/${summary.chatId}`}>
+			<wa-button
+				class="button-with-avatar"
+				appearance="plain"
+				href={`/group-chat/${summary.chatId}`}
+			>
+				<wa-avatar
+					slot="start"
+					image={summary.avatar}
+					initials={summary.name.slice(0, 2)}
+				>
+				</wa-avatar>
 				<div class="row" style="align-items: center; gap: var(--wa-space-m)">
-					<wa-avatar image={summary.avatar} initials={summary.name.slice(0, 2)}>
-					</wa-avatar>
-
 					<div class="column" style="flex: 1">
 						<div
 							class="row"
@@ -99,9 +106,6 @@
 </div>
 
 <style>
-	wa-button::part(base) {
-		height: 68px;
-	}
 	wa-button::part(label) {
 		flex: 1;
 	}

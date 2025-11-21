@@ -9,11 +9,13 @@ export * from './types.js';
 
 export * from './contacts/contacts-store.js';
 export * from './contacts/contacts-client.js';
+export * from './contacts/contact-code.js';
 
 export * from './devices/devices-store.js';
 export * from './devices/devices-client.js';
 
-export * from './direct-messages/direct-chat-store.js';
+export * from './direct-messages/direct-messages-chat-store.js';
+export * from './direct-messages/direct-messages-chat-client.js';
 
 export * from './group-chats/group-chat-store.js';
 export * from './group-chats/group-chat-client.js';

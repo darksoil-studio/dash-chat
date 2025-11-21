@@ -20,6 +20,7 @@
 			<a href="/my-profile">
 				<Avatar chatActorId={myChatActorId}></Avatar>
 			</a>
+			
 			<div style="flex: 1"></div>
 
 			<wa-button class="circle" href="/contacts" appearance="plain">

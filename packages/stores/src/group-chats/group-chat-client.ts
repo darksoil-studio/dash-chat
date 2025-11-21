@@ -1,6 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import { LogsStore } from '../p2panda/logs-store';
 import { ActorId, PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 

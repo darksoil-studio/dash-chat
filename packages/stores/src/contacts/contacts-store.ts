@@ -79,7 +79,7 @@ export class ContactsStore {
 			contacts.map(contact => this.profiles(contact)),
 		);
 
-		const profilesWithContacts: Array<[PublicKey, Profile]> = profiles
+		const profilesWithContacts: Array<[ActorId, Profile]> = profiles
 			.filter(p => !!p)
 			.map((profile, i) => [contacts[i], profile]);
 

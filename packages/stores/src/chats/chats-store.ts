@@ -7,6 +7,8 @@ import { PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 import { ChatsClient } from './chats-client';
 import { ContactsStore } from '../contacts/contacts-store';
+import { DirectMessagesChatStore } from '../direct-messages/direct-messages-chat-store';
+import { DirectMessagesChatClient } from '../direct-messages/direct-messages-chat-client';
 
 function random_hexadecimal(length: number) {
 	var result = '';
@@ -41,6 +43,11 @@ export class ChatsStore {
 	groupChats = reactive(
 		(chatId: ChatId) =>
 			new GroupChatStore(this.logsStore,this.contactsStore, new GroupChatClient(), chatId),
+	);
+
+	directMessagesChats = reactive(
+		(chatId: ChatId) =>
+			new DirectMessagesChatStore(this.logsStore,this.contactsStore, new DirectMessagesChatClient(), chatId),
 	);
 
 	allChatsIds = reactive(() => this.client.getGroupChats());

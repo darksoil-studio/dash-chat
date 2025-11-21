@@ -45,6 +45,12 @@ export class GroupChatStore {
 		// const messages = await invoke('get_messages', {
 		// 	chatId: this.chatId,
 		// });
+		// const messages : Array<SimplifiedOperation<ChatMessageContent>> = [{
+		// 	hash: '',
+		// 	header: {
+				
+		// 	}
+		// }]
 		return [];
 
 		// const messages: Array<SimplifiedOperation<ChatMessageContent>> = [];

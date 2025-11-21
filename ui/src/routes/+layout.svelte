@@ -11,9 +11,12 @@
 		ContactsClient,
 		ContactsStore,
 		DevicesClient,
-		DevicesStore
+		DevicesStore,
 	} from 'dash-chat-stores';
+
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
+	import { isMobile } from '../utils/environment';
+	import { setupInsets} from '../utils/insets';
 	let { children } = $props();
 
 	const logsClient = new TauriLogsClient<TopicId, Payload>();
@@ -24,12 +27,19 @@
 	setContext('devices-store', devicesStore);
 
 	const contactsClient = new ContactsClient();
-	const contactsStore = new ContactsStore(logsStore, devicesStore, contactsClient);
+	const contactsStore = new ContactsStore(
+		logsStore,
+		devicesStore,
+		contactsClient,
+	);
 	setContext('contacts-store', contactsStore);
 
 	const chatsClient = new ChatsClient();
-	const chatsStore = new ChatsStore(logsStore,contactsStore, chatsClient);
+	const chatsStore = new ChatsStore(logsStore, contactsStore, chatsClient);
 	setContext('chats-store', chatsStore);
+
+	if (isMobile) setupInsets();
+
 </script>
 
 <main class="container column" style="flex: 1">
@@ -39,4 +49,8 @@
 </main>
 
 <style>
+	main {
+		margin-top: var(--safe-area-inset-top, 0);
+		margin-bottom: var(--safe-area-inset-bottom, 0);
+	}
 </style>

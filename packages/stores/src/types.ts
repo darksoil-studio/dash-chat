@@ -64,15 +64,15 @@ export type Payload =
 
 export type MessageId = string;
 
-export type MessageContent = {
-	type: 'TextMessage';
-	message: string;
-	replyTo: MessageId | undefined;
-};
+// export type MessageContent = {
+// 	type: 'TextMessage';
+// 	message: string;
+// 	replyTo: MessageId | undefined;
+// };
 
-export interface Message {
-	id: MessageId;
-	content: MessageContent;
-	author: PublicKey;
-	timestamp: number;
-}
+// export interface Message {
+// 	id: MessageId;
+// 	content: MessageContent;
+// 	author: PublicKey;
+// 	timestamp: number;
+// }
