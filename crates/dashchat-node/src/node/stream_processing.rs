@@ -190,6 +190,7 @@ impl Node {
         Ok(())
     }
 
+    // SAM: could be generic https://github.com/p2panda/p2panda/blob/65727c7fff64376f9d2367686c2ed5132ff7c4e0/p2panda-stream/src/ordering/partial/mod.rs#L83
     pub async fn process_ordering(&self, operation: Operation<Extensions>) -> anyhow::Result<()> {
         self.ordering.write().await.process(operation).await?;
         Ok(())
@@ -234,7 +235,9 @@ impl Node {
 
         tracing::trace!(?payload, "RECEIVED PAYLOAD");
 
-        if !is_repair {
+        // SAM: definitely process the repair message on the authoring side too!
+        if true {
+            // if !is_repair {
             if let Err(err) = self
                 .process_payload(&header, payload.as_ref(), is_author)
                 .await

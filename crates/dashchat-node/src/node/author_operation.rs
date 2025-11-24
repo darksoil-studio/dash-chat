@@ -148,9 +148,9 @@ impl Node {
             IngestResult::Complete(op @ Operation { hash: hash2, .. }) => {
                 assert_eq!(hash, hash2);
 
-                // NOTE: if we fail to process here, incoming operations will be stuck as pending!
                 self.process_ordering(op.clone()).await?;
 
+                // NOTE: if we fail to process here, incoming operations will be stuck as pending!
                 self.process_operation(op, self.author_store.clone(), true, is_repair)
                     .await?;
 

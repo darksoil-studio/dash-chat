@@ -30,13 +30,15 @@ impl p2panda_spaces::traits::SpacesMessage<ChatId, ()> for SpaceControlMessage {
     }
 }
 
+// SAM: Operation goes inside here, not the other way around!
+// SAM: SpacesArgs should probably go on the Extensions
 impl SpaceControlMessage {
     pub fn new(
         author: p2panda_spaces::ActorId,
         timestamp: u64,
         spaces_args: SpacesArgs,
     ) -> Result<Self, EncodeError> {
-        let bytes = encode_cbor(&(author, &spaces_args)).unwrap();
+        let bytes = encode_cbor(&(author, &timestamp, &spaces_args)).unwrap();
         Ok(Self {
             hash: p2panda_core::Hash::new(bytes),
             author,
