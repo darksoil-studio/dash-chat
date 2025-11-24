@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
 use crate::contact::QrCode;
-use crate::spaces::SpaceControlMessage;
+use crate::spaces::{SpaceOperation, SpacesArgs};
 use crate::topic::LogId;
 use crate::{AsBody, Cbor, Topic};
 
@@ -40,9 +40,6 @@ pub enum InboxPayload {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum ChatPayload {
-    /// Space control messages, including actual chat messages
-    Space(Vec<SpaceControlMessage>),
-
     /// Instructs the recipient to subscribe to the group chat topic.
     /// This is only sent in direct chat messages.
     /// It's invalid to send in a group chat, because you must be
@@ -52,12 +49,6 @@ pub enum ChatPayload {
     /// is that it can only be sent to contacts, and we want it to be
     /// long-lasting, so using an Inbox is not an option.
     JoinGroup(ChatId),
-}
-
-impl From<Vec<SpaceControlMessage>> for ChatPayload {
-    fn from(msgs: Vec<SpaceControlMessage>) -> Self {
-        Self::Space(msgs)
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -76,6 +67,9 @@ pub enum Payload {
 
     /// Group chat data, including direct 1:1 chats
     Chat(ChatPayload),
+
+    /// Space control message
+    Space(SpacesArgs),
 
     /// Data only seen within your private device group.
     /// No other person sees these.

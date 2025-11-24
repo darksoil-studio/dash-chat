@@ -9,6 +9,7 @@ use p2panda_store::{LogStore, MemoryStore, OperationStore};
 
 use crate::{
     payload::{Extensions, Payload},
+    spaces::SpaceOperation,
     testing::AliasedId,
     topic::{LogId, Topic},
     *,
@@ -47,11 +48,9 @@ impl OpStore {
                     .clone()
                     .map(|body| Payload::try_from_body(&body).unwrap())
                 {
-                    Some(Payload::Chat(ChatPayload::Space(msgs))) => {
-                        format!(
-                            "{:?}",
-                            msgs.iter().map(|m| m.arg_type()).collect::<Vec<_>>()
-                        )
+                    Some(Payload::Space(args)) => {
+                        let space_op = SpaceOperation::new(header.clone(), args);
+                        format!("{:?}", space_op.arg_type())
                     }
                     Some(p) => format!("{p:?}"),
                     None => "_".to_string(),

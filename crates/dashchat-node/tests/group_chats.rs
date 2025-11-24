@@ -62,7 +62,9 @@ async fn test_group_2() {
 
     let chat_id = GroupChatId::random();
     alice.create_group_chat_space(chat_id).await.unwrap();
-    alice.repair_spaces_and_publish().await.unwrap();
+
+    // SAM: not needed
+    // alice.repair_spaces_and_publish().await.unwrap();
 
     alice
         .add_member(chat_id, bobbi.repped_group())

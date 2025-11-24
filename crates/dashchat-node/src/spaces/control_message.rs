@@ -1,54 +1,63 @@
-use p2panda_core::cbor::{EncodeError, encode_cbor};
+use p2panda_core::{Operation, cbor::EncodeError};
 use p2panda_spaces::OperationId;
 use serde::{Deserialize, Serialize};
 
 pub type SpacesArgs = p2panda_spaces::SpacesArgs<ChatId, ()>;
 
+use crate::{AsBody, Extensions, Header, Payload};
+
 use super::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SpaceControlMessage {
-    pub hash: p2panda_core::Hash,
-    pub author: p2panda_spaces::ActorId,
-    pub timestamp: u64,
-    pub spaces_args: SpacesArgs,
+pub struct SpaceOperation {
+    pub header: Header,
+    pub args: SpacesArgs,
 }
 
-impl p2panda_spaces::traits::AuthoredMessage for SpaceControlMessage {
+impl p2panda_spaces::traits::AuthoredMessage for SpaceOperation {
     fn id(&self) -> OperationId {
-        OperationId::from(self.hash.clone())
+        OperationId::from(self.header.hash())
     }
 
     fn author(&self) -> p2panda_spaces::ActorId {
-        self.author
+        self.header.public_key.into()
     }
 }
 
-impl p2panda_spaces::traits::SpacesMessage<ChatId, ()> for SpaceControlMessage {
+impl p2panda_spaces::traits::SpacesMessage<ChatId, ()> for SpaceOperation {
     fn args(&self) -> &SpacesArgs {
-        &self.spaces_args
+        &self.args
     }
 }
 
 // SAM: Operation goes inside here, not the other way around!
 // SAM: SpacesArgs should probably go on the Extensions
-impl SpaceControlMessage {
-    pub fn new(
-        author: p2panda_spaces::ActorId,
-        timestamp: u64,
-        spaces_args: SpacesArgs,
-    ) -> Result<Self, EncodeError> {
-        let bytes = encode_cbor(&(author, &timestamp, &spaces_args)).unwrap();
-        Ok(Self {
-            hash: p2panda_core::Hash::new(bytes),
-            author,
-            timestamp,
-            spaces_args,
+impl SpaceOperation {
+    pub fn new(header: Header, args: SpacesArgs) -> Self {
+        Self { header, args }
+    }
+
+    pub fn from_payload(header: &Header, payload: &Payload) -> anyhow::Result<Option<Self>> {
+        match payload {
+            Payload::Space(args) => Ok(Some(Self::new(header.clone(), args.clone()))),
+            _ => Ok(None),
+        }
+    }
+
+    pub fn into_operation(self) -> anyhow::Result<Operation<Extensions>> {
+        Ok(Operation {
+            header: self.header.clone(),
+            hash: self.header.hash(),
+            body: Some(Payload::Space(self.args.clone()).try_into_body()?),
         })
     }
 
+    pub fn timestamp(&self) -> u64 {
+        self.header.timestamp
+    }
+
     pub fn dependencies(&self) -> Vec<OperationId> {
-        match &self.spaces_args {
+        match &self.args {
             SpacesArgs::KeyBundle { .. } => vec![],
             SpacesArgs::SpaceMembership {
                 space_dependencies,
@@ -71,7 +80,7 @@ impl SpaceControlMessage {
     }
 
     pub fn arg_type(&self) -> ArgType {
-        match &self.spaces_args {
+        match &self.args {
             p2panda_spaces::SpacesArgs::KeyBundle { .. } => ArgType::KeyBundle,
             p2panda_spaces::SpacesArgs::Auth { .. } => ArgType::Auth,
             p2panda_spaces::SpacesArgs::SpaceMembership { .. } => ArgType::SpaceMembership,

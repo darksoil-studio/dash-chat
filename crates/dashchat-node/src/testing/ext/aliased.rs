@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::LazyLock, sync::Mutex};
 
 use p2panda_spaces::traits::AuthoredMessage;
 
-use crate::{ChatId, spaces::SpaceControlMessage, testing::ShortId};
+use crate::{ChatId, spaces::SpaceOperation, testing::ShortId};
 
 static ALIASES: LazyLock<Mutex<HashMap<Vec<u8>, String>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
@@ -12,7 +12,7 @@ static ALIASES: LazyLock<Mutex<HashMap<Vec<u8>, String>>> =
 pub fn alias_space_messages<'a>(
     prefix: &str,
     id: impl Into<ChatId> + AliasedId + std::fmt::Debug,
-    msgs: impl IntoIterator<Item = &'a SpaceControlMessage>,
+    msgs: impl IntoIterator<Item = &'a SpaceOperation>,
 ) {
     for (i, msg) in msgs.into_iter().enumerate() {
         let author = msg.author().alias();

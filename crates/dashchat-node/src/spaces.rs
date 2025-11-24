@@ -19,7 +19,7 @@ use p2panda_spaces::types::StrongRemoveResolver;
 use p2panda_spaces::{ActorId, Event, Member};
 
 use crate::chat::ChatId;
-use crate::stores::SpacesStore;
+use crate::stores::{OpStore, SpacesStore};
 use crate::testing::AliasedId;
 pub use forge::DashForge;
 
@@ -33,7 +33,7 @@ pub type DashGroup = p2panda_spaces::group::Group<
     SpacesStore,
     TestKeyStore,
     DashForge,
-    SpaceControlMessage,
+    SpaceOperation,
     TestConditions,
     StrongRemoveResolver<TestConditions>,
 >;
@@ -43,7 +43,7 @@ pub type DashSpace = p2panda_spaces::space::Space<
     SpacesStore,
     TestKeyStore,
     DashForge,
-    SpaceControlMessage,
+    SpaceOperation,
     TestConditions,
     StrongRemoveResolver<TestConditions>,
 >;
@@ -56,7 +56,7 @@ pub struct DashManager {
         SpacesStore,
         TestKeyStore,
         DashForge,
-        SpaceControlMessage,
+        SpaceOperation,
         TestConditions,
         StrongRemoveResolver<TestConditions>,
     >,
@@ -67,6 +67,7 @@ impl DashManager {
     pub async fn new(
         private_key: PrivateKey,
         spaces_store: SpacesStore,
+        op_store: OpStore,
         rng: Rng,
     ) -> anyhow::Result<Self> {
         let credentials = p2panda_spaces::Credentials::from_keys(
@@ -75,8 +76,9 @@ impl DashManager {
         );
 
         let forge = DashForge {
-            public_key: private_key.public_key(),
+            private_key,
             store: spaces_store.clone(),
+            op_store: op_store,
         };
 
         let key_store = p2panda_spaces::test_utils::TestKeyStore::new();
@@ -96,7 +98,7 @@ impl DashManager {
         initial_members: &[(ActorId, Access<TestConditions>)],
     ) -> anyhow::Result<(
         DashSpace,
-        Vec<SpaceControlMessage>,
+        Vec<SpaceOperation>,
         Vec<Event<ChatId, TestConditions>>,
     )> {
         let initial = initial_members

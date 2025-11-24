@@ -67,18 +67,14 @@ pub fn decode_spaces_args(spaces_args: SpacesArgs) -> Result<Option<serde_json::
 
 pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
     let bytes = body.to_bytes();
-    let Ok(Payload::Chat(dashchat_node::ChatPayload::Space(space_messages))) =
-        decode_cbor(&bytes[..])
-    else {
+    let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
         return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
     };
 
     let mut values: Vec<serde_json::Value> = vec![];
 
-    for message in space_messages {
-        if let Some(value) = decode_spaces_args(message.spaces_args)? {
-            values.push(value);
-        }
+    if let Some(value) = decode_spaces_args(args)? {
+        values.push(value);
     }
 
     Ok(serde_json::Value::Array(values))
