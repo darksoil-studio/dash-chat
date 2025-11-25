@@ -2,16 +2,16 @@ use std::{collections::HashMap, sync::LazyLock, sync::Mutex};
 
 use p2panda_spaces::traits::AuthoredMessage;
 
-use crate::{ChatId, spaces::SpaceOperation, testing::ShortId};
+use crate::{ChatId, Topic, spaces::SpaceOperation, testing::ShortId, topic::TopicKind};
 
 static ALIASES: LazyLock<Mutex<HashMap<Vec<u8>, String>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// Add an alias to each space message with uniform naming.
 /// Useful for debugging.
-pub fn alias_space_messages<'a>(
+pub fn alias_space_messages<'a, K: TopicKind>(
     prefix: &str,
-    id: impl Into<ChatId> + AliasedId + std::fmt::Debug,
+    id: Topic<K>,
     msgs: impl IntoIterator<Item = &'a SpaceOperation>,
 ) {
     for (i, msg) in msgs.into_iter().enumerate() {

@@ -26,18 +26,17 @@ pub struct Profile {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type", content = "payload")]
 pub enum AnnouncementsPayload {
     SetProfile(Profile),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
     /// Invites the recipient to add the sender as a contact.
     Contact(QrCode),
 }
 
+// TODO: consolidate into something else
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum ChatPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
@@ -57,7 +56,6 @@ pub enum DeviceGroupPayload {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(tag = "type", content = "payload")]
 pub enum Payload {
     /// Pushing data out to my contacts.
     Announcements(AnnouncementsPayload),

@@ -191,10 +191,15 @@ impl Node {
 
         let op_store = OpStore::new(op_store);
 
+        let chat_actor_id: ActorId = PrivateKey::from_bytes(&rng.random_array()?)
+            .public_key()
+            .into();
+
         let network = network_builder.build().await.context("spawn p2p network")?;
         let spaces_store = SpacesStore::new();
-        let manager = DashManager::new(
+        let (manager, device_group_msgs) = DashManager::new(
             private_key.clone(),
+            chat_actor_id.clone(),
             spaces_store.clone(),
             op_store.clone(),
             rng,
@@ -204,16 +209,6 @@ impl Node {
 
         // // nope
         // manager.register_member(&manager.me().await?).await?;
-
-        let (chat_actor_id, device_group_msgs) = {
-            let (group, msgs, _event) = manager
-                .create_group(&[(manager.id(), Access::manage())])
-                .await?;
-
-            alias_space_messages("create_device_group", device_space_id, msgs.iter());
-
-            (group.id(), msgs)
-        };
 
         let (stream_tx, stream_rx) = mpsc::channel(100);
 
@@ -725,7 +720,7 @@ impl Node {
                 ));
             }
         }
-        // XXX: sleep a little more
+        // XXX: need sleep a little more for all the messages to be processed
         tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
 
         self.initialize_topic(Topic::announcements(actor), false)

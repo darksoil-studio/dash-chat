@@ -42,7 +42,7 @@ impl Node {
         self.process_authored_operation(header, body, alias).await
     }
 
-    pub(super) async fn process_authored_space_messages(
+    pub(crate) async fn process_authored_space_messages(
         &self,
         ops: Vec<SpaceOperation>,
     ) -> Result<(), anyhow::Error> {
@@ -66,6 +66,8 @@ impl Node {
         if let Some(alias) = alias {
             header.hash().aliased(alias);
         }
+
+        tracing::info!(?log_id, hash = hash.alias(), "PUB: authoring operation");
 
         let result = p2panda_stream::operation::ingest_operation(
             &mut *self.op_store.clone(),

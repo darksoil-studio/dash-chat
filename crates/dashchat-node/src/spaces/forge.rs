@@ -1,5 +1,10 @@
+use std::sync::Arc;
+
 use p2panda_core::{PrivateKey, PublicKey};
-use p2panda_spaces::traits::{AuthoredMessage, MessageStore};
+use p2panda_spaces::{
+    ActorId,
+    traits::{AuthoredMessage, MessageStore},
+};
 
 use crate::{
     Payload, Topic,
@@ -13,6 +18,7 @@ use crate::{
 #[debug("DashForge")]
 pub struct DashForge {
     pub private_key: PrivateKey,
+    pub chat_actor_id: ActorId,
     pub store: SpacesStore,
     pub op_store: OpStore,
 }

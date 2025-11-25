@@ -188,11 +188,7 @@ impl Topic<kind::Chat> {
 }
 
 impl Topic<kind::GroupChat> {
-    /// The topic ID is the unique chat ID.
-    pub fn group_chat(chat_id: [u8; 32]) -> Self {
-        Self::new(chat_id)
-    }
-
+    /// The topic ID is the unique (random) chat ID.
     pub fn random() -> Self {
         Self::new(rand::random())
     }
@@ -222,8 +218,7 @@ impl Topic<kind::Inbox> {
 impl Topic<kind::Announcements> {
     /// The topic ID is the actor ID.
     pub fn announcements(actor: ActorId) -> Self {
-        let hash = blake3::hash(actor.as_bytes());
-        Self::new(hash.into())
+        Self::new(*actor.as_bytes())
     }
 }
 
