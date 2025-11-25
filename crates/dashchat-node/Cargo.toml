@@ -53,10 +53,15 @@ itertools = "0.14.0"
 pretty_assertions = "1.4.1"
 
 [features]
-default = ["testing"]
+default = [
+  "testing",
+  "instrument",
+]
 instrument = []
 testing = []
 
+# patches go in the workspace Cargo.toml
+#
 # [patch."https://github.com/maackle/p2panda.git"]
 # p2panda-auth = { path = "/home/michael/gitfork/p2panda/p2panda-auth" }
 # p2panda-core = { path = "/home/michael/gitfork/p2panda/p2panda-core" }

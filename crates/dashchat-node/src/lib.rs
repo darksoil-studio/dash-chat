@@ -18,7 +18,7 @@ use p2panda_core::IdentityError;
 
 pub use chat::*;
 pub use contact::{QrCode, ShareIntent};
-pub use node::{Node, NodeConfig, NodeLocalData, Notification};
+pub use node::{Node, NodeConfig, NodeLocalData, Notification, ReppedGroup};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 pub use payload::*;
