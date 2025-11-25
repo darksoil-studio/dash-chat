@@ -7,6 +7,7 @@
 	import type WaTextarea from '@awesome.me/webawesome/dist/components/textarea/textarea.js';
 
 	import { useReactivePromise } from '../../../stores/use-signal';
+	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '../../../utils/time';
 	import { getContext } from 'svelte';
 	import type { ChatsStore, ContactsStore } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
@@ -15,17 +16,13 @@
 	const chatId = window.location.href.split('/').reverse()[0];
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	const myPubKey = {
-		subscribe: (set: any)=> {
-		Promise.resolve(set('no'))
-		return ()=>{}}
-	};
+	const myActorId = useReactivePromise(contactsStore.myChatActorId);
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.directMessagesChats(chatId);
 
 	const messages = useReactivePromise(store.messages);
-	const peerProfile= useReactivePromise(store.peerProfile);
+	const peerProfile = useReactivePromise(store.peerProfile);
 	let textarea: WaTextarea;
 
 	async function sendMessage() {
@@ -35,14 +32,6 @@
 		await store.sendMessage(message);
 		textarea.value = '';
 	}
-
-	// const lastMessage = messageSet[0][1];
-	// const timestamp = lastMessage.payload.timestamp / 1000;
-	// const date = new Date(timestamp);
-	const lessThanAMinuteAgo = (timestamp: number) =>
-		Date.now() - timestamp < 60 * 1000;
-	const moreThanAnHourAgo = (timestamp: number) =>
-		Date.now() - timestamp > 46 * 60 * 1000;
 </script>
 
 <div class="top-bar" style="gap: 0">
@@ -58,11 +47,11 @@
 		{#await $peerProfile then profile}
 			<wa-avatar
 				slot="start"
-				image={profile.avatar}
-				initials={profile.name.slice(0, 2)}
+				image={profile!.avatar}
+				initials={profile!.name.slice(0, 2)}
 			>
 			</wa-avatar>
-			<span>{profile.name}</span>
+			<span>{profile!.name}</span>
 		{/await}
 	</wa-button>
 </div>
@@ -72,32 +61,37 @@
 	style="gap: var(--wa-space-l); flex: 1;  margin: var(--wa-space-m)"
 >
 	<div class="column" style="gap: var(--wa-space-m); flex: 1;">
-		{#await $myPubKey then myPubKey}
+		{#await $myActorId then myActorId}
 			{#await $messages then messages}
 				{#each messages as message}
-					{#if myPubKey == message.author}
-						<wa-card style="align-self: end">
-							<div class="row" style="gap: var(--wa-space-s)">
+					{#if myActorId == message.author}
+						<wa-card class="wa-dark" style="align-self: end">
+							<div
+								class="row"
+								style="gap: var(--wa-space-s);"
+							>
 								<span>{message.content}</span>
 
-								{#if lessThanAMinuteAgo(message.timestamp)}
-									<span>now</span>
-								{:else if moreThanAnHourAgo(message.timestamp)}
-									<wa-format-date
-										hour="numeric"
-										minute="numeric"
-										hour-format="24"
-										date={new Date(message.timestamp)}
-									></wa-format-date>
-								{:else}
-									<wa-relative-time
-										style=""
-										sync
-										format="narrow"
-										date={new Date(message.timestamp)}
-									>
-									</wa-relative-time>
-								{/if}
+								<div class="quiet">
+									{#if lessThanAMinuteAgo(message.timestamp)}
+										<span>now</span>
+									{:else if moreThanAnHourAgo(message.timestamp)}
+										<wa-format-date
+											hour="numeric"
+											minute="numeric"
+											hour-format="24"
+											date={new Date(message.timestamp)}
+										></wa-format-date>
+									{:else}
+										<wa-relative-time
+											style=""
+											sync
+											format="narrow"
+											date={new Date(message.timestamp)}
+										>
+										</wa-relative-time>
+									{/if}
+								</div>
 							</div></wa-card
 						>
 					{:else}
@@ -105,24 +99,26 @@
 							<div class="row" style="gap: var(--wa-space-s)">
 								<span>{message.content}</span>
 
-								{#if lessThanAMinuteAgo(message.timestamp)}
-									<span>now</span>
-								{:else if moreThanAnHourAgo(message.timestamp)}
-									<wa-format-date
-										hour="numeric"
-										minute="numeric"
-										hour-format="24"
-										date={new Date(message.timestamp)}
-									></wa-format-date>
-								{:else}
-									<wa-relative-time
-										style=""
-										sync
-										format="narrow"
-										date={new Date(message.timestamp)}
-									>
-									</wa-relative-time>
-								{/if}
+								<div class="quiet">
+									{#if lessThanAMinuteAgo(message.timestamp)}
+										<span>now</span>
+									{:else if moreThanAnHourAgo(message.timestamp)}
+										<wa-format-date
+											hour="numeric"
+											minute="numeric"
+											hour-format="24"
+											date={new Date(message.timestamp)}
+										></wa-format-date>
+									{:else}
+										<wa-relative-time
+											style=""
+											sync
+											format="narrow"
+											date={new Date(message.timestamp)}
+										>
+										</wa-relative-time>
+									{/if}
+								</div>
 							</div></wa-card
 						>
 					{/if}

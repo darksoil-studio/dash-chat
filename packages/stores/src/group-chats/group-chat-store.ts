@@ -8,7 +8,7 @@ import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { ActorId, PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
-import { ChatMessageContent, GroupChatClient } from './group-chat-client';
+import { GroupChatClient, Message, MessageContent } from './group-chat-client';
 
 export interface GroupInfo {
 	name: string;
@@ -40,32 +40,25 @@ export class GroupChatStore {
 	});
 
 	messages = reactive(async () => {
-		const allLogs = await this.logsStore.logsForAllAuthors(this.chatId);
-		console.log(allLogs);
+		// const allLogs = await this.logsStore.logsForAllAuthors(this.chatId);
 		// const messages = await invoke('get_messages', {
 		// 	chatId: this.chatId,
 		// });
 		// const messages : Array<SimplifiedOperation<ChatMessageContent>> = [{
 		// 	hash: '',
 		// 	header: {
-				
+
 		// 	}
 		// }]
-		return [];
+		const messages: Array<Message> = [
+			{
+				content: 'heeey',
+				author: await this.contactsStore.myChatActorId(),
+				timestamp: Date.now(),
+			},
+		];
 
-		// const messages: Array<SimplifiedOperation<ChatMessageContent>> = [];
-		// console.log(allLogs);
-
-		// const setProfiles: Array<[number, Profile]> = log
-		// 	.filter(
-		// 		l =>
-		// 			l.body?.type === 'Announcements' &&
-		// 			l.body.payload.type === 'SetProfile',
-		// 	)
-		// 	.map(l => [
-		// 		l.header.timestamp,
-		// 		((l.body! as any).payload as AnnouncementPayload).payload,
-		// 	]);
+		return messages;
 	});
 
 	membersIds = reactive(async () => {
@@ -91,7 +84,7 @@ export class GroupChatStore {
 			allMembers[membersIds[i]] = members[i];
 		}
 
-		return members;
+		return allMembers;
 	});
 
 	members = reactive(async (actorId: ActorId) => {
@@ -112,7 +105,7 @@ export class GroupChatStore {
 		return this.client.addMember(this.chatId, member);
 	}
 
-	sendMessage(content: ChatMessageContent) {
+	sendMessage(content: MessageContent) {
 		return this.client.sendMessage(this.chatId, content);
 	}
 }

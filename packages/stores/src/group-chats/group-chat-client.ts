@@ -3,11 +3,11 @@ import { invoke } from '@tauri-apps/api/core';
 import { ActorId, PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 
-export type ChatMessageContent = string;
+export type MessageContent = string;
 
-export interface ChatMessage {
-	content: ChatMessageContent;
-	author: PublicKey;
+export interface Message {
+	content: MessageContent;
+	author: ActorId;
 	timestamp: number;
 }
 
@@ -21,7 +21,7 @@ export interface IGroupChatClient {
 
 	/// Messages
 
-	sendMessage(chatId: ChatId, content: ChatMessageContent): Promise<void>;
+	sendMessage(chatId: ChatId, content: MessageContent): Promise<void>;
 
 	leaveGroup(): Promise<void>;
 	deleteGroup(): Promise<void>;
@@ -36,7 +36,7 @@ export class GroupChatClient implements IGroupChatClient {
 	}
 	async removeMember(chatId: ChatId, member: PublicKey): Promise<void> {}
 
-	sendMessage(chatId: ChatId, content: ChatMessageContent): Promise<void> {
+	sendMessage(chatId: ChatId, content: MessageContent): Promise<void> {
 		return invoke('send_message', { chatId, content });
 	}
 	async promoteToAdministrator(

@@ -1,7 +1,7 @@
 import { reactive } from 'signalium';
 
 import { ContactsStore } from '../contacts/contacts-store';
-import { ChatMessageContent } from '../group-chats/group-chat-client';
+import { Message, MessageContent } from '../group-chats/group-chat-client';
 import { LogsStore } from '../p2panda/logs-store';
 import { TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
@@ -21,10 +21,18 @@ export class DirectMessagesChatStore {
 	});
 
 	messages = reactive(async () => {
-		return [];
+		const messages: Array<Message> = [
+			{
+				content: 'heeey',
+				author: await this.contactsStore.myChatActorId(),
+				timestamp: Date.now(),
+			},
+		];
+
+		return messages;
 	});
 
-	sendMessage(content: ChatMessageContent) {
+	sendMessage(content: MessageContent) {
 		return this.client.sendMessage(this.chatId, content);
 	}
 }

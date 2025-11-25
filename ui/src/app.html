@@ -69,6 +69,18 @@
 				display: flex;
 				flex-direction: column;
 			}
+
+			.quiet {
+				color: var(--wa-color-text-quiet);
+			}
+
+			wa-card.wa-dark {
+				background-color: var(--wa-color-brand-50);
+			}
+
+			wa-card.wa-dark .quiet {
+				color: var(--wa-color-neutral-80);
+			}
 		</style>
 
 		%sveltekit.head%
