@@ -8,6 +8,14 @@ import { personalTopicFor } from '../topics';
 import { AnnouncementPayload, Payload } from '../types';
 import { IContactsClient, Profile } from './contacts-client';
 
+export type ContactRequestId = string
+
+export interface IncomingContactRequest {
+	profile: Profile;
+	actorId: ActorId;
+	contactRequestId: ContactRequestId
+}
+
 export class ContactsStore {
 	constructor(
 		protected logsStore: LogsStore<TopicId, Payload>,
@@ -22,6 +30,15 @@ export class ContactsStore {
 
 		return await this.profiles(myChatActorId);
 	});
+
+	incomingContactRequests = reactive(async () => {
+		const requests :Array<IncomingContactRequest> = [{
+			actorId: await this.myChatActorId(),
+			profile: (await this.myProfile())!,
+			contactRequestId: '1'
+		}]
+		return requests
+	})
 
 	profiles = reactive(async (actorId: ActorId) => {
 		const topicId = personalTopicFor(actorId);
