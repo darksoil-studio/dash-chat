@@ -212,7 +212,7 @@ impl Node {
         operation: Operation<Extensions>,
         author_store: AuthorStore<LogId>,
         is_author: bool,
-        is_repair: bool,
+        _is_repair: bool,
     ) -> anyhow::Result<()> {
         let Operation { header, body, hash } = operation;
 
@@ -221,6 +221,8 @@ impl Node {
         // XXX: this eventually needs to be more selective than just adding any old author
         author_store.add_author(log_id, header.public_key).await;
         tracing::debug!(?log_id, "adding author");
+
+        tracing::info!(?log_id, hash = hash.alias(), "PROC: processing operation");
 
         let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
 

@@ -9,8 +9,6 @@ use crate::{polestar as p, timestamp_now};
 
 use super::*;
 
-pub type OpStore = p2panda_store::MemoryStore<LogId, Extensions>;
-
 impl Node {
     /// Author a space repair operation without processing it
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
@@ -30,18 +28,20 @@ impl Node {
         payload: Payload,
         alias: Option<&str>,
     ) -> Result<Header, anyhow::Error> {
-        let (header, body) = create_operation(
-            &self.op_store,
-            &self.local_data.private_key,
-            topic.clone(),
-            payload.clone(),
-            vec![],
-        )
-        .await?;
+        let (header, body) = self
+            .op_store
+            .create_operation(
+                &self.local_data.private_key,
+                topic.clone(),
+                payload.clone(),
+                vec![],
+            )
+            .await?;
 
         self.process_authored_operation(header, body, alias).await
     }
 
+    // Can't do this unless we allow multiple operations to be created but not yet ingested.
     pub(crate) async fn process_authored_space_messages(
         &self,
         ops: Vec<SpaceOperation>,
@@ -67,7 +67,12 @@ impl Node {
             header.hash().aliased(alias);
         }
 
-        tracing::info!(?log_id, hash = hash.alias(), "PUB: authoring operation");
+        tracing::info!(
+            ?log_id,
+            hash = hash.alias(),
+            seq_num = header.seq_num,
+            "PUB: authoring operation"
+        );
 
         let result = p2panda_stream::operation::ingest_operation(
             &mut *self.op_store.clone(),
@@ -100,17 +105,15 @@ impl Node {
 
             IngestResult::Retry(h, _, _, missing) => {
                 let backlink = h.backlink.as_ref().map(|h| h.alias());
-                tracing::warn!(
+                tracing::error!(
                     ?log_id,
                     hash = hash.alias(),
                     ?backlink,
                     ?missing,
                     "operation could not be ingested"
                 );
-            } // IngestResult::Duplicate(op) => {
-              //     tracing::warn!(?topic, hash = hash.alias(), "operation already exists");
-              //     return Ok(op.header);
-              // }
+                panic!("operation could not be ingested, check your sequence numbers!");
+            }
         }
 
         match self
@@ -133,48 +136,4 @@ impl Node {
 
         Ok(header)
     }
-}
-
-pub(crate) async fn create_operation<K: TopicKind>(
-    store: &OpStore,
-    private_key: &PrivateKey,
-    topic: Topic<K>,
-    payload: Payload,
-    deps: Vec<p2panda_core::Hash>,
-) -> Result<(Header, Option<Body>), anyhow::Error> {
-    let public_key = private_key.public_key();
-    let log_id = topic.clone();
-
-    let body = Some(payload.try_into_body()?);
-
-    let extensions = Extensions {
-        log_id: log_id.clone().into(),
-    };
-
-    // TODO: atomicity, see https://github.com/p2panda/p2panda/issues/798
-    let latest_operation = store.latest_operation(&public_key, &log_id.into()).await?;
-
-    let (seq_num, backlink) = match latest_operation {
-        Some((header, _)) => (header.seq_num + 1, Some(header.hash())),
-        None => (0, None),
-    };
-
-    let timestamp = timestamp_now();
-
-    let mut header = Header {
-        version: 1,
-        public_key,
-        signature: None,
-        payload_size: body.as_ref().map_or(0, |body| body.size()),
-        payload_hash: body.as_ref().map(|body| body.hash()),
-        timestamp,
-        seq_num,
-        backlink,
-        previous: deps,
-        extensions,
-    };
-
-    header.sign(private_key);
-
-    Ok((header, body))
 }

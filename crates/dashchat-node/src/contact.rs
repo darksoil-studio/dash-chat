@@ -5,7 +5,7 @@ use p2panda_spaces::ActorId;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-use crate::Topic;
+use crate::{DeviceGroupId, Topic, topic::GlobalTopic};
 
 /// The content for a QR code or deep link.
 ///
@@ -34,7 +34,7 @@ pub struct QrCode {
     /// can communicate directly.
     pub inbox_topic: Option<InboxTopic>,
     /// Topic for the device group of this node.
-    pub device_space_id: Topic<crate::topic::kind::DeviceGroup>,
+    pub device_space_id: DeviceGroupId,
     /// Actor ID to add to spaces
     pub chat_actor_id: ActorId,
     /// The intent of the QR code: whether to add this node as a contact or a device.
@@ -50,7 +50,7 @@ pub enum ShareIntent {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct InboxTopic {
     pub expires_at: DateTime<Utc>,
-    pub topic: Topic<crate::topic::kind::Inbox>,
+    pub topic: GlobalTopic,
 }
 
 /// Just add serialization around [`p2panda_spaces::Member`]`
@@ -150,10 +150,10 @@ mod tests {
                 ),
             },
             inbox_topic: Some(InboxTopic {
-                topic: Topic::inbox(),
+                topic: Topic::global(),
                 expires_at: Utc::now() + chrono::Duration::seconds(3600),
             }),
-            device_space_id: Topic::<kind::DeviceGroup>::random(),
+            device_space_id: DeviceGroupId::random(),
             chat_actor_id: ActorId::from_bytes(&[44; 32]).unwrap(),
             share_intent: ShareIntent::AddDevice,
         };

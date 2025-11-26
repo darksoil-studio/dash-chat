@@ -93,11 +93,9 @@ impl DashManager {
                 .create_group_with_id(&[(manager.id(), Access::manage())], chat_actor_id)
                 .await?;
 
-            let actor_id = group.id();
-
             crate::testing::alias_space_messages(
                 "create_device_group",
-                Topic::announcements(actor_id),
+                Topic::global(),
                 msgs.iter(),
             );
 

@@ -4,14 +4,14 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use p2panda_core::{Body, Hash, Header, PublicKey, RawOperation};
+use p2panda_core::{Body, Hash, PublicKey, RawOperation};
 use p2panda_store::{LogStore, MemoryStore, OperationStore};
 
 use crate::{
     payload::{Extensions, Payload},
     spaces::SpaceOperation,
     testing::AliasedId,
-    topic::{LogId, Topic},
+    topic::{LogId, Topic, TopicKind},
     *,
 };
 
@@ -29,6 +29,51 @@ impl OpStore {
             store,
             processed_ops: Arc::new(RwLock::new(HashMap::new())),
         }
+    }
+
+    pub async fn create_operation<K: TopicKind>(
+        &self,
+        private_key: &PrivateKey,
+        topic: Topic<K>,
+        payload: Payload,
+        deps: Vec<p2panda_core::Hash>,
+    ) -> Result<(Header, Option<Body>), anyhow::Error> {
+        let public_key = private_key.public_key();
+        let log_id = topic.clone();
+
+        let body = Some(payload.try_into_body()?);
+
+        let extensions = Extensions {
+            log_id: log_id.clone().into(),
+        };
+
+        // TODO: atomicity, see https://github.com/p2panda/p2panda/issues/798
+        let latest_operation = self.latest_operation(&public_key, &log_id.into()).await?;
+
+        let (seq_num, backlink) = match latest_operation {
+            Some((header, _)) => (header.seq_num + 1, Some(header.hash())),
+            None => (0, None),
+        };
+        tracing::info!(?seq_num, "seq_num read");
+
+        let timestamp = timestamp_now();
+
+        let mut header = Header {
+            version: 1,
+            public_key,
+            signature: None,
+            payload_size: body.as_ref().map_or(0, |body| body.size()),
+            payload_hash: body.as_ref().map(|body| body.hash()),
+            timestamp,
+            seq_num,
+            backlink,
+            previous: deps,
+            extensions,
+        };
+
+        header.sign(private_key);
+
+        Ok((header, body))
     }
 
     pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
@@ -104,7 +149,7 @@ impl OperationStore<LogId, Extensions> for OpStore {
     async fn insert_operation(
         &mut self,
         hash: Hash,
-        header: &Header<Extensions>,
+        header: &Header,
         body: Option<&Body>,
         header_bytes: &[u8],
         log_id: &LogId,
@@ -117,7 +162,7 @@ impl OperationStore<LogId, Extensions> for OpStore {
     async fn get_operation(
         &self,
         hash: Hash,
-    ) -> Result<Option<(Header<Extensions>, Option<Body>)>, Self::Error> {
+    ) -> Result<Option<(Header, Option<Body>)>, Self::Error> {
         self.store.get_operation(hash).await
     }
 
@@ -146,7 +191,7 @@ impl LogStore<LogId, Extensions> for OpStore {
         public_key: &PublicKey,
         log_id: &LogId,
         from: Option<u64>,
-    ) -> Result<Option<Vec<(Header<Extensions>, Option<Body>)>>, Self::Error> {
+    ) -> Result<Option<Vec<(Header, Option<Body>)>>, Self::Error> {
         self.store.get_log(public_key, log_id, from).await
     }
 
@@ -163,7 +208,7 @@ impl LogStore<LogId, Extensions> for OpStore {
         &self,
         public_key: &PublicKey,
         log_id: &LogId,
-    ) -> Result<Option<(Header<Extensions>, Option<Body>)>, Self::Error> {
+    ) -> Result<Option<(Header, Option<Body>)>, Self::Error> {
         self.store.latest_operation(public_key, log_id).await
     }
 
