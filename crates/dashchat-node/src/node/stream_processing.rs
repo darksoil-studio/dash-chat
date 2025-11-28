@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use tokio::task;
 use tracing::Instrument;
 
+use crate::spaces::SpaceOperation;
 use crate::{
     payload::InboxPayload,
     spaces::ArgType,
@@ -26,7 +27,7 @@ use super::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Notification {
-    pub header: Header<Extensions>,
+    pub header: Header,
     pub payload: Payload,
 }
 
@@ -59,7 +60,7 @@ impl Node {
         }
 
         let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.into()).await?;
-        tracing::info!(?topic, "TOP: subscribed to topic");
+        tracing::info!(?topic, "SUB: subscribed to topic");
 
         let stream = ReceiverStream::new(network_rx);
         let stream = stream.filter_map(|event| async {
@@ -223,16 +224,6 @@ impl Node {
 
         let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
 
-        match payload.as_ref() {
-            Some(Payload::Chat(ChatPayload::Space(msgs))) => {
-                let mut sd = self.space_dependencies.write().await;
-                for msg in msgs {
-                    sd.insert(msg.id(), hash.clone());
-                }
-            }
-            _ => {}
-        }
-
         tracing::trace!(?payload, "RECEIVED PAYLOAD");
 
         // SAM: definitely process the repair message on the authoring side too!
@@ -271,23 +262,13 @@ impl Node {
             tracing::warn!(missing = ?repair_required, "spaces repair required");
             for space_id in repair_required {
                 let (msgs, _) = self.manager.repair_spaces(&vec![space_id]).await?;
-                let _header = self
-                    .author_repair_operation(
-                        space_id,
-                        Payload::Chat(ChatPayload::Space(msgs)),
-                        Some(&format!("repair_space({})", space_id.alias())),
-                    )
-                    .await?;
+                self.process_authored_space_messages(msgs).await?;
             }
         }
         Ok(())
     }
 
-    pub async fn notify_payload(
-        &self,
-        header: &Header<Extensions>,
-        payload: &Payload,
-    ) -> anyhow::Result<()> {
+    pub async fn notify_payload(&self, header: &Header, payload: &Payload) -> anyhow::Result<()> {
         if let Some((notification_tx, payload)) = self.notification_tx.clone().zip(Some(payload)) {
             notification_tx
                 .send(Notification {
@@ -304,92 +285,80 @@ impl Node {
     pub async fn process_payload(
         &self,
         // topic: Topic<K>,
-        header: &Header<Extensions>,
+        header: &Header,
         payload: Option<&Payload>,
         is_author: bool,
     ) -> anyhow::Result<()> {
         let log_id = header.extensions.log_id;
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match &payload {
-            Some(Payload::Chat(ChatPayload::Space(msgs))) => {
+            Some(Payload::Space(args)) => {
+                let space_op = SpaceOperation::new(header.clone(), args.clone());
+                let opid = space_op.id();
                 let chat_id = header.extensions.topic().recast::<kind::Chat>();
                 let mut chats = self.nodestate.chats.write().await;
                 let chat = chats.entry(chat_id).or_insert(Chat::new(chat_id));
-                tracing::info!(
-                    hash = header.hash().alias(),
-                    messages = ?msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>(),
-                    "processing space msgs"
-                );
-                for msg in msgs.iter() {
-                    // Skip already processed messages
-                    if self.spaces_store.message(&msg.id()).await?.is_some() {
-                        continue;
+                // Skip already processed messages
+                if self.spaces_store.message(&opid).await?.is_some() {
+                    return Ok(());
+                }
+
+                self.spaces_store.set_message(&opid, &space_op).await?;
+
+                // While authoring, all message types other than Application
+                // are already processed
+                if is_author && space_op.arg_type() != ArgType::Application {
+                    return Ok(());
+                }
+
+                tracing::info!(opid = opid.alias(), "SM: processing space msg");
+                match self.manager.process(&space_op).await {
+                    Ok(events) => {
+                        for (i, event) in events.into_iter().enumerate() {
+                            // TODO: need to get this from the space message, not the header!
+                            // because the welcome message could be passed from a differetn author
+                            self.process_chat_event(chat, event)
+                                .instrument(tracing::info_span!("chat event loop", ?i))
+                                .await?;
+                        }
+                    }
+                    Err(ManagerError::Space(SpaceError::AuthGroup(
+                        AuthGroupError::DuplicateOperation(op, _id),
+                    )))
+                    | Err(ManagerError::Group(GroupError::AuthGroup(
+                        AuthGroupError::DuplicateOperation(op, _id),
+                    ))) => {
+                        // assert_eq!(op, msg.id());
+                        tracing::error!(
+                            argtype = ?space_op.arg_type(),
+                            opid = op.alias(),
+                            "duplicate space control msg"
+                        );
                     }
 
-                    self.spaces_store.set_message(&msg.id(), &msg).await?;
-
-                    // While authoring, all message types other than Application
-                    // are already processed
-                    if is_author && msg.arg_type() != ArgType::Application {
-                        continue;
+                    Err(ManagerError::UnexpectedMessage(op)) => {
+                        tracing::error!(
+                            header = header.hash().alias(),
+                            op = op.alias(),
+                            "space manager unexpected operation"
+                        );
                     }
 
-                    let opid = msg.id();
-                    tracing::info!(opid = opid.alias(), "SM: processing space msg");
-                    match self.manager.process(msg).await {
-                        Ok(events) => {
-                            self.nodestate
-                                .spaces_events
-                                .write()
-                                .await
-                                .insert(msg.hash, events.clone());
+                    Err(ManagerError::MissingAuthMessage(op, auth_op)) => {
+                        tracing::error!(
+                            op = op.alias(),
+                            auth_op = auth_op.alias(),
+                            "space manager missing auth message"
+                        );
+                    }
 
-                            for (i, event) in events.into_iter().enumerate() {
-                                // TODO: need to get this from the space message, not the header!
-                                // because the welcome message could be passed from a differetn author
-                                self.process_chat_event(chat, event)
-                                    .instrument(tracing::info_span!("chat event loop", ?i))
-                                    .await?;
-                            }
-                        }
-                        Err(ManagerError::Space(SpaceError::AuthGroup(
-                            AuthGroupError::DuplicateOperation(op, _id),
-                        )))
-                        | Err(ManagerError::Group(GroupError::AuthGroup(
-                            AuthGroupError::DuplicateOperation(op, _id),
-                        ))) => {
-                            // assert_eq!(op, msg.id());
-                            tracing::error!(
-                                argtype = ?msg.arg_type(),
-                                opid = op.alias(),
-                                "duplicate space control msg"
-                            );
-                        }
-
-                        Err(ManagerError::UnexpectedMessage(op)) => {
-                            tracing::error!(
-                                header = header.hash().alias(),
-                                op = op.alias(),
-                                "space manager unexpected operation"
-                            );
-                        }
-
-                        Err(ManagerError::MissingAuthMessage(op, auth_op)) => {
-                            tracing::error!(
-                                op = op.alias(),
-                                auth_op = auth_op.alias(),
-                                "space manager missing auth message"
-                            );
-                        }
-
-                        Err(err) => {
-                            tracing::error!(
-                                hash = header.hash().alias(),
-                                opid = opid.alias(),
-                                ?err,
-                                "space manager process error"
-                            );
-                        }
+                    Err(err) => {
+                        tracing::error!(
+                            hash = header.hash().alias(),
+                            opid = opid.alias(),
+                            ?err,
+                            "space manager process error"
+                        );
                     }
                 }
             }

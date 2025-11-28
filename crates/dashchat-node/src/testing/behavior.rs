@@ -18,6 +18,8 @@ impl Behavior {
         Self { node }
     }
 
+    /// Simulate sending a contact a QR code and them using it to add me as a contact,
+    /// and sending me an Inbox message with their contact info so I can add them too.
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
     pub async fn initiate_and_establish_contact(
         &mut self,

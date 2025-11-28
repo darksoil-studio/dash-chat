@@ -1,31 +1,60 @@
-use p2panda_core::PublicKey;
-use p2panda_spaces::traits::{AuthoredMessage, MessageStore};
+use std::sync::Arc;
 
-use crate::{
-    chat::ChatId,
-    spaces::{SpaceControlMessage, SpacesArgs},
-    stores::SpacesStore,
-    timestamp_now,
+use p2panda_core::{PrivateKey, PublicKey};
+use p2panda_spaces::{
+    ActorId,
+    traits::{AuthoredMessage, MessageStore},
 };
 
-#[derive(Clone, Debug)]
+use crate::{
+    Payload, Topic,
+    chat::ChatId,
+    spaces::{SpaceOperation, SpacesArgs},
+    stores::{OpStore, SpacesStore},
+    topic::{LogId, kind},
+};
+
+#[derive(Clone, derive_more::Debug)]
+#[debug("DashForge")]
 pub struct DashForge {
-    pub public_key: PublicKey,
+    pub private_key: PrivateKey,
+    pub chat_actor_id: ActorId,
     pub store: SpacesStore,
+    pub op_store: OpStore,
 }
 
-impl p2panda_spaces::traits::Forge<ChatId, SpaceControlMessage, ()> for DashForge {
+impl p2panda_spaces::traits::Forge<ChatId, SpaceOperation, ()> for DashForge {
     type Error = anyhow::Error;
 
-    fn public_key(&self) -> PublicKey {
-        self.public_key
-    }
-
-    async fn forge(&self, args: SpacesArgs) -> Result<SpaceControlMessage, Self::Error> {
-        let public_key = self.public_key;
-        let message = SpaceControlMessage::new(public_key.into(), timestamp_now(), args)?;
+    async fn forge(&self, args: SpacesArgs) -> Result<SpaceOperation, Self::Error> {
+        let topic: Topic<kind::Untyped> = match &args {
+            p2panda_spaces::SpacesArgs::KeyBundle { key_bundle } => unimplemented!(),
+            p2panda_spaces::SpacesArgs::Auth {
+                control_message, ..
+            } => Topic::announcements(control_message.group_id).recast(),
+            p2panda_spaces::SpacesArgs::SpaceMembership {
+                space_id, group_id, ..
+            } => space_id.recast(),
+            p2panda_spaces::SpacesArgs::SpaceUpdate {
+                space_id, group_id, ..
+            } => space_id.recast(),
+            p2panda_spaces::SpacesArgs::Application { space_id, .. } => space_id.recast(),
+        };
+        let (header, _) = crate::node::author_operation::create_operation(
+            &self.op_store,
+            &self.private_key,
+            topic,
+            Payload::Space(args.clone()),
+            vec![],
+        )
+        .await?;
+        let message = SpaceOperation::new(header, args);
         self.store.set_message(&message.id(), &message).await?;
 
         Ok(message)
+    }
+
+    fn public_key(&self) -> PublicKey {
+        self.private_key.public_key()
     }
 }

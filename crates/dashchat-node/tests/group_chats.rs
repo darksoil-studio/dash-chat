@@ -26,10 +26,9 @@ use anyhow::anyhow;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
-    // dashchat_node::testing::setup_tracing("dashchat_node=info,warn", true);
     dashchat_node::testing::setup_tracing(
         "dashchat=info,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info",
-        true,
+        false,
     );
 
     let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
@@ -62,7 +61,9 @@ async fn test_group_2() {
 
     let chat_id = GroupChatId::random();
     alice.create_group_chat_space(chat_id).await.unwrap();
-    alice.repair_spaces_and_publish().await.unwrap();
+
+    // SAM: not needed
+    // alice.repair_spaces_and_publish().await.unwrap();
 
     alice
         .add_member(chat_id, bobbi.repped_group())

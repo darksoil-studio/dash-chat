@@ -2,6 +2,7 @@ use p2panda_core::{Hash, Operation};
 use p2panda_spaces::{OperationId, traits::AuthoredMessage};
 use p2panda_stream::operation::IngestResult;
 
+use crate::spaces::SpaceOperation;
 use crate::topic::{LogId, TopicKind};
 use crate::{AsBody, testing::AliasedId};
 use crate::{polestar as p, timestamp_now};
@@ -11,135 +12,69 @@ use super::*;
 pub type OpStore = p2panda_store::MemoryStore<LogId, Extensions>;
 
 impl Node {
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
-    pub(super) async fn author_operation<K: TopicKind>(
-        &self,
-        topic: Topic<K>,
-        payload: Payload,
-        alias: Option<&str>,
-    ) -> Result<Header<Extensions>, anyhow::Error> {
-        self.author_operation_with_deps(topic, payload, vec![], alias, false)
-            .await
-    }
-
     /// Author a space repair operation without processing it
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
+    #[deprecated(note = "use author_operation instead")]
     pub(super) async fn author_repair_operation<K: TopicKind>(
         &self,
         topic: Topic<K>,
         payload: Payload,
         alias: Option<&str>,
-    ) -> Result<Header<Extensions>, anyhow::Error> {
-        self.author_operation_with_deps(topic, payload, vec![], alias, true)
-            .await
+    ) -> Result<Header, anyhow::Error> {
+        self.author_operation(topic, payload, alias).await
     }
 
-    pub(super) async fn author_operation_with_deps<K: TopicKind>(
+    pub(super) async fn author_operation<K: TopicKind>(
         &self,
         topic: Topic<K>,
         payload: Payload,
-        mut deps: Vec<p2panda_core::Hash>,
         alias: Option<&str>,
-        is_repair: bool,
-    ) -> Result<Header<Extensions>, anyhow::Error> {
-        let mut sd = self.space_dependencies.write().await;
-
-        let (ids, space_deps): (Vec<OperationId>, Vec<Hash>) = match &payload {
-            Payload::Chat(p) => {
-                match p {
-                    ChatPayload::Space(msgs) => {
-                        let ids = msgs.iter().map(|msg| msg.id()).collect::<Vec<_>>();
-                        let op_deps = msgs.iter().flat_map(|msg| {
-                            tracing::info!(msg = msg.id().alias(), "SM: authoring space msg");
-                            msg.dependencies()
-                        });
-
-                        let mut header_deps = vec![];
-                        for dep in op_deps {
-                            // If the msg is part of the set being committed, it's ok
-                            if ids.contains(&dep) {
-                                continue;
-                            }
-
-                            match sd.get(&dep) {
-                                Some(hash) => {
-                                    header_deps.push(hash.clone());
-                                    break;
-                                }
-                                None => {
-                                    // XXX: This must not be allowed to happen, but for now
-                                    // let's hope for the best!
-                                    tracing::error!(
-                                        dep = dep.alias(),
-                                        deps = ?sd.keys().map(|k| k.alias()).collect::<Vec<_>>(),
-                                        ids = ?ids.iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                                        "space dep should have been seen already",
-                                    );
-                                }
-                            }
-                        }
-
-                        (ids, header_deps)
-                    }
-
-                    ChatPayload::JoinGroup(_chat_id) => (vec![], vec![]),
-                }
-            }
-            Payload::Announcements(_) => (vec![], vec![]),
-            Payload::Inbox(_) => (vec![], vec![]),
-            Payload::DeviceGroup(_) => (vec![], vec![]),
-        };
-
-        deps.extend(space_deps.into_iter());
-
-        let operation = create_operation(
+    ) -> Result<Header, anyhow::Error> {
+        let (header, body) = create_operation(
             &self.op_store,
             &self.local_data.private_key,
             topic.clone(),
             payload.clone(),
-            deps.clone(),
+            vec![],
         )
         .await?;
 
-        let Operation { header, body, hash } = operation;
+        self.process_authored_operation(header, body, alias).await
+    }
+
+    pub(crate) async fn process_authored_space_messages(
+        &self,
+        ops: Vec<SpaceOperation>,
+    ) -> Result<(), anyhow::Error> {
+        for op in ops {
+            let op = op.into_operation()?;
+            self.process_authored_operation(op.header.clone(), op.body, None)
+                .await?;
+        }
+        Ok(())
+    }
+
+    pub(crate) async fn process_authored_operation(
+        &self,
+        header: Header,
+        body: Option<Body>,
+        alias: Option<&str>,
+    ) -> Result<Header, anyhow::Error> {
         let log_id = header.extensions.log_id;
+        let hash = header.hash();
 
         if let Some(alias) = alias {
             header.hash().aliased(alias);
         }
 
-        {
-            let space_msgs = match &payload {
-                Payload::Chat(ChatPayload::Space(msgs)) => {
-                    msgs.iter().map(|m| m.id().alias()).collect::<Vec<_>>()
-                }
-                Payload::Chat(ChatPayload::JoinGroup(_)) => vec![],
-                Payload::Inbox(_) => vec![],
-                Payload::Announcements(_) => vec![],
-                Payload::DeviceGroup(_) => vec![],
-            };
-            let pk = PK::from(header.public_key);
-            tracing::info!(
-                ?space_msgs,
-                ?pk,
-                hash = header.hash().alias(),
-                deps = ?deps.iter().map(|id| id.alias()).collect::<Vec<_>>(),
-                "authored operation"
-            );
-        }
-
-        for id in ids {
-            sd.insert(id, hash);
-        }
-
-        drop(sd);
+        tracing::info!(?log_id, hash = hash.alias(), "PUB: authoring operation");
 
         let result = p2panda_stream::operation::ingest_operation(
             &mut *self.op_store.clone(),
             header.clone(),
             body.clone(),
             header.to_bytes(),
-            &topic.into(),
+            &log_id.into(),
             false,
         )
         .await?;
@@ -151,7 +86,7 @@ impl Node {
                 self.process_ordering(op.clone()).await?;
 
                 // NOTE: if we fail to process here, incoming operations will be stuck as pending!
-                self.process_operation(op, self.author_store.clone(), true, is_repair)
+                self.process_operation(op, self.author_store.clone(), true, false)
                     .await?;
 
                 // self.notify_payload(&header, &payload).await?;
@@ -166,7 +101,7 @@ impl Node {
             IngestResult::Retry(h, _, _, missing) => {
                 let backlink = h.backlink.as_ref().map(|h| h.alias());
                 tracing::warn!(
-                    ?topic,
+                    ?log_id,
                     hash = hash.alias(),
                     ?backlink,
                     ?missing,
@@ -192,7 +127,7 @@ impl Node {
                     .await?;
             }
             None => {
-                tracing::error!(?topic, "no gossip channel found for topic");
+                tracing::error!(?log_id, "no gossip channel found for log id");
             }
         }
 
@@ -206,7 +141,7 @@ pub(crate) async fn create_operation<K: TopicKind>(
     topic: Topic<K>,
     payload: Payload,
     deps: Vec<p2panda_core::Hash>,
-) -> Result<Operation<Extensions>, anyhow::Error> {
+) -> Result<(Header, Option<Body>), anyhow::Error> {
     let public_key = private_key.public_key();
     let log_id = topic.clone();
 
@@ -241,9 +176,5 @@ pub(crate) async fn create_operation<K: TopicKind>(
 
     header.sign(private_key);
 
-    Ok(Operation {
-        hash: header.hash(),
-        header,
-        body,
-    })
+    Ok((header, body))
 }

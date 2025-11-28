@@ -53,10 +53,7 @@ itertools = "0.14.0"
 pretty_assertions = "1.4.1"
 
 [features]
-default = [
-  "testing",
-  "instrument",
-]
+default = ["testing", "instrument"]
 instrument = []
 testing = []
 

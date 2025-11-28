@@ -2,7 +2,7 @@
 
 mod chat;
 mod contact;
-mod node;
+pub mod node;
 mod payload;
 pub mod spaces;
 pub mod stores;

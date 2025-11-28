@@ -1,4 +1,4 @@
-mod author_operation;
+pub(crate) mod author_operation;
 mod stream_processing;
 
 use std::collections::{BTreeSet, HashMap};
@@ -11,7 +11,7 @@ use futures::Stream;
 use futures::stream::FuturesUnordered;
 use p2panda_auth::Access;
 use p2panda_core::cbor::encode_cbor;
-use p2panda_core::{Body, Hash, Header, Operation, PrivateKey, PublicKey};
+use p2panda_core::{Body, Operation, PrivateKey, PublicKey};
 use p2panda_discovery::Discovery;
 use p2panda_discovery::mdns::LocalDiscovery;
 use p2panda_encryption::Rng;
@@ -21,6 +21,7 @@ use p2panda_net::{
     FromNetwork, Network, NetworkBuilder, ResyncConfiguration, SyncConfiguration, ToNetwork,
 };
 use p2panda_spaces::event::Event;
+use p2panda_spaces::traits::AuthoredMessage;
 use p2panda_spaces::{ActorId, OperationId};
 use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::partial::operations::PartialOrder;
@@ -43,7 +44,7 @@ use crate::spaces::{DashForge, DashManager, DashSpace, TestConditions};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::{AliasedId, alias_space_messages};
 use crate::topic::{LogId, Topic, kind};
-use crate::{AsBody, ChatId, DeviceGroupPayload, PK, timestamp_now};
+use crate::{AsBody, ChatId, DeviceGroupPayload, Header, PK, timestamp_now};
 
 pub use stream_processing::Notification;
 
@@ -129,9 +130,7 @@ pub struct Node {
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
     pub manager: DashManager,
-    /// mapping from space operations to header hashes, so that dependencies
-    /// can be declared
-    space_dependencies: Arc<RwLock<HashMap<OperationId, p2panda_core::Hash>>>,
+
     config: NodeConfig,
     local_data: NodeLocalData,
     notification_tx: Option<mpsc::Sender<Notification>>,
@@ -192,28 +191,29 @@ impl Node {
         //     network_builder = network_builder.direct_address(bootstrap, vec![], None);
         // }
 
+        let op_store = OpStore::new(op_store);
+
+        let chat_actor_id: ActorId = PrivateKey::from_bytes(&rng.random_array()?)
+            .public_key()
+            .into();
+
         let network = network_builder.build().await.context("spawn p2p network")?;
         let spaces_store = SpacesStore::new();
-        let manager = DashManager::new(private_key.clone(), spaces_store.clone(), rng)
-            .await
-            .unwrap();
+        let (manager, device_group_msgs) = DashManager::new(
+            private_key.clone(),
+            chat_actor_id.clone(),
+            spaces_store.clone(),
+            op_store.clone(),
+            rng,
+        )
+        .await
+        .unwrap();
 
         // // nope
         // manager.register_member(&manager.me().await?).await?;
 
-        let (chat_actor_id, device_group_msgs) = {
-            let (group, msgs, _event) = manager
-                .create_group(&[(manager.id(), Access::manage())])
-                .await?;
+        let (stream_tx, stream_rx) = mpsc::channel(100);
 
-            alias_space_messages("create_device_group", device_space_id, msgs.iter());
-
-            (group.id(), msgs)
-        };
-
-        let (stream_tx, mut stream_rx) = mpsc::channel(100);
-
-        let op_store = OpStore::new(op_store);
         let node = Self {
             op_store: op_store.clone(),
             ordering: Arc::new(RwLock::new(Orderer::new(
@@ -224,7 +224,6 @@ impl Node {
             spaces_store,
             network,
             manager: manager.clone(),
-            space_dependencies: Arc::new(RwLock::new(HashMap::new())),
             config,
             local_data,
             notification_tx,
@@ -264,18 +263,8 @@ impl Node {
             .await?;
         }
 
-        {
-            let _header = node
-                .author_operation(
-                    device_space_id,
-                    Payload::Chat(ChatPayload::Space(device_group_msgs.into())),
-                    Some(&format!(
-                        "create_device_group/space-control({})",
-                        chat_actor_id.alias()
-                    )),
-                )
-                .await?;
-        }
+        node.process_authored_space_messages(device_group_msgs)
+            .await?;
 
         let author_store = author_store.clone();
         let me = public_key.clone();
@@ -316,7 +305,7 @@ impl Node {
         &self,
         topic_id: LogId,
         authors: Vec<PublicKey>,
-    ) -> anyhow::Result<Vec<(Header<Extensions>, Option<Payload>)>> {
+    ) -> anyhow::Result<Vec<(Header, Option<Payload>)>> {
         let mut logs = Vec::new();
         for author in authors {
             for (h, b) in self.get_log(topic_id, author).await? {
@@ -339,7 +328,7 @@ impl Node {
         &self,
         log_id: LogId,
         author: PublicKey,
-    ) -> anyhow::Result<Vec<(Header<Extensions>, Option<Body>)>> {
+    ) -> anyhow::Result<Vec<(Header, Option<Body>)>> {
         let heights = self
             .op_store
             .get_log_heights(&log_id)
@@ -449,16 +438,7 @@ impl Node {
 
         alias_space_messages("create_group_chat", topic, msgs.iter());
 
-        let _header = self
-            .author_operation(
-                topic,
-                Payload::Chat(ChatPayload::Space(msgs.into())),
-                Some(&format!(
-                    "create_group_chat/space-control({})",
-                    topic.alias()
-                )),
-            )
-            .await?;
+        self.process_authored_space_messages(msgs).await?;
 
         tracing::info!(?topic, ?topic, "created group chat space");
 
@@ -506,16 +486,7 @@ impl Node {
 
         alias_space_messages("create_direct_chat", topic, msgs.iter());
 
-        let _header = self
-            .author_operation(
-                topic,
-                Payload::Chat(ChatPayload::Space(msgs.into())),
-                Some(&format!(
-                    "create_direct_chat/space-control({})",
-                    topic.alias()
-                )),
-            )
-            .await?;
+        self.process_authored_space_messages(msgs).await?;
 
         tracing::info!(?topic, ?topic, "created direct chat space");
 
@@ -579,13 +550,7 @@ impl Node {
             )
             .await?;
 
-        let _header = self
-            .author_operation(
-                topic,
-                Payload::Chat(ChatPayload::Space(msgs)),
-                Some(&format!("add_member/space-control({})", topic.alias())),
-            )
-            .await?;
+        self.process_authored_space_messages(msgs).await?;
 
         Ok(())
     }
@@ -621,21 +586,22 @@ impl Node {
             .get_interleaved_logs(chat_id.into(), authors.into_iter().collect())
             .await?
         {
-            match payload {
-                Some(Payload::Chat(ChatPayload::Space(msgs))) => {
-                    for msg in msgs {
-                        use crate::spaces::SpacesArgs;
+            use crate::spaces::SpaceOperation;
 
-                        match msg.spaces_args {
-                            SpacesArgs::Application { .. } => {
-                                let es = self.manager.process(&msg).await?;
-                                events.push((es, msg.author, msg.timestamp));
-                            }
-                            _ => {}
+            if let Some(payload) = payload {
+                if let Some(space_msg) = SpaceOperation::from_payload(&header, &payload)? {
+                    use crate::spaces::SpacesArgs;
+
+                    match space_msg.args {
+                        SpacesArgs::Application { .. } => {
+                            use p2panda_spaces::traits::AuthoredMessage;
+
+                            let es = self.manager.process(&space_msg).await?;
+                            events.push((es, space_msg.author(), space_msg.timestamp()));
                         }
+                        _ => {}
                     }
                 }
-                _ => {}
             }
         }
 
@@ -659,7 +625,7 @@ impl Node {
         &self,
         topic: impl Into<ChatId>,
         message: ChatMessageContent,
-    ) -> anyhow::Result<(ChatMessage, Header<Extensions>)> {
+    ) -> anyhow::Result<(ChatMessage, Header)> {
         let topic = topic.into();
         let space = self
             .manager
@@ -675,23 +641,13 @@ impl Node {
             timestamp: timestamp_now(),
         };
         let encrypted = space.publish(&encode_cbor(&message.clone())?).await?;
-        let encrypted_hash = encrypted.hash.clone();
+        let encrypted_hash = encrypted.id();
 
         alias_space_messages("send_message", topic, vec![&encrypted]);
 
-        let topic = topic.into();
+        let Operation { header, body, hash } = encrypted.into_operation()?;
 
-        let header = self
-            .author_operation(
-                topic,
-                Payload::Chat(vec![encrypted].into()),
-                Some(&format!(
-                    "send_message/encrypted(chat={}, msg={})",
-                    topic.alias(),
-                    encrypted_hash.alias()
-                )),
-            )
-            .await?;
+        let header = self.process_authored_operation(header, body, None).await?;
 
         Ok((message, header))
     }
@@ -767,7 +723,7 @@ impl Node {
                 ));
             }
         }
-        // XXX: sleep a little more
+        // XXX: need sleep a little more for all the messages to be processed
         tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
 
         self.initialize_topic(Topic::announcements(actor), false)

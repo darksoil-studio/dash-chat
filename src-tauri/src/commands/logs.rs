@@ -103,6 +103,14 @@ fn spaces_messages(payload: Payload) -> Option<Vec<SpaceControlMessage>> {
 
 //     Ok(operation)
 // }
+// pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
+//     let bytes = body.to_bytes();
+//     let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
+//         return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
+//     };
+//     if let Some(value) = decode_spaces_args(args)? {
+//         values.push(value);
+//     }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]

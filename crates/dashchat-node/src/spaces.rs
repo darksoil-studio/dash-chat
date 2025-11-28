@@ -4,7 +4,7 @@ mod control_message;
 mod forge;
 
 use std::collections::{HashMap, HashSet};
-use std::sync::{LazyLock, Mutex};
+use std::sync::{Arc, LazyLock, Mutex};
 
 use anyhow::Context;
 pub use control_message::*;
@@ -18,8 +18,9 @@ use p2panda_spaces::test_utils::TestKeyStore;
 use p2panda_spaces::types::StrongRemoveResolver;
 use p2panda_spaces::{ActorId, Event, Member};
 
+use crate::Topic;
 use crate::chat::ChatId;
-use crate::stores::SpacesStore;
+use crate::stores::{OpStore, SpacesStore};
 use crate::testing::AliasedId;
 pub use forge::DashForge;
 
@@ -33,7 +34,7 @@ pub type DashGroup = p2panda_spaces::group::Group<
     SpacesStore,
     TestKeyStore,
     DashForge,
-    SpaceControlMessage,
+    SpaceOperation,
     TestConditions,
     StrongRemoveResolver<TestConditions>,
 >;
@@ -43,7 +44,7 @@ pub type DashSpace = p2panda_spaces::space::Space<
     SpacesStore,
     TestKeyStore,
     DashForge,
-    SpaceControlMessage,
+    SpaceOperation,
     TestConditions,
     StrongRemoveResolver<TestConditions>,
 >;
@@ -56,7 +57,7 @@ pub struct DashManager {
         SpacesStore,
         TestKeyStore,
         DashForge,
-        SpaceControlMessage,
+        SpaceOperation,
         TestConditions,
         StrongRemoveResolver<TestConditions>,
     >,
@@ -66,27 +67,50 @@ pub struct DashManager {
 impl DashManager {
     pub async fn new(
         private_key: PrivateKey,
+        chat_actor_id: ActorId,
         spaces_store: SpacesStore,
+        op_store: OpStore,
         rng: Rng,
-    ) -> anyhow::Result<Self> {
+    ) -> anyhow::Result<(Self, Vec<SpaceOperation>)> {
         let credentials = p2panda_spaces::Credentials::from_keys(
             private_key.clone(),
             SecretKey::from_rng(&rng).context("Failed to generate secret key")?,
         );
 
         let forge = DashForge {
-            public_key: private_key.public_key(),
+            private_key,
+            chat_actor_id,
             store: spaces_store.clone(),
+            op_store: op_store,
         };
 
         let key_store = p2panda_spaces::test_utils::TestKeyStore::new();
         let manager =
             Manager::new(spaces_store.clone(), key_store, forge, credentials, rng).await?;
 
-        Ok(Self {
-            manager,
-            store: spaces_store,
-        })
+        let device_group_msgs = {
+            let (group, msgs, _event) = manager
+                .create_group_with_id(&[(manager.id(), Access::manage())], chat_actor_id)
+                .await?;
+
+            let actor_id = group.id();
+
+            crate::testing::alias_space_messages(
+                "create_device_group",
+                Topic::announcements(actor_id),
+                msgs.iter(),
+            );
+
+            msgs
+        };
+
+        Ok((
+            Self {
+                manager,
+                store: spaces_store,
+            },
+            device_group_msgs,
+        ))
     }
 
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
@@ -96,7 +120,7 @@ impl DashManager {
         initial_members: &[(ActorId, Access<TestConditions>)],
     ) -> anyhow::Result<(
         DashSpace,
-        Vec<SpaceControlMessage>,
+        Vec<SpaceOperation>,
         Vec<Event<ChatId, TestConditions>>,
     )> {
         let initial = initial_members

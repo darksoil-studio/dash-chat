@@ -1,6 +1,6 @@
 use crate::Topic;
 use crate::chat::ChatId;
-use crate::spaces::SpaceControlMessage;
+use crate::spaces::SpaceOperation;
 
 // Conversion traits between ChatId and TestSpaceId
 impl From<ChatId> for p2panda_spaces::test_utils::TestSpaceId {
@@ -25,5 +25,4 @@ impl From<p2panda_spaces::test_utils::TestSpaceId> for ChatId {
     }
 }
 
-pub type SpacesStore =
-    p2panda_spaces::test_utils::store::MemoryStore<ChatId, SpaceControlMessage, ()>;
+pub type SpacesStore = p2panda_spaces::test_utils::store::MemoryStore<ChatId, SpaceOperation, ()>;
