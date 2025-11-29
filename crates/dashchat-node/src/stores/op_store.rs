@@ -4,10 +4,13 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use p2panda_core::{Body, Hash, PublicKey, RawOperation};
+use p2panda_core::{Body, Hash, Operation, PublicKey, RawOperation};
 use p2panda_store::{LogStore, MemoryStore, OperationStore};
+use p2panda_stream::operation::IngestResult;
+use tokio::sync::Mutex;
 
 use crate::{
+    node::Orderer,
     payload::{Extensions, Payload},
     spaces::SpaceOperation,
     testing::AliasedId,
@@ -20,23 +23,33 @@ pub struct OpStore {
     #[deref]
     #[deref_mut]
     store: MemoryStore<LogId, Extensions>,
+    pub orderer: Arc<tokio::sync::RwLock<Orderer>>,
     pub processed_ops: Arc<RwLock<HashMap<LogId, HashSet<Hash>>>>,
+    write_mutex: Arc<Mutex<()>>,
 }
 
 impl OpStore {
     pub fn new(store: MemoryStore<LogId, Extensions>) -> Self {
+        let orderer = Arc::new(tokio::sync::RwLock::new(Orderer::new(
+            store.clone(),
+            Default::default(),
+        )));
+
         Self {
             store,
+            orderer,
+            write_mutex: Arc::new(Mutex::new(())),
             processed_ops: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    pub async fn create_operation<K: TopicKind>(
+    pub async fn author_operation<K: TopicKind>(
         &self,
         private_key: &PrivateKey,
         topic: Topic<K>,
         payload: Payload,
         deps: Vec<p2panda_core::Hash>,
+        alias: Option<&str>,
     ) -> Result<(Header, Option<Body>), anyhow::Error> {
         let public_key = private_key.public_key();
         let log_id = topic.clone();
@@ -47,7 +60,7 @@ impl OpStore {
             log_id: log_id.clone().into(),
         };
 
-        // TODO: atomicity, see https://github.com/p2panda/p2panda/issues/798
+        let lock = self.write_mutex.lock().await;
         let latest_operation = self.latest_operation(&public_key, &log_id.into()).await?;
 
         let (seq_num, backlink) = match latest_operation {
@@ -73,7 +86,70 @@ impl OpStore {
 
         header.sign(private_key);
 
+        let log_id = header.extensions.log_id;
+        let hash = header.hash();
+
+        if let Some(alias) = alias {
+            header.hash().aliased(alias);
+        }
+
+        tracing::info!(
+            ?log_id,
+            hash = hash.alias(),
+            seq_num = header.seq_num,
+            "PUB: authoring operation"
+        );
+
+        let result = p2panda_stream::operation::ingest_operation(
+            &mut *self.clone(),
+            header.clone(),
+            body.clone(),
+            header.to_bytes(),
+            &log_id.into(),
+            false,
+        )
+        .await?;
+
+        // Let the next op be authored as soon as this one's ingested
+        drop(lock);
+
+        match result {
+            IngestResult::Complete(op @ Operation { hash: hash2, .. }) => {
+                assert_eq!(hash, hash2);
+
+                // NOTE: if we fail to process here, incoming operations will be stuck as pending!
+                self.process_ordering(op.clone()).await?;
+            }
+
+            IngestResult::Retry(h, _, _, missing) => {
+                let backlink = h.backlink.as_ref().map(|h| h.alias());
+                tracing::error!(
+                    ?log_id,
+                    hash = hash.alias(),
+                    ?backlink,
+                    ?missing,
+                    "operation could not be ingested"
+                );
+                panic!("operation could not be ingested, check your sequence numbers!");
+            }
+        }
+
         Ok((header, body))
+    }
+
+    // SAM: could be generic https://github.com/p2panda/p2panda/blob/65727c7fff64376f9d2367686c2ed5132ff7c4e0/p2panda-stream/src/ordering/partial/mod.rs#L83
+    pub async fn process_ordering(&self, operation: Operation<Extensions>) -> anyhow::Result<()> {
+        self.orderer.write().await.process(operation).await?;
+        Ok(())
+    }
+
+    pub async fn next_ordering(&self) -> anyhow::Result<Vec<Operation<Extensions>>> {
+        let mut ordering = self.orderer.write().await;
+        let mut next = vec![];
+        while let Some(op) = ordering.next().await? {
+            next.push(op);
+        }
+        Ok(next)
     }
 
     pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {

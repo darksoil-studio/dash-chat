@@ -157,11 +157,12 @@ impl Node {
         let hash = operation.hash;
         let log_id = operation.header.extensions.log_id;
 
-        if let Err(err) = self.process_ordering(operation).await {
+        if let Err(err) = self.op_store.process_ordering(operation).await {
             tracing::error!(?err, "process ordering error");
         }
 
         let reordered = self
+            .op_store
             .next_ordering()
             .await
             .map_err(|err| {
@@ -189,21 +190,6 @@ impl Node {
             }
         }
         Ok(())
-    }
-
-    // SAM: could be generic https://github.com/p2panda/p2panda/blob/65727c7fff64376f9d2367686c2ed5132ff7c4e0/p2panda-stream/src/ordering/partial/mod.rs#L83
-    pub async fn process_ordering(&self, operation: Operation<Extensions>) -> anyhow::Result<()> {
-        self.ordering.write().await.process(operation).await?;
-        Ok(())
-    }
-
-    pub async fn next_ordering(&self) -> anyhow::Result<Vec<Operation<Extensions>>> {
-        let mut ordering = self.ordering.write().await;
-        let mut next = vec![];
-        while let Some(op) = ordering.next().await? {
-            next.push(op);
-        }
-        Ok(next)
     }
 
     pub async fn process_operation(

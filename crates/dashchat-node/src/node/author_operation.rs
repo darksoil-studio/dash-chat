@@ -30,64 +30,21 @@ impl Node {
     ) -> Result<Header, anyhow::Error> {
         let (header, body) = self
             .op_store
-            .create_operation(
+            .author_operation(
                 &self.local_data.private_key,
                 topic.clone(),
                 payload.clone(),
                 vec![],
+                alias,
             )
             .await?;
 
-        let log_id = header.extensions.log_id;
-        let hash = header.hash();
-
-        if let Some(alias) = alias {
-            header.hash().aliased(alias);
-        }
-
-        tracing::info!(
-            ?log_id,
-            hash = hash.alias(),
-            seq_num = header.seq_num,
-            "PUB: authoring operation"
-        );
-
-        let result = p2panda_stream::operation::ingest_operation(
-            &mut *self.op_store.clone(),
-            header.clone(),
-            body.clone(),
-            header.to_bytes(),
-            &log_id.into(),
-            false,
-        )
-        .await?;
-
-        match result {
-            IngestResult::Complete(op @ Operation { hash: hash2, .. }) => {
-                assert_eq!(hash, hash2);
-
-                // NOTE: if we fail to process here, incoming operations will be stuck as pending!
-                self.process_ordering(op.clone()).await?;
-
-                p::emit(p::Action::AuthorOp {
-                    log_id,
-                    hash: hash.clone(),
-                });
-                self.process_authored_ingested_operation(op).await
-            }
-
-            IngestResult::Retry(h, _, _, missing) => {
-                let backlink = h.backlink.as_ref().map(|h| h.alias());
-                tracing::error!(
-                    ?log_id,
-                    hash = hash.alias(),
-                    ?backlink,
-                    ?missing,
-                    "operation could not be ingested"
-                );
-                panic!("operation could not be ingested, check your sequence numbers!");
-            }
-        }
+        let op = Operation {
+            hash: header.hash(),
+            header,
+            body,
+        };
+        self.process_authored_ingested_operation(op).await
     }
 
     // Can't do this unless we allow multiple operations to be created but not yet ingested.

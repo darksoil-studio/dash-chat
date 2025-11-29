@@ -76,7 +76,7 @@ impl Default for NodeConfig {
 pub type Orderer = PartialOrder<
     LogId,
     Extensions,
-    OpStore,
+    MemoryStore<LogId, Extensions>,
     p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
 >;
 
@@ -124,7 +124,6 @@ impl NodeLocalData {
 #[derive(Clone)]
 pub struct Node {
     pub op_store: OpStore,
-    pub ordering: Arc<RwLock<Orderer>>,
     // pub ordering_store: p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
     pub network: Network<LogId>,
     author_store: AuthorStore<LogId>,
@@ -217,10 +216,6 @@ impl Node {
 
         let node = Self {
             op_store: op_store.clone(),
-            ordering: Arc::new(RwLock::new(Orderer::new(
-                op_store.clone(),
-                Default::default(),
-            ))),
             author_store: author_store.clone(),
             spaces_store,
             network,

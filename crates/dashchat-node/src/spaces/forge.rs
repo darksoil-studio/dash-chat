@@ -43,11 +43,12 @@ impl p2panda_spaces::traits::Forge<ChatId, SpaceOperation, ()> for DashForge {
         };
         let (header, _) = self
             .op_store
-            .create_operation(
+            .author_operation(
                 &self.private_key,
                 topic,
                 Payload::Space(args.clone()),
                 vec![],
+                Some("todotodo"),
             )
             .await?;
         let message = SpaceOperation::new(header, args);
