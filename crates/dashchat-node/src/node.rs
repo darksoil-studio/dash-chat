@@ -267,7 +267,7 @@ impl Node {
             .await?;
         }
 
-        node.process_authored_space_messages(device_group_msgs)
+        node.process_authored_ingested_space_messages(device_group_msgs)
             .await?;
 
         let author_store = author_store.clone();
@@ -441,7 +441,7 @@ impl Node {
 
         alias_space_messages("create_group_chat", topic, msgs.iter());
 
-        self.process_authored_space_messages(msgs).await?;
+        self.process_authored_ingested_space_messages(msgs).await?;
 
         tracing::info!(?topic, ?topic, "created group chat space");
 
@@ -489,7 +489,7 @@ impl Node {
 
         alias_space_messages("create_direct_chat", topic, msgs.iter());
 
-        self.process_authored_space_messages(msgs).await?;
+        self.process_authored_ingested_space_messages(msgs).await?;
 
         tracing::info!(?topic, ?topic, "created direct chat space");
 
@@ -554,7 +554,7 @@ impl Node {
             )
             .await?;
 
-        self.process_authored_space_messages(msgs).await?;
+        self.process_authored_ingested_space_messages(msgs).await?;
 
         Ok(())
     }
@@ -645,13 +645,12 @@ impl Node {
             timestamp: timestamp_now(),
         };
         let encrypted = space.publish(&encode_cbor(&message.clone())?).await?;
-        let encrypted_hash = encrypted.id();
 
         alias_space_messages("send_message", topic, vec![&encrypted]);
 
-        let Operation { header, body, hash } = encrypted.into_operation()?;
+        let op = encrypted.into_operation()?;
 
-        let header = self.process_authored_operation(header, body, None).await?;
+        let header = self.process_authored_ingested_operation(op).await?;
 
         Ok((message, header))
     }

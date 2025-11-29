@@ -38,28 +38,6 @@ impl Node {
             )
             .await?;
 
-        self.process_authored_operation(header, body, alias).await
-    }
-
-    // Can't do this unless we allow multiple operations to be created but not yet ingested.
-    pub(crate) async fn process_authored_space_messages(
-        &self,
-        ops: Vec<SpaceOperation>,
-    ) -> Result<(), anyhow::Error> {
-        for op in ops {
-            let op = op.into_operation()?;
-            self.process_authored_operation(op.header.clone(), op.body, None)
-                .await?;
-        }
-        Ok(())
-    }
-
-    pub(crate) async fn process_authored_operation(
-        &self,
-        header: Header,
-        body: Option<Body>,
-        alias: Option<&str>,
-    ) -> Result<Header, anyhow::Error> {
         let log_id = header.extensions.log_id;
         let hash = header.hash();
 
@@ -88,19 +66,14 @@ impl Node {
             IngestResult::Complete(op @ Operation { hash: hash2, .. }) => {
                 assert_eq!(hash, hash2);
 
-                self.process_ordering(op.clone()).await?;
-
                 // NOTE: if we fail to process here, incoming operations will be stuck as pending!
-                self.process_operation(op, self.author_store.clone(), true, false)
-                    .await?;
-
-                // self.notify_payload(&header, &payload).await?;
-                tracing::debug!(?log_id, hash = hash.alias(), "authored operation");
+                self.process_ordering(op.clone()).await?;
 
                 p::emit(p::Action::AuthorOp {
                     log_id,
                     hash: hash.clone(),
                 });
+                self.process_authored_ingested_operation(op).await
             }
 
             IngestResult::Retry(h, _, _, missing) => {
@@ -115,6 +88,31 @@ impl Node {
                 panic!("operation could not be ingested, check your sequence numbers!");
             }
         }
+    }
+
+    // Can't do this unless we allow multiple operations to be created but not yet ingested.
+    pub(crate) async fn process_authored_ingested_space_messages(
+        &self,
+        ops: Vec<SpaceOperation>,
+    ) -> Result<(), anyhow::Error> {
+        for op in ops {
+            let op = op.into_operation()?;
+            self.process_authored_ingested_operation(op).await?;
+        }
+        Ok(())
+    }
+
+    pub(crate) async fn process_authored_ingested_operation(
+        &self,
+        op: Operation<Extensions>,
+    ) -> Result<Header, anyhow::Error> {
+        let log_id = op.header.extensions.log_id;
+        self.process_operation(op.clone(), self.author_store.clone(), true, false)
+            .await?;
+        let Operation { header, body, hash } = op;
+
+        // self.notify_payload(&header, &payload).await?;
+        tracing::debug!(?log_id, hash = hash.alias(), "authored operation");
 
         match self
             .initialized_topics

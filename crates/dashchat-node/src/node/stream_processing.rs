@@ -264,7 +264,7 @@ impl Node {
             tracing::warn!(missing = ?repair_required, "spaces repair required");
             for space_id in repair_required {
                 let (msgs, _) = self.manager.repair_spaces(&vec![space_id]).await?;
-                self.process_authored_space_messages(msgs).await?;
+                self.process_authored_ingested_space_messages(msgs).await?;
             }
         }
         Ok(())
