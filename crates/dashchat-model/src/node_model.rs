@@ -20,24 +20,48 @@ use crate::op_model as op;
 ░░████████░░██████   ░░█████  █████░░██████  ████ █████
  ░░░░░░░░  ░░░░░░     ░░░░░  ░░░░░  ░░░░░░  ░░░░ ░░░░░   */
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Exhaustive, Serialize, Deserialize)]
-pub enum Action<H: Id, K: Id, T: Id> {
-    Op(OpAction<H, K, T>),
-    Topic(TopicAction<T>),
+#[derive(
+    Clone, Debug, PartialEq, Eq, Hash, Exhaustive, Serialize, Deserialize, derive_more::Display,
+)]
+pub enum Action<Hash: Id, Pubkey: Id, Topic: Id> {
+    Op(OpAction<Hash, Pubkey, Topic>),
+    Topic(TopicAction<Topic>),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Exhaustive, Serialize, Deserialize)]
-pub enum OpAction<H: Id, K: Id, T: Id> {
-    CreateOp { topic: T, hash: H },
-    ReceiveOp { topic: T, hash: H, from: K },
-    IngestOp { hash: H },
-    ProcessOp { hash: H },
-    BufferOp { hash: H, deps: BTreeSet<H> },
+#[derive(
+    Clone, Debug, PartialEq, Eq, Hash, Exhaustive, Serialize, Deserialize, derive_more::Display,
+)]
+pub enum OpAction<Hash: Id, Pubkey: Id, Topic: Id> {
+    #[display("CreateOp(T:{topic} H:{hash})")]
+    CreateOp { topic: Topic, hash: Hash },
+    #[display("ReceiveOp(T:{topic} H:{hash} <- {from})")]
+    ReceiveOp {
+        topic: Topic,
+        hash: Hash,
+        from: Pubkey,
+    },
+    #[display("IngestOp(H:{hash})")]
+    IngestOp { hash: Hash },
+    #[display("ProcessOp(H:{hash})")]
+    ProcessOp { hash: Hash },
+    #[display("BufferOp(H:{hash} Deps:{deps:?})")]
+    BufferOp { hash: Hash, deps: BTreeSet<Hash> },
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Exhaustive, Serialize, Deserialize)]
-pub enum TopicAction<T: Id> {
-    Subscribe { topic: T },
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+    Hash,
+    Exhaustive,
+    Serialize,
+    Deserialize,
+    derive_more::Display,
+)]
+pub enum TopicAction<Topic: Id> {
+    Subscribe { topic: Topic },
 }
 
 /*                                  █████       ███
@@ -50,14 +74,14 @@ pub enum TopicAction<T: Id> {
 ░░░░░ ░░░ ░░░░░  ░░░░░░░░  ░░░░░░  ░░░░ ░░░░░ ░░░░░ ░░░░ ░░░░░  ░░░░░░  */
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Model<H, K, T> {
+pub struct Model<Hash, Pubkey, Topic> {
     op: op::Model,
-    _phantom: PhantomData<(H, K, T)>,
+    _phantom: PhantomData<(Hash, Pubkey, Topic)>,
 }
 
-impl<H: Id, K: Id, T: Id> Machine for Model<H, K, T> {
-    type State = State<H, T>;
-    type Action = Action<H, K, T>;
+impl<Hash: Id, Pubkey: Id, Topic: Id> Machine for Model<Hash, Pubkey, Topic> {
+    type State = State<Hash, Topic>;
+    type Action = Action<Hash, Pubkey, Topic>;
     type Fx = ();
     type Error = anyhow::Error;
 
@@ -86,7 +110,7 @@ impl<H: Id, K: Id, T: Id> Machine for Model<H, K, T> {
                             Ok((self.op.transition_(o, op::Action::Ingest)?.into(), ()))
                         }
                         Phase::Buffered { .. } => {
-                            todo!()
+                            bail!("TODO")
                         }
                     })?;
                 }
@@ -101,7 +125,7 @@ impl<H: Id, K: Id, T: Id> Machine for Model<H, K, T> {
                     })?;
                 }
                 OpAction::BufferOp { hash, deps } => {
-                    todo!()
+                    bail!("TODO")
                 }
             },
         }
@@ -114,13 +138,20 @@ impl<H: Id, K: Id, T: Id> Machine for Model<H, K, T> {
     }
 }
 
-impl<H: Id, K: Id, T: Id> Model<H, K, T> {
+impl<Hash: Id, Pubkey: Id, Topic: Id> Model<Hash, Pubkey, Topic> {
     pub fn new() -> Self {
-        todo!()
+        Self {
+            op: op::Model::new(),
+            _phantom: PhantomData,
+        }
     }
 
-    pub fn initial(&self) -> State<H, T> {
-        todo!()
+    pub fn initial(&self) -> State<Hash, Topic> {
+        State {
+            ops: BTreeMap::new(),
+            buffered: BTreeSet::new(),
+            subs: BTreeSet::new(),
+        }
     }
 }
 
@@ -133,17 +164,18 @@ impl<H: Id, K: Id, T: Id> Model<H, K, T> {
  ██████   ░░█████ ░░████████  ░░█████ ░░██████
 ░░░░░░     ░░░░░   ░░░░░░░░    ░░░░░   ░░░░░░  */
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Hash, derive_more::From)]
-pub struct State<H: Id, T: Id> {
-    pub ops: BTreeMap<H, Phase<H>>,
-    pub buffered: BTreeSet<H>,
-    pub subs: BTreeSet<T>,
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash, derive_more::From, derive_more::Display)]
+#[display("ops={:?}, buffered={:?}, subs={:?}", ops, buffered, subs)]
+pub struct State<Hash: Id, Topic: Id> {
+    pub ops: BTreeMap<Hash, Phase<Hash>>,
+    pub buffered: BTreeSet<Hash>,
+    pub subs: BTreeSet<Topic>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, derive_more::From)]
-pub enum Phase<H: Id> {
+pub enum Phase<Hash: Id> {
     Op(op::State),
-    Buffered { hash: H, deps: BTreeSet<H> },
+    Buffered { hash: Hash, deps: BTreeSet<Hash> },
 }
 
 /*█████                      █████
@@ -157,6 +189,42 @@ pub enum Phase<H: Id> {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
+
+    use polestar::diagram::write_dot;
+
+    const AGENTS: usize = 2;
+    const TOPICS: usize = 2;
+    const OPS: usize = 2;
+
+    type Key = UpTo<AGENTS>;
+    type Topic = UpTo<TOPICS>;
+    type Hash = UpTo<OPS>;
+
+    #[test]
+    fn test_todo() {
+        tracing_subscriber::fmt::fmt()
+            .with_max_level(tracing::Level::INFO)
+            .init();
+
+        let model = Model::<Hash, Key, Topic>::new();
+        let initial = model.initial();
+
+        let traversal = model
+            .traverse([initial])
+            .ignore_loopbacks(true)
+            .trace_every(1_000);
+
+        // graph
+        {
+            let graph = traversal.diagram().unwrap();
+            // let graph = graph.map(|_, n| n, |_, (i, e)| format!("n{i}: {e}"));
+            write_dot("out.dot", &graph, &[]);
+            println!(
+                "wrote out.dot. nodes={}, edges={}",
+                graph.node_count(),
+                graph.edge_count()
+            );
+        }
+    }
 }

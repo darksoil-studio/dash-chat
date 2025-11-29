@@ -12,3 +12,6 @@ serde = { version = "1.0.228", features = ["derive"] }
 
 polestar = { path = "/home/michael/proj/polestar-rs/polestar" }
 exhaustive = "0.2.2"
+itertools = "0.14.0"
+tracing = "0.1.41"
+tracing-subscriber = "0.3.20"
