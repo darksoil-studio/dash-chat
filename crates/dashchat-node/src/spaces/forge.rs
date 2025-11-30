@@ -48,7 +48,7 @@ impl p2panda_spaces::traits::Forge<ChatId, SpaceOperation, ()> for DashForge {
                 topic,
                 Payload::Space(args.clone()),
                 vec![],
-                Some("todotodo"),
+                None,
             )
             .await?;
         let message = SpaceOperation::new(header, args);

@@ -10,18 +10,6 @@ use crate::{polestar as p, timestamp_now};
 use super::*;
 
 impl Node {
-    /// Author a space repair operation without processing it
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
-    #[deprecated(note = "use author_operation instead")]
-    pub(super) async fn author_repair_operation<K: TopicKind>(
-        &self,
-        topic: Topic<K>,
-        payload: Payload,
-        alias: Option<&str>,
-    ) -> Result<Header, anyhow::Error> {
-        self.author_operation(topic, payload, alias).await
-    }
-
     pub(super) async fn author_operation<K: TopicKind>(
         &self,
         topic: Topic<K>,
@@ -71,12 +59,7 @@ impl Node {
         // self.notify_payload(&header, &payload).await?;
         tracing::debug!(?log_id, hash = hash.alias(), "authored operation");
 
-        match self
-            .initialized_topics
-            .read()
-            .await
-            .get(&header.extensions.log_id)
-        {
+        match self.initialized_topics.read().await.get(&log_id) {
             Some(gossip) => {
                 gossip
                     .send(ToNetwork::Message {

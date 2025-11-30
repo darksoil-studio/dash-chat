@@ -407,6 +407,8 @@ impl Node {
     /// Anyone who knows the two public keys can derive the same topic.
     // TODO: is this a problem? Should we use a random topic instead?
     pub fn direct_chat_topic(&self, other: ActorId) -> DirectChatId {
+        return Topic::global().recast();
+
         let me = self.repped_group().group;
         // TODO: use two secrets from each party to construct the topic
         let topic = Topic::direct_chat([me, other]);
@@ -423,7 +425,7 @@ impl Node {
         self.initialize_topic(topic, true).await?;
         let repped = self.repped_group();
 
-        let (_space, msgs, _event) = self
+        let (space, msgs, _event) = self
             .manager
             .create_space(
                 topic,
@@ -434,11 +436,21 @@ impl Node {
             )
             .await?;
 
-        alias_space_messages("create_group_chat", topic, msgs.iter());
+        alias_space_messages(
+            &format!(
+                "create_group_chat({}, {})",
+                space.id().alias(),
+                space.group_id().await?.alias()
+            ),
+            topic,
+            msgs.iter(),
+        );
 
         self.process_authored_ingested_space_messages(msgs).await?;
 
         tracing::info!(?topic, ?topic, "created group chat space");
+
+        Box::pin(self.repair_spaces_and_publish()).await?;
 
         Ok(())
     }
@@ -487,6 +499,8 @@ impl Node {
         self.process_authored_ingested_space_messages(msgs).await?;
 
         tracing::info!(?topic, ?topic, "created direct chat space");
+
+        Box::pin(self.repair_spaces_and_publish()).await?;
 
         Ok(())
     }
@@ -550,6 +564,8 @@ impl Node {
             .await?;
 
         self.process_authored_ingested_space_messages(msgs).await?;
+
+        Box::pin(self.repair_spaces_and_publish()).await?;
 
         Ok(())
     }
@@ -647,6 +663,8 @@ impl Node {
 
         let header = self.process_authored_ingested_operation(op).await?;
 
+        Box::pin(self.repair_spaces_and_publish()).await?;
+
         Ok((message, header))
     }
 
@@ -655,6 +673,7 @@ impl Node {
     }
 
     pub fn device_group_topic(&self) -> DeviceGroupId {
+        return Topic::global().recast();
         self.local_data.device_space_id
     }
 

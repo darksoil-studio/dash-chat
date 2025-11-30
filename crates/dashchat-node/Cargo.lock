@@ -2482,6 +2482,7 @@ dependencies = [
  "sha2",
  "subtle",
  "thiserror 2.0.17",
+ "tracing",
  "x25519-dalek",
  "zeroize",
 ]

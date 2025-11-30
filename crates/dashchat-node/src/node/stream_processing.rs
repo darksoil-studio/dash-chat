@@ -214,30 +214,28 @@ impl Node {
 
         tracing::trace!(?payload, "RECEIVED PAYLOAD");
 
-        // SAM: definitely process the repair message on the authoring side too!
-        if true {
-            // if !is_repair {
-            if let Err(err) = self
-                .process_payload(&header, payload.as_ref(), is_author)
-                .await
-            {
-                tracing::error!(
-                    hash = header.hash().alias(),
-                    ?payload,
-                    ?err,
-                    "process operation error"
-                );
-            }
-
-            tracing::info!(hash = hash.alias(), "processed operation");
-
-            if let Some(payload) = payload.as_ref() {
-                self.notify_payload(&header, payload).await?;
-            }
-
-            // XXX: don't repair this often.
-            // Box::pin(self.repair_spaces_and_publish()).await?;
+        // if !is_repair {
+        if let Err(err) = self
+            .process_payload(&header, payload.as_ref(), is_author)
+            .await
+        {
+            tracing::error!(
+                hash = header.hash().alias(),
+                ?payload,
+                ?err,
+                "process operation error"
+            );
+            return Err(err);
         }
+
+        tracing::info!(hash = hash.alias(), "processed operation");
+
+        if let Some(payload) = payload.as_ref() {
+            self.notify_payload(&header, payload).await?;
+        }
+
+        // XXX: don't repair this often.
+        // Box::pin(self.repair_spaces_and_publish()).await?;
 
         self.op_store.mark_op_processed(log_id, &hash);
 
