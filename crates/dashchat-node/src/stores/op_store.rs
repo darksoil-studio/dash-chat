@@ -13,7 +13,6 @@ use crate::{
     node::Orderer,
     payload::{Extensions, Payload},
     spaces::SpaceOperation,
-    testing::AliasedId,
     topic::{LogId, Topic, TopicKind},
     *,
 };
@@ -90,12 +89,12 @@ impl OpStore {
         let hash = header.hash();
 
         if let Some(alias) = alias {
-            header.hash().aliased(alias);
+            header.hash().with_name(alias);
         }
 
         tracing::info!(
             ?log_id,
-            hash = hash.alias(),
+            hash = ?hash.renamed(),
             seq_num = header.seq_num,
             "PUB: authoring operation"
         );
@@ -122,10 +121,10 @@ impl OpStore {
             }
 
             IngestResult::Retry(h, _, _, missing) => {
-                let backlink = h.backlink.as_ref().map(|h| h.alias());
+                let backlink = h.backlink.as_ref().map(|h| h.renamed());
                 tracing::error!(
                     ?log_id,
-                    hash = hash.alias(),
+                    hash = ?hash.renamed(),
                     ?backlink,
                     ?missing,
                     "operation could not be ingested"
@@ -162,7 +161,7 @@ impl OpStore {
                 log_ids.is_empty() || log_ids.iter().find(|log_id| **log_id == l).is_some()
             })
             .collect::<Vec<_>>();
-        ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.alias(), header.seq_num));
+        ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.renamed(), header.seq_num));
         ops.into_iter()
             .map(|(h, (t, header, body, _))| {
                 let desc = match body
@@ -179,9 +178,9 @@ impl OpStore {
                 if log_ids.len() == 1 {
                     format!(
                         "• {} {:2} {} : {}",
-                        header.public_key.alias(),
+                        header.public_key.renamed(),
                         header.seq_num,
-                        h.alias(),
+                        h.renamed(),
                         desc
                     )
                 } else {
@@ -189,9 +188,9 @@ impl OpStore {
                     format!(
                         "• {:>24} {} {:2} {} : {}",
                         t,
-                        header.public_key.alias(),
+                        header.public_key.renamed(),
                         header.seq_num,
-                        h.alias(),
+                        h.renamed(),
                         desc
                     )
                 }

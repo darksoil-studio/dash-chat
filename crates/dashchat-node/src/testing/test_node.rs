@@ -4,6 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+use named_id::*;
 use p2panda_auth::Access;
 use p2panda_spaces::ActorId;
 use tokio::sync::{Mutex, mpsc::Receiver};
@@ -12,12 +13,12 @@ use crate::{
     ChatId, DeviceGroupPayload, NodeConfig, Notification, PK, Payload,
     node::{Node, NodeLocalData},
     spaces::DashGroup,
-    testing::{AliasedId, ShortId, behavior::Behavior, introduce},
+    testing::{behavior::Behavior, introduce},
     topic::{LogId, Topic},
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
-#[debug("TestNode({})", self.node.public_key().alias())]
+#[debug("TestNode({})", self.node.public_key().renamed())]
 pub struct TestNode {
     #[deref]
     node: Node,
@@ -29,7 +30,7 @@ impl TestNode {
         let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = alias {
-            local_data.private_key.public_key().aliased(alias);
+            local_data.private_key.public_key().with_name(alias);
         }
         Self {
             node: Node::new(local_data, config, Some(notification_tx))
@@ -170,7 +171,7 @@ pub async fn consistency(
                             .cloned()
                             .unwrap_or_default()
                             .into_iter()
-                            .map(|h| format!("{} {}", h.short(), h.alias()))
+                            .map(|h| format!("{} {}", h.short(), h.renamed()))
                     })
                     .collect::<BTreeSet<_>>()
             })

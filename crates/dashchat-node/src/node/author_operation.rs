@@ -1,11 +1,8 @@
-use p2panda_core::{Hash, Operation};
-use p2panda_spaces::{OperationId, traits::AuthoredMessage};
-use p2panda_stream::operation::IngestResult;
+use p2panda_core::Operation;
 
+use crate::polestar as p;
 use crate::spaces::SpaceOperation;
-use crate::topic::{LogId, TopicKind};
-use crate::{AsBody, testing::AliasedId};
-use crate::{polestar as p, timestamp_now};
+use crate::topic::TopicKind;
 
 use super::*;
 
@@ -57,7 +54,7 @@ impl Node {
         let Operation { header, body, hash } = op;
 
         // self.notify_payload(&header, &payload).await?;
-        tracing::debug!(?log_id, hash = hash.alias(), "authored operation");
+        tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");
 
         match self.initialized_topics.read().await.get(&log_id) {
             Some(gossip) => {

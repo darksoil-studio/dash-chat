@@ -9,6 +9,7 @@ use std::sync::{Arc, LazyLock, Mutex};
 use anyhow::Context;
 pub use control_message::*;
 
+use named_id::{Nameable, Nameables};
 use p2panda_auth::Access;
 use p2panda_core::PrivateKey;
 use p2panda_encryption::Rng;
@@ -21,7 +22,6 @@ use p2panda_spaces::{ActorId, Event, Member};
 use crate::Topic;
 use crate::chat::ChatId;
 use crate::stores::{OpStore, SpacesStore};
-use crate::testing::AliasedId;
 pub use forge::DashForge;
 
 pub type TestConditions = ();
@@ -114,23 +114,23 @@ impl DashManager {
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
     pub async fn create_space(
         &self,
-        topic: impl Into<ChatId> + AliasedId,
+        topic: impl Into<ChatId> + Nameable,
         initial_members: &[(ActorId, Access<TestConditions>)],
     ) -> anyhow::Result<(
         DashSpace,
         Vec<SpaceOperation>,
         Vec<Event<ChatId, TestConditions>>,
     )> {
+        let topic = topic.into();
         let initial = initial_members
             .iter()
-            .map(|(id, _)| id.alias())
+            .map(|(id, _)| id.renamed())
             .collect::<Vec<_>>();
-        tracing::info!(topic = topic.alias(), ?initial, "SM: creating space");
-        let topic = topic.into();
+        tracing::info!(topic = ?topic.renamed(), ?initial, "SM: creating space");
 
         {
             if !CREATED_SPACES.lock().unwrap().insert(topic) {
-                panic!("Space already created: {}", topic.alias());
+                panic!("Space already created: {}", topic.renamed());
             }
         }
 

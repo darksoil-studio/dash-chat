@@ -19,7 +19,6 @@ use crate::spaces::SpaceOperation;
 use crate::{
     payload::InboxPayload,
     spaces::ArgType,
-    testing::AliasedId,
     topic::{LogId, TopicKind},
 };
 
@@ -169,7 +168,7 @@ impl Node {
                 tracing::error!(?err, "next ordering error");
             })
             .unwrap_or_default();
-        // dbg!(&reordered.iter().map(|o| o.hash.alias()).collect::<Vec<_>>());
+        // dbg!(&reordered.iter().map(|o| o.hash.renamed()).collect::<Vec<_>>());
 
         // let reordered = vec![operation];
 
@@ -182,7 +181,7 @@ impl Node {
                 Err(err) => {
                     tracing::error!(
                         ?log_id,
-                        hash = hash.alias(),
+                        hash = ?hash.renamed(),
                         ?err,
                         "process operation error"
                     )
@@ -208,7 +207,7 @@ impl Node {
         author_store.add_author(log_id, header.public_key).await;
         tracing::debug!(?log_id, "adding author");
 
-        tracing::info!(?log_id, hash = hash.alias(), "PROC: processing operation");
+        tracing::info!(?log_id, hash = ?hash.renamed(), "PROC: processing operation");
 
         let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
 
@@ -220,7 +219,7 @@ impl Node {
             .await
         {
             tracing::error!(
-                hash = header.hash().alias(),
+                hash = ?header.hash().renamed(),
                 ?payload,
                 ?err,
                 "process operation error"
@@ -228,7 +227,7 @@ impl Node {
             return Err(err);
         }
 
-        tracing::info!(hash = hash.alias(), "processed operation");
+        tracing::info!(hash = ?hash.renamed(), "processed operation");
 
         if let Some(payload) = payload.as_ref() {
             self.notify_payload(&header, payload).await?;
@@ -297,7 +296,7 @@ impl Node {
                     return Ok(());
                 }
 
-                tracing::info!(opid = opid.alias(), "SM: processing space msg");
+                tracing::info!(opid = ?opid.renamed(), "SM: processing space msg");
                 match self.manager.process(&space_op).await {
                     Ok(events) => {
                         for (i, event) in events.into_iter().enumerate() {
@@ -317,31 +316,31 @@ impl Node {
                         // assert_eq!(op, msg.id());
                         tracing::error!(
                             argtype = ?space_op.arg_type(),
-                            opid = op.alias(),
+                            opid = ?op.renamed(),
                             "duplicate space control msg"
                         );
                     }
 
                     Err(ManagerError::UnexpectedMessage(op)) => {
                         tracing::error!(
-                            header = header.hash().alias(),
-                            op = op.alias(),
+                            header = ?header.hash().renamed(),
+                            op = ?op.renamed(),
                             "space manager unexpected operation"
                         );
                     }
 
                     Err(ManagerError::MissingAuthMessage(op, auth_op)) => {
                         tracing::error!(
-                            op = op.alias(),
-                            auth_op = auth_op.alias(),
+                            op = ?op.renamed(),
+                            auth_op = ?auth_op.renamed(),
                             "space manager missing auth message"
                         );
                     }
 
                     Err(err) => {
                         tracing::error!(
-                            hash = header.hash().alias(),
-                            opid = opid.alias(),
+                            hash = ?header.hash().renamed(),
+                            opid = ?opid.renamed(),
                             ?err,
                             "space manager process error"
                         );
@@ -361,7 +360,7 @@ impl Node {
                 }
                 tracing::info!(
                     ?invitation,
-                    from = header.public_key.alias(),
+                    from = ?header.public_key.renamed(),
                     "received invitation message"
                 );
                 match invitation {

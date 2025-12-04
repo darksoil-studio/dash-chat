@@ -1,65 +1,19 @@
-mod aliased;
-mod short_id;
+use named_id::*;
+use p2panda_spaces::traits::AuthoredMessage;
 
-pub use aliased::*;
-pub use short_id::*;
+use crate::{Topic, spaces::SpaceOperation, topic::TopicKind};
 
-impl ShortId for p2panda_core::Hash {
-    const PREFIX: &'static str = "H";
-
-    fn to_short_string(&self) -> String {
-        self.to_hex()
-    }
-}
-
-impl ShortId for p2panda_core::PublicKey {
-    const PREFIX: &'static str = "PK";
-
-    fn to_short_string(&self) -> String {
-        self.to_hex()
-    }
-}
-
-impl ShortId for p2panda_spaces::OperationId {
-    const PREFIX: &'static str = "OP";
-
-    fn to_short_string(&self) -> String {
-        self.to_hex()
-    }
-}
-
-impl ShortId for p2panda_spaces::ActorId {
-    const PREFIX: &'static str = "A";
-
-    fn to_short_string(&self) -> String {
-        self.to_hex()
-    }
-}
-
-impl AliasedId for p2panda_core::Hash {
-    fn as_bytes(&self) -> &[u8] {
-        self.as_ref()
-    }
-}
-
-impl AliasedId for p2panda_spaces::ActorId {
-    fn as_bytes(&self) -> &[u8] {
-        self.as_bytes()
-    }
-}
-
-impl AliasedId for p2panda_core::PublicKey {
-    const SHOW_SHORT_ID: bool = false;
-
-    fn as_bytes(&self) -> &[u8] {
-        self.as_bytes()
-    }
-}
-
-impl AliasedId for p2panda_spaces::OperationId {
-    const SHOW_SHORT_ID: bool = true;
-
-    fn as_bytes(&self) -> &[u8] {
-        self.as_bytes()
+/// Add an alias to each space message with uniform naming.
+/// Useful for debugging.
+pub fn alias_space_messages<'a, K: TopicKind>(
+    prefix: &str,
+    _id: Topic<K>,
+    msgs: impl IntoIterator<Item = &'a SpaceOperation>,
+) {
+    for (i, msg) in msgs.into_iter().enumerate() {
+        let author = msg.author().renamed();
+        let arg_type = msg.arg_type();
+        msg.id()
+            .with_name(format!("{prefix}/{author}/{i}/{arg_type:?}").as_str());
     }
 }

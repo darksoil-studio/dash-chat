@@ -31,10 +31,8 @@
 
 use std::marker::PhantomData;
 
-use crate::{
-    chat::ChatId,
-    testing::{AliasedId, ShortId},
-};
+use crate::chat::ChatId;
+use named_id::*;
 
 use p2panda_net::TopicId;
 use p2panda_spaces::ActorId;
@@ -56,6 +54,7 @@ pub trait TopicKind:
     + Ord
     + std::fmt::Display
     + std::fmt::Debug
+    + 'static
 {
 }
 // pub trait ChatTopicKind: TopicKind {}
@@ -124,7 +123,7 @@ pub mod kind {
     derive_more::Debug,
 )]
 #[display("{}", hex::encode(self.0))]
-#[debug("{}", self.alias())]
+#[debug("{}", self.renamed())]
 pub struct LogId([u8; 32]);
 
 impl p2panda_spaces::traits::SpaceId for LogId {}
@@ -132,19 +131,12 @@ impl TopicQuery for LogId {}
 
 pub type DashChatTopicId = LogId;
 
-impl ShortId for LogId {
-    const PREFIX: &'static str = "L";
-
-    fn to_short_string(&self) -> String {
-        hex::encode(self.0)
-    }
-}
-
-impl AliasedId for LogId {
-    const SHOW_SHORT_ID: bool = true;
-
-    fn as_bytes(&self) -> &[u8] {
-        self.0.as_ref()
+impl Nameable for LogId {
+    fn shortener(&self) -> Option<Shortener> {
+        Some(Shortener {
+            length: 4,
+            prefix: "L",
+        })
     }
 }
 
@@ -163,7 +155,7 @@ impl AliasedId for LogId {
     derive_more::Debug,
 )]
 #[display("{}", hex::encode(self.id))]
-#[debug("{}", self.alias())]
+#[debug("{}", self.renamed())]
 pub struct Topic<K: TopicKind = kind::Untyped> {
     #[deref]
     id: [u8; 32],
@@ -191,7 +183,7 @@ impl<K: TopicKind> Topic<K> {
 
 impl Topic<kind::Global> {
     pub fn global() -> Self {
-        Self::new([255; 32]).aliased("GLOBAL")
+        Self::new([255; 32]).with_name("GLOBAL")
     }
 }
 
@@ -236,19 +228,12 @@ impl<K: TopicKind> TopicId for Topic<K> {
     }
 }
 
-impl<K: TopicKind> ShortId for Topic<K> {
-    const PREFIX: &'static str = "T";
-
-    fn prefix() -> String {
-        format!("{}:{}", Self::PREFIX, K::default())
-    }
-}
-
-impl<K: TopicKind> AliasedId for Topic<K> {
-    const SHOW_SHORT_ID: bool = true;
-
-    fn as_bytes(&self) -> &[u8] {
-        self.id.as_ref()
+impl<K: TopicKind> Nameable for Topic<K> {
+    fn shortener(&self) -> Option<Shortener> {
+        Some(Shortener {
+            length: 4,
+            prefix: "T",
+        })
     }
 }
 

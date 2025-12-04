@@ -14,6 +14,7 @@ pub mod polestar;
 #[cfg(feature = "testing")]
 pub mod testing;
 
+use named_id::*;
 use p2panda_core::IdentityError;
 
 pub use chat::*;
@@ -23,8 +24,6 @@ pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 pub use payload::*;
 pub use topic::{DashChatTopicId, Topic};
-
-use crate::testing::AliasedId;
 
 #[derive(
     Copy,
@@ -44,13 +43,13 @@ pub struct PK(p2panda_core::PublicKey);
 
 impl std::fmt::Debug for PK {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", AliasedId::alias(&self.0))
+        write!(f, "{}", self.0.renamed())
     }
 }
 
 impl std::fmt::Display for PK {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", AliasedId::alias(&self.0))
+        write!(f, "{}", self.0.renamed())
     }
 }
 

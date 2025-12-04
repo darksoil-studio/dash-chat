@@ -3,6 +3,7 @@
 use std::time::Duration;
 
 use dashchat_node::{testing::*, *};
+use named_id::*;
 
 const TRACING_FILTER: &str =
     "inbox=info,dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";

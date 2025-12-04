@@ -1,5 +1,7 @@
 #![feature(bool_to_result)]
 
+use named_id::*;
+
 use dashchat_node::{testing::*, *};
 
 const TRACING_FILTER: &str =

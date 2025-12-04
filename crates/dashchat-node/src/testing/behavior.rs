@@ -40,7 +40,7 @@ impl Behavior {
             .await
             .watch_mapped(Duration::from_secs(5), |n: &Notification| {
                 tracing::debug!(
-                    hash = n.header.hash().alias(),
+                    hash = ?n.header.hash().renamed(),
                     "checking for contact invitation"
                 );
                 let Payload::Inbox(InboxPayload::Contact(qr)) = &n.payload else {
@@ -63,7 +63,7 @@ impl Behavior {
             .await
             .watch_mapped(Duration::from_secs(5), |n: &Notification| {
                 tracing::debug!(
-                    hash = n.header.hash().alias(),
+                    hash = ?n.header.hash().renamed(),
                     "checking for group invitation"
                 );
                 let Payload::Chat(ChatPayload::JoinGroup(chat_id)) = &n.payload else {

@@ -8,6 +8,7 @@ use std::time::Duration;
 use dashchat_node::{testing::*, *};
 
 use anyhow::anyhow;
+use named_id::*;
 
 // #[tokio::test(flavor = "multi_thread")]
 
@@ -27,7 +28,17 @@ use anyhow::anyhow;
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
     dashchat_node::testing::setup_tracing(
-        "dashchat=info,p2panda_encryption=warn,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info",
+        // dashchat=info,
+        &"
+        p2panda_stream=info,
+        p2panda_auth=info,
+        p2panda_encryption=info,
+        p2panda_spaces=info
+        "
+        .split(',')
+        .map(|s| s.trim())
+        .collect::<Vec<_>>()
+        .join(","),
         true,
     );
 
@@ -191,7 +202,10 @@ async fn test_group_3() {
             let members = bobbi.space(chat_id).await?.members().await?;
             println!(
                 "members: {:?}",
-                members.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>()
+                members
+                    .iter()
+                    .map(|(id, _)| id.renamed())
+                    .collect::<Vec<_>>()
             );
             members
                 .iter()

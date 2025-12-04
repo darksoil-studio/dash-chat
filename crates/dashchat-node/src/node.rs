@@ -9,6 +9,7 @@ use anyhow::{Context, Result, anyhow};
 use chrono::{Duration, Utc};
 use futures::Stream;
 use futures::stream::FuturesUnordered;
+use named_id::*;
 use p2panda_auth::Access;
 use p2panda_core::cbor::encode_cbor;
 use p2panda_core::{Body, Operation, PrivateKey, PublicKey};
@@ -20,16 +21,15 @@ use p2panda_net::config::GossipConfig;
 use p2panda_net::{
     FromNetwork, Network, NetworkBuilder, ResyncConfiguration, SyncConfiguration, ToNetwork,
 };
+use p2panda_spaces::ActorId;
 use p2panda_spaces::event::Event;
 use p2panda_spaces::traits::AuthoredMessage;
-use p2panda_spaces::{ActorId, OperationId};
 use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::partial::operations::PartialOrder;
 use p2panda_stream::{DecodeExt, IngestExt};
 use p2panda_sync::log_sync::LogSyncProtocol;
 use serde::{Deserialize, Serialize};
 use tokio::sync::{RwLock, mpsc};
-use tokio::task;
 use tokio_stream::{StreamExt, wrappers::ReceiverStream};
 use tracing::Instrument;
 
@@ -42,7 +42,7 @@ use crate::payload::{
 };
 use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
-use crate::testing::{AliasedId, alias_space_messages};
+use crate::testing::alias_space_messages;
 use crate::topic::{LogId, Topic, kind};
 use crate::{
     AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DirectChatId, GroupChatId, Header, PK,
@@ -235,17 +235,17 @@ impl Node {
         node.spawn_stream_process_loop(stream_rx, author_store.clone());
 
         node.initialize_topic(
-            device_space_id.aliased(&format!("device_group({})", public_key.alias())),
+            device_space_id.with_name(&format!("device_group({})", public_key.renamed())),
             true,
         )
         .await?;
 
-        node.initialize_topic(Topic::global().aliased("GLOBAL"), true)
+        node.initialize_topic(Topic::global().with_name("GLOBAL"), true)
             .await?;
 
         node.initialize_topic(
             // Topic::announcements(node.repped_group().group)
-            //     .aliased(&format!("announce({})", public_key.alias())),
+            //     .with_name(&format!("announce({})", public_key.renamed())),
             Topic::global(),
             true,
         )
@@ -256,7 +256,7 @@ impl Node {
                 topic
                     .topic
                     .clone()
-                    .aliased(&format!("inbox({})", public_key.alias())),
+                    .with_name(&format!("inbox({})", public_key.renamed())),
                 false,
             )
             .await?;
@@ -333,7 +333,7 @@ impl Node {
             .get_log_heights(&log_id)
             .await?
             .into_iter()
-            .map(|(pk, height)| (PK::from(pk).alias(), height))
+            .map(|(pk, height)| (PK::from(pk).renamed(), height))
             .collect::<Vec<_>>();
         tracing::info!(?heights, "log HEIGHTS for {log_id:?}");
         match self.op_store.get_log(&author, &log_id, None).await? {
@@ -371,7 +371,7 @@ impl Node {
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
                 topic: Topic::global(),
-                // topic: Topic::inbox().aliased(&format!("inbox({})", self.public_key().alias())),
+                // topic: Topic::inbox().with_name(&format!("inbox({})", self.public_key().renamed())),
                 expires_at: Utc::now() + self.config.contact_code_expiry,
             };
             self.initialize_topic(inbox_topic.topic, false).await?;
@@ -413,9 +413,9 @@ impl Node {
         // TODO: use two secrets from each party to construct the topic
         let topic = Topic::direct_chat([me, other]);
         if me > other {
-            topic.aliased(&format!("direct({},{})", other.alias(), me.alias()))
+            topic.with_name(&format!("direct({},{})", other.renamed(), me.renamed()))
         } else {
-            topic.aliased(&format!("direct({},{})", me.alias(), other.alias()))
+            topic.with_name(&format!("direct({},{})", me.renamed(), other.renamed()))
         }
     }
 
@@ -439,8 +439,8 @@ impl Node {
         alias_space_messages(
             &format!(
                 "create_group_chat({}, {})",
-                space.id().alias(),
-                space.group_id().await?.alias()
+                space.id().renamed(),
+                space.group_id().await?.renamed()
             ),
             topic,
             msgs.iter(),
@@ -465,26 +465,29 @@ impl Node {
         self.initialize_topic(topic, true).await?;
 
         tracing::info!(
-            my_actor = my_actor.alias(),
-            other = other.alias(),
-            topic = topic.alias(),
+            my_actor = ?my_actor.renamed(),
+            other = ?other.renamed(),
+            topic = ?topic.renamed(),
             "creating direct chat space"
         );
 
         let Some(g1) = self.manager.group(my_actor).await? else {
-            tracing::error!(my_actor = my_actor.alias(), "group not found for my actor");
+            tracing::error!(
+                my_actor = ?my_actor.renamed(),
+                "group not found for my actor"
+            );
             return Err(anyhow!("group not found for my actor"));
         };
         let Some(g2) = self.manager.group(other).await? else {
-            tracing::error!(other = other.alias(), "group not found for other actor");
+            tracing::error!(other = ?other.renamed(), "group not found for other actor");
             return Err(anyhow!("group not found for other actor"));
         };
 
         tracing::debug!(
-            g1_id = ?g1.id().alias(),
-            g2_id = ?g2.id().alias(),
-            g1_members = ?g1.members().await?.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>(),
-            g2_members = ?g2.members().await?.iter().map(|(id, _)| id.alias()).collect::<Vec<_>>(),
+            g1_id = ?g1.id().renamed(),
+            g2_id = ?g2.id().renamed(),
+            g1_members = ?g1.members().await?.iter().map(|(id, _)| id.renamed()).collect::<Vec<_>>(),
+            g2_members = ?g2.members().await?.iter().map(|(id, _)| id.renamed()).collect::<Vec<_>>(),
             "group members"
         );
 
@@ -519,7 +522,7 @@ impl Node {
             Topic::global(),
             // Topic::announcements(self.repped_group().group),
             Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
-            Some(&format!("set_profile({})", self.public_key().alias())),
+            Some(&format!("set_profile({})", self.public_key().renamed())),
         )
         .await?;
 
@@ -559,7 +562,7 @@ impl Node {
             .author_operation(
                 self.direct_chat_topic(repped_group.group),
                 Payload::Chat(ChatPayload::JoinGroup(topic)),
-                Some(&format!("add_member/invitation({})", topic.alias())),
+                Some(&format!("add_member/invitation({})", topic.renamed())),
             )
             .await?;
 
@@ -757,7 +760,7 @@ impl Node {
         self.author_operation(
             self.device_group_topic(),
             Payload::DeviceGroup(DeviceGroupPayload::AddContact(contact.clone())),
-            Some(&format!("add_contact/invitation({})", actor.alias())),
+            Some(&format!("add_contact/invitation({})", actor.renamed())),
         )
         .await?;
 
@@ -767,7 +770,7 @@ impl Node {
             self.author_operation(
                 inbox_topic.topic,
                 Payload::Inbox(InboxPayload::Contact(qr)),
-                Some(&format!("add_contact/invitation({})", actor.alias())),
+                Some(&format!("add_contact/invitation({})", actor.renamed())),
             )
             .await?;
         }
