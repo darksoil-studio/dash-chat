@@ -6,15 +6,17 @@ use std::{
 
 use named_id::*;
 use p2panda_auth::Access;
+use p2panda_core::PublicKey;
 use p2panda_spaces::ActorId;
 use tokio::sync::{Mutex, mpsc::Receiver};
 
 use crate::{
-    ChatId, DeviceGroupPayload, NodeConfig, Notification, PK, Payload,
+    ChatId, DeviceGroupPayload, NodeConfig, Notification, Payload,
     node::{Node, NodeLocalData},
     spaces::DashGroup,
     testing::{behavior::Behavior, introduce},
     topic::{LogId, Topic},
+    util::actor_to_pubkey,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
@@ -26,10 +28,10 @@ pub struct TestNode {
 }
 
 impl TestNode {
-    pub async fn new(config: NodeConfig, alias: Option<&str>) -> Self {
+    pub async fn new(config: NodeConfig, name: Option<&str>) -> Self {
         let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
-        if let Some(alias) = alias {
+        if let Some(alias) = name {
             local_data.private_key.public_key().with_name(alias);
         }
         Self {
@@ -66,7 +68,7 @@ impl TestNode {
             .members()
             .await?
             .into_iter()
-            .map(|(id, _)| PK::from(id).0)
+            .map(|(id, _)| actor_to_pubkey(id))
             .collect::<Vec<_>>();
 
         let ids = self

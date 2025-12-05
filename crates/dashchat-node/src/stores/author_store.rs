@@ -8,20 +8,18 @@ use tokio::sync::RwLock;
 use async_trait::async_trait;
 use p2panda_sync::log_sync::TopicLogMap;
 
-use crate::PK;
-
 #[derive(Clone, Debug)]
-pub struct AuthorStore<T>(pub(crate) Arc<RwLock<HashMap<T, HashSet<PK>>>>);
+pub struct AuthorStore<T>(pub(crate) Arc<RwLock<HashMap<T, HashSet<PublicKey>>>>);
 
 impl<T: Eq + std::hash::Hash + std::fmt::Debug + Clone> AuthorStore<T> {
     pub fn new() -> Self {
         Self(Arc::new(RwLock::new(HashMap::new())))
     }
 
-    pub async fn add_author(&self, topic: T, public_key: impl Into<PK>) {
+    pub async fn add_author(&self, topic: T, public_key: impl Into<PublicKey>) {
         let mut authors = self.0.write().await;
         let public_key = public_key.into();
-        let pk = PK::from(public_key);
+        let pk = PublicKey::from(public_key);
 
         authors
             .entry(topic.clone())
@@ -38,14 +36,14 @@ impl<T: Eq + std::hash::Hash + std::fmt::Debug + Clone> AuthorStore<T> {
             });
     }
 
-    pub async fn authors(&self, topic: &T) -> Option<HashSet<PK>> {
+    pub async fn authors(&self, topic: &T) -> Option<HashSet<PublicKey>> {
         let authors = self.0.read().await;
         Some(
             authors
                 .get(topic)
                 .cloned()?
                 .into_iter()
-                .map(PK::from)
+                .map(PublicKey::from)
                 .collect(),
         )
     }

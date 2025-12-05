@@ -45,7 +45,7 @@ use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::alias_space_messages;
 use crate::topic::{LogId, Topic, kind};
 use crate::{
-    AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DirectChatId, GroupChatId, Header, PK,
+    AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DirectChatId, GroupChatId, Header,
     timestamp_now,
 };
 
@@ -89,13 +89,13 @@ pub type Orderer = PartialOrder<
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ReppedGroup {
     pub group: ActorId,
-    pub individual: PK,
+    pub individual: PublicKey,
 }
 
 #[derive(Clone)]
 pub struct NodeState {
     pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
-    pub(crate) contacts: Arc<RwLock<HashMap<PK, QrCode>>>,
+    pub(crate) contacts: Arc<RwLock<HashMap<PublicKey, QrCode>>>,
     pub(crate) chat_actor_id: ActorId,
 }
 
@@ -146,7 +146,7 @@ pub struct Node {
 }
 
 impl Node {
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?PK::from(local_data.private_key.public_key()))))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?PublicKey::from(local_data.private_key.public_key()))))]
     pub async fn new(
         local_data: NodeLocalData,
         config: NodeConfig,
@@ -158,7 +158,7 @@ impl Node {
             active_inbox_topics,
             device_space_id,
         } = local_data.clone();
-        let public_key = PK::from(private_key.public_key());
+        let public_key = PublicKey::from(private_key.public_key());
 
         let mdns = LocalDiscovery::new();
 
@@ -274,7 +274,7 @@ impl Node {
         tokio::spawn(
             async move {
                 while let Some(Ok(peer)) = new_peers.next().await {
-                    let pubkey = PK::from_bytes(peer.node_addr.node_id.as_bytes()).unwrap();
+                    let pubkey = PublicKey::from_bytes(peer.node_addr.node_id.as_bytes()).unwrap();
 
                     let mut inboxes = active_inbox_topics.write().await;
                     inboxes.retain(|it| it.expires_at > Utc::now());
@@ -333,13 +333,13 @@ impl Node {
             .get_log_heights(&log_id)
             .await?
             .into_iter()
-            .map(|(pk, height)| (PK::from(pk).renamed(), height))
+            .map(|(pk, height)| (PublicKey::from(pk).renamed(), height))
             .collect::<Vec<_>>();
         tracing::info!(?heights, "log HEIGHTS for {log_id:?}");
         match self.op_store.get_log(&author, &log_id, None).await? {
             Some(log) => Ok(log),
             None => {
-                let author = PK::from(author);
+                let author = PublicKey::from(author);
                 tracing::warn!("No log found for topic {log_id:?} and author {author:?}");
                 Ok(vec![])
             }
@@ -591,7 +591,7 @@ impl Node {
             .iter()
             .filter_map(|(id, access)| {
                 if access.level >= p2panda_auth::AccessLevel::Write {
-                    Some(PK::from(*id).0)
+                    Some(*id)
                 } else {
                     None
                 }
@@ -671,7 +671,7 @@ impl Node {
         Ok((message, header))
     }
 
-    pub fn public_key(&self) -> PK {
+    pub fn public_key(&self) -> PublicKey {
         self.local_data.private_key.public_key().into()
     }
 
@@ -753,8 +753,9 @@ impl Node {
         self.initialize_topic(direct_topic, true).await?;
 
         // TODO: needed?
+        let pubkey: PublicKey = todo!("contact.member_code.id()");
         self.author_store
-            .add_author(direct_topic.into(), contact.member_code.id())
+            .add_author(direct_topic.into(), pubkey)
             .await;
 
         self.author_operation(
