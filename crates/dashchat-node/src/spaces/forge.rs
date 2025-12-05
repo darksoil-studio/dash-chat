@@ -28,6 +28,7 @@ impl p2panda_spaces::traits::Forge<ChatId, SpaceOperation, ()> for DashForge {
 
     async fn forge(&self, args: SpacesArgs) -> Result<SpaceOperation, Self::Error> {
         // TODO: this is crucial, need to set the correct topic for each op.
+
         let topic: Topic<kind::Untyped> = match &args {
             p2panda_spaces::SpacesArgs::KeyBundle { key_bundle } => Topic::global().recast(),
             p2panda_spaces::SpacesArgs::Auth {
@@ -52,7 +53,8 @@ impl p2panda_spaces::traits::Forge<ChatId, SpaceOperation, ()> for DashForge {
             )
             .await?;
         let message = SpaceOperation::new(header, args);
-        self.store.set_message(&message.id(), &message).await?;
+        let id = message.id();
+        self.store.set_message(&id, &message).await?;
 
         Ok(message)
     }

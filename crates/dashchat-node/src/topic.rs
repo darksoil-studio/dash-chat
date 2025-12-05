@@ -123,7 +123,7 @@ pub mod kind {
     derive_more::Debug,
 )]
 #[display("{}", hex::encode(self.0))]
-#[debug("{}", self.renamed())]
+#[debug("{}", self)]
 pub struct LogId([u8; 32]);
 
 impl p2panda_spaces::traits::SpaceId for LogId {}
@@ -155,7 +155,7 @@ impl Nameable for LogId {
     derive_more::Debug,
 )]
 #[display("{}", hex::encode(self.id))]
-#[debug("{}", self.renamed())]
+#[debug("{}", self)]
 pub struct Topic<K: TopicKind = kind::Untyped> {
     #[deref]
     id: [u8; 32],

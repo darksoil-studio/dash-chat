@@ -168,7 +168,6 @@ impl Node {
                 tracing::error!(?err, "next ordering error");
             })
             .unwrap_or_default();
-        // dbg!(&reordered.iter().map(|o| o.hash.renamed()).collect::<Vec<_>>());
 
         // let reordered = vec![operation];
 

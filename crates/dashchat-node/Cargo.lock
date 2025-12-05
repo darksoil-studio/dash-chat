@@ -2137,6 +2137,7 @@ dependencies = [
 name = "named-id"
 version = "0.1.0"
 dependencies = [
+ "blake3",
  "named-id-derive",
  "regex",
  "serde",

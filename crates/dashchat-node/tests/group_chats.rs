@@ -10,8 +10,6 @@ use dashchat_node::{testing::*, *};
 use anyhow::anyhow;
 use named_id::*;
 
-// #[tokio::test(flavor = "multi_thread")]
-
 // #[test]
 // fn test_group_2() {
 //     tokio::runtime::Builder::new_current_thread()

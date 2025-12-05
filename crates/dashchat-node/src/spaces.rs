@@ -87,11 +87,11 @@ impl DashManager {
         let key_store = p2panda_spaces::test_utils::TestKeyStore::new();
         let manager =
             Manager::new(spaces_store.clone(), key_store, forge, credentials, rng).await?;
-
         let device_group_msgs = {
-            let (group, msgs, _event) = manager
-                .create_group_with_id(&[(manager.id(), Access::manage())], chat_actor_id)
-                .await?;
+            let (group, msgs, _event) = Box::pin(
+                manager.create_group_with_id(&[(manager.id(), Access::manage())], chat_actor_id),
+            )
+            .await?;
 
             crate::testing::alias_space_messages(
                 "create_device_group",
