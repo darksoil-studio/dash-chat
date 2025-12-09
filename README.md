@@ -6,6 +6,13 @@ Dash Chat is an end to end encrypted messenger that works with internet, without
 
 Dash Chat is in pre-alpha. We are currently rebuilding the application on top of [p2panda](https://github.com/p2panda/p2panda).
 
+## Tech Stack
+
+- Frontend: Svelte 5 with TypeScript
+- Backend: Rust with Tauri
+- P2P: P2Panda for peer-to-peer communication
+- Build Tool: Vite
+
 ## Developer setup
 
 1. Install [Rust](https://rust-lang.org/tools/install/).
