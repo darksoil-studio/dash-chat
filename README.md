@@ -1,58 +1,29 @@
 # Dash Chat
 
-## Environment Setup
+Dash Chat is an end to end encrypted messenger that works with internet, without internet and bridges between the two. As long as there is a way for devices to communicate with each other, Dash Chat works.
 
-> PREREQUISITE: set up the [holochain development environment](https://developer.holochain.org/docs/install/).
+## 🚧 Dash Chat is in Pre-alpha 🚧
 
-Enter the nix shell by running this in the root folder of the repository: 
+Dash Chat is in pre-alpha. We are currently rebuilding the application on top of [p2panda](https://github.com/p2panda/p2panda).
 
-```bash
-nix develop
-pnpm install
-```
+## Developer setup
 
-**Run all the other instructions in this README from inside this nix shell, otherwise they won't work**.
+1. Install [Rust](https://rust-lang.org/tools/install/).
+2. Install [pnpm](https://pnpm.io/).
+3. Install the [Tauri pre-requisits](https://tauri.app/start/prerequisites/) for your platform.
+4. Run `pnpm install`.
 
-## Running 2 agents
- 
+  OR
+
+If you use nix, just use `nix develop` to enter the development shell and run `pnpm install` to install the `pnpm` dependencies.
+
+
+### Running the app
+
+To run the app, run this command:
+
 ```bash
 pnpm start
 ```
 
-This will create a network of 2 nodes connected to each other and their respective UIs.
-It will also bring up the Holochain Playground for advanced introspection of the conductors.
-
-## Running the backend tests
-
-```bash
-pnpm test
-```
-
-## Bootstrapping a network
-
-Create a custom network of nodes connected to each other and their respective UIs with:
-
-```bash
-pnpm network 3
-```
-
-Substitute the "3" for the number of nodes that you want to bootstrap in your network.
-This will also bring up the Holochain Playground for advanced introspection of the conductors.
-
-## Packaging
-
-To package the web happ:
-``` bash
-pnpm package
-```
-
-You'll have the `dash-chat.webhapp` in `workdir`. This is what you should distribute so that the Holochain Launcher can install it.
-
-## Documentation
-
-This repository is using these tools:
-- [PNPM Workspaces](https://pnpm.io/workspaces): npm replacement that supports git dependencies with subdirectories.
-- [hc](https://github.com/holochain/holochain/tree/develop/crates/hc): Holochain CLI to easily manage Holochain development instances.
-- [@holochain/tryorama](https://www.npmjs.com/package/@holochain/tryorama): test framework.
-- [@holochain/client](https://www.npmjs.com/package/@holochain/client): client library to connect to Holochain from the UI.
-- [@holochain-playground/cli](https://www.npmjs.com/package/@holochain-playground/cli): introspection tooling to understand what's going on in the Holochain nodes.
+This will spawn two instances of the tauri, forming a p2panda network of 2 nodes.
