@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/button/button.js';
+	import { m } from '$lib/paraglide/messages.js';
 	import {
 		mdiAccountMultiplePlus,
 		mdiAccountPlus,
@@ -20,7 +21,7 @@
 	<wa-button class="circle" href="/" appearance="plain">
 		<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
 	</wa-button>
-	<span class="title">New message </span>
+	<span class="title">{m.newMessage()}</span>
 </div>
 
 <div
@@ -30,18 +31,18 @@
 	<div class="column" style="gap: var(--wa-space-m)">
 		<wa-button appearance="outlined" href="/add-contact">
 			<wa-icon slot="start" src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
-			Add contact
+			{m.addContact()}
 		</wa-button>
 
 		<wa-button appearance="outlined" href="/new-group">
 			<wa-icon slot="start" src={wrapPathInSvg(mdiAccountMultiplePlus)}>
 			</wa-icon>
-			New group
+			{m.newGroup()}
 		</wa-button>
 	</div>
 
 	<div class="column" style="gap: var(--wa-space-m)">
-		<span class="title">Contacts</span>
+		<span class="title">{m.contacts()}</span>
 
 		{#await $contacts then contacts}
 			<div class="column" style="gap: var(--wa-space-m)">
@@ -61,7 +62,7 @@
 						{profile.name}
 					</wa-button>
 				{:else}
-					<span>You don't have any contacts yet.</span>
+					<span>{m.noContactsYet()}</span>
 				{/each}
 			</div>
 		{/await}

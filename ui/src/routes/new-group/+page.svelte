@@ -2,6 +2,7 @@
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import { getContext } from 'svelte';
 	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
@@ -39,7 +40,7 @@
 		>
 			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
 		</wa-button>
-		<span class="title" style="flex: 1">New group </span>
+		<span class="title" style="flex: 1">{m.newGroup()}</span>
 
 		<wa-button
 			appearance="plain"
@@ -49,7 +50,7 @@
 
 			}}
 		>
-			Next
+			{m.next()}
 			<wa-icon slot="end" src={wrapPathInSvg(mdiArrowRight)}> </wa-icon>
 		</wa-button>
 	</div>
@@ -79,7 +80,7 @@
 							</div>
 						</wa-checkbox>
 					{:else}
-						You don't have any contacts yet.
+						{m.noContactsYet()}
 					{/each}
 				</div>
 			{/await}
@@ -96,18 +97,18 @@
 		>
 			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
 		</wa-button>
-		<span class="title" style="flex: 1">New group</span>
+		<span class="title" style="flex: 1">{m.newGroup()}</span>
 
 		<wa-button appearance="plain" onclick={createGroupChat}>
 			<wa-icon slot="start" src={wrapPathInSvg(mdiAccountMultiplePlus)}>
 			</wa-icon>
-			Create group
+			{m.createGroup()}
 		</wa-button>
 	</div>
 
 	<wa-card class="center-in-desktop">
 		<div class="column" style="gap: var(--wa-space-m)">
-			<span class="title">Group Info </span>
+			<span class="title">{m.groupInfo()}</span>
 
 			<div class="row" style="gap: var(--wa-space-s); align-items: center">
 				<SelectAvatar></SelectAvatar>
