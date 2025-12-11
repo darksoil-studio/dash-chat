@@ -1,3 +1,10 @@
 {
-	"createProfile": "Crear Perfil"
+    "createProfile": "Crear Perfil",
+    "now": "ahora",
+    "yesterday": "ayer",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "next": "Siguiente",
+    "myProfile": "Mi perfil",
+    "editProfile": "Editar perfil"
 }
