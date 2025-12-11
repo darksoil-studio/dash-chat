@@ -12,6 +12,7 @@
 	import type { ChatsStore, ContactsStore } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiArrowLeft, mdiSend } from '@mdi/js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	const chatId = window.location.href.split('/').reverse()[0];
 
@@ -74,7 +75,7 @@
 
 								<div class="quiet">
 									{#if lessThanAMinuteAgo(message.timestamp)}
-										<span>now</span>
+										<span>{m.now()}</span>
 									{:else if moreThanAnHourAgo(message.timestamp)}
 										<wa-format-date
 											hour="numeric"
@@ -101,7 +102,7 @@
 
 								<div class="quiet">
 									{#if lessThanAMinuteAgo(message.timestamp)}
-										<span>now</span>
+										<span>{m.now()}</span>
 									{:else if moreThanAnHourAgo(message.timestamp)}
 										<wa-format-date
 											hour="numeric"

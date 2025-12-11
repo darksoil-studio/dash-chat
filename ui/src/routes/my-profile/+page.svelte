@@ -5,6 +5,7 @@
 	import { useReactivePromise } from '../../stores/use-signal';
 	import { mdiArrowLeft, mdiPencil } from '@mdi/js';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { m } from '$lib/paraglide/messages.js';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -16,7 +17,7 @@
 			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
 	</wa-button>
 
-	<span class="title">My profile </span>
+	<span class="title">{m.myProfile()}</span>
 
 	<div style="flex: 1"></div>
 	<wa-button href="/my-profile/edit" appearance="plain">

@@ -7,8 +7,6 @@
 	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 	import SelectAvatar from '../components/SelectAvatar.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { setLocale } from '$lib/paraglide/runtime';
-	setLocale('en');
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let nickname: string | undefined;
@@ -25,7 +23,7 @@
 <wa-card>
 	<div class="column" style="gap: var(--wa-space-m)">
 
-		<span class="title">Create Profile</span>
+		<span class="title">{m.createProfile()}</span>
 
 		<div class="row" style="gap: var(--wa-space-xs)">
 			<SelectAvatar bind:value={avatar}>

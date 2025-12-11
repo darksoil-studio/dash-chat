@@ -2,6 +2,7 @@
 	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import { useReactivePromise } from '../../../../../stores/use-signal';
 	import { getContext } from 'svelte';
@@ -49,13 +50,13 @@
 	>
 		<wa-icon src={wrapPathInSvg(mdiClose)}> </wa-icon>
 	</wa-button>
-	<span class="title">Edit group</span>
+	<span class="title">{m.editGroup()}</span>
 
 	<div style="flex: 1"></div>
 
 	<wa-button appearance="plain" onclick={save}>
 		<wa-icon slot="start" src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
-		Save
+		{m.save()}
 	</wa-button>
 </div>
 
