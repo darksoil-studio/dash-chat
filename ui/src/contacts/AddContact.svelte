@@ -18,7 +18,7 @@
 
 <wa-card>
 	<div class="column" style="gap: var(--wa-space-m)">
-		<span class="title">Add Contact</span>
+		<span class="title">{m.addContact()}</span>
 
 		<div class="row" style="gap: var(--wa-space-xs)">
 			<input type="text" bind:value={nickname} />
