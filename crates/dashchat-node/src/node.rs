@@ -44,7 +44,10 @@ use crate::spaces::{DashForge, DashManager, DashSpace, TestConditions};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::{AliasedId, alias_space_messages};
 use crate::topic::{LogId, Topic, kind};
-use crate::{AsBody, ChatId, DeviceGroupPayload, Header, PK, timestamp_now};
+use crate::{
+    AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DirectChatId, GroupChatId, Header, PK,
+    timestamp_now,
+};
 
 pub use stream_processing::Notification;
 
@@ -73,7 +76,7 @@ impl Default for NodeConfig {
 pub type Orderer = PartialOrder<
     LogId,
     Extensions,
-    OpStore,
+    MemoryStore<LogId, Extensions>,
     p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
 >;
 
@@ -105,7 +108,7 @@ pub struct NodeLocalData {
     // TODO: use as space ID once device groups are even possible.
     // for now this is only used as the topic for the device group's messages.
     // see https://github.com/p2panda/p2panda/pull/871
-    pub device_space_id: Topic<kind::DeviceGroup>,
+    pub device_space_id: DeviceGroupId,
     pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
 }
 
@@ -114,7 +117,7 @@ impl NodeLocalData {
         let private_key = PrivateKey::new();
         Self {
             private_key,
-            device_space_id: Topic::<kind::DeviceGroup>::random(),
+            device_space_id: DeviceGroupId::random(),
             active_inbox_topics: Arc::new(RwLock::new(BTreeSet::new())),
         }
     }
@@ -123,7 +126,6 @@ impl NodeLocalData {
 #[derive(Clone)]
 pub struct Node {
     pub op_store: OpStore,
-    pub ordering: Arc<RwLock<Orderer>>,
     // pub ordering_store: p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
     pub network: Network<LogId>,
     author_store: AuthorStore<LogId>,
@@ -216,10 +218,6 @@ impl Node {
 
         let node = Self {
             op_store: op_store.clone(),
-            ordering: Arc::new(RwLock::new(Orderer::new(
-                op_store.clone(),
-                Default::default(),
-            ))),
             author_store: author_store.clone(),
             spaces_store,
             network,
@@ -245,9 +243,13 @@ impl Node {
         )
         .await?;
 
+        node.initialize_topic(Topic::global().aliased("GLOBAL"), true)
+            .await?;
+
         node.initialize_topic(
-            Topic::announcements(node.repped_group().group)
-                .aliased(&format!("announce({})", public_key.alias())),
+            // Topic::announcements(node.repped_group().group)
+            //     .aliased(&format!("announce({})", public_key.alias())),
+            Topic::global(),
             true,
         )
         .await?;
@@ -263,7 +265,7 @@ impl Node {
             .await?;
         }
 
-        node.process_authored_space_messages(device_group_msgs)
+        node.process_authored_ingested_space_messages(device_group_msgs)
             .await?;
 
         let author_store = author_store.clone();
@@ -371,7 +373,8 @@ impl Node {
         let mut topics = self.local_data.active_inbox_topics.write().await;
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
-                topic: Topic::inbox().aliased(&format!("inbox({})", self.public_key().alias())),
+                topic: Topic::global(),
+                // topic: Topic::inbox().aliased(&format!("inbox({})", self.public_key().alias())),
                 expires_at: Utc::now() + self.config.contact_code_expiry,
             };
             self.initialize_topic(inbox_topic.topic, false).await?;
@@ -406,8 +409,11 @@ impl Node {
     /// The topic is the hashed sorted public keys.
     /// Anyone who knows the two public keys can derive the same topic.
     // TODO: is this a problem? Should we use a random topic instead?
-    pub fn direct_chat_topic(&self, other: ActorId) -> Topic<kind::DirectChat> {
+    pub fn direct_chat_topic(&self, other: ActorId) -> DirectChatId {
+        return Topic::global().recast();
+
         let me = self.repped_group().group;
+        // TODO: use two secrets from each party to construct the topic
         let topic = Topic::direct_chat([me, other]);
         if me > other {
             topic.aliased(&format!("direct({},{})", other.alias(), me.alias()))
@@ -418,14 +424,11 @@ impl Node {
 
     /// Create a new chat Space, and subscribe to the Topic for this chat.
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.public_key())))]
-    pub async fn create_group_chat_space(
-        &self,
-        topic: Topic<kind::GroupChat>,
-    ) -> anyhow::Result<()> {
+    pub async fn create_group_chat_space(&self, topic: GroupChatId) -> anyhow::Result<()> {
         self.initialize_topic(topic, true).await?;
         let repped = self.repped_group();
 
-        let (_space, msgs, _event) = self
+        let (space, msgs, _event) = self
             .manager
             .create_space(
                 topic,
@@ -436,11 +439,21 @@ impl Node {
             )
             .await?;
 
-        alias_space_messages("create_group_chat", topic, msgs.iter());
+        alias_space_messages(
+            &format!(
+                "create_group_chat({}, {})",
+                space.id().alias(),
+                space.group_id().await?.alias()
+            ),
+            topic,
+            msgs.iter(),
+        );
 
-        self.process_authored_space_messages(msgs).await?;
+        self.process_authored_ingested_space_messages(msgs).await?;
 
         tracing::info!(?topic, ?topic, "created group chat space");
+
+        Box::pin(self.repair_spaces_and_publish()).await?;
 
         Ok(())
     }
@@ -486,9 +499,11 @@ impl Node {
 
         alias_space_messages("create_direct_chat", topic, msgs.iter());
 
-        self.process_authored_space_messages(msgs).await?;
+        self.process_authored_ingested_space_messages(msgs).await?;
 
         tracing::info!(?topic, ?topic, "created direct chat space");
+
+        Box::pin(self.repair_spaces_and_publish()).await?;
 
         Ok(())
     }
@@ -504,7 +519,8 @@ impl Node {
 
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
         self.author_operation(
-            Topic::announcements(self.repped_group().group),
+            Topic::global(),
+            // Topic::announcements(self.repped_group().group),
             Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
             Some(&format!("set_profile({})", self.public_key().alias())),
         )
@@ -550,7 +566,9 @@ impl Node {
             )
             .await?;
 
-        self.process_authored_space_messages(msgs).await?;
+        self.process_authored_ingested_space_messages(msgs).await?;
+
+        Box::pin(self.repair_spaces_and_publish()).await?;
 
         Ok(())
     }
@@ -641,13 +659,14 @@ impl Node {
             timestamp: timestamp_now(),
         };
         let encrypted = space.publish(&encode_cbor(&message.clone())?).await?;
-        let encrypted_hash = encrypted.id();
 
         alias_space_messages("send_message", topic, vec![&encrypted]);
 
-        let Operation { header, body, hash } = encrypted.into_operation()?;
+        let op = encrypted.into_operation()?;
 
-        let header = self.process_authored_operation(header, body, None).await?;
+        let header = self.process_authored_ingested_operation(op).await?;
+
+        Box::pin(self.repair_spaces_and_publish()).await?;
 
         Ok((message, header))
     }
@@ -656,7 +675,8 @@ impl Node {
         self.local_data.private_key.public_key().into()
     }
 
-    pub fn device_group_topic(&self) -> Topic<kind::DeviceGroup> {
+    pub fn device_group_topic(&self) -> DeviceGroupId {
+        return Topic::global().recast();
         self.local_data.device_space_id
     }
 
@@ -726,8 +746,8 @@ impl Node {
         // XXX: need sleep a little more for all the messages to be processed
         tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
 
-        self.initialize_topic(Topic::announcements(actor), false)
-            .await?;
+        // self.initialize_topic(Topic::announcements(actor), false)
+        //     .await?;
 
         let direct_topic = self.direct_chat_topic(actor);
         self.initialize_topic(direct_topic, true).await?;
@@ -745,7 +765,7 @@ impl Node {
         .await?;
 
         if let Some(inbox_topic) = contact.inbox_topic.clone() {
-            self.initialize_topic(inbox_topic.topic, true).await?;
+            // self.initialize_topic(inbox_topic.topic, true).await?;
             let qr = self.new_qr_code(ShareIntent::AddContact, false).await?;
             self.author_operation(
                 inbox_topic.topic,

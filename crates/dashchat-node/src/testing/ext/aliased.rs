@@ -11,14 +11,14 @@ static ALIASES: LazyLock<Mutex<HashMap<Vec<u8>, String>>> =
 /// Useful for debugging.
 pub fn alias_space_messages<'a, K: TopicKind>(
     prefix: &str,
-    id: Topic<K>,
+    _id: Topic<K>,
     msgs: impl IntoIterator<Item = &'a SpaceOperation>,
 ) {
     for (i, msg) in msgs.into_iter().enumerate() {
         let author = msg.author().alias();
         let arg_type = msg.arg_type();
         msg.id()
-            .aliased(format!("{prefix}/{author}/{id:?}/{i}/{arg_type:?}").as_str());
+            .aliased(format!("{prefix}/{author}/{i}/{arg_type:?}").as_str());
     }
 }
 
