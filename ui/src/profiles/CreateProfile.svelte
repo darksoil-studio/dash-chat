@@ -5,8 +5,10 @@
 	import { getContext } from 'svelte';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
-	import '@darksoil-studio/holochain-elements/dist/elements/select-avatar.js';
 	import SelectAvatar from '../components/SelectAvatar.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { setLocale } from '$lib/paraglide/runtime';
+	setLocale('en');
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let nickname: string | undefined;
@@ -37,6 +39,6 @@
 			</wa-input>
 		</div>
 
-		<wa-button onclick={setProfile}>Create Profile </wa-button>
+		<wa-button onclick={setProfile}>{m.createProfile()}</wa-button>
 	</div>
 </wa-card>

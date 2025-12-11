@@ -1,0 +1,5 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"helloWorld": "Hello, {{name}} from en!",
+	"createProfile": "Create Profile"
+}
