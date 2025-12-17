@@ -37,5 +37,9 @@
     "areYouSureLeaveGroup": "Bist du sicher, dass du diese Gruppe verlassen willst?",
     "deleteGroup": "Gruppe löschen",
     "areYouSureDeleteGroup": "Sind Sie sicher, dass Sie diese Gruppe löschen möchten?",
-    "editGroup": "Gruppe bearbeiten"
+    "editGroup": "Gruppe bearbeiten",
+    "edit": "Bearbeiten",
+    "name": "Name",
+    "addAvatarImage": "Bild avatar hinzufügen",
+    "members": "Mitglieder"
 }
