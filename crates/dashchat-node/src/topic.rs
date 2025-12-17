@@ -1,3 +1,34 @@
+//! Topics for pub/sub.
+//!
+//! # List of topics
+//!
+//! ## `Announcements` (ActorId)
+//!
+//! Each node has their own announcements topic.
+//! It is backed by a space with the node as sole Manager, with everyone else having Read access.
+//! The node uses this to publish profile updates
+//!
+//! ## `Auth` (ActorId)
+//!
+//! KeyBundle and Auth control messages are published to this topic.
+//!
+//! ## `Space` (SpaceId)
+//!
+//! All other control messages specific to a space are published to this topic:
+//!
+//! - SpaceMembership
+//! - SpaceUpdate
+//! - Application
+//!
+//!
+//!
+//! - Published by
+//! - `Inbox`: topic for inbox messages (e.g. contact requests)
+//! - `DeviceGroup`: topic for device group messages (e.g. device group invitations)
+//! - `Chat`: topic for chat messages (e.g. direct chat messages)
+//! - `GroupChat`: topic for group chat messages (e.g. group chat messages)
+//! - `Untyped`: topic for untyped messages (e.g. messages with no specific topic)
+
 use std::marker::PhantomData;
 
 use crate::testing::{AliasedId, ShortId};
@@ -24,9 +55,12 @@ pub trait TopicKind:
     + std::fmt::Debug
 {
 }
-pub trait ChatTopicKind: TopicKind {}
+// pub trait ChatTopicKind: TopicKind {}
 
 pub type DeviceGroupTopic = ActorId;
+
+pub type GlobalTopic = Topic<kind::Global>;
+pub type UntypedTopic = Topic<kind::Untyped>;
 
 pub mod kind {
     use super::*;
@@ -58,44 +92,18 @@ pub mod kind {
         };
     }
 
-    // Profiles
-    topic_kind!(Announcements);
-    // QR code specific
-    topic_kind!(Inbox);
-    // Stores linked devices
-    // TODO: where does local state (settings, contacts, etc.) across devices?
-    topic_kind!(DeviceGroup);
-    // Chat messages but also group invitations
-    topic_kind!(DirectChat);
-    // Group chat messages but also group settings
-    topic_kind!(GroupChat);
     // Either direct or group chat
     topic_kind!(Chat);
+    // Global topic!
+    // TODO: alpha: this needs to be refined
+    topic_kind!(Global);
 
     topic_kind!(Untyped);
 
-    impl ChatTopicKind for Chat {}
-    impl ChatTopicKind for GroupChat {}
-    impl ChatTopicKind for DirectChat {}
-    impl ChatTopicKind for DeviceGroup {}
-}
-
-impl From<Topic<kind::GroupChat>> for Topic<kind::Chat> {
-    fn from(topic: Topic<kind::GroupChat>) -> Topic<kind::Chat> {
-        Topic::new(topic.id)
-    }
-}
-
-impl From<Topic<kind::DirectChat>> for Topic<kind::Chat> {
-    fn from(topic: Topic<kind::DirectChat>) -> Topic<kind::Chat> {
-        Topic::new(topic.id)
-    }
-}
-
-impl From<Topic<kind::DeviceGroup>> for Topic<kind::Chat> {
-    fn from(topic: Topic<kind::DeviceGroup>) -> Topic<kind::Chat> {
-        Topic::new(topic.id)
-    }
+    // impl ChatTopicKind for Chat {}
+    // impl ChatTopicKind for GroupChat {}
+    // impl ChatTopicKind for DirectChat {}
+    // impl ChatTopicKind for DeviceGroup {}
 }
 
 #[derive(
@@ -173,51 +181,23 @@ impl<K: TopicKind> Topic<K> {
     }
 }
 
+impl Topic<kind::Global> {
+    pub fn global() -> Self {
+        Self::new([255; 32]).aliased("GLOBAL")
+    }
+}
+
 impl Topic<kind::Chat> {
     pub fn random() -> Self {
         Self::new(rand::random())
     }
-}
 
-impl Topic<kind::GroupChat> {
-    /// The topic ID is the unique (random) chat ID.
-    pub fn random() -> Self {
-        Self::new(rand::random())
-    }
-}
-
-impl Topic<kind::DirectChat> {
-    /// The chat ID for direct chat between two public keys
-    /// is the hash of the sorted keys.
-    /// This lets both parties derive the same chat ID from the same two keys,
-    /// but gives no information about what this topic is for.
     pub fn direct_chat(mut pks: [ActorId; 2]) -> Self {
         pks.sort();
         let mut hasher = blake3::Hasher::new();
         hasher.update(pks[0].as_bytes());
         hasher.update(pks[1].as_bytes());
         Self::new(hasher.finalize().into())
-    }
-}
-
-impl Topic<kind::Inbox> {
-    /// The topic ID is randomly generated for each new Contact code (QR code).
-    pub fn inbox() -> Self {
-        Self::new(rand::random())
-    }
-}
-
-impl Topic<kind::Announcements> {
-    /// The topic ID is the actor ID.
-    pub fn announcements(actor: ActorId) -> Self {
-        Self::new(*actor.as_bytes())
-    }
-}
-
-impl Topic<kind::DeviceGroup> {
-    /// The topic ID is random.
-    pub fn random() -> Self {
-        Self::new(rand::random())
     }
 }
 

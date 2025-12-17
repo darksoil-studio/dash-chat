@@ -320,8 +320,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "145052bdd345b87320e369255277e3fb5152762ad123a901ef5c262dd38fe8d2"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-link 0.2.1",
 ]
 
@@ -607,6 +609,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "base64",
+ "blake3",
+ "chrono",
  "dashchat-node",
  "derive_more",
  "futures",
@@ -2418,18 +2423,17 @@ dependencies = [
 [[package]]
 name = "p2panda-auth"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "petgraph",
  "rand 0.9.2",
  "serde",
  "thiserror 2.0.17",
+ "tracing",
 ]
 
 [[package]]
 name = "p2panda-core"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "blake3",
  "ciborium",
@@ -2444,7 +2448,6 @@ dependencies = [
 [[package]]
 name = "p2panda-discovery"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "anyhow",
  "base32",
@@ -2464,7 +2467,6 @@ dependencies = [
 [[package]]
 name = "p2panda-encryption"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "chacha20poly1305",
  "curve25519-dalek",
@@ -2480,6 +2482,7 @@ dependencies = [
  "sha2",
  "subtle",
  "thiserror 2.0.17",
+ "tracing",
  "x25519-dalek",
  "zeroize",
 ]
@@ -2487,7 +2490,6 @@ dependencies = [
 [[package]]
 name = "p2panda-net"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2514,7 +2516,6 @@ dependencies = [
 [[package]]
 name = "p2panda-spaces"
 version = "0.1.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "p2panda-auth",
  "p2panda-core",
@@ -2529,7 +2530,6 @@ dependencies = [
 [[package]]
 name = "p2panda-store"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "p2panda-core",
  "thiserror 2.0.17",
@@ -2539,7 +2539,6 @@ dependencies = [
 [[package]]
 name = "p2panda-stream"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "ciborium",
  "futures-channel",
@@ -2554,7 +2553,6 @@ dependencies = [
 [[package]]
 name = "p2panda-sync"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#74d47a3e9ba9d2d5b11623bb6fdaf769ac7f96ac"
 dependencies = [
  "async-trait",
  "futures",

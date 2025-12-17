@@ -27,8 +27,8 @@ use anyhow::anyhow;
 #[tokio::test(flavor = "multi_thread")]
 async fn test_group_2() {
     dashchat_node::testing::setup_tracing(
-        "dashchat=info,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info",
-        false,
+        "dashchat=info,p2panda_encryption=warn,p2panda_stream=info,p2panda_auth=info,p2panda_spaces=info",
+        true,
     );
 
     let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
