@@ -37,5 +37,9 @@
     "areYouSureLeaveGroup": "آیا می خواهید این گروه را ترک کنید؟?",
     "deleteGroup": "حذف گروه",
     "areYouSureDeleteGroup": "آیا می خواهید این گروه را حذف کنید؟?",
-    "editGroup": "ویرایش گروه"
+    "editGroup": "ویرایش گروه",
+    "edit": "ویرایش کنید",
+    "name": "نام",
+    "addAvatarImage": "تصویر آواتار را اضافه کنید",
+    "members": "اعضا"
 }
