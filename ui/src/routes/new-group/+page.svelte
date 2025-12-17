@@ -57,7 +57,7 @@
 
 	<wa-card class="center-in-desktop">
 		<div class="column" style="gap: var(--wa-space-m)">
-			<span class="title">Members</span>
+			<span class="title">{m.members()}</span>
 			{#await $contacts then contacts}
 				<div class="column" style="gap: var(--wa-space-m)">
 					{#each contacts as [publicKey, profile]}
@@ -113,7 +113,7 @@
 			<div class="row" style="gap: var(--wa-space-s); align-items: center">
 				<SelectAvatar></SelectAvatar>
 
-				<wa-input placeholder="Name" style="flex: 1"> </wa-input>
+				<wa-input placeholder={m.name()} style="flex: 1"> </wa-input>
 			</div>
 		</div>
 	</wa-card>

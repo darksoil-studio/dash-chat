@@ -187,6 +187,7 @@ pub async fn get_log(
     author: PublicKey,
     node: State<'_, Node>,
 ) -> Result<Vec<SimplifiedOperation>, String> {
+    println!("hey {topic_id:?}");
     let log = node
         .get_log(LogId::from(topic_id), author)
         .await

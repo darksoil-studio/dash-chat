@@ -4,6 +4,7 @@
 	import { resizeAndExport } from '../utils/image';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiPlus } from '@mdi/js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let avatarSize = 300;
 
@@ -78,7 +79,7 @@
 			loading={uploading}
 			onclick={() => avatarFilePicker.click()}
 		>
-			<wa-icon src={wrapPathInSvg(mdiPlus)} label="Add avatar image"></wa-icon>
+			<wa-icon src={wrapPathInSvg(mdiPlus)} label={m.addAvatarImage()}></wa-icon>
 		</wa-button>
 	</div>
 {/if}

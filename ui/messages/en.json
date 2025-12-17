@@ -4,10 +4,13 @@
 	"cancel": "Cancel",
 	"save": "Save",
 	"next": "Next",
+	"edit": "Edit",
+	"name": "Name",
 
 	"createProfile": "Create Profile",
 	"myProfile": "My profile",
 	"editProfile": "Edit profile",
+	"addAvatarImage": "Add avatar image",
 
 	"addContact": "Add contact",
 	"contacts": "Contacts",
@@ -25,6 +28,7 @@
 	"newGroup": "New group",
 	"createGroup": "Create group",
 	"groupInfo": "Group info",
+	"members": "Members",
 	"membersCount_one": "{{count}} member",
 	"membersCount_other": "{{count}} members",
 	"addMembers": "Add members",

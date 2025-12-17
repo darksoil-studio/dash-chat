@@ -144,7 +144,7 @@
 										</wa-button>
 
 										<wa-dialog
-											label="Demote from administrator"
+											label={m.demoteFromAdministrator()}
 											id={`demote-dialog-${member.actorId}`}
 										>
 											<span
@@ -193,7 +193,7 @@
 										</wa-button>
 
 										<wa-dialog
-											label="Promote to administrator"
+											label={m.promoteToAdministrator()}
 											id={`promote-dialog-${member.actorId}`}
 										>
 											<span
@@ -242,7 +242,7 @@
 										{m.removeMember()}
 									</wa-button>
 									<wa-dialog
-										label="Remove member"
+										label={m.removeMember()}
 										id={`remove-dialog-${member.actorId}`}
 									>
 										<span>{m.areYouSureRemoveMember()}</span>
@@ -296,7 +296,7 @@
 
 				{m.leaveGroup()}
 			</wa-button>
-			<wa-dialog label="Leave group" id="leave-group-dialog">
+			<wa-dialog label={m.leaveGroup()} id="leave-group-dialog">
 				<span>{m.areYouSureLeaveGroup()}</span>
 				<wa-button
 					variant="neutral"
@@ -337,7 +337,7 @@
 
 				{m.deleteGroup()}
 			</wa-button>
-			<wa-dialog label="Delete group" id="delete-group-dialog">
+			<wa-dialog label={m.deleteGroup()} id="delete-group-dialog">
 				<span>{m.areYouSureDeleteGroup()}</span>
 				<wa-button
 					variant="neutral"

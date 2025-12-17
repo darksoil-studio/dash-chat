@@ -13,8 +13,8 @@
 		DevicesClient,
 		DevicesStore,
 	} from 'dash-chat-stores';
-	// import { setLocale } from '$lib/paraglide/runtime';
-	// setLocale('en');
+	import { setLocale } from '$lib/paraglide/runtime';
+	setLocale('fa-ir');
 
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
 	import { isMobile } from '../utils/environment';

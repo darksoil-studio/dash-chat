@@ -22,7 +22,7 @@
 	<div style="flex: 1"></div>
 	<wa-button href="/my-profile/edit" appearance="plain">
 		<wa-icon slot="start" src={wrapPathInSvg(mdiPencil)}> </wa-icon>
-		Edit
+		{m.edit()}
 	</wa-button>
 </div>
 
