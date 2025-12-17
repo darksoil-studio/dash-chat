@@ -1,8 +1,10 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import localIpAddress from 'local-ip-address';
 
 // @ts-expect-error process is a nodejs global
-const host = process.env.TAURI_DEV_HOST;
+// const host = process.env.TAURI_DEV_HOST;
+const host = localIpAddress();
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
@@ -21,7 +23,7 @@ export default defineConfig(async () => ({
 	server: {
 		port: 1420,
 		strictPort: true,
-		host: '0.0.0.0',
+		host: true,
 		hmr: host
 			? {
 					protocol: 'ws',

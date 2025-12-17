@@ -1,19 +1,19 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/spinner/spinner.js'
-	import type { UsersStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise} from '../stores/use-signal';
 	import CreateProfile from '../profiles/CreateProfile.svelte';
+	import type { ContactsStore } from 'dash-chat-stores';
 
-	const usersStore: UsersStore = getContext('users-store');
+	const contactsStore: ContactsStore = getContext('contacts-store');
 
-	const me = useReactivePromise(usersStore.me);
+	const myProfile = useReactivePromise(contactsStore.myProfile);
 </script>
 
-{#await $me}
+{#await $myProfile }
 	<wa-spinner> </wa-spinner>
-{:then me}
-	{#if me?.profile}
+{:then myProfile }
+	{#if myProfile}
 		<slot></slot>
 	{:else}
 		<div class="column" style="flex: 1; align-items: center; justify-content: center">

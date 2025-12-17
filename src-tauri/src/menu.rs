@@ -14,7 +14,7 @@ pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R
             }
         }
         "factory-reset" => {
-            let h = app_handle.clone();
+            let _h = app_handle.clone();
             app_handle
                 .dialog()
                 .message(

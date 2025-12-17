@@ -1,6 +1,8 @@
+use dashchat_node::Node;
+use p2panda_core::{cbor::encode_cbor, Body};
 use tauri::{Emitter, Manager};
 
-use crate::commands::logs::{SimplifiedHeader, SimplifiedOperation, simplify};
+use crate::commands::logs::simplify;
 
 mod commands;
 mod utils;
@@ -18,6 +20,15 @@ pub fn run() {
             commands::logs::get_log,
             commands::logs::get_authors,
             commands::profile::set_profile,
+            commands::devices::my_device_group_topic,
+            commands::contacts::my_chat_actor_id,
+            commands::contacts::create_contact_code,
+            commands::contacts::add_contact,
+            commands::chats::get_group_chats,
+            commands::chats::create_group_chat,
+            commands::group_chat::add_member,
+            commands::group_chat::send_message,
+            commands::group_chat::get_messages,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()
@@ -38,7 +49,7 @@ pub fn run() {
             }
             #[cfg(not(mobile))]
             {
-                let h = app.handle();
+                let _h = app.handle();
                 // app.handle()
                 //     .plugin(tauri_plugin_single_instance::init(move |app, argv, cwd| {
                 //         // h.emit(
@@ -54,10 +65,10 @@ pub fn run() {
             let handle = app.handle().clone();
 
             tauri::async_runtime::block_on(async move {
-                let private_key = dashchat_node::PrivateKey::new();
+                let local_data = dashchat_node::NodeLocalData::new_random();
                 let config = dashchat_node::NodeConfig::default();
                 let (notification_tx, mut notification_rx) = tokio::sync::mpsc::channel(100);
-                let node = dashchat_node::Node::new(private_key, config, Some(notification_tx))
+                let node = dashchat_node::Node::new(local_data, config, Some(notification_tx))
                     .await
                     .expect("Failed to create node");
 
@@ -68,18 +79,29 @@ pub fn run() {
                         // TODO: trigger new operation handler
                         println!("Received notification: {:?}", notification);
 
-                        let body = match serde_json::to_value(notification.payload) {
+                        let body = match encode_cbor(&notification.payload) {
                             Ok(body) => body,
                             Err(err) => {
                                 log::error!("Failed to serialize payload: {err:?}");
                                 continue;
                             }
                         };
+                        let node = handle.state::<Node>();
+                        let simplified_operation =
+                            match simplify(&node, notification.header, Some(Body::new(&body[..])))
+                                .await
+                            {
+                                Ok(o) => o,
+                                Err(err) => {
+                                    log::error!("Failed to simplify operation: {err:?}");
+                                    continue;
+                                }
+                            };
 
-                        let simplified_operation = SimplifiedOperation {
-                            header: SimplifiedHeader::from(notification.header),
-                            body: Some(body),
-                        };
+                        // let simplified_operation = SimplifiedOperation {
+                        //     header: SimplifiedHeader::from(notification.header),
+                        //     body: Some(body),
+                        // };
 
                         if let Err(err) =
                             handle.emit("p2panda://new-operation", simplified_operation)

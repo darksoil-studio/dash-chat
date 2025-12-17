@@ -6,13 +6,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Tauri + SvelteKit + Typescript App</title>
 
-		<script type="module">
-			import '../node_modules/@awesome.me/webawesome/dist/styles/webawesome.css';
-			import { setBasePath } from '../node_modules/@awesome.me/webawesome/dist/webawesome.js';
-
-			setBasePath('../node_modules/@awesome.me/webawesome/dist');
-		</script>
-
 		<style>
 			.column {
 				display: flex;
@@ -41,15 +34,52 @@
 			wa-button.circle::part(base) {
 				border-radius: 50%;
 			}
-			
+
 			@media screen and (max-width: 600px) {
 			}
-			
+
 			@media screen and (min-width: 600px) {
 				.center-in-desktop {
 					align-self: center;
 					width: 600px;
 				}
+			}
+
+			wa-icon {
+				font-size: 24px;
+			}
+
+			wa-icon[slot='start'] {
+				font-size: 20px;
+			}
+			wa-icon[slot='end'] {
+				font-size: 20px;
+			}
+
+			wa-button.fill::part(label) {
+				display: flex;
+				flex: 1;
+			}
+			wa-button.button-with-avatar::part(base) {
+				height: 68px;
+				padding-left: 8px;
+			}
+
+			wa-drawer::part(body) {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.quiet {
+				color: var(--wa-color-text-quiet);
+			}
+
+			wa-card.wa-dark {
+				background-color: var(--wa-color-brand-50);
+			}
+
+			wa-card.wa-dark .quiet {
+				color: var(--wa-color-neutral-80);
 			}
 		</style>
 

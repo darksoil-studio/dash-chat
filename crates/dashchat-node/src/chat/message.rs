@@ -1,14 +1,15 @@
 use std::cmp::Ordering;
 
+use p2panda_spaces::ActorId;
 use serde::{Deserialize, Serialize};
 
-use crate::{Cbor, PK};
+use crate::Cbor;
 
 /// A standalone chat message suitable for sending to the frontend.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ChatMessage {
     pub content: ChatMessageContent,
-    pub author: PK,
+    pub author: ActorId,
     pub timestamp: u64,
 }
 

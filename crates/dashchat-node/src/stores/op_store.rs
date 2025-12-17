@@ -4,16 +4,14 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use futures::FutureExt;
 use p2panda_core::{Body, Hash, Header, PublicKey, RawOperation};
-use p2panda_net::TopicId;
 use p2panda_store::{LogStore, MemoryStore, OperationStore};
-use rand::Rng;
 
 use crate::{
-    operation::{Extensions, Payload},
+    payload::{Extensions, Payload},
+    spaces::SpaceOperation,
     testing::AliasedId,
-    topic::{DashChatTopicId, LogId, Topic},
+    topic::{LogId, Topic},
     *,
 };
 
@@ -22,7 +20,7 @@ pub struct OpStore {
     #[deref]
     #[deref_mut]
     store: MemoryStore<LogId, Extensions>,
-    pub processed_ops: Arc<RwLock<HashMap<Topic, HashSet<Hash>>>>,
+    pub processed_ops: Arc<RwLock<HashMap<LogId, HashSet<Hash>>>>,
 }
 
 impl OpStore {
@@ -33,18 +31,14 @@ impl OpStore {
         }
     }
 
-    pub fn report<'a>(&self, topics: impl IntoIterator<Item = &'a Topic>) -> String {
-        let topics = topics.into_iter().collect::<Vec<_>>();
+    pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
+        let log_ids = log_ids.into_iter().collect::<Vec<_>>();
         let s = self.store.read_store();
         let mut ops = s
             .operations
             .iter()
-            .filter(|(_, (t, _, _, _))| {
-                topics.is_empty()
-                    || topics
-                        .iter()
-                        .find(|topic| DashChatTopicId::from(Hash::from_bytes(topic.id())).eq(t))
-                        .is_some()
+            .filter(|(_, (l, _, _, _))| {
+                log_ids.is_empty() || log_ids.iter().find(|log_id| **log_id == l).is_some()
             })
             .collect::<Vec<_>>();
         ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.alias(), header.seq_num));
@@ -54,17 +48,14 @@ impl OpStore {
                     .clone()
                     .map(|body| Payload::try_from_body(&body).unwrap())
                 {
-                    Some(Payload::Chat(msgs)) => {
-                        format!(
-                            "{:?}",
-                            msgs.iter().map(|m| m.arg_type()).collect::<Vec<_>>()
-                        )
+                    Some(Payload::Space(args)) => {
+                        let space_op = SpaceOperation::new(header.clone(), args);
+                        format!("{:?}", space_op.arg_type())
                     }
-                    Some(Payload::Inbox(invitation)) => format!("{:?}", invitation),
-                    Some(Payload::Announcements(announcements)) => format!("{:?}", announcements),
+                    Some(p) => format!("{p:?}"),
                     None => "_".to_string(),
                 };
-                if topics.len() == 1 {
+                if log_ids.len() == 1 {
                     format!(
                         "• {} {:2} {} : {}",
                         header.public_key.alias(),
@@ -88,20 +79,20 @@ impl OpStore {
             .join("\n")
     }
 
-    pub fn mark_op_processed(&self, topic: &Topic, hash: &Hash) {
+    pub fn mark_op_processed(&self, log_id: LogId, hash: &Hash) {
         self.processed_ops
             .write()
             .unwrap()
-            .entry(topic.clone())
+            .entry(log_id)
             .or_default()
             .insert(hash.clone());
     }
 
-    pub fn is_op_processed(&self, topic: &Topic, hash: &Hash) -> bool {
+    pub fn is_op_processed(&self, log_id: &LogId, hash: &Hash) -> bool {
         self.processed_ops
             .read()
             .unwrap()
-            .get(topic)
+            .get(log_id)
             .map(|s| s.contains(hash))
             .unwrap_or(false)
     }
@@ -201,5 +192,23 @@ impl LogStore<LogId, Extensions> for OpStore {
         self.store
             .delete_payloads(public_key, log_id, from, to)
             .await
+    }
+
+    async fn get_log_size(
+        &self,
+        public_key: &PublicKey,
+        log_id: &LogId,
+        from: Option<u64>,
+    ) -> Result<Option<u64>, Self::Error> {
+        self.store.get_log_size(public_key, log_id, from).await
+    }
+
+    async fn get_log_hashes(
+        &self,
+        public_key: &PublicKey,
+        log_id: &LogId,
+        from: Option<u64>,
+    ) -> Result<Option<Vec<Hash>>, Self::Error> {
+        self.store.get_log_hashes(public_key, log_id, from).await
     }
 }

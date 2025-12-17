@@ -10,6 +10,6 @@ procs:
   ui:  pnpm -F ./packages/stores build && pnpm -F ./ui start
   stores: pnpm -F ./packages/stores dev
   android:
-    shell: adb uninstall studio.darksoil.dashchat | true && pnpm tauri android dev
+    shell: pnpm tauri android dev
   logcat:
     shell: adb logcat | grep -F "`adb shell ps | grep studio.darksoil.dashchat | tr -s [:space:] ' ' | cut -d' ' -f2`"

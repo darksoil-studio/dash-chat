@@ -52,8 +52,8 @@
         
         devShells.androidDev = pkgs.mkShell {
           inputsFrom = [
-            inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
             devShells.default
+            inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
           ];
         };
       };

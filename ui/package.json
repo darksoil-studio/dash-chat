@@ -14,8 +14,10 @@
 	"dependencies": {
 		"@awesome.me/webawesome": "3.0.0-beta.6",
 		"@darksoil-studio/holochain-elements": "^0.500.0",
+		"@mdi/js": "^7.4.47",
 		"@saurl/tauri-plugin-safe-area-insets-css-api": "^0.1.0",
 		"@tauri-apps/api": "^2",
+		"@tauri-apps/plugin-barcode-scanner": "^2.4.2",
 		"@tauri-apps/plugin-opener": "^2",
 		"cbor": "^10.0.11",
 		"dash-chat-stores": "workspace:^0.0.0",
@@ -29,6 +31,7 @@
 		"@sveltejs/adapter-static": "^3.0.6",
 		"@sveltejs/kit": "^2.9.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"local-ip-address": "^1.0.1",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
 		"typescript": "~5.6.2",

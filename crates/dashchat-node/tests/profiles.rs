@@ -2,30 +2,34 @@ use std::time::Duration;
 
 use p2panda_store::LogStore;
 
-use crate::{
-    operation::{AnnouncementsPayload, Payload, Profile},
-    testing::{AliasedId, *},
-    topic::Topic,
-    *,
-};
+use dashchat_node::{testing::*, *};
 
 const TRACING_FILTER: &str =
     "dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_profiles() {
-    crate::testing::setup_tracing(TRACING_FILTER);
+    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     println!("nodes:");
-    let (alice, _) = TestNode::new(NodeConfig::default(), Some("alice")).await;
-    let (bobbi, _) = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
+    let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
+    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
     println!("alice: {:?}", alice.public_key().short());
     println!("bobbi: {:?}", bobbi.public_key().short());
 
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
-    alice.add_friend(bobbi.me().await.unwrap()).await.unwrap();
-    bobbi.add_friend(alice.me().await.unwrap()).await.unwrap();
+    alice
+        .add_contact(
+            bobbi
+                .new_qr_code(ShareIntent::AddContact, true)
+                .await
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    bobbi.behavior().accept_next_contact().await.unwrap();
 
     let profile = Profile {
         name: "Alice".to_string(),
@@ -42,7 +46,7 @@ async fn test_profiles() {
                 .op_store
                 .get_log(
                     &alice.public_key(),
-                    &Topic::Announcements(alice.public_key()).into(),
+                    &Topic::announcements(alice.chat_actor_id()).into(),
                     None,
                 )
                 .await
