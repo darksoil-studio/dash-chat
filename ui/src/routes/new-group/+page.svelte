@@ -7,11 +7,12 @@
 	import { getContext } from 'svelte';
 	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
-	import { mdiAccountMultiplePlus, mdiArrowLeft, mdiArrowRight } from '@mdi/js';
+	import { mdiAccountMultiplePlus } from '@mdi/js';
 
 	import { useReactivePromise } from '../../stores/use-signal';
 	import Avatar from '../../components/Avatar.svelte';
 	import SelectAvatar from '../../components/SelectAvatar.svelte';
+	import { mdiArrowBack, mdiArrowNext } from '../../utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	const chatsStore: ChatsStore = getContext('chats-store');
@@ -38,7 +39,7 @@
 			appearance="plain"
 			onclick={() => window.history.back()}
 		>
-			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 		</wa-button>
 		<span class="title" style="flex: 1">{m.newGroup()}</span>
 
@@ -46,12 +47,11 @@
 			appearance="plain"
 			onclick={() => {
 				currentPage = 'group-info';
-				console.log('aa', currentPage)
 
 			}}
 		>
 			{m.next()}
-			<wa-icon slot="end" src={wrapPathInSvg(mdiArrowRight)}> </wa-icon>
+			<wa-icon slot="end" src={wrapPathInSvg(mdiArrowNext)}> </wa-icon>
 		</wa-button>
 	</div>
 
@@ -95,7 +95,7 @@
 				currentPage = 'members';
 			}}
 		>
-			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 		</wa-button>
 		<span class="title" style="flex: 1">{m.newGroup()}</span>
 

@@ -14,7 +14,7 @@
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import {
 		mdiAccountGroup,
-		mdiArrowLeft,
+		
 		mdiClose,
 		mdiDelete,
 		mdiExport,
@@ -28,6 +28,7 @@
 	import Avatar from '../../../../components/Avatar.svelte';
 	import WaButton from '@awesome.me/webawesome/dist/components/button/button.js';
 	import WaDialog from '@awesome.me/webawesome/dist/components/dialog/dialog.js';
+	import { mdiArrowBack } from '../../../../utils/icon';
 
 	const chatId = window.location.href.split('/').reverse()[1];
 
@@ -41,7 +42,7 @@
 
 <div class="top-bar">
 	<wa-button class="circle" appearance="plain" href="/">
-		<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+		<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 	</wa-button>
 	<span class="title" style="flex: 1"></span>
 </div>

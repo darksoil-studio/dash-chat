@@ -10,7 +10,6 @@
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import {
 		mdiAccountGroup,
-		mdiArrowLeft,
 		mdiClose,
 		mdiContentSave,
 		mdiPencil,

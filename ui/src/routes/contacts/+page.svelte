@@ -7,9 +7,10 @@
 	import type { ContactRequestId, ContactsStore } from 'dash-chat-stores';
 	import Avatar from '../../components/Avatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
-	import { mdiAccountPlus, mdiArrowLeft } from '@mdi/js';
+	import { mdiAccountPlus } from '@mdi/js';
 	import WaButton from '@awesome.me/webawesome/dist/components/button/button.js';
 	import { m } from '$lib/paraglide/messages.js';
+	import { mdiArrowBack } from '../../utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -26,7 +27,7 @@
 <div class="column">
 	<div class="top-bar">
 		<wa-button class="circle" appearance="plain" href="/">
-			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 		</wa-button>
 
 		<span class="title">{m.myContacts()}</span>

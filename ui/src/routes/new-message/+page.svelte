@@ -4,13 +4,11 @@
 	import {
 		mdiAccountMultiplePlus,
 		mdiAccountPlus,
-		mdiArrowLeft,
 	} from '@mdi/js';
-	import Avatar from '../../components/Avatar.svelte';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../../stores/use-signal';
-	import { wrapPathInSvg } from '../../utils/icon';
+	import { mdiArrowBack, wrapPathInSvg } from '../../utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -19,7 +17,7 @@
 
 <div class="top-bar">
 	<wa-button class="circle" href="/" appearance="plain">
-		<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+		<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 	</wa-button>
 	<span class="title">{m.newMessage()}</span>
 </div>

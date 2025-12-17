@@ -11,8 +11,9 @@
 	import { getContext } from 'svelte';
 	import type { ChatsStore, ContactsStore } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
-	import { mdiArrowLeft, mdiSend } from '@mdi/js';
+	import {  mdiSend } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages.js';
+	import { mdiArrowBack } from '../../../utils/icon';
 
 	const chatId = window.location.href.split('/').reverse()[0];
 
@@ -37,7 +38,7 @@
 
 <div class="top-bar" style="gap: 0">
 	<wa-button class="circle" appearance="plain" href="/">
-		<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+		<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 	</wa-button>
 
 	<wa-button
