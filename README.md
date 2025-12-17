@@ -13,6 +13,14 @@ Dash Chat is in pre-alpha. We are currently rebuilding the application on top of
 - P2P: P2Panda for peer-to-peer communication
 - Build Tool: Vite
 
+## Translate Dash Chat
+
+Help translate Dash Chat! We use Weblate to crowdsource translations.
+
+Please contact the Dash Chat team at hello [at] dashchat [dot] org if you're interested in becoming a reviewer for translation(s) in your language(s).
+
+[Join the Dash Chat Weblate](https://hosted.weblate.org/projects/dash-chat).
+
 ## Developer setup
 
 1. Install [Rust](https://rust-lang.org/tools/install/).
