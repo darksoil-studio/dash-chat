@@ -11,6 +11,7 @@ mod util;
 
 pub mod polestar;
 
+pub mod relay;
 #[cfg(feature = "testing")]
 pub mod testing;
 
