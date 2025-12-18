@@ -31,7 +31,8 @@ async fn test_group_2() {
         p2panda_stream=info,
         p2panda_auth=info,
         p2panda_encryption=info,
-        p2panda_spaces=info
+        p2panda_spaces=info,
+        named_id=info
         "
         .split(',')
         .map(|s| s.trim())

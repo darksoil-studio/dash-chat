@@ -2137,7 +2137,6 @@ dependencies = [
 name = "named-id"
 version = "0.1.0"
 dependencies = [
- "blake3",
  "named-id-derive",
  "regex",
  "serde",
@@ -2492,6 +2491,7 @@ dependencies = [
  "hpke-rs",
  "hpke-rs-crypto",
  "hpke-rs-rust-crypto",
+ "named-id",
  "p2panda-core",
  "rand_chacha 0.9.0",
  "serde",

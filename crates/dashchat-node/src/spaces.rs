@@ -9,7 +9,7 @@ use std::sync::{Arc, LazyLock, Mutex};
 use anyhow::Context;
 pub use control_message::*;
 
-use named_id::{Nameable, Nameables};
+use named_id::{Nameable, Rename};
 use p2panda_auth::Access;
 use p2panda_core::PrivateKey;
 use p2panda_encryption::Rng;

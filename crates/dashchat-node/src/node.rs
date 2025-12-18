@@ -44,6 +44,7 @@ use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::alias_space_messages;
 use crate::topic::{LogId, Topic, kind};
+use crate::util::actor_to_pubkey;
 use crate::{
     AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DirectChatId, GroupChatId, Header,
     timestamp_now,
@@ -367,6 +368,7 @@ impl Node {
         inbox: bool,
     ) -> anyhow::Result<QrCode> {
         let member = self.manager.me().await?;
+        assert_eq!(member.id(), self.public_key().into());
         let mut topics = self.local_data.active_inbox_topics.write().await;
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
@@ -396,7 +398,9 @@ impl Node {
 
     pub fn repped_group(&self) -> ReppedGroup {
         ReppedGroup {
-            group: self.chat_actor_id(),
+            group: self
+                .chat_actor_id()
+                .with_name(&format!("group({})", self.public_key().renamed())),
             individual: self.public_key(),
         }
     }
@@ -753,7 +757,7 @@ impl Node {
         self.initialize_topic(direct_topic, true).await?;
 
         // TODO: needed?
-        let pubkey: PublicKey = todo!("contact.member_code.id()");
+        let pubkey: PublicKey = actor_to_pubkey(contact.member_code.id());
         self.author_store
             .add_author(direct_topic.into(), pubkey)
             .await;
