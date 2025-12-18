@@ -1,5 +1,7 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/styles/webawesome.css';
+
+	import '../app.css';
 	import { setContext } from 'svelte';
 	import {
 		ChatsClient,
@@ -13,12 +15,13 @@
 		DevicesClient,
 		DevicesStore,
 	} from 'dash-chat-stores';
+	import { App, KonstaProvider } from 'konsta/svelte';
 	import { setLocale } from '$lib/paraglide/runtime';
-	// setLocale('fa-ir');
+	setLocale('en');
 
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
 	import { isMobile } from '../utils/environment';
-	import { setupInsets} from '../utils/insets';
+	import { setupInsets } from '../utils/insets';
 	let { children } = $props();
 
 	const logsClient = new TauriLogsClient<TopicId, Payload>();
@@ -41,14 +44,17 @@
 	setContext('chats-store', chatsStore);
 
 	if (isMobile) setupInsets();
-
 </script>
 
-<main class="container column" style="flex: 1">
-	<SplashscreenPrompt>
-		{@render children()}
-	</SplashscreenPrompt>
-</main>
+<KonstaProvider theme="ios">
+	<App theme="ios"  class="k-ios" style="flex: 1; display: flex">
+		<main class="container column" style="flex: 1">
+			<SplashscreenPrompt>
+				{@render children()}
+			</SplashscreenPrompt>
+		</main>
+	</App>
+</KonstaProvider>
 
 <style>
 	main {

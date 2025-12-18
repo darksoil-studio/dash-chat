@@ -1,10 +1,10 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
-	import '@awesome.me/webawesome/dist/components/tooltip/tooltip.js';
 	import { resizeAndExport } from '../utils/image';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiPlus } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages.js';
+	import { Button, Fab } from 'konsta/svelte';
 
 	let avatarSize = 300;
 
@@ -71,15 +71,15 @@
 		></wa-avatar>
 	</div>
 {:else}
-	<div class="column" style="align-items: center;">
-		<wa-button
-			class="circle"
-			variant="default"
-			disabled={uploading}
-			loading={uploading}
+	<div class="column" style="align-items: center; height: 50px">
+		<Button
 			onclick={() => avatarFilePicker.click()}
+			disabled={uploading}
+			rounded
+			style="border-radius: 50%; height: 46px; width: 46px"
 		>
 			<wa-icon src={wrapPathInSvg(mdiPlus)} label={m.addAvatarImage()}></wa-icon>
-		</wa-button>
+				
+		</Button>
 	</div>
 {/if}

@@ -1,3 +1,7 @@
+@import 'tailwindcss';
+/* import Konsta UI theme */
+@import 'konsta/svelte/theme.css';
+
 body {
 	display: flex;
 }
