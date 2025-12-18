@@ -21,7 +21,6 @@
     "createGroup": "Crear grupo",
     "groupInfo": "Información del grupo",
     "membersCount_one": "{{count}} miembro",
-    "membersCount_many": "{{count}} miembros",
     "membersCount_other": "{{count}} miembros",
     "addMembers": "Añadir miembros",
     "removeMember": "Eliminar miembros",

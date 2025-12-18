@@ -16,12 +16,14 @@
 		DevicesStore,
 	} from 'dash-chat-stores';
 	import { App, KonstaProvider } from 'konsta/svelte';
-	import { setLocale } from '$lib/paraglide/runtime';
-	setLocale('en');
 
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
 	import { isMobile } from '../utils/environment';
 	import { setupInsets } from '../utils/insets';
+
+	import { setLocale } from '$lib/paraglide/runtime';
+	// setLocale('en');
+
 	let { children } = $props();
 
 	const logsClient = new TauriLogsClient<TopicId, Payload>();
