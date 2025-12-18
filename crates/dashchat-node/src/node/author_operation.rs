@@ -1,6 +1,8 @@
+use bytes::Bytes;
 use p2panda_core::Operation;
 
 use crate::polestar as p;
+use crate::relay::RelayClient;
 use crate::spaces::SpaceOperation;
 use crate::topic::TopicKind;
 
@@ -55,6 +57,13 @@ impl Node {
 
         // self.notify_payload(&header, &payload).await?;
         tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");
+
+        self.relay
+            .publish(
+                log_id.into(),
+                Bytes::from(encode_gossip_message(&header, body.as_ref())?),
+            )
+            .await?;
 
         #[cfg(feature = "p2p")]
         match self.initialized_topics.read().await.get(&log_id) {

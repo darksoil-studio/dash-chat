@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use dashchat_node::relay::mem::MemRelay;
 use p2panda_store::LogStore;
 
 use dashchat_node::{testing::*, *};
@@ -13,8 +14,9 @@ async fn test_profiles() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     println!("nodes:");
-    let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
-    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
+    let relay = MemRelay::new();
+    let alice = TestNode::new(NodeConfig::default(), relay.client(), Some("alice")).await;
+    let bobbi = TestNode::new(NodeConfig::default(), relay.client(), Some("bobbi")).await;
     println!("alice: {:?}", alice.public_key().short());
     println!("bobbi: {:?}", bobbi.public_key().short());
 

@@ -13,6 +13,7 @@ use tokio::sync::{Mutex, mpsc::Receiver};
 use crate::{
     ChatId, DeviceGroupPayload, NodeConfig, Notification, Payload,
     node::{Node, NodeLocalData},
+    relay::mem::{MemRelay, MemRelayClient},
     spaces::DashGroup,
     testing::{behavior::Behavior, introduce},
     topic::{LogId, Topic},
@@ -28,14 +29,14 @@ pub struct TestNode {
 }
 
 impl TestNode {
-    pub async fn new(config: NodeConfig, name: Option<&str>) -> Self {
+    pub async fn new(config: NodeConfig, relay: MemRelayClient, name: Option<&str>) -> Self {
         let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = name {
             local_data.private_key.public_key().with_name(alias);
         }
         Self {
-            node: Node::new(local_data, config, Some(notification_tx))
+            node: Node::new(local_data, config, Some(notification_tx), relay)
                 .await
                 .unwrap(),
             watcher: Arc::new(Mutex::new(Watcher(notification_rx))),
@@ -120,8 +121,9 @@ pub struct TestCluster<const N: usize> {
 
 impl<const N: usize> TestCluster<N> {
     pub async fn new(node_config: NodeConfig, config: ClusterConfig, aliases: [&str; N]) -> Self {
+        let relay = MemRelay::new();
         let nodes = futures::future::join_all(
-            (0..N).map(|i| TestNode::new(node_config.clone(), Some(aliases[i]))),
+            (0..N).map(|i| TestNode::new(node_config.clone(), relay.client(), Some(aliases[i]))),
         )
         .await
         .try_into()

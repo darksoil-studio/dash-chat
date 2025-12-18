@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use dashchat_node::{testing::*, *};
+use dashchat_node::{relay::mem::MemRelay, testing::*, *};
 use named_id::*;
 
 const TRACING_FILTER: &str =
@@ -12,8 +12,9 @@ const TRACING_FILTER: &str =
 async fn test_inbox_2() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
-    let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
-    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
+    let relay = MemRelay::new();
+    let alice = TestNode::new(NodeConfig::default(), relay.client(), Some("alice")).await;
+    let bobbi = TestNode::new(NodeConfig::default(), relay.client(), Some("bobbi")).await;
 
     println!("nodes:");
     println!("alice: {:?}", alice.public_key().short());
