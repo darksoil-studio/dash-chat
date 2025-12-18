@@ -3,11 +3,11 @@
 	import '@awesome.me/webawesome/dist/components/card/card.js';
 	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import { getContext } from 'svelte';
-	import type { UsersStore } from 'dash-chat-stores';
+	import type { ContactsStore } from 'dash-chat-stores';
 	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
-	import '@darksoil-studio/holochain-elements/dist/elements/select-avatar.js';
+	import { m } from '$lib/paraglide/messages.js';
 
-	const usersStore: UsersStore = getContext('users-store');
+	const usersStore: ContactsStore = getContext('contacts-store');
 	let nickname: string | undefined;
 	let avatar: string | undefined;
 
@@ -18,12 +18,12 @@
 
 <wa-card>
 	<div class="column" style="gap: var(--wa-space-m)">
-		<span class="title">Add Contact</span>
+		<span class="title">{m.addContact()}</span>
 
 		<div class="row" style="gap: var(--wa-space-xs)">
 			<input type="text" bind:value={nickname} />
 		</div>
 
-		<wa-button onclick={addContact}>Add Contact </wa-button>
+		<wa-button onclick={m.addContact()}> </wa-button>
 	</div>
 </wa-card>

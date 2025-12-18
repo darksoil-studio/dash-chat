@@ -2,3 +2,5 @@ packages:
   - ui
   - site
   - packages/*
+onlyBuiltDependencies:
+  - esbuild

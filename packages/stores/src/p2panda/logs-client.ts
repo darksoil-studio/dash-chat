@@ -3,7 +3,7 @@ import type { SimplifiedOperation } from './simplified-types';
 import type { PublicKey } from './types';
 
 export interface LogsClient<TOPIC_ID, PAYLOAD> {
-	myPubKey(): Promise<PublicKey>;
+	// myPubKey(): Promise<PublicKey>;
 
 	getAuthorsForTopic(topicId: TOPIC_ID): Promise<PublicKey[]>;
 

@@ -7,7 +7,7 @@ import type { PublicKey, TopicId } from './types';
 export class LogsStore<TOPIC_ID, PAYLOAD> {
 	constructor(protected logsClient: LogsClient<TOPIC_ID, PAYLOAD>) {}
 
-	myPubKey = reactive(() => this.logsClient.myPubKey());
+	// myPubKey = reactive(() => this.logsClient.myPubKey());
 
 	authorsForTopic = reactive((topicId: TOPIC_ID) =>
 		relay<PublicKey[]>(state => {

@@ -3,8 +3,10 @@
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../../stores/use-signal';
-	import { mdiArrowLeft, mdiPencil } from '@mdi/js';
+	import {  mdiPencil } from '@mdi/js';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { m } from '$lib/paraglide/messages.js';
+	import { mdiArrowBack } from '../../utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -13,15 +15,15 @@
 
 <div class="top-bar">
 	<wa-button class="circle" href="/" appearance="plain">
-			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 	</wa-button>
 
-	<span class="title">My profile </span>
+	<span class="title">{m.myProfile()}</span>
 
 	<div style="flex: 1"></div>
 	<wa-button href="/my-profile/edit" appearance="plain">
 		<wa-icon slot="start" src={wrapPathInSvg(mdiPencil)}> </wa-icon>
-		Edit
+		{m.edit()}
 	</wa-button>
 </div>
 

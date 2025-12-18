@@ -26,6 +26,7 @@ pub struct Profile {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "type", content="payload")]
 pub enum AnnouncementsPayload {
     SetProfile(Profile),
 }
@@ -57,6 +58,7 @@ pub enum DeviceGroupPayload {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "type", content="payload")]
 pub enum Payload {
     /// Pushing data out to my contacts.
     Announcements(AnnouncementsPayload),

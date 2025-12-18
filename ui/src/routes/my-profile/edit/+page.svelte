@@ -7,6 +7,7 @@
 	import SelectAvatar from '../../../components/SelectAvatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiClose, mdiContentSave } from '@mdi/js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let avatar: string | undefined;
@@ -38,12 +39,12 @@
 		<wa-icon src={wrapPathInSvg(mdiClose)}> </wa-icon>
 	</wa-button>
 
-	<span class="title">Edit profile</span>
+	<span class="title">{m.editProfile()}</span>
 
 	<div style="flex: 1"></div>
 	<wa-button appearance="plain" onclick={setProfile}>
 		<wa-icon slot="start" src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
-		Save
+		{m.save()}
 	</wa-button>
 </div>
 

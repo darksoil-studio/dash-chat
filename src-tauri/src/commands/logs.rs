@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use dashchat_node::{
-    spaces::{SpaceControlMessage, SpacesArgs, TestConditions},
+    spaces::{ SpacesArgs, TestConditions},
     topic::LogId,
     ChatId, Header, Node, Payload, Topic,
 };
@@ -65,12 +65,12 @@ impl From<Header> for SimplifiedHeader {
     }
 }
 
-fn spaces_messages(payload: Payload) -> Option<Vec<SpaceControlMessage>> {
-    match payload {
-        Payload::Chat(dashchat_node::ChatPayload::Space(space_messages)) => Some(space_messages),
-        _ => None,
-    }
-}
+// fn spaces_messages(payload: Payload) -> Option<Vec<SpaceControlMessage>> {
+//     match payload {
+//         Payload::Chat(dashchat_node::ChatPayload::Space(space_messages)) => Some(space_messages),
+//         _ => None,
+//     }
+// }
 
 // pub async fn simplify_spaces_operation(
 //     node: &Node,
@@ -144,30 +144,30 @@ pub async fn simplify(
         Some(b) => {
             let payload: Payload = decode_cbor(&b.to_bytes()[..])?;
 
-            if let Payload::Chat(dashchat_node::ChatPayload::Space(spaces_messages)) = payload {
-                let mut all_events: Vec<SimplifiedEvent> = vec![];
+            // if let Payload::Chat(dashchat_node::ChatPayload::Space(spaces_messages)) = payload {
+            //     let mut all_events: Vec<SimplifiedEvent> = vec![];
 
-                for message in spaces_messages {
-                    // let events = node.manager.process(&message).await?;
-                    let map = node.nodestate.spaces_events.read().await;
-                    let Some(events) = map.get(&message.hash) else {
-                        continue;
-                    };
-                    let mut simplified_events = events
-                        .into_iter()
-                        .map(simplify_event)
-                        .collect::<anyhow::Result<Vec<Option<SimplifiedEvent>>>>()?
-                        .into_iter()
-                        .filter_map(|e| e)
-                        .collect();
+            //     for message in spaces_messages {
+            //         // let events = node.manager.process(&message).await?;
+            //         let map = node.nodestate.spaces_events.read().await;
+            //         let Some(events) = map.get(&message.hash) else {
+            //             continue;
+            //         };
+            //         let mut simplified_events = events
+            //             .into_iter()
+            //             .map(simplify_event)
+            //             .collect::<anyhow::Result<Vec<Option<SimplifiedEvent>>>>()?
+            //             .into_iter()
+            //             .filter_map(|e| e)
+            //             .collect();
 
-                    all_events.append(&mut simplified_events);
-                }
+            //         all_events.append(&mut simplified_events);
+            //     }
 
-                Some(serde_json::to_value(all_events)?)
-            } else {
+            //     Some(serde_json::to_value(all_events)?)
+            // } else {
                 Some(serde_json::to_value(payload)?)
-            }
+            // }
         }
         _ => None,
     };

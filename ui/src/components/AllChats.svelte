@@ -8,6 +8,7 @@
 	import { ChatsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
+	import { m } from '$lib/paraglide/messages.js';
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const chatSummaries = useReactivePromise(chatsStore.allChatsSummaries);
@@ -63,9 +64,9 @@
 									date={new Date(summary.lastEvent.timestamp)}
 								></wa-format-date>`;
 							{:else if inYesterday(summary.lastEvent.timestamp)}
-								yesterday
+								{m.yesterday()}
 							{:else if lessThanAMinuteAgo(summary.lastEvent.timestamp)}
-								now
+								{m.now()}
 							{:else if moreThanAnHourAgo(summary.lastEvent.timestamp)}
 								<wa-format-date
 									hour="numeric"
@@ -100,7 +101,7 @@
 				</div>
 			</wa-button>
 		{:else}
-			<span>You don't have any chats yet. </span>
+			<span>{m.noChatsYet()}</span>
 		{/each}
 	{/await}
 </div>

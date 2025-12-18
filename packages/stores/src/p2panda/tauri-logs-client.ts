@@ -9,9 +9,9 @@ import type { PublicKey, TopicId } from './types';
 export class TauriLogsClient<TOPIC_ID, PAYLOAD>
 	implements LogsClient<TOPIC_ID, PAYLOAD>
 {
-	myPubKey(): Promise<PublicKey> {
-		return invoke('my_pub_key');
-	}
+	// myPubKey(): Promise<PublicKey> {
+	// 	return invoke('my_pub_key');
+	// }
 
 	async getLog(
 		topicId: TOPIC_ID,

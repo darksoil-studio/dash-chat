@@ -16,7 +16,7 @@ mod push_notifications;
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            commands::my_pub_key,
+            // commands::my_pub_key,
             commands::logs::get_log,
             commands::logs::get_authors,
             commands::profile::set_profile,
