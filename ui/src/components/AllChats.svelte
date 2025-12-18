@@ -9,6 +9,7 @@
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
 	import { m } from '$lib/paraglide/messages.js';
+	import { Badge, List, ListItem } from 'konsta/svelte';
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const chatSummaries = useReactivePromise(chatsStore.allChatsSummaries);
@@ -36,78 +37,60 @@
 		Date.now() - timestamp > 46 * 60 * 1000;
 </script>
 
-<div class="column" style="flex: 1;">
+<List nested>
 	{#await $chatSummaries then summaries}
 		{#each summaries as summary}
-			<wa-button
-				class="button-with-avatar"
-				appearance="plain"
-				href={`/group-chat/${summary.chatId}`}
+			<ListItem
+				title={summary.name}
+				link
+				linkProps={{ href: `/group-chat/${summary.chatId}` }}
+				chevron={false}
 			>
-				<wa-avatar
-					slot="start"
-					image={summary.avatar}
-					initials={summary.name.slice(0, 2)}
-				>
-				</wa-avatar>
-				<div class="row" style="align-items: center; gap: var(--wa-space-m)">
-					<div class="column" style="flex: 1">
-						<div
-							class="row"
-							style="align-items: center; gap: var(--wa-space-s)"
+				{#snippet media()}
+					<wa-avatar image={summary.avatar} initials={summary.name.slice(0, 2)}>
+					</wa-avatar>
+				{/snippet}
+				{#snippet after()}
+					{#if beforeThanYesterday(summary.lastEvent.timestamp)}
+						<wa-format-date
+							weekday="short"
+							date={new Date(summary.lastEvent.timestamp)}
+						></wa-format-date>`;
+					{:else if inYesterday(summary.lastEvent.timestamp)}
+						{m.yesterday()}
+					{:else if lessThanAMinuteAgo(summary.lastEvent.timestamp)}
+						{m.now()}
+					{:else if moreThanAnHourAgo(summary.lastEvent.timestamp)}
+						<wa-format-date
+							hour="numeric"
+							minute="numeric"
+							hour-format="24"
+							date={new Date(summary.lastEvent.timestamp)}
+						></wa-format-date>
+					{:else}
+						<wa-relative-time
+							sync
+							style="text-align: right"
+							format="narrow"
+							date={new Date(summary.lastEvent.timestamp)}
 						>
-							<span style="flex: 1">{summary.name}</span>
-
-							{#if beforeThanYesterday(summary.lastEvent.timestamp)}
-								<wa-format-date
-									weekday="short"
-									date={new Date(summary.lastEvent.timestamp)}
-								></wa-format-date>`;
-							{:else if inYesterday(summary.lastEvent.timestamp)}
-								{m.yesterday()}
-							{:else if lessThanAMinuteAgo(summary.lastEvent.timestamp)}
-								{m.now()}
-							{:else if moreThanAnHourAgo(summary.lastEvent.timestamp)}
-								<wa-format-date
-									hour="numeric"
-									minute="numeric"
-									hour-format="24"
-									date={new Date(summary.lastEvent.timestamp)}
-								></wa-format-date>
-							{:else}
-								<wa-relative-time
-									sync
-									style="text-align: right"
-									format="narrow"
-									date={new Date(summary.lastEvent.timestamp)}
-								>
-								</wa-relative-time>
-							{/if}
-						</div>
-
-						<div
-							class="row"
-							style="align-items: center; gap: var(--wa-space-s)"
-						>
-							<span style="flex: 1">{summary.lastEvent.summary}</span>
-
-							{#if summary.unreadMessages !== 0}
-								<wa-badge variant="brand" pill
-									>{summary.unreadMessages}
-								</wa-badge>
-							{/if}
-						</div>
+						</wa-relative-time>
+					{/if}
+				{/snippet}
+				{#snippet subtitle()}
+					<div class="row" style="align-items: center">
+						<span style="flex: 1">{summary.lastEvent.summary}</span>
+						{#if summary.unreadMessages !== 0}
+							<Badge>{summary.unreadMessages}</Badge>
+						{/if}
 					</div>
-				</div>
-			</wa-button>
+				{/snippet}
+			</ListItem>
 		{:else}
 			<span>{m.noChatsYet()}</span>
 		{/each}
 	{/await}
-</div>
+</List>
 
 <style>
-	wa-button::part(label) {
-		flex: 1;
-	}
 </style>

@@ -9,86 +9,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Tauri + SvelteKit + Typescript App</title>
 
-		<style>
-			body {
-				background-color: #efeff4;
-			}
-			.column {
-				display: flex;
-				flex-direction: column;
-			}
-
-			.row {
-				display: flex;
-				flex-direction: row;
-			}
-
-			.title {
-				font-size: var(--wa-font-size-l);
-			}
-
-			.top-bar {
-				display: flex;
-				flex-direction: row;
-
-				align-items: center;
-				height: 46px;
-				margin: var(--wa-space-xs);
-				gap: var(--wa-space-xs);
-			}
-
-			wa-button.circle::part(base) {
-				border-radius: 50%;
-			}
-
-			@media screen and (max-width: 600px) {
-			}
-
-			@media screen and (min-width: 600px) {
-				.center-in-desktop {
-					align-self: center;
-					width: 600px;
-				}
-			}
-
-			wa-icon {
-				font-size: 24px;
-			}
-
-			wa-icon[slot='start'] {
-				font-size: 20px;
-			}
-			wa-icon[slot='end'] {
-				font-size: 20px;
-			}
-
-			wa-button.fill::part(label) {
-				display: flex;
-				flex: 1;
-			}
-			wa-button.button-with-avatar::part(base) {
-				height: 68px;
-				padding-left: 8px;
-			}
-
-			wa-drawer::part(body) {
-				display: flex;
-				flex-direction: column;
-			}
-
-			.quiet {
-				color: var(--wa-color-text-quiet);
-			}
-
-			wa-card.wa-dark {
-				background-color: var(--wa-color-brand-50);
-			}
-
-			wa-card.wa-dark .quiet {
-				color: var(--wa-color-neutral-80);
-			}
-		</style>
-
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -98,7 +18,7 @@
 
 		%sveltekit.head%
 	</head>
-	<body data-sveltekit-preload-data="hover" style="display: flex">
+	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

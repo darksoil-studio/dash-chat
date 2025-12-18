@@ -46,11 +46,12 @@
 	setContext('chats-store', chatsStore);
 
 	if (isMobile) setupInsets();
+	let theme: 'ios' | 'material' = 'material';
 </script>
 
-<KonstaProvider theme="ios">
-	<App theme="ios"  class="k-ios" style="flex: 1; display: flex">
-		<main class="container column" style="flex: 1">
+<KonstaProvider {theme}>
+	<App {theme} class={`k-${theme}`}>
+		<main style="height: 100vh; width: 100vw; display: flex">
 			<SplashscreenPrompt>
 				{@render children()}
 			</SplashscreenPrompt>
