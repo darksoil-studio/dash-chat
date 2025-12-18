@@ -44,6 +44,7 @@ async fn test_group_2() {
     let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
     let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
 
+    #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
     println!("nodes:");
@@ -152,6 +153,7 @@ async fn test_group_3() {
     let cluster = TestCluster::new(node_config, cfg.clone(), ["Alice", "Bobbi", "Carol"]).await;
     let [alice, bobbi, carol] = cluster.nodes().await;
 
+    #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network, &carol.network]).await;
 
     println!("=== NODES ===");

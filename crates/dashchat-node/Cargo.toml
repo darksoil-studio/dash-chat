@@ -57,6 +57,7 @@ pretty_assertions = "1.4.1"
 default = ["testing", "instrument"]
 instrument = []
 testing = []
+p2p = []
 
 # patches go in the workspace Cargo.toml
 #

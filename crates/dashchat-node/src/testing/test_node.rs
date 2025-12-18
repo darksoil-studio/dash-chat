@@ -130,8 +130,11 @@ impl<const N: usize> TestCluster<N> {
     }
 
     pub async fn introduce_all(&self) {
-        let nodes = self.iter().map(|node| &node.network).collect::<Vec<_>>();
-        introduce(nodes).await;
+        #[cfg(feature = "p2p")]
+        {
+            let nodes = self.iter().map(|node| &node.network).collect::<Vec<_>>();
+            introduce(nodes).await;
+        }
     }
 
     pub async fn nodes(&self) -> [TestNode; N] {

@@ -18,6 +18,7 @@ async fn device_group_solo() {
     println!("alice: {:?}", alice.public_key().short());
     println!("alicia: {:?}", alicia.public_key().short());
 
+    #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &alicia.network]).await;
 
     println!("peers see each other");

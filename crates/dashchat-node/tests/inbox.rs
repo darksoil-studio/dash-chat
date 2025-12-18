@@ -19,6 +19,7 @@ async fn test_inbox_2() {
     println!("alice: {:?}", alice.public_key().short());
     println!("bobbi: {:?}", bobbi.public_key().short());
 
+    #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
     println!("peers see each other");

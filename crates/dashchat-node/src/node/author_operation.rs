@@ -56,6 +56,7 @@ impl Node {
         // self.notify_payload(&header, &payload).await?;
         tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");
 
+        #[cfg(feature = "p2p")]
         match self.initialized_topics.read().await.get(&log_id) {
             Some(gossip) => {
                 gossip

@@ -42,74 +42,78 @@ impl Node {
         topic: Topic<K>,
         is_author: bool,
     ) -> anyhow::Result<()> {
-        // TODO: this has a race condition
-        if self
-            .initialized_topics
-            .read()
-            .await
-            .contains_key(&topic.into())
+        #[cfg(feature = "p2p")]
         {
-            return Ok(());
-        }
-
-        if is_author {
-            self.author_store
-                .add_author(topic.into(), self.public_key())
-                .await;
-        }
-
-        let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.into()).await?;
-        tracing::info!(?topic, "SUB: subscribed to topic");
-
-        let stream = ReceiverStream::new(network_rx);
-        let stream = stream.filter_map(|event| async {
-            match event {
-                FromNetwork::GossipMessage { bytes, .. } => match decode_gossip_message(&bytes) {
-                    Ok(result) => Some(result),
-                    Err(err) => {
-                        tracing::warn!(?err, "decode gossip message error");
-                        None
-                    }
-                },
-                FromNetwork::SyncMessage {
-                    header, payload, ..
-                } => Some((header, payload)),
+            // TODO: this has a race condition
+            if self
+                .initialized_topics
+                .read()
+                .await
+                .contains_key(&topic.into())
+            {
+                return Ok(());
             }
-        });
 
-        // Decode and ingest the p2panda operations.
-        let stream = stream
-            .decode()
-            .filter_map(|result| async {
-                match result {
-                    Ok(operation) => Some(operation),
-                    Err(err) => {
-                        tracing::warn!(?err, "decode operation error");
-                        None
-                    }
-                }
-            })
-            .ingest(self.op_store.clone(), 128)
-            .filter_map(|result| async {
-                match result {
-                    Ok(operation) => Some(operation),
-                    Err(err) => {
-                        tracing::warn!(?err, "ingest operation error");
-                        None
-                    }
+            if is_author {
+                self.author_store
+                    .add_author(topic.into(), self.public_key())
+                    .await;
+            }
+
+            let (network_tx, network_rx, _gossip_ready) =
+                self.network.subscribe(topic.into()).await?;
+            tracing::info!(?topic, "SUB: subscribed to topic");
+
+            let stream = ReceiverStream::new(network_rx);
+            let stream = stream.filter_map(|event| async {
+                match event {
+                    FromNetwork::GossipMessage { bytes, .. } => match decode_gossip_message(&bytes)
+                    {
+                        Ok(result) => Some(result),
+                        Err(err) => {
+                            tracing::warn!(?err, "decode gossip message error");
+                            None
+                        }
+                    },
+                    FromNetwork::SyncMessage {
+                        header, payload, ..
+                    } => Some((header, payload)),
                 }
             });
 
-        self.stream_tx
-            .send(Pin::from(Box::new(stream)))
-            .await
-            .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
+            // Decode and ingest the p2panda operations.
+            let stream = stream
+                .decode()
+                .filter_map(|result| async {
+                    match result {
+                        Ok(operation) => Some(operation),
+                        Err(err) => {
+                            tracing::warn!(?err, "decode operation error");
+                            None
+                        }
+                    }
+                })
+                .ingest(self.op_store.clone(), 128)
+                .filter_map(|result| async {
+                    match result {
+                        Ok(operation) => Some(operation),
+                        Err(err) => {
+                            tracing::warn!(?err, "ingest operation error");
+                            None
+                        }
+                    }
+                });
 
-        self.initialized_topics
-            .write()
-            .await
-            .insert(topic.into(), network_tx);
+            self.stream_tx
+                .send(Pin::from(Box::new(stream)))
+                .await
+                .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
 
+            self.initialized_topics
+                .write()
+                .await
+                .insert(topic.into(), network_tx);
+        }
         Ok(())
     }
 

@@ -126,7 +126,9 @@ impl NodeLocalData {
 pub struct Node {
     pub op_store: OpStore,
     // pub ordering_store: p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
+    #[cfg(feature = "p2p")]
     pub network: Network<LogId>,
+
     author_store: AuthorStore<LogId>,
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
@@ -161,28 +163,30 @@ impl Node {
         } = local_data.clone();
         let public_key = PublicKey::from(private_key.public_key());
 
-        let mdns = LocalDiscovery::new();
-
         let op_store = MemoryStore::<LogId, Extensions>::new();
         let author_store: AuthorStore<LogId> = AuthorStore::new();
 
-        let sync_protocol = LogSyncProtocol::new(author_store.clone(), op_store.clone());
-        let sync_config = SyncConfiguration::new(sync_protocol).resync(config.resync.clone());
-
+        #[cfg(feature = "p2p")]
+        let mdns = LocalDiscovery::new();
+        #[cfg(feature = "p2p")]
         let mut new_peers = mdns.subscribe(NETWORK_ID).unwrap();
 
-        // author_store
-        //     .add_author(Topic::inbox(public_key.clone()), public_key)
-        //     .await;
-
-        let network_builder = NetworkBuilder::new(NETWORK_ID)
-            .private_key(private_key.clone())
-            .discovery(mdns)
-            .gossip(GossipConfig {
-                max_message_size: MAX_MESSAGE_SIZE,
-            })
-            // .relay(relay_url, false, 0)
-            .sync(sync_config);
+        #[cfg(feature = "p2p")]
+        let network = {
+            let sync_protocol = LogSyncProtocol::new(author_store.clone(), op_store.clone());
+            let sync_config = SyncConfiguration::new(sync_protocol).resync(config.resync.clone());
+            NetworkBuilder::new(NETWORK_ID)
+                .private_key(private_key.clone())
+                .discovery(mdns)
+                .gossip(GossipConfig {
+                    max_message_size: MAX_MESSAGE_SIZE,
+                })
+                // .relay(relay_url, false, 0)
+                .sync(sync_config)
+                .build()
+                .await
+                .context("spawn p2p network")?
+        };
 
         // if config.bootstrap {
         //     network_builder = network_builder.bootstrap();
@@ -198,7 +202,6 @@ impl Node {
             .public_key()
             .into();
 
-        let network = network_builder.build().await.context("spawn p2p network")?;
         let spaces_store = SpacesStore::new();
         let (manager, device_group_msgs) = DashManager::new(
             private_key.clone(),
@@ -219,6 +222,7 @@ impl Node {
             op_store: op_store.clone(),
             author_store: author_store.clone(),
             spaces_store,
+            #[cfg(feature = "p2p")]
             network,
             manager: manager.clone(),
             config,
@@ -272,6 +276,7 @@ impl Node {
         // TODO: accomodate new inbox topics as they are added
         // TODO: remove expired inbox topics from processing and from local data
         // TODO: what is the actual right way to do this?
+        #[cfg(feature = "p2p")]
         tokio::spawn(
             async move {
                 while let Some(Ok(peer)) = new_peers.next().await {

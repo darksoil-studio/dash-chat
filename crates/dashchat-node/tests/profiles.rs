@@ -18,6 +18,7 @@ async fn test_profiles() {
     println!("alice: {:?}", alice.public_key().short());
     println!("bobbi: {:?}", bobbi.public_key().short());
 
+    #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
     alice
