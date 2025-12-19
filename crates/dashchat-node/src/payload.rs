@@ -78,6 +78,7 @@ impl Cbor for Payload {}
 impl AsBody for Payload {}
 
 pub type Header = p2panda_core::Header<Extensions>;
+pub type Operation = p2panda_core::Operation<Extensions>;
 
 impl Extension<LogId> for Extensions {
     fn extract(header: &Header) -> Option<LogId> {

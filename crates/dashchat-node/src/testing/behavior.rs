@@ -20,7 +20,7 @@ impl Behavior {
 
     /// Simulate sending a contact a QR code and them using it to add me as a contact,
     /// and sending me an Inbox message with their contact info so I can add them too.
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key().renamed())))]
     pub async fn initiate_and_establish_contact(
         &mut self,
         other: &TestNode,
@@ -32,7 +32,7 @@ impl Behavior {
         Ok(())
     }
 
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key().renamed())))]
     pub async fn accept_next_contact(&self) -> anyhow::Result<QrCode> {
         let qr = self
             .watcher
@@ -55,7 +55,7 @@ impl Behavior {
         Ok(qr)
     }
 
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key())))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.node.public_key().renamed())))]
     pub async fn accept_next_group_invitation(&self) -> anyhow::Result<ChatId> {
         let chat_id = self
             .watcher

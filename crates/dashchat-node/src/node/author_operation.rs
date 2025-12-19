@@ -1,5 +1,4 @@
 use bytes::Bytes;
-use p2panda_core::Operation;
 
 use crate::polestar as p;
 use crate::relay::RelayClient;
@@ -27,7 +26,7 @@ impl Node {
             .await?;
 
         let op = Operation {
-            hash: header.hash(),
+            hash: header.hash().with_serial(),
             header,
             body,
         };
@@ -48,9 +47,10 @@ impl Node {
 
     pub(crate) async fn process_authored_ingested_operation(
         &self,
-        op: Operation<Extensions>,
+        op: Operation,
     ) -> Result<Header, anyhow::Error> {
         let log_id = op.header.extensions.log_id;
+        op.hash.with_serial();
         self.process_operation(op.clone(), self.author_store.clone(), true, false)
             .await?;
         let Operation { header, body, hash } = op;
@@ -59,10 +59,7 @@ impl Node {
         tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");
 
         self.relay
-            .publish(
-                log_id.into(),
-                Bytes::from(encode_gossip_message(&header, body.as_ref())?),
-            )
+            .publish(log_id.into(), (header.clone(), body).into())
             .await?;
 
         #[cfg(feature = "p2p")]

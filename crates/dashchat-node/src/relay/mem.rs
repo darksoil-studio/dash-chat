@@ -2,33 +2,58 @@ use super::*;
 
 use std::{collections::HashMap, sync::Arc};
 
-use bytes::Bytes;
+use p2panda_core::Body;
 use tokio::sync::{Mutex, RwLock};
 
-use crate::topic::LogId;
+use crate::{Header, topic::LogId};
+
+impl From<Operation> for RelayOperation {
+    fn from(op: Operation) -> Self {
+        Self {
+            header: op.header,
+            body: op.body,
+        }
+    }
+}
+
+impl From<RelayOperation> for Operation {
+    fn from(op: RelayOperation) -> Self {
+        Self {
+            hash: op.header.hash(),
+            header: op.header,
+            body: op.body,
+        }
+    }
+}
+
+impl From<(Header, Option<Body>)> for RelayOperation {
+    fn from((header, body): (Header, Option<Body>)) -> Self {
+        Self { header, body }
+    }
+}
 
 /// A client for the memory relay.
 /// This client is stateful, so all requests for a node should go through a single client
 /// instance. State is shared between all cloned copies of this.
 #[derive(Clone)]
-pub struct MemRelayClient {
-    relay: MemRelay,
+pub struct MemRelayClient<Op: RelayBlob = RelayOperation> {
+    relay: MemRelay<Op>,
     latest: Arc<Mutex<HashMap<LogId, usize>>>,
 }
 
 #[derive(Clone)]
-pub struct MemRelay {
-    ops: Arc<RwLock<HashMap<LogId, Vec<Bytes>>>>,
+pub struct MemRelay<Op: RelayBlob = RelayOperation> {
+    ops: Arc<RwLock<HashMap<LogId, Vec<Op>>>>,
 }
 
-impl MemRelay {
+impl<Op: RelayBlob> MemRelay<Op> {
     pub fn new() -> Self {
         Self {
             ops: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    pub fn client(&self) -> MemRelayClient {
+    pub fn client(&self) -> MemRelayClient<Op> {
         MemRelayClient {
             relay: self.clone(),
             latest: Arc::new(Mutex::new(HashMap::new())),
@@ -37,15 +62,17 @@ impl MemRelay {
 }
 
 #[async_trait::async_trait]
-impl RelayClient for MemRelayClient {
-    async fn publish(&self, topic: LogId, op: Bytes) -> Result<(), anyhow::Error> {
+impl<Op: RelayBlob> RelayClient<Op> for MemRelayClient<Op> {
+    async fn publish(&self, topic: LogId, op: Op) -> Result<(), anyhow::Error> {
         let mut ops = self.relay.ops.write().await;
-        ops.entry(topic).or_insert_with(Vec::new).push(op);
+        tracing::info!(?topic, "publishing relay operation");
+        ops.entry(topic).or_insert_with(Vec::new).push(op.into());
         Ok(())
     }
 
-    async fn fetch(&self, topic: LogId) -> anyhow::Result<Vec<Bytes>> {
+    async fn fetch(&self, topic: LogId) -> anyhow::Result<Vec<Op>> {
         let ops = self.relay.ops.read().await;
+        tracing::info!(?topic, num = ops.len(), "fetching relay operations");
         let mut since_lock = self.latest.lock().await;
         let since = *since_lock.get(&topic).unwrap_or(&0);
         if let Some(ops) = ops.get(&topic) {
@@ -59,6 +86,8 @@ impl RelayClient for MemRelayClient {
 
 #[cfg(test)]
 mod tests {
+    use bytes::Bytes;
+
     use crate::Topic;
 
     use super::*;
@@ -69,7 +98,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mem_relay() {
-        let relay = MemRelay::new();
+        let relay = MemRelay::<Bytes>::new();
         let client = relay.client();
 
         let tt: [LogId; 2] = [Topic::random().into(), Topic::random().into()];

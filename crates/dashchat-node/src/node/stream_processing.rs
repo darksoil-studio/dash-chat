@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use tokio::task;
 use tracing::Instrument;
 
+use crate::relay::RelaySubscription;
 use crate::spaces::SpaceOperation;
 use crate::{
     payload::InboxPayload,
@@ -42,24 +43,33 @@ impl Node {
         topic: Topic<K>,
         is_author: bool,
     ) -> anyhow::Result<()> {
+        // TODO: this has a race condition
+        if self
+            .initialized_topics
+            .read()
+            .await
+            .contains_key(&topic.into())
+        {
+            return Ok(());
+        }
+
+        if is_author {
+            self.author_store
+                .add_author(topic.into(), self.public_key())
+                .await;
+        }
+
+        {
+            let relay_rx = self.relay.subscribe(topic.into())?;
+            let stream = ReceiverStream::new(relay_rx);
+            self.stream_tx
+                .send(Pin::from(Box::new(stream)))
+                .await
+                .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
+        }
+
         #[cfg(feature = "p2p")]
         {
-            // TODO: this has a race condition
-            if self
-                .initialized_topics
-                .read()
-                .await
-                .contains_key(&topic.into())
-            {
-                return Ok(());
-            }
-
-            if is_author {
-                self.author_store
-                    .add_author(topic.into(), self.public_key())
-                    .await;
-            }
-
             let (network_tx, network_rx, _gossip_ready) =
                 self.network.subscribe(topic.into()).await?;
             tracing::info!(?topic, "SUB: subscribed to topic");
@@ -114,6 +124,7 @@ impl Node {
                 .await
                 .insert(topic.into(), network_tx);
         }
+
         Ok(())
     }
 
@@ -210,7 +221,7 @@ impl Node {
         author_store.add_author(log_id, header.public_key).await;
         tracing::debug!(?log_id, "adding author");
 
-        tracing::info!(?log_id, hash = ?hash.renamed(), "PROC: processing operation");
+        tracing::info!(log_id = ?log_id.renamed(), hash = ?hash.renamed(), "PROC: processing operation");
 
         let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
 

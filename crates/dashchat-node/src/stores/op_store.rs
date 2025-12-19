@@ -66,7 +66,6 @@ impl OpStore {
             Some((header, _)) => (header.seq_num + 1, Some(header.hash())),
             None => (0, None),
         };
-        tracing::info!(?seq_num, "seq_num read");
 
         let timestamp = timestamp_now();
 
@@ -130,6 +129,11 @@ impl OpStore {
                     "operation could not be ingested"
                 );
                 panic!("operation could not be ingested, check your sequence numbers!");
+            }
+
+            IngestResult::Outdated(op) => {
+                tracing::error!(?op, "operation is outdated");
+                panic!("operation is outdated");
             }
         }
 
