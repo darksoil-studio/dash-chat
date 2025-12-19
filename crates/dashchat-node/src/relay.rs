@@ -53,11 +53,24 @@ where
     }
 }
 
-pub trait RelayBlob: Clone + Serialize + DeserializeOwned + Send + Sync + 'static {}
-impl<T: Clone + Serialize + DeserializeOwned + Send + Sync + 'static> RelayBlob for T {}
+pub trait RelayItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'static {
+    fn hash(&self) -> p2panda_core::Hash;
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RelayOperation {
     pub header: Header,
     pub body: Option<Body>,
+}
+
+impl RelayItem for RelayOperation {
+    fn hash(&self) -> p2panda_core::Hash {
+        self.header.hash()
+    }
+}
+
+impl RelayItem for bytes::Bytes {
+    fn hash(&self) -> p2panda_core::Hash {
+        p2panda_core::Hash::new(self)
+    }
 }

@@ -368,7 +368,7 @@ impl Node {
 
             Some(Payload::Inbox(invitation)) => {
                 let active_topics = self.local_data.active_inbox_topics.read().await;
-                if !active_topics.iter().any(|it| *it.topic == *log_id) {
+                if !active_topics.iter().any(|it| **it.topic == *log_id) {
                     // not for me, ignore
                     return Ok(());
                 }

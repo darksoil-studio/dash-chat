@@ -54,6 +54,7 @@ pub trait TopicKind:
     + Ord
     + std::fmt::Display
     + std::fmt::Debug
+    + Rename
     + 'static
 {
 }
@@ -79,6 +80,7 @@ pub mod kind {
                 Hash,
                 Serialize,
                 Deserialize,
+                RenameNone,
                 derive_more::Display,
                 derive_more::Debug,
             )]
@@ -150,15 +152,16 @@ impl Nameable for LogId {
     PartialEq,
     PartialOrd,
     Ord,
+    named_id::RenameAll,
     derive_more::Deref,
     derive_more::Display,
     derive_more::Debug,
 )]
-#[display("{}", hex::encode(self.id))]
+#[display("{}", hex::encode(self.id.0))]
 #[debug("{}", self)]
 pub struct Topic<K: TopicKind = kind::Untyped> {
     #[deref]
-    id: [u8; 32],
+    id: LogId,
 
     #[serde(skip)]
     kind: PhantomData<K>,
@@ -170,14 +173,19 @@ impl<K: TopicKind> TopicQuery for Topic<K> {}
 impl<K: TopicKind> Topic<K> {
     fn new(id: [u8; 32]) -> Self {
         Self {
-            id,
+            id: LogId(id),
             kind: PhantomData::<K>,
         }
     }
 
+    pub fn with_name(self, name: &str) -> Self {
+        self.id.with_name(name);
+        self
+    }
+
     #[deprecated(note = "refactor so this is impossible")]
     pub fn recast<K2: TopicKind>(self) -> Topic<K2> {
-        Topic::new(self.id)
+        Topic::new(self.id.0)
     }
 }
 
@@ -204,7 +212,7 @@ impl Topic<kind::Chat> {
 impl Topic<kind::Untyped> {
     pub fn untyped(id: [u8; 32]) -> Self {
         Self {
-            id,
+            id: LogId(id),
             kind: PhantomData,
         }
     }
@@ -218,22 +226,13 @@ impl TopicId for LogId {
 
 impl<K: TopicKind> From<Topic<K>> for LogId {
     fn from(topic: Topic<K>) -> Self {
-        Self(topic.id)
+        Self(topic.id.0)
     }
 }
 
 impl<K: TopicKind> TopicId for Topic<K> {
     fn id(&self) -> [u8; 32] {
-        self.id
-    }
-}
-
-impl<K: TopicKind> Nameable for Topic<K> {
-    fn shortener(&self) -> Option<Shortener> {
-        Some(Shortener {
-            length: 4,
-            prefix: "T",
-        })
+        self.id.0
     }
 }
 

@@ -2563,6 +2563,7 @@ dependencies = [
  "ciborium",
  "futures-channel",
  "futures-util",
+ "named-id",
  "p2panda-core",
  "p2panda-store",
  "pin-project",

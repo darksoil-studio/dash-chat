@@ -114,7 +114,7 @@ impl DashManager {
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all))]
     pub async fn create_space(
         &self,
-        topic: impl Into<ChatId> + Nameable,
+        topic: impl Into<ChatId> + Rename,
         initial_members: &[(ActorId, Access<TestConditions>)],
     ) -> anyhow::Result<(
         DashSpace,

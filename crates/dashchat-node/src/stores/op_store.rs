@@ -89,10 +89,12 @@ impl OpStore {
 
         if let Some(alias) = alias {
             header.hash().with_name(alias);
+        } else {
+            header.hash().with_serial();
         }
 
         tracing::info!(
-            ?log_id,
+            log_id = ?log_id.renamed(),
             hash = ?hash.renamed(),
             seq_num = header.seq_num,
             "PUB: authoring operation"

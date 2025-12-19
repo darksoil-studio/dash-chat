@@ -2,6 +2,7 @@ use super::*;
 
 use std::{collections::HashMap, sync::Arc};
 
+use named_id::Rename;
 use p2panda_core::Body;
 use tokio::sync::{Mutex, RwLock};
 
@@ -36,17 +37,17 @@ impl From<(Header, Option<Body>)> for RelayOperation {
 /// This client is stateful, so all requests for a node should go through a single client
 /// instance. State is shared between all cloned copies of this.
 #[derive(Clone)]
-pub struct MemRelayClient<Op: RelayBlob = RelayOperation> {
+pub struct MemRelayClient<Op: RelayItem = RelayOperation> {
     relay: MemRelay<Op>,
     latest: Arc<Mutex<HashMap<LogId, usize>>>,
 }
 
 #[derive(Clone)]
-pub struct MemRelay<Op: RelayBlob = RelayOperation> {
+pub struct MemRelay<Op: RelayItem = RelayOperation> {
     ops: Arc<RwLock<HashMap<LogId, Vec<Op>>>>,
 }
 
-impl<Op: RelayBlob> MemRelay<Op> {
+impl<Op: RelayItem> MemRelay<Op> {
     pub fn new() -> Self {
         Self {
             ops: Arc::new(RwLock::new(HashMap::new())),
@@ -62,22 +63,33 @@ impl<Op: RelayBlob> MemRelay<Op> {
 }
 
 #[async_trait::async_trait]
-impl<Op: RelayBlob> RelayClient<Op> for MemRelayClient<Op> {
+impl<Op: RelayItem> RelayClient<Op> for MemRelayClient<Op> {
     async fn publish(&self, topic: LogId, op: Op) -> Result<(), anyhow::Error> {
         let mut ops = self.relay.ops.write().await;
-        tracing::info!(?topic, "publishing relay operation");
+        tracing::info!(topic = ?topic.renamed(), hash = ?op.hash().renamed(), "publishing relay operation");
         ops.entry(topic).or_insert_with(Vec::new).push(op.into());
         Ok(())
     }
 
     async fn fetch(&self, topic: LogId) -> anyhow::Result<Vec<Op>> {
         let ops = self.relay.ops.read().await;
-        tracing::info!(?topic, num = ops.len(), "fetching relay operations");
         let mut since_lock = self.latest.lock().await;
         let since = *since_lock.get(&topic).unwrap_or(&0);
         if let Some(ops) = ops.get(&topic) {
+            if since >= ops.len() {
+                return Ok(vec![]);
+            }
             since_lock.insert(topic, ops.len());
-            Ok(ops.iter().skip(since).cloned().collect())
+            let new: Vec<Op> = ops.iter().skip(since).cloned().collect();
+
+            tracing::info!(
+                topic = ?topic.renamed(),
+                num = new.len(),
+                hashes = ?new.iter().map(|op: &Op| op.hash().renamed()).collect::<Vec<_>>(),
+                "fetching relay operations"
+            );
+
+            Ok(new)
         } else {
             Ok(vec![])
         }
