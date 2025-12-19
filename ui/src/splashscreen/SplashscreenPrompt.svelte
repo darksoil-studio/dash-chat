@@ -1,5 +1,4 @@
 <script lang="ts">
-	import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
 	import CreateProfile from '../profiles/CreateProfile.svelte';

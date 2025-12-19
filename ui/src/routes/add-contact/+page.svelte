@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
-	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import '@awesome.me/webawesome/dist/components/qr-code/qr-code.js';
 	import '@awesome.me/webawesome/dist/components/copy-button/copy-button.js';
 	import { getContext, onMount } from 'svelte';
@@ -15,7 +14,16 @@
 
 	import { isMobile } from '../../utils/environment';
 	import { scanQrcode } from '../../utils/qrcode';
-	import { mdiArrowBack } from '../../utils/icon';
+	import {
+		Page,
+		Navbar,
+		NavbarBackLink,
+		Button,
+		Link,
+		ListInput,
+		List,
+		Preloader,
+	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -29,53 +37,67 @@
 	}
 </script>
 
-<div class="column">
-	<div class="top-bar">
-		<wa-button
-			class="circle"
-			appearance="plain"
-			onclick={() => {
-				window.history.back();
-			}}
-		>
-			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
-		</wa-button>
-		<span class="title">{m.addContact()}</span>
-
-		<div style="flex:1"></div>
-
-		{#if isMobile}
-			<wa-button
-				appearance="plain"
-				onclick={async () => {
-					try {
-						const code = await scanQrcode();
-						await receiveCode(code);
-					} catch (e) {}
+<Page>
+	<Navbar title={m.addContact()}>
+		{#snippet left()}
+			<NavbarBackLink
+				onClick={() => {
+					window.history.back();
 				}}
-			>
-				<wa-icon slot="start" src={wrapPathInSvg(mdiQrcode)}> </wa-icon>
+			/>
+		{/snippet}
 
-				Scan
-			</wa-button>
-		{/if}
-	</div>
+		{#snippet right()}
+			{#if isMobile}
+				<Link
+					onClick={async () => {
+						try {
+							const code = await scanQrcode();
+							await receiveCode(code);
+						} catch (e) {}
+					}}
+				>
+					<wa-icon src={wrapPathInSvg(mdiQrcode)}> </wa-icon>
+				</Link>
+			{/if}
+		{/snippet}
+	</Navbar>
 
-	{#await code then code}
-		<div class="column center-in-desktop" style="gap: var(--wa-space-m); margin: var(--wa-space-m); ">
-			{m.shareThisCode()}
+	{#await code}
+		<div
+			class="column"
+			style="height: 100%; align-items: center; justify-content: center"
+		>
+			<Preloader />
+		</div>
+	{:then code}
+		<div class="column" style="flex:1">
+			<div class="column center-in-desktop gap-4 m-6">
+				<span>{m.shareThisCode()}</span>
 
-			<wa-qr-code value={code} size="300" style="align-self: center"
-			></wa-qr-code>
+				<wa-qr-code value={code} size="300" style="align-self: center"
+				></wa-qr-code>
 
-			<div class="row" style="gap: var(--wa-space-s); align-items: center">
-				{code.slice(0, 15)}...
-				<wa-copy-button value={code}> </wa-copy-button>
+				<div class="row gap-2" style="align-items: center">
+					{code.slice(0, 15)}...
+					<wa-copy-button value={code}> </wa-copy-button>
+				</div>
+
+				<div class="column gap-1">
+					<span>{m.enterYourContactsCode()}</span>
+
+					<List nested>
+						<ListInput
+							type="text"
+							outline
+							onInput={(e: Event) => {
+								const target = e.target as HTMLInputElement;
+								if (target.value) receiveCode(target.value);
+							}}
+						/>
+					</List>
+				</div>
 			</div>
-
-			{m.enterYourContactsCode()}
-
-			<wa-input oninput={(e: InputEvent) => receiveCode(e.data!)}> </wa-input>
 		</div>
 	{/await}
-</div>
+</Page>

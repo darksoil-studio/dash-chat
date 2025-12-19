@@ -2,9 +2,16 @@
 /* import Konsta UI theme */
 @import 'konsta/svelte/theme.css';
 
+@theme {
+	--color-brand-primary: #007aff;
+	--color-brand-red: #ff0000;
+	--color-brand-green: #00ff00;
+}
+
 body {
 	display: flex;
-	background-color: #efefef;
+	--background-color: #dddddd;
+	background-color: var(--background-color);
 }
 
 .column {
@@ -18,24 +25,7 @@ body {
 }
 
 .title {
-	font-size: var(--wa-font-size-l);
-}
-
-.top-bar {
-	display: flex;
-	flex-direction: row;
-
-	align-items: center;
-	height: 46px;
-	margin: var(--wa-space-xs);
-	gap: var(--wa-space-xs);
-}
-
-wa-button.circle::part(base) {
-	border-radius: 50%;
-}
-
-@media screen and (max-width: 600px) {
+	font-size: 1.125rem;
 }
 
 @media screen and (min-width: 600px) {
@@ -52,32 +42,19 @@ wa-icon {
 wa-icon[slot='start'] {
 	font-size: 20px;
 }
+
 wa-icon[slot='end'] {
 	font-size: 20px;
 }
 
-wa-button.fill::part(label) {
-	display: flex;
-	flex: 1;
-}
-wa-button.button-with-avatar::part(base) {
-	height: 68px;
-	padding-left: 8px;
-}
-
-wa-drawer::part(body) {
-	display: flex;
-	flex-direction: column;
-}
-
 .quiet {
-	color: var(--wa-color-text-quiet);
+	color: #64748b;
 }
 
-wa-card.wa-dark {
-	background-color: var(--wa-color-brand-50);
-}
-
-wa-card.wa-dark .quiet {
+.dark-quiet {
 	color: var(--wa-color-neutral-80);
+}
+
+li > label {
+	width: 100%;
 }

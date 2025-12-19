@@ -1,9 +1,9 @@
 <script lang="ts">
-	import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
+	import '@awesome.me/webawesome/dist/components/icon/icon.js';
+	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../../../stores/use-signal';
-	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 	import SelectAvatar from '../../../components/SelectAvatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiClose, mdiContentSave } from '@mdi/js';
@@ -16,21 +16,19 @@
 		NavbarBackLink,
 		Page,
 		Preloader,
+		ListInput,
+		List,
 	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let avatar: string | undefined;
-	let name: string | undefined;
+	let name = $state<string>('');
 
 	const myProfile = useReactivePromise(contactsStore.myProfile);
 	myProfile.subscribe(m => {
 		m.then(myProfile => {
-			if (!name) {
-				name = myProfile?.name;
-			}
-			if (!avatar) {
-				avatar = myProfile?.avatar;
-			}
+			if (!name) name = myProfile?.name || '';
+			if (!avatar) avatar = myProfile?.avatar;
 		});
 	});
 
@@ -66,19 +64,19 @@
 		</div>
 	{:then myProfile}
 		<div class="column" style="flex: 1">
-			<Card class="center-in-desktop" style="margin: var(--wa-space-m);">
-				<div class="row" style="align-items: center; gap: var(--wa-space-s)">
+			<Card class="center-in-desktop" raised>
+				<div class="row gap-1" style="align-items: center;">
 					<SelectAvatar bind:value={avatar} defaultValue={myProfile?.avatar}
 					></SelectAvatar>
 
-					<wa-input
-						style="flex: 1"
-						defaultValue={myProfile?.name}
-						oninput={(e: InputEvent) => {
-							name = (e.target as WaInput).value!;
-						}}
-					>
-					</wa-input>
+					<List nested>
+						<ListInput
+							outline
+							type="text"
+							bind:value={name}
+							label={m.name()}
+						/>
+					</List>
 				</div>
 			</Card>
 		</div>

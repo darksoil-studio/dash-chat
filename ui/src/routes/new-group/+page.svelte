@@ -1,8 +1,7 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
-	import '@awesome.me/webawesome/dist/components/button/button.js';
-	import '@awesome.me/webawesome/dist/components/checkbox/checkbox.js';
-	import { m } from '$lib/paraglide/messages.js';
+	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
+	import { m, members } from '$lib/paraglide/messages.js';
 
 	import { getContext } from 'svelte';
 	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
@@ -12,7 +11,21 @@
 	import { useReactivePromise } from '../../stores/use-signal';
 	import Avatar from '../../components/Avatar.svelte';
 	import SelectAvatar from '../../components/SelectAvatar.svelte';
-	import { mdiArrowBack, mdiArrowNext } from '../../utils/icon';
+	import {
+		Page,
+		Navbar,
+		NavbarBackLink,
+		Button,
+		Card,
+		Link,
+		List,
+		ListItem,
+		Checkbox,
+		ListInput,
+		BlockTitle,
+		Preloader,
+	} from 'konsta/svelte';
+	import { mdiArrowNext } from '../../utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	const chatsStore: ChatsStore = getContext('chats-store');
@@ -20,107 +33,108 @@
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
 
 	let currentPage: 'members' | 'group-info' = $state('members');
-
 	let selectedContacts: Set<PublicKey> = new Set();
+	let groupName = $state('');
+	let groupAvatar = $state<string | undefined>(undefined);
 
 	async function createGroupChat() {
 		const contacts = Array.from(selectedContacts);
-
 		const groupStore = await chatsStore.createGroup(contacts);
-
 		window.location.href = `/group-chat/${groupStore.chatId}`;
 	}
 </script>
 
 {#if currentPage === 'members'}
-	<div class="top-bar">
-		<wa-button
-			class="circle"
-			appearance="plain"
-			onclick={() => window.history.back()}
-		>
-			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
-		</wa-button>
-		<span class="title" style="flex: 1">{m.newGroup()}</span>
+	<Page>
+		<Navbar title={m.newGroup()}>
+			{#snippet left()}
+				<NavbarBackLink onClick={() => window.history.back()} />
+			{/snippet}
 
-		<wa-button
-			appearance="plain"
-			onclick={() => {
-				currentPage = 'group-info';
+			{#snippet right()}
+				<Link onClick={() => (currentPage = 'group-info')}>
+					{m.next()}
+					<wa-icon src={wrapPathInSvg(mdiArrowNext)}> </wa-icon>
+				</Link>
+			{/snippet}
+		</Navbar>
 
-			}}
-		>
-			{m.next()}
-			<wa-icon slot="end" src={wrapPathInSvg(mdiArrowNext)}> </wa-icon>
-		</wa-button>
-	</div>
+		<div class="column" style="flex: 1">
+			<div class="center-in-desktop">
+				<BlockTitle>{m.members()}</BlockTitle>
 
-	<wa-card class="center-in-desktop">
-		<div class="column" style="gap: var(--wa-space-m)">
-			<span class="title">{m.members()}</span>
-			{#await $contacts then contacts}
-				<div class="column" style="gap: var(--wa-space-m)">
-					{#each contacts as [publicKey, profile]}
-						<wa-checkbox
-							onchange={(e: Event) => {
-								if ((e.target! as any).checked) {
-									selectedContacts.add(publicKey);
-								} else {
-									selectedContacts.delete(publicKey);
-								}
-							}}
+				<List strong>
+					{#await $contacts}
+						<div
+							class="column"
+							style="flex: 1; align-items: center; justify-content: center"
 						>
-							<div
-								class="row"
-								style="gap: var(--wa-space-s); align-items: center; margin-left: var(--wa-space-xs)"
-							>
-								<Avatar chatActorId={publicKey}></Avatar>
-
-								{profile.name}
-							</div>
-						</wa-checkbox>
-					{:else}
-						{m.noContactsYet()}
-					{/each}
-				</div>
-			{/await}
-		</div>
-	</wa-card>
-{:else}
-	<div class="top-bar">
-		<wa-button
-			class="circle"
-			appearance="plain"
-			onclick={() => {
-				currentPage = 'members';
-			}}
-		>
-			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
-		</wa-button>
-		<span class="title" style="flex: 1">{m.newGroup()}</span>
-
-		<wa-button appearance="plain" onclick={createGroupChat}>
-			<wa-icon slot="start" src={wrapPathInSvg(mdiAccountMultiplePlus)}>
-			</wa-icon>
-			{m.createGroup()}
-		</wa-button>
-	</div>
-
-	<wa-card class="center-in-desktop">
-		<div class="column" style="gap: var(--wa-space-m)">
-			<span class="title">{m.groupInfo()}</span>
-
-			<div class="row" style="gap: var(--wa-space-s); align-items: center">
-				<SelectAvatar></SelectAvatar>
-
-				<wa-input placeholder={m.name()} style="flex: 1"> </wa-input>
+							<Preloader />
+						</div>
+					{:then contacts}
+						{#each contacts as [publicKey, profile]}
+							<ListItem label title={profile.name}>
+								{#snippet media()}
+									<div class="row gap-3" style="align-items: center">
+										<Checkbox
+											checked={selectedContacts.has(publicKey)}
+											onChange={e => {
+												const target = e.target as HTMLInputElement;
+												if (target.checked) {
+													selectedContacts.add(publicKey);
+												} else {
+													selectedContacts.delete(publicKey);
+												}
+												selectedContacts = selectedContacts;
+											}}
+										/>
+										<Avatar chatActorId={publicKey}></Avatar>
+									</div>
+								{/snippet}
+							</ListItem>
+						{:else}
+							<ListItem title={m.noContactsYet()} />
+						{/each}
+					{/await}
+				</List>
 			</div>
-		</div>
-	</wa-card>
-{/if}
+		</div></Page
+	>
+{:else}
+	<Page>
+		<Navbar title={m.newGroup()}>
+			{#snippet left()}
+				<NavbarBackLink onClick={() => (currentPage = 'members')} />
+			{/snippet}
 
-<style>
-	wa-checkbox::part(base) {
-		align-items: center;
-	}
-</style>
+			{#snippet right()}
+				<Link onClick={createGroupChat}>
+					<wa-icon src={wrapPathInSvg(mdiAccountMultiplePlus)}> </wa-icon>
+					{m.createGroup()}
+				</Link>
+			{/snippet}
+		</Navbar>
+
+		<div class="column" style="flex: 1">
+			<div class="center-in-desktop m-1">
+				<BlockTitle>{m.groupInfo()}</BlockTitle>
+				<Card raised>
+					<div class="column gap-2">
+						<div class="row" style="align-items: center">
+							<SelectAvatar bind:value={groupAvatar}></SelectAvatar>
+
+							<List nested>
+								<ListInput
+									type="text"
+									outline
+									bind:value={groupName}
+									label={m.name()}
+								/>
+							</List>
+						</div>
+					</div>
+				</Card>
+			</div>
+		</div></Page
+	>
+{/if}

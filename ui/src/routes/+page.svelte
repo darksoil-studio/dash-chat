@@ -35,14 +35,10 @@
 		{/snippet}
 
 		<div
-			class="row"
-			style="gap: var(--wa-space-s); align-items: center; justify-content: end; flex: 1;"
+			class="row gap-3"
+			style="align-items: center; justify-content: end; flex: 1;"
 		>
-			<Link
-				href="/contacts"
-				iconOnly
-				style="position: relative; padding-right: 0; padding-left: 0"
-			>
+			<Link iconOnly href="/contacts" style="position: relative;">
 				<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon>
 				{#await $incomingContactRequests then incomingContactRequests}
 					{#if incomingContactRequests.length > 0}
@@ -53,11 +49,7 @@
 				{/await}
 			</Link>
 
-			<Link
-				iconOnly
-				href="/new-message"
-				style="padding-right: 0; padding-left: 0"
-			>
+			<Link iconOnly href="/new-message">
 				<wa-icon src={wrapPathInSvg(mdiSquareEditOutline)}> </wa-icon>
 			</Link>
 			{#if theme == 'material'}

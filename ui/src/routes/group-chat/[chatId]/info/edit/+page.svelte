@@ -1,5 +1,4 @@
 <script lang="ts">
-	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import { m } from '$lib/paraglide/messages.js';
@@ -15,9 +14,15 @@
 		mdiPencil,
 		mdiSend,
 	} from '@mdi/js';
-	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
-	import WaTextarea from '@awesome.me/webawesome/dist/components/textarea/textarea.js';
 	import SelectAvatar from '../../../../../components/SelectAvatar.svelte';
+	import {
+		Page,
+		Navbar,
+		NavbarBackLink,
+		Link,
+		Card,
+		ListInput,
+	} from 'konsta/svelte';
 
 	const chatId = window.location.href.split('/').reverse()[2];
 
@@ -26,65 +31,52 @@
 	const info = useReactivePromise(store.info);
 
 	let avatar: string | undefined;
-	let name: string | undefined;
-	let description: string | undefined;
+	let name = $state<string>('');
+	let description = $state<string>('');
 
 	info.subscribe(i => {
 		i.then(info => {
-			if (!avatar) {
-				avatar = info?.avatar;
-			}
+			if (!avatar) avatar = info?.avatar;
+			if (!name) name = info?.name || '';
+			if (!description) description = info?.description || '';
 		});
 	});
+
 	async function save() {
 		window.location.href = `/group-chat/${chatId}/info`;
 	}
 </script>
 
-<div class="top-bar">
-	<wa-button
-		class="circle"
-		appearance="plain"
-		href={`/group-info/${chatId}/info`}
-	>
-		<wa-icon src={wrapPathInSvg(mdiClose)}> </wa-icon>
-	</wa-button>
-	<span class="title">{m.editGroup()}</span>
+<Page>
+	<Navbar title={m.editGroup()}>
+		{#snippet left()}
+			<NavbarBackLink onClick={() => (window.location.href = `/group-chat/${chatId}/info`)} />
+		{/snippet}
 
-	<div style="flex: 1"></div>
+		{#snippet right()}
+			<Link onClick={save}>
+				<wa-icon src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
+				{m.save()}
+			</Link>
+		{/snippet}
+	</Navbar>
 
-	<wa-button appearance="plain" onclick={save}>
-		<wa-icon slot="start" src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
-		{m.save()}
-	</wa-button>
-</div>
+	{#await $info then info}
+		<Card class="center-in-desktop" style="margin: 1rem">
+			<div class="column" style="gap: 1rem">
+				<SelectAvatar defaultValue={info.avatar} bind:value={avatar}></SelectAvatar>
 
-{#await $info then info}
-	<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
-		<div class="column" style="gap: var(--wa-space-m)">
-			<SelectAvatar defaultValue={info.avatar} bind:value={avatar}
-			></SelectAvatar>
+				<List nested>
+					<ListInput type="text" bind:value={name} placeholder={m.name?.() || 'Name'} />
 
-			<wa-input
-				defaultValue={info.name}
-				oninput={(e: InputEvent) => {
-					name = (e.target as WaInput).value!;
-				}}
-			>
-			</wa-input>
-
-			<wa-textarea
-				resize="auto"
-				rows="2"
-				defaultValue={info?.description}
-				oninput={(e: InputEvent) => {
-					description = (e.target as WaTextarea).value!;
-				}}
-			>
-			</wa-textarea>
-		</div>
-	</wa-card>
-{/await}
-
-<style>
-</style>
+					<ListInput
+						type="textarea"
+						bind:value={description}
+						inputStyle={{ height: '80px' }}
+						placeholder={m.description?.() || 'Description'}
+					/>
+				</List>
+			</div>
+		</Card>
+	{/await}
+</Page>

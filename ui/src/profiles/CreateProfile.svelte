@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import type { ContactsStore } from 'dash-chat-stores';
-	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 	import SelectAvatar from '../components/SelectAvatar.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { Card, Button, ListInput, List } from 'konsta/svelte';
+	import { Card, Button, ListInput, List, BlockTitle } from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	let nickname: string | undefined;
+	let nickname = $state<string>('');
 	let avatar: string | undefined;
 
 	async function setProfile() {
@@ -18,24 +17,21 @@
 	}
 </script>
 
-<Card>
-	<div class="column" style="gap: 4px">
+<Card raised>
+	<div class="column gap-4">
 		<span class="title">{m.createProfile()}</span>
-
-		<div class="row" style="align-items: center">
+		<div class="row gap-1" style="align-items: center;">
 			<SelectAvatar bind:value={avatar}></SelectAvatar>
-
-			<List strongIos nested>
+			<List nested>
 				<ListInput
 					outline
+					type="text"
+					bind:value={nickname}
 					label={m.name()}
-					oninput={e => {
-						nickname = (e.target as HTMLInputElement).value!;
-					}}
-				></ListInput>
+				/>
 			</List>
 		</div>
 
-		<Button onclick={setProfile}>{m.createProfile()}</Button>
+		<Button onClick={setProfile}>{m.createProfile()}</Button>
 	</div>
 </Card>

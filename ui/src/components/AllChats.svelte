@@ -87,7 +87,7 @@
 				{/snippet}
 			</ListItem>
 		{:else}
-			<span>{m.noChatsYet()}</span>
+			<ListItem title={m.noChatsYet()} />
 		{/each}
 	{/await}
 </List>

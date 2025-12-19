@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
-	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import { useReactivePromise } from '../../stores/use-signal';
 	import { getContext } from 'svelte';
@@ -8,12 +7,11 @@
 	import Avatar from '../../components/Avatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiAccountPlus } from '@mdi/js';
-	import WaButton from '@awesome.me/webawesome/dist/components/button/button.js';
 	import { m, myContacts } from '$lib/paraglide/messages.js';
-	import { mdiArrowBack } from '../../utils/icon';
-	import Page from '../+page.svelte';
 	import {
+		Page,
 		BlockTitle,
+		Button,
 		Card,
 		Link,
 		List,
@@ -30,9 +28,19 @@
 	);
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
 
-	function rejectContactRequest(contactRequestId: ContactRequestId) {}
+	async function rejectContactRequest(contactRequestId: ContactRequestId) {
+		try {
+			// Actual rejection logic here
+		} finally {
+		}
+	}
 
-	function acceptContactRequest(contactRequestId: ContactRequestId) {}
+	async function acceptContactRequest(contactRequestId: ContactRequestId) {
+		try {
+			// Actual acceptance logic here
+		} finally {
+		}
+	}
 </script>
 
 <Page>
@@ -48,95 +56,84 @@
 		{/snippet}
 	</Navbar>
 
-	{#await $incomingContactRequests}
-		<div
-			class="column"
-			style="height: 100%; align-items: center; justify-content: center"
-		>
-			<Preloader />
-		</div>
-	{:then incomingContactRequests}
-		{#if incomingContactRequests.length > 0}
-			<BlockTitle>{m.contactRequests()}</BlockTitle>
-			<List strong outline inset>
-				{#each incomingContactRequests as incomingContactRequest}
-					<ListItem title={incomingContactRequest.profile.name}>
-						{#snippet media()}
-							<wa-avatar
-								image={incomingContactRequest.profile.avatar}
-								initials={incomingContactRequest.profile.name.slice(0, 2)}
-							>
-							</wa-avatar>
-						{/snippet}
-						{#snippet after()}
-							<wa-button
-								variant="danger"
-								onclick={async (e: Event) => {
-									const button = e.target as WaButton;
-									button.loading = true;
+	<div class="column" style="flex: 1">
+		<div class="center-in-desktop">
+			{#await $incomingContactRequests}
+				<div
+					class="column"
+					style="height: 100%; align-items: center; justify-content: center"
+				>
+					<Preloader />
+				</div>
+			{:then incomingContactRequests}
+				{#if incomingContactRequests.length > 0}
+					<BlockTitle>{m.contactRequests()}</BlockTitle>
+					<List strong>
+						{#each incomingContactRequests as incomingContactRequest}
+							<ListItem title={incomingContactRequest.profile.name}>
+								{#snippet media()}
+									<wa-avatar
+										image={incomingContactRequest.profile.avatar}
+										initials={incomingContactRequest.profile.name.slice(0, 2)}
+									>
+									</wa-avatar>
+								{/snippet}
+								{#snippet after()}
+									<Button
+										class="k-color-brand-red"
+										onClick={() =>
+											rejectContactRequest(
+												incomingContactRequest.contactRequestId,
+											)}
+									>
+										{m.reject()}
+									</Button>
 
-									try {
-										await rejectContactRequest(
-											incomingContactRequest.contactRequestId,
-										);
-									} catch (e) {}
+									<Button
+										onClick={() =>
+											acceptContactRequest(
+												incomingContactRequest.contactRequestId,
+											)}
+									>
+										{m.accept()}
+									</Button>
+								{/snippet}
+							</ListItem>
+						{/each}
+					</List>
+				{/if}
+			{/await}
 
-									button.loading = false;
-								}}
-								>{m.reject()}
-							</wa-button>
-
-							<wa-button
-								variant="brand"
-								onclick={async (e: Event) => {
-									const button = e.target as WaButton;
-									button.loading = true;
-
-									try {
-										await acceptContactRequest(
-											incomingContactRequest.contactRequestId,
-										);
-									} catch (e) {}
-
-									button.loading = false;
-								}}
-								>{m.accept()}
-							</wa-button>
-						{/snippet}
-					</ListItem>
-				{/each}
-			</List>
-		{/if}
-	{/await}
-
-	{#await $contacts}
-		<div
-			class="column"
-			style="height: 100%; align-items: center; justify-content: center"
-		>
-			<Preloader />
-		</div>
-	{:then contacts}
-		<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
-			<div class="column" style="gap: var(--wa-space-m)">
-				{#each contacts as [actorId, profile]}
-					<wa-button
-						appearance="plain"
-						class="fill button-with-avatar"
-						href={`/direct-messages/${actorId}`}
-					>
-						<wa-avatar
-							slot="start"
-							image={profile.avatar}
-							initials={profile.name.slice(0, 2)}
+			{#await $contacts}
+				<div
+					class="column"
+					style="height: 100%; align-items: center; justify-content: center"
+				>
+					<Preloader />
+				</div>
+			{:then contacts}
+				<BlockTitle>{m.contacts()}</BlockTitle>
+				<List strong>
+					{#each contacts as [actorId, profile]}
+						<ListItem
+							link
+							chevron={false}
+							linkProps={{ href: `/direct-messages/${actorId}` }}
+							title={profile.name}
 						>
-						</wa-avatar>
-
-						{profile.name}
-					</wa-button>
-				{:else}<span>{m.noContactsYet()}</span>
-				{/each}
-			</div>
-		</wa-card>
-	{/await}
-</Page>
+							{#snippet media()}
+								<wa-avatar
+									image={profile.avatar}
+									initials={profile.name.slice(0, 2)}
+								>
+								</wa-avatar>
+							{/snippet}
+						</ListItem>
+					{:else}
+						<ListItem title={m.noContactsYet()} />
+					{/each}
+				</List>
+			{/await}
+		</div>
+	</div></Page
+>
