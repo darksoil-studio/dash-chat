@@ -9,8 +9,10 @@
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiAccountPlus } from '@mdi/js';
 	import WaButton from '@awesome.me/webawesome/dist/components/button/button.js';
-	import { m } from '$lib/paraglide/messages.js';
+	import { m, myContacts } from '$lib/paraglide/messages.js';
 	import { mdiArrowBack } from '../../utils/icon';
+	import Page from '../+page.svelte';
+	import { Link, Navbar, NavbarBackLink, Preloader } from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -24,21 +26,27 @@
 	function acceptContactRequest(contactRequestId: ContactRequestId) {}
 </script>
 
-<div class="column">
-	<div class="top-bar">
-		<wa-button class="circle" appearance="plain" href="/">
-			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
-		</wa-button>
+<Page>
+	<Navbar title={m.myContacts()}>
+		{#snippet left()}
+			<NavbarBackLink onClick={() => (window.location.href = '/')} />
+		{/snippet}
 
-		<span class="title">{m.myContacts()}</span>
+		{#snippet right()}
+			<Link href="/add-contact" iconOnly>
+				<wa-icon src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
+			</Link>
+		{/snippet}
+	</Navbar>
 
-		<div style="flex: 1"></div>
-		<wa-button class="circle" href="/add-contact" appearance="plain">
-			<wa-icon src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
-		</wa-button>
-	</div>
-
-	{#await $incomingContactRequests then incomingContactRequests}
+	{#await $incomingContactRequests}
+		<div
+			class="column"
+			style="height: 100%; align-items: center; justify-content: center"
+		>
+			<Preloader />
+		</div>
+	{:then incomingContactRequests}
 		{#if incomingContactRequests.length > 0}
 			<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
 				<div class="column" style="gap: var(--wa-space-m)">
@@ -122,4 +130,4 @@
 			</div>
 		</wa-card>
 	{/await}
-</div>
+</Page>

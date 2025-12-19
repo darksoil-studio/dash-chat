@@ -7,7 +7,16 @@
 	import SelectAvatar from '../../../components/SelectAvatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiClose, mdiContentSave } from '@mdi/js';
-	import { m } from '$lib/paraglide/messages.js';
+	import { editProfile, m } from '$lib/paraglide/messages.js';
+	import {
+		Button,
+		Card,
+		Link,
+		Navbar,
+		NavbarBackLink,
+		Page,
+		Preloader,
+	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let avatar: string | undefined;
@@ -34,35 +43,44 @@
 	}
 </script>
 
-<div class="top-bar">
-	<wa-button class="circle" href="/my-profile" appearance="plain">
-		<wa-icon src={wrapPathInSvg(mdiClose)}> </wa-icon>
-	</wa-button>
+<Page>
+	<Navbar title={m.editProfile()}>
+		{#snippet left()}
+			<NavbarBackLink onClick={() => (window.location.href = '/my-profile')} />
+		{/snippet}
 
-	<span class="title">{m.editProfile()}</span>
+		{#snippet right()}
+			<Link onClick={setProfile}>
+				<wa-icon src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
+				{m.save()}
+			</Link>
+		{/snippet}
+	</Navbar>
 
-	<div style="flex: 1"></div>
-	<wa-button appearance="plain" onclick={setProfile}>
-		<wa-icon slot="start" src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
-		{m.save()}
-	</wa-button>
-</div>
-
-{#await $myProfile}
-	<wa-spinner> </wa-spinner>
-{:then myProfile}
-	<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
-		<div class="row" style="align-items: center; gap: var(--wa-space-s)">
-			<SelectAvatar bind:value={avatar} defaultValue={myProfile?.avatar}></SelectAvatar>
-
-			<wa-input
-				style="flex: 1"
-				defaultValue={myProfile?.name}
-				oninput={(e: InputEvent) => {
-					name = (e.target as WaInput).value!;
-				}}
-			>
-			</wa-input>
+	{#await $myProfile}
+		<div
+			class="column"
+			style="height: 100%; align-items: center; justify-content: center"
+		>
+			<Preloader />
 		</div>
-	</wa-card>
-{/await}
+	{:then myProfile}
+		<div class="column" style="flex: 1">
+			<Card class="center-in-desktop" style="margin: var(--wa-space-m);">
+				<div class="row" style="align-items: center; gap: var(--wa-space-s)">
+					<SelectAvatar bind:value={avatar} defaultValue={myProfile?.avatar}
+					></SelectAvatar>
+
+					<wa-input
+						style="flex: 1"
+						defaultValue={myProfile?.name}
+						oninput={(e: InputEvent) => {
+							name = (e.target as WaInput).value!;
+						}}
+					>
+					</wa-input>
+				</div>
+			</Card>
+		</div>
+	{/await}
+</Page>

@@ -5,7 +5,6 @@
 	import { type ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
-	import Avatar from '../components/Avatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiAccountGroup, mdiSquareEditOutline } from '@mdi/js';
 	import AllChats from '../components/AllChats.svelte';
