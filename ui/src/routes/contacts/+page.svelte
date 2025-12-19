@@ -12,7 +12,16 @@
 	import { m, myContacts } from '$lib/paraglide/messages.js';
 	import { mdiArrowBack } from '../../utils/icon';
 	import Page from '../+page.svelte';
-	import { Link, Navbar, NavbarBackLink, Preloader } from 'konsta/svelte';
+	import {
+		BlockTitle,
+		Card,
+		Link,
+		List,
+		ListItem,
+		Navbar,
+		NavbarBackLink,
+		Preloader,
+	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -48,25 +57,18 @@
 		</div>
 	{:then incomingContactRequests}
 		{#if incomingContactRequests.length > 0}
-			<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
-				<div class="column" style="gap: var(--wa-space-m)">
-					<span class="title">{m.contactRequests()}</span>
-
-					{#each incomingContactRequests as incomingContactRequest}
-						<div
-							class="row"
-							style="gap: var(--wa-space-s); align-items: center"
-						>
+			<BlockTitle>{m.contactRequests()}</BlockTitle>
+			<List strong outline inset>
+				{#each incomingContactRequests as incomingContactRequest}
+					<ListItem title={incomingContactRequest.profile.name}>
+						{#snippet media()}
 							<wa-avatar
 								image={incomingContactRequest.profile.avatar}
 								initials={incomingContactRequest.profile.name.slice(0, 2)}
 							>
 							</wa-avatar>
-							<span>
-								{incomingContactRequest.profile.name}
-							</span>
-							<div style="flex: 1"></div>
-
+						{/snippet}
+						{#snippet after()}
 							<wa-button
 								variant="danger"
 								onclick={async (e: Event) => {
@@ -100,14 +102,21 @@
 								}}
 								>{m.accept()}
 							</wa-button>
-						</div>
-					{/each}
-				</div>
-			</wa-card>
+						{/snippet}
+					</ListItem>
+				{/each}
+			</List>
 		{/if}
 	{/await}
 
-	{#await $contacts then contacts}
+	{#await $contacts}
+		<div
+			class="column"
+			style="height: 100%; align-items: center; justify-content: center"
+		>
+			<Preloader />
+		</div>
+	{:then contacts}
 		<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
 			<div class="column" style="gap: var(--wa-space-m)">
 				{#each contacts as [actorId, profile]}
