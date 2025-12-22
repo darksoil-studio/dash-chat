@@ -59,7 +59,7 @@
 					<Preloader />
 				</div>
 			{:then contacts}
-				<List strong>
+				<List strong insetMaterial>
 					{#each contacts as [actorId, profile]}
 						<ListItem
 							link

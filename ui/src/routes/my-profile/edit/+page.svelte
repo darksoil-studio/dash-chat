@@ -69,13 +69,8 @@
 					<SelectAvatar bind:value={avatar} defaultValue={myProfile?.avatar}
 					></SelectAvatar>
 
-					<List nested>
-						<ListInput
-							outline
-							type="text"
-							bind:value={name}
-							label={m.name()}
-						/>
+					<List nested style="flex: 1">
+						<ListInput outline type="text" bind:value={name} label={m.name()} />
 					</List>
 				</div>
 			</Card>

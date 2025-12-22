@@ -63,7 +63,7 @@
 			<div class="center-in-desktop">
 				<BlockTitle>{m.members()}</BlockTitle>
 
-				<List strong>
+				<List strong insetMaterial>
 					{#await $contacts}
 						<div
 							class="column"

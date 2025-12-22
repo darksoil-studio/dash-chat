@@ -12,7 +12,6 @@
 		Page,
 		BlockTitle,
 		Button,
-		Card,
 		Link,
 		List,
 		ListItem,
@@ -68,7 +67,7 @@
 			{:then incomingContactRequests}
 				{#if incomingContactRequests.length > 0}
 					<BlockTitle>{m.contactRequests()}</BlockTitle>
-					<List strong>
+					<List strong insetMaterial>
 						{#each incomingContactRequests as incomingContactRequest}
 							<ListItem title={incomingContactRequest.profile.name}>
 								{#snippet media()}
@@ -113,7 +112,7 @@
 				</div>
 			{:then contacts}
 				<BlockTitle>{m.contacts()}</BlockTitle>
-				<List strong>
+				<List strong insetMaterial>
 					{#each contacts as [actorId, profile]}
 						<ListItem
 							link

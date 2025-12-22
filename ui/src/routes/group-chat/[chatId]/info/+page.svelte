@@ -130,16 +130,16 @@
 						</Link>
 					</div>
 
-					<p class="text-gray-600">{info.description}</p>
+					<span class="quiet">{info.description}</span>
 				</div>
 			{/await}
 
 			{#await $members then members}
-				<Card style="padding: 1rem">
-					<div class="column" style="gap: 1rem">
-						<p class="font-semibold">
+				<Card>
+					<div class="column">
+						<span class="font-semibold">
 							{m.membersCount({ count: Object.keys(members).length })}
-						</p>
+						</span>
 
 						{#if me.admin}
 							<Button clear class="w-full justify-start gap-3" style="height: 68px">

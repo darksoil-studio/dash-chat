@@ -20,6 +20,9 @@
 		Card,
 		ListInput,
 		List,
+		Messagebar,
+		ToolbarPane,
+		Icon,
 	} from 'konsta/svelte';
 
 	const chatId = window.location.href.split('/').reverse()[0];
@@ -33,18 +36,25 @@
 	const messages = useReactivePromise(store.messages);
 	const info = useReactivePromise(store.info);
 	const allMembers = useReactivePromise(store.allMembers);
-	let messageInput = $state('');
+	let messageText = $state('');
+	let isClickable = $state(false);
+	let inputOpacity = $state(0.3);
+	const onMessageTextChange = (e: InputEvent) => {
+		messageText = (e.target as HTMLInputElement).value;
+		isClickable = messageText.trim().length > 0;
+		inputOpacity = messageText ? 1 : 0.3;
+	};
 
 	async function sendMessage() {
-		const message = messageInput;
+		const message = messageText;
 		if (!message || message.trim() === '') return;
 
 		await store.sendMessage(message);
-		messageInput = '';
+		messageText = '';
 	}
 </script>
 
-<Page>
+<Page style="height: calc(100vh - 57px)">
 	<Navbar>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/')} />
@@ -65,6 +75,7 @@
 			</Link>
 		{/await}
 	</Navbar>
+
 	<div class="column">
 		{#await $allMembers then members}
 			<div class="center-in-desktop" style="flex:1">
@@ -145,30 +156,48 @@
 				</div>
 			</div>
 
-			<div
-				class="column pr-4 bottom-0 left-0 right-0 fixed"
-				style="background-color: var(--background-color)"
+			<Messagebar
+				placeholder={m.typeMessage()}
+				onInput={onMessageTextChange}
+				value={messageText}
+			>
+				{#snippet right()}
+					<ToolbarPane class="ios:h-10">
+						<Link
+							iconOnly
+							onClick={() => (isClickable ? sendMessage() : undefined)}
+							style="opacity: {inputOpacity}; cursor: {isClickable
+								? 'pointer'
+								: 'default'}"
+						>
+							<Icon>
+								<wa-icon src={wrapPathInSvg(mdiSend)}> </wa-icon>
+							</Icon>
+						</Link>
+					</ToolbarPane>
+				{/snippet}
+			</Messagebar>
+
+<!--			<div
+				class="column pr-4 bottom-0 left-0 right-0 fixed bg-white dark:bg-gray-800"
+				style="display:none"
 			>
 				<div class="row gap-1 center-in-desktop" style="align-items: center;">
 					<List nested style="flex: 1">
 						<ListInput
 							type="textarea"
 							outline
-							bind:value={messageInput}
+							bind:value={messageText}
 							inputStyle="min-height: 1em; padding: 0; max-height: 4em; resize: none"
 							placeholder={m.typeMessage()}
 						/>
 					</List>
 
-					<Button
-						clear
-						onClick={sendMessage}
-						style="flex: 0; border-radius: 50%"
-					>
+					<Link iconOnly onClick={sendMessage}>
 						<wa-icon src={wrapPathInSvg(mdiSend)}> </wa-icon>
-					</Button>
+					</Link>
 				</div>
-			</div>
+			</div> -->
 		{/await}
 	</div>
 </Page>
