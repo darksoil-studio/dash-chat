@@ -22,6 +22,7 @@
 		Link,
 		Card,
 		ListInput,
+		List,
 	} from 'konsta/svelte';
 
 	const chatId = window.location.href.split('/').reverse()[2];
@@ -48,9 +49,11 @@
 </script>
 
 <Page>
-	<Navbar title={m.editGroup()}>
+	<Navbar title={m.editGroup()}  titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => (window.location.href = `/group-chat/${chatId}/info`)} />
+			<NavbarBackLink
+				onClick={() => (window.location.href = `/group-chat/${chatId}/info`)}
+			/>
 		{/snippet}
 
 		{#snippet right()}
@@ -62,21 +65,23 @@
 	</Navbar>
 
 	{#await $info then info}
-		<Card class="center-in-desktop" style="margin: 1rem">
-			<div class="column" style="gap: 1rem">
-				<SelectAvatar defaultValue={info.avatar} bind:value={avatar}></SelectAvatar>
+		<div class="column m-2">
+			<div class="column center-in-desktop">
+				<SelectAvatar defaultValue={info.avatar} bind:value={avatar}
+				></SelectAvatar>
 
 				<List nested>
-					<ListInput type="text" bind:value={name} placeholder={m.name?.() || 'Name'} />
+					<ListInput type="text" outline bind:value={name} label={m.name()} />
 
 					<ListInput
 						type="textarea"
+						outline
+						inputStyle={{"min-height": "2em"}}
 						bind:value={description}
-						inputStyle={{ height: '80px' }}
-						placeholder={m.description?.() || 'Description'}
+						label={m.description()}
 					/>
 				</List>
 			</div>
-		</Card>
+		</div>
 	{/await}
 </Page>

@@ -46,7 +46,7 @@
 	setContext('chats-store', chatsStore);
 
 	if (isMobile) setupInsets();
-	let theme: 'ios' | 'material' = 'ios';
+	let theme: 'ios' | 'material' = 'material';
 </script>
 
 <KonstaProvider {theme}>

@@ -43,7 +43,7 @@
 </script>
 
 <Page>
-	<Navbar title={m.myContacts()}>
+	<Navbar title={m.myContacts()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/')} />
 		{/snippet}

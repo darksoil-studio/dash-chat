@@ -55,7 +55,7 @@
 </script>
 
 <Page style="height: calc(100vh - 57px)">
-	<Navbar>
+	<Navbar transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/')} />
 		{/snippet}

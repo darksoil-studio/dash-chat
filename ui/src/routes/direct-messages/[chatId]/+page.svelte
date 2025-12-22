@@ -44,7 +44,7 @@
 </script>
 
 <Page>
-	<Navbar>
+	<Navbar transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/')} />
 		{/snippet}

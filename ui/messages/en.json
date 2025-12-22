@@ -6,6 +6,7 @@
 	"next": "Next",
 	"edit": "Edit",
 	"name": "Name",
+	"description": "Description",
 
 	"createProfile": "Create Profile",
 	"myProfile": "My profile",
@@ -35,6 +36,7 @@
 	"membersCount_other": "{{count}} members",
 	"addMembers": "Add members",
 	"removeMember": "Remove member",
+	"remove": "Remove",
 	"areYouSureRemoveMember":"Are you sure you want to remove this member?",
 	"administrator": "Administrator",
 	"demote": "Demote",
@@ -44,8 +46,10 @@
 	"promoteToAdministrator": "Promote to administrator",
 	"areYouSurePromote": "Are you sure you want to promote this member to the administrator role?",
 	"leaveGroup":"Leave group",
+	"leave":"Leave",
 	"areYouSureLeaveGroup":"Are you sure you want to leave this group?",
 	"deleteGroup":"Delete group",
+	"delete":"Delete",
 	"areYouSureDeleteGroup":"Are you sure you want to delete this group?",
 	"editGroup":"Edit group"
 }

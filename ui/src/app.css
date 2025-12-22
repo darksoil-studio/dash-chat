@@ -58,3 +58,7 @@ wa-icon[slot='end'] {
 li > label {
 	width: 100%;
 }
+
+.opacity1 {
+	opacity: 1 !important;
+}

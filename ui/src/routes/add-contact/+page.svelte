@@ -38,7 +38,7 @@
 </script>
 
 <Page>
-	<Navbar title={m.addContact()}>
+	<Navbar title={m.addContact()}  titleClass="opacity1" transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink
 				onClick={() => {

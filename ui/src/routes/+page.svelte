@@ -20,7 +20,7 @@
 </script>
 
 <Page>
-	<Navbar title={m.chats()} class="top-0 sticky">
+	<Navbar title={m.chats()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
 			{#await $myProfile then myProfile}
 				<Link iconOnly href="/my-profile">

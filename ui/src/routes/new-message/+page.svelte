@@ -25,7 +25,7 @@
 </script>
 
 <Page>
-	<Navbar title={m.newMessage()}>
+	<Navbar title={m.newMessage()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/')} />
 		{/snippet}

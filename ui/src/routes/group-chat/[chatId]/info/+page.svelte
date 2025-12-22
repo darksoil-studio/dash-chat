@@ -14,7 +14,7 @@
 		mdiExport,
 		mdiKeyVariant,
 		mdiPencil,
-		mdiPlusCircleOutline,
+		mdiPlusCircle,
 	} from '@mdi/js';
 	import {
 		Page,
@@ -27,11 +27,12 @@
 		ListItem,
 		Chip,
 		Dialog,
-		Actions,
-		ActionsGroup,
+		DialogButton,
+		Sheet,
 		ActionsButton,
-		ActionsLabel,
+		BlockTitle,
 	} from 'konsta/svelte';
+	import Layout from '../../../+layout.svelte';
 
 	const chatId = window.location.href.split('/').reverse()[1];
 
@@ -42,8 +43,10 @@
 	const members = useReactivePromise(groupChatStore.allMembers);
 	const me = useReactivePromise(groupChatStore.me);
 
-	let actionsOpenFor = $state<string | null>(null);
-	let dialogType = $state<'demote' | 'promote' | 'remove' | 'leave' | 'delete' | null>(null);
+	let sheetOpenFor = $state<string | null>(null);
+	let dialogType = $state<
+		'demote' | 'promote' | 'remove' | 'leave' | 'delete' | null
+	>(null);
 	let dialogActorId = $state<string | null>(null);
 	let loading = $state(false);
 
@@ -109,151 +112,173 @@
 </script>
 
 <Page>
-	<Navbar title="">
+	<Navbar title="" transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/')} />
+		{/snippet}
+
+		{#snippet right()}
+			<Link href={`/group-chat/${chatId}/info/edit`} iconOnly>
+				<wa-icon src={wrapPathInSvg(mdiPencil)}> </wa-icon>
+			</Link>
 		{/snippet}
 	</Navbar>
 
 	{#await $me then me}
-		<div class="column center-in-desktop" style="gap: 2rem; padding: 1rem">
-			{#await $info then info}
-				<div class="column" style="align-items: center; gap: 1rem">
-					<wa-avatar image={info.avatar} style="--size: 5rem">
-						<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon>
-					</wa-avatar>
+		<div class="column p-2" style="flex: 1">
+			<div class="column center-in-desktop gap-8 p-2">
+				{#await $info then info}
+					<div class="column" style="align-items: center; gap: 1rem">
+						<wa-avatar image={info.avatar} style="--size: 5rem">
+							<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon>
+						</wa-avatar>
 
-					<div class="row" style="align-items: center; gap: 0.5rem">
 						<span class="text-xl font-semibold">{info.name}</span>
-						<Link href={`/group-chat/${chatId}/info/edit`} iconOnly>
-							<wa-icon src={wrapPathInSvg(mdiPencil)}> </wa-icon>
-						</Link>
+
+						<span class="quiet">{info.description}</span>
 					</div>
+				{/await}
 
-					<span class="quiet">{info.description}</span>
-				</div>
-			{/await}
-
-			{#await $members then members}
-				<Card>
-					<div class="column">
-						<span class="font-semibold">
-							{m.membersCount({ count: Object.keys(members).length })}
-						</span>
-
+				{#await $members then members}
+					<BlockTitle>
+						{m.membersCount({ count: Object.keys(members).length })}</BlockTitle
+					>
+					<List nested>
 						{#if me.admin}
-							<Button clear class="w-full justify-start gap-3" style="height: 68px">
-								<wa-icon
-									style="font-size: 3rem"
-									src={wrapPathInSvg(mdiPlusCircleOutline)}
-								></wa-icon>
-								{m.addMembers()}
-							</Button>
+							<ListItem title={m.addMembers()} link chevron={false}>
+								{#snippet media()}
+									<wa-icon
+										style="font-size: 2.5rem;"
+										src={wrapPathInSvg(mdiPlusCircle)}
+									></wa-icon>
+								{/snippet}
+							</ListItem>
 						{/if}
 
 						{#each Object.entries(members) as [actorId, member]}
-							<button
-								class="gap-3 p-3 w-full text-left hover:bg-gray-50 rounded"
-								style="display: flex; align-items: center; min-height: 68px"
-								onclick={() => (actionsOpenFor = actorId)}
+							<ListItem
+								link
+								chevron={false}
+								title={member.profile?.name}
+								onclick={() => (sheetOpenFor = actorId)}
 							>
-								<wa-avatar
-									image={member.profile?.avatar}
-									initials={member.profile?.name.slice(0, 2)}
-								></wa-avatar>
-								<span class="flex-1">{member.profile?.name}</span>
-								{#if member.admin}
-									<Chip>{m.administrator()}</Chip>
-								{/if}
-							</button>
+								{#snippet media()}
+									<wa-avatar
+										image={member.profile?.avatar}
+										initials={member.profile?.name.slice(0, 2)}
+									></wa-avatar>
+								{/snippet}
 
-							{#if actionsOpenFor === actorId}
-								<Actions
-									opened={actionsOpenFor === actorId}
-									onBackdropClick={() => (actionsOpenFor = null)}
+								{#snippet after()}
+									{#if member.admin}
+										<Chip>{m.administrator()}</Chip>
+									{/if}
+								{/snippet}
+							</ListItem>
+
+							{#if sheetOpenFor === actorId}
+								<Sheet
+									class="pb-safe"
+									opened={sheetOpenFor === actorId}
+									onBackdropClick={() => (sheetOpenFor = null)}
 								>
-									<ActionsGroup>
-										<ActionsLabel>
-											<div class="flex-col gap-2 py-2" style="display: flex; align-items: center;">
-												<wa-avatar
-													image={member.profile?.avatar}
-													initials={member.profile?.name.slice(0, 2)}
-												></wa-avatar>
-												<span>{member.profile?.name}</span>
-											</div>
-										</ActionsLabel>
+									<div
+										class="flex-col gap-4 py-4"
+										style="display: flex; align-items: center;"
+									>
+										<wa-avatar
+											image={member.profile?.avatar}
+											initials={member.profile?.name.slice(0, 2)}
+										></wa-avatar>
+										<span class="font-semibold">{member.profile?.name}</span>
+									</div>
 
-										{#if me.admin && me.actorId !== member.actorId}
+									<List nested class="mb-2">
+										{#if me.admin}
 											{#if member.admin}
-												<ActionsButton
+												<ListItem
+													link
+													title={m.demoteFromAdministrator()}
 													onClick={() => {
 														dialogType = 'demote';
 														dialogActorId = actorId;
-														actionsOpenFor = null;
+														sheetOpenFor = null;
 													}}
 												>
-													<wa-icon src={wrapPathInSvg(mdiKeyVariant)}></wa-icon>
-													{m.demoteFromAdministrator()}
-												</ActionsButton>
+													{#snippet media()}
+														<wa-icon src={wrapPathInSvg(mdiKeyVariant)}
+														></wa-icon>
+													{/snippet}
+												</ListItem>
 											{:else}
-												<ActionsButton
+												<ListItem
+													link
+													title={m.promoteToAdministrator()}
 													onClick={() => {
 														dialogType = 'promote';
 														dialogActorId = actorId;
-														actionsOpenFor = null;
+														sheetOpenFor = null;
 													}}
 												>
-													<wa-icon src={wrapPathInSvg(mdiKeyVariant)}></wa-icon>
-													{m.promoteToAdministrator()}
-												</ActionsButton>
+													{#snippet media()}
+														<wa-icon src={wrapPathInSvg(mdiKeyVariant)}
+														></wa-icon>
+													{/snippet}
+												</ListItem>
 											{/if}
 
-											<ActionsButton
-												colors={{ textIos: 'text-red-500', textMaterial: 'text-red-600' }}
+											<ListItem
+												link
+												title={m.removeMember()}
 												onClick={() => {
 													dialogType = 'remove';
 													dialogActorId = actorId;
-													actionsOpenFor = null;
+													sheetOpenFor = null;
 												}}
 											>
-												<wa-icon src={wrapPathInSvg(mdiDelete)}></wa-icon>
-												{m.removeMember()}
-											</ActionsButton>
+												{#snippet media()}
+													<wa-icon src={wrapPathInSvg(mdiDelete)}></wa-icon>
+												{/snippet}
+											</ListItem>
 										{/if}
-									</ActionsGroup>
-
-									<ActionsGroup>
-										<ActionsButton onClick={() => (actionsOpenFor = null)}>
-											{m.cancel()}
-										</ActionsButton>
-									</ActionsGroup>
-								</Actions>
+									</List>
+								</Sheet>
 							{/if}
 						{/each}
-					</div>
-				</Card>
-			{/await}
+					</List>
 
-			<div class="column" style="gap: 1rem">
-				<Button
-					clear
-					class="w-full justify-start gap-3"
-					colors={{ textIos: 'text-red-500', textMaterial: 'text-red-600' }}
-					onClick={() => (dialogType = 'leave')}
-				>
-					<wa-icon src={wrapPathInSvg(mdiExport)}></wa-icon>
-					{m.leaveGroup()}
-				</Button>
+					<List nested class="z-1">
+						<ListItem
+							title={m.leaveGroup()}
+							link
+							chevron={false}
+							onClick={() => (dialogType = 'leave')}
+							colors={{
+								primaryTextIos: 'text-red-500',
+								primaryTextMaterial: 'text-red-600',
+							}}
+						>
+							{#snippet media()}
+								<wa-icon class="big" src={wrapPathInSvg(mdiExport)}></wa-icon>
+							{/snippet}
+						</ListItem>
 
-				<Button
-					clear
-					class="w-full justify-start gap-3"
-					colors={{ textIos: 'text-red-500', textMaterial: 'text-red-600' }}
-					onClick={() => (dialogType = 'delete')}
-				>
-					<wa-icon src={wrapPathInSvg(mdiClose)}></wa-icon>
-					{m.deleteGroup()}
-				</Button>
+						<ListItem
+							title={m.deleteGroup()}
+							link
+							chevron={false}
+							onClick={() => (dialogType = 'delete')}
+							colors={{
+								primaryTextIos: 'text-red-500',
+								primaryTextMaterial: 'text-red-600',
+							}}
+						>
+							{#snippet media()}
+								<wa-icon class="big" src={wrapPathInSvg(mdiClose)}></wa-icon>
+							{/snippet}
+						</ListItem>
+					</List>
+				{/await}
 			</div>
 		</div>
 	{/await}
@@ -265,25 +290,27 @@
 			dialogType = null;
 			dialogActorId = null;
 		}}
-		title={m.demoteFromAdministrator()}
 	>
-		<p class="p-4">{m.areYouSureDemote()}</p>
+		{#snippet title()}
+			{m.demoteFromAdministrator()}
+		{/snippet}
+		<span>{m.areYouSureDemote()}</span>
 		{#snippet buttons()}
-			<Button
+			<DialogButton
 				onClick={() => {
 					dialogType = null;
 					dialogActorId = null;
 				}}
 			>
 				{m.cancel()}
-			</Button>
-			<Button
-				colors={{ fillBgIos: 'bg-red-500', fillBgMaterial: 'bg-red-600' }}
+			</DialogButton>
+			<DialogButton
+				strong
 				onClick={() => dialogActorId && handleDemote(dialogActorId)}
 				disabled={loading}
 			>
 				{loading ? '...' : m.demote()}
-			</Button>
+			</DialogButton>
 		{/snippet}
 	</Dialog>
 
@@ -293,21 +320,27 @@
 			dialogType = null;
 			dialogActorId = null;
 		}}
-		title={m.promoteToAdministrator()}
 	>
-		<p class="p-4">{m.areYouSurePromote()}</p>
+		{#snippet title()}
+			{m.promoteToAdministrator()}
+		{/snippet}
+		<span>{m.areYouSurePromote()}</span>
 		{#snippet buttons()}
-			<Button
+			<DialogButton
 				onClick={() => {
 					dialogType = null;
 					dialogActorId = null;
 				}}
 			>
 				{m.cancel()}
-			</Button>
-			<Button onClick={() => dialogActorId && handlePromote(dialogActorId)} disabled={loading}>
+			</DialogButton>
+			<DialogButton
+				onClick={() => dialogActorId && handlePromote(dialogActorId)}
+				disabled={loading}
+				strong
+			>
 				{loading ? '...' : m.promote()}
-			</Button>
+			</DialogButton>
 		{/snippet}
 	</Dialog>
 
@@ -317,61 +350,69 @@
 			dialogType = null;
 			dialogActorId = null;
 		}}
-		title={m.removeMember()}
 	>
-		<p class="p-4">{m.areYouSureRemoveMember()}</p>
+		{#snippet title()}
+			{m.removeMember()}
+		{/snippet}
+		<span>{m.areYouSureRemoveMember()}</span>
 		{#snippet buttons()}
-			<Button
+			<DialogButton
 				onClick={() => {
 					dialogType = null;
 					dialogActorId = null;
 				}}
 			>
 				{m.cancel()}
-			</Button>
-			<Button
-				colors={{ fillBgIos: 'bg-red-500', fillBgMaterial: 'bg-red-600' }}
+			</DialogButton>
+			<DialogButton
+				strong
 				onClick={() => dialogActorId && handleRemove(dialogActorId)}
 				disabled={loading}
 			>
-				{loading ? '...' : m.removeMember()}
-			</Button>
+				{loading ? '...' : m.remove()}
+			</DialogButton>
 		{/snippet}
 	</Dialog>
 
 	<Dialog
 		opened={dialogType === 'leave'}
 		onBackdropClick={() => (dialogType = null)}
-		title={m.leaveGroup()}
 	>
-		<p class="p-4">{m.areYouSureLeaveGroup()}</p>
+		{#snippet title()}
+			{m.leaveGroup()}
+		{/snippet}
+		<span>{m.areYouSureLeaveGroup()}</span>
 		{#snippet buttons()}
-			<Button onClick={() => (dialogType = null)}>{m.cancel()}</Button>
-			<Button
-				colors={{ fillBgIos: 'bg-red-500', fillBgMaterial: 'bg-red-600' }}
-				onClick={handleLeaveGroup}
-				disabled={loading}
+			<DialogButton onClick={() => (dialogType = null)}
+				>{m.cancel()}</DialogButton
 			>
-				{loading ? '...' : m.leaveGroup()}
-			</Button>
+			<DialogButton strong onClick={handleLeaveGroup} disabled={loading}>
+				{loading ? '...' : m.leave()}
+			</DialogButton>
 		{/snippet}
 	</Dialog>
 
 	<Dialog
 		opened={dialogType === 'delete'}
 		onBackdropClick={() => (dialogType = null)}
-		title={m.deleteGroup()}
 	>
-		<p class="p-4">{m.areYouSureDeleteGroup()}</p>
+		{#snippet title()}
+			{m.deleteGroup()}
+		{/snippet}
+		<span>{m.areYouSureDeleteGroup()}</span>
 		{#snippet buttons()}
-			<Button onClick={() => (dialogType = null)}>{m.cancel()}</Button>
-			<Button
-				colors={{ fillBgIos: 'bg-red-500', fillBgMaterial: 'bg-red-600' }}
-				onClick={handleDeleteGroup}
-				disabled={loading}
+			<DialogButton onClick={() => (dialogType = null)}
+				>{m.cancel()}</DialogButton
 			>
-				{loading ? '...' : m.deleteGroup()}
-			</Button>
+			<DialogButton strong onClick={handleDeleteGroup} disabled={loading}>
+				{loading ? '...' : m.delete()}
+			</DialogButton>
 		{/snippet}
 	</Dialog>
 </Page>
+
+<style>
+	wa-icon.big {
+		font-size: 2rem;
+	}
+</style>

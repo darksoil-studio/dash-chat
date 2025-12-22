@@ -42,7 +42,7 @@
 </script>
 
 <Page>
-	<Navbar title={m.editProfile()}>
+	<Navbar title={m.editProfile()}  titleClass="opacity1"  transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/my-profile')} />
 		{/snippet}

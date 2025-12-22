@@ -46,7 +46,7 @@
 
 {#if currentPage === 'members'}
 	<Page>
-		<Navbar title={m.newGroup()}>
+		<Navbar title={m.newGroup()} titleClass="opacity1" transparent={true}>
 			{#snippet left()}
 				<NavbarBackLink onClick={() => window.history.back()} />
 			{/snippet}
@@ -102,7 +102,7 @@
 	>
 {:else}
 	<Page>
-		<Navbar title={m.newGroup()}>
+		<Navbar title={m.newGroup()} titleClass="opacity1" transparent={true}>
 			{#snippet left()}
 				<NavbarBackLink onClick={() => (currentPage = 'members')} />
 			{/snippet}
@@ -123,7 +123,7 @@
 						<div class="row" style="align-items: center">
 							<SelectAvatar bind:value={groupAvatar}></SelectAvatar>
 
-							<List nested>
+							<List nested style="flex: 1">
 								<ListInput
 									type="text"
 									outline
