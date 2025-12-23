@@ -65,6 +65,7 @@
 							link
 							linkProps={{ href: `/direct-messages/${actorId}` }}
 							title={profile.name}
+							chevron={false}
 						>
 							{#snippet media()}
 								<wa-avatar

@@ -24,6 +24,7 @@
 		ListInput,
 		BlockTitle,
 		Preloader,
+		useTheme,
 	} from 'konsta/svelte';
 	import { mdiArrowNext } from '../../utils/icon';
 
@@ -33,9 +34,10 @@
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
 
 	let currentPage: 'members' | 'group-info' = $state('members');
-	let selectedContacts: Set<PublicKey> = new Set();
+	let selectedContacts = $state<PublicKey[]>([]);
 	let groupName = $state('');
 	let groupAvatar = $state<string | undefined>(undefined);
+	const theme = $derived(useTheme());
 
 	async function createGroupChat() {
 		const contacts = Array.from(selectedContacts);
@@ -52,18 +54,19 @@
 			{/snippet}
 
 			{#snippet right()}
-				<Link onClick={() => (currentPage = 'group-info')}>
-					{m.next()}
-					<wa-icon src={wrapPathInSvg(mdiArrowNext)}> </wa-icon>
-				</Link>
+				{#if theme === 'ios'}
+					<Link onClick={() => (currentPage = 'group-info')}>
+						{selectedContacts.length === 0 ? m.omit() : m.next()}
+					</Link>
+				{/if}
 			{/snippet}
 		</Navbar>
 
 		<div class="column" style="flex: 1">
 			<div class="center-in-desktop">
-				<BlockTitle>{m.members()}</BlockTitle>
+				<BlockTitle>{m.contacts()}</BlockTitle>
 
-				<List strong insetMaterial>
+				<List strongIos insetIos>
 					{#await $contacts}
 						<div
 							class="column"
@@ -75,21 +78,23 @@
 						{#each contacts as [publicKey, profile]}
 							<ListItem label title={profile.name}>
 								{#snippet media()}
-									<div class="row gap-3" style="align-items: center">
-										<Checkbox
-											checked={selectedContacts.has(publicKey)}
-											onChange={e => {
-												const target = e.target as HTMLInputElement;
-												if (target.checked) {
-													selectedContacts.add(publicKey);
-												} else {
-													selectedContacts.delete(publicKey);
-												}
-												selectedContacts = selectedContacts;
-											}}
-										/>
-										<Avatar chatActorId={publicKey}></Avatar>
-									</div>
+									<Avatar chatActorId={publicKey}></Avatar>
+								{/snippet}
+
+								{#snippet after()}
+									<Checkbox
+										checked={selectedContacts.includes(publicKey)}
+										onChange={e => {
+											const target = e.target as HTMLInputElement;
+											if (target.checked) {
+												selectedContacts = [...selectedContacts, publicKey];
+											} else {
+												selectedContacts = selectedContacts.filter(
+													c => c !== publicKey,
+												);
+											}
+										}}
+									/>
 								{/snippet}
 							</ListItem>
 						{:else}
@@ -98,43 +103,62 @@
 					{/await}
 				</List>
 			</div>
-		</div></Page
-	>
+		</div>
+
+		{#if theme === 'material'}
+			<Button
+				onClick={() => (currentPage = 'group-info')}
+				class="end-4 bottom-4"
+				style="position: fixed; width: auto"
+				rounded
+			>
+				{selectedContacts.length === 0 ? m.omit() : m.next()}
+			</Button>
+		{/if}
+	</Page>
 {:else}
 	<Page>
-		<Navbar title={m.newGroup()} titleClass="opacity1" transparent={true}>
+		<Navbar title={m.groupName()} titleClass="opacity1" transparent={true}>
 			{#snippet left()}
 				<NavbarBackLink onClick={() => (currentPage = 'members')} />
 			{/snippet}
 
 			{#snippet right()}
-				<Link onClick={createGroupChat}>
-					<wa-icon src={wrapPathInSvg(mdiAccountMultiplePlus)}> </wa-icon>
-					{m.createGroup()}
-				</Link>
+				{#if theme === 'ios'}
+					<Link onClick={createGroupChat}>
+						{m.create()}
+					</Link>
+				{/if}
 			{/snippet}
 		</Navbar>
 
 		<div class="column" style="flex: 1">
 			<div class="center-in-desktop m-1">
-				<BlockTitle>{m.groupInfo()}</BlockTitle>
-				<Card raised>
-					<div class="column gap-2">
-						<div class="row" style="align-items: center">
+				<List insetIos strongIos nested={theme!=='ios'}>
+					<ListInput
+						type="text"
+						bind:value={groupName}
+						outline
+						class="plain"
+						placeholder={m.name()}
+					>
+						{#snippet media()}
 							<SelectAvatar bind:value={groupAvatar}></SelectAvatar>
-
-							<List nested style="flex: 1">
-								<ListInput
-									type="text"
-									outline
-									bind:value={groupName}
-									label={m.name()}
-								/>
-							</List>
-						</div>
-					</div>
-				</Card>
+						{/snippet}
+					</ListInput>
+				</List>
 			</div>
-		</div></Page
-	>
+		</div>
+
+		{#if theme === 'material'}
+			<Button
+				onClick={createGroupChat}
+				class="end-4 bottom-4"
+				style="position: fixed; width: auto"
+				rounded
+			>
+				{m.create()}
+			</Button>
+		{/if}
+	</Page>
 {/if}

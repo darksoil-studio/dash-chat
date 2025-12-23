@@ -7,7 +7,7 @@
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let nickname = $state<string>('');
-	let avatar: string | undefined;
+	let avatar= $state<string | undefined>(undefined);
 
 	async function setProfile() {
 		await contactsStore.client.setProfile({
@@ -18,7 +18,7 @@
 </script>
 
 <Card raised>
-	<div class="column gap-4">
+	<div class="column gap-2">
 		<span class="title">{m.createProfile()}</span>
 		<div class="row gap-1" style="align-items: center;">
 			<SelectAvatar bind:value={avatar}></SelectAvatar>

@@ -134,5 +134,7 @@
 				</List>
 			{/await}
 		</div>
-	</div></Page
+	</div>
+
+</Page
 >

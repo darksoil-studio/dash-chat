@@ -8,7 +8,7 @@
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiAccountGroup, mdiSquareEditOutline } from '@mdi/js';
 	import AllChats from '../components/AllChats.svelte';
-	import { Badge, Link, Navbar, Page, useTheme } from 'konsta/svelte';
+	import { Badge, Icon, Link, Navbar, Page, useTheme } from 'konsta/svelte';
 	import { m } from '$lib/paraglide/messages';
 	const theme = $derived(useTheme());
 
@@ -23,7 +23,7 @@
 	<Navbar title={m.chats()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
 			{#await $myProfile then myProfile}
-				<Link iconOnly href="/my-profile">
+				<Link iconOnly href="/settings">
 					<wa-avatar
 						image={myProfile?.avatar}
 						initials={myProfile?.name.slice(0, 2)}
@@ -34,20 +34,18 @@
 			{/await}
 		{/snippet}
 
-		<div
-			class="row gap-3"
-			style="align-items: center; justify-content: end; flex: 1;"
-		>
-			<Link iconOnly href="/contacts" style="position: relative;">
-				<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon>
-				{#await $incomingContactRequests then incomingContactRequests}
-					{#if incomingContactRequests.length > 0}
-						<Badge style="position: absolute; right: -4px; bottom: -4px">
-							{incomingContactRequests.length}
-						</Badge>
-					{/if}
-				{/await}
-			</Link>
+		{#snippet right()}
+			{#await $incomingContactRequests then incomingContactRequests}
+				<Link iconOnly href="/contacts" style="position: relative;"
+					><Icon
+						badge={incomingContactRequests.length > 0
+							? incomingContactRequests.length.toString()
+							: ''}
+					>
+						<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon></Icon
+					>
+				</Link>
+			{/await}
 
 			<Link iconOnly href="/new-message">
 				<wa-icon src={wrapPathInSvg(mdiSquareEditOutline)}> </wa-icon>
@@ -55,7 +53,7 @@
 			{#if theme == 'material'}
 				<div></div>
 			{/if}
-		</div>
+		{/snippet}
 	</Navbar>
 
 	<AllChats></AllChats>

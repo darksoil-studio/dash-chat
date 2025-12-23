@@ -62,3 +62,27 @@ li > label {
 .opacity1 {
 	opacity: 1 !important;
 }
+
+li.plain > div {
+	border: none !important;
+}
+li.plain span {
+	border: none !important;
+}
+
+.message {
+	margin: 0;
+}
+.message > div {
+	padding: 8px;
+}
+
+.my-message {
+	align-self: end;
+	background-color: var(--color-brand-primary);
+	color: white;
+}
+
+.others-message {
+	align-self: start;
+}

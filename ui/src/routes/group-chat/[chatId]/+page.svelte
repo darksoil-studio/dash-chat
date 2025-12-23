@@ -23,6 +23,7 @@
 		Messagebar,
 		ToolbarPane,
 		Icon,
+		useTheme,
 	} from 'konsta/svelte';
 
 	const chatId = window.location.href.split('/').reverse()[0];
@@ -52,9 +53,10 @@
 		await store.sendMessage(message);
 		messageText = '';
 	}
+	const theme = $derived(useTheme());
 </script>
 
-<Page style="height: calc(100vh - 57px)">
+<Page style={theme === 'material' ? "height: calc(100vh - 57px)" : ''}>
 	<Navbar transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/')} />
@@ -86,7 +88,7 @@
 								{#if myActorId == message.author}
 									<Card
 										raised
-										style="align-self: end; background-color: var(--color-brand-primary); color: white; margin: 0"
+										class="message my-message"
 									>
 										<div class="row gap-2" style="align-items: center">
 											<span>{message.content}</span>
@@ -123,7 +125,8 @@
 											style="--size: 2.5rem"
 										>
 										</wa-avatar>
-										<Card raised style="align-self: start; margin: 0">
+										<Card raised  
+										class="message others-message">
 											<div class="row gap-2" style="align-items: center">
 												<span>{message.content}</span>
 

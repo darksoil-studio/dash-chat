@@ -23,6 +23,7 @@
 		Card,
 		ListInput,
 		List,
+		Button,
 	} from 'konsta/svelte';
 
 	const chatId = window.location.href.split('/').reverse()[2];
@@ -31,7 +32,7 @@
 	const store = chatsStore.groupChats(chatId);
 	const info = useReactivePromise(store.info);
 
-	let avatar: string | undefined;
+	let avatar = $state<string | undefined>(undefined);
 	let name = $state<string>('');
 	let description = $state<string>('');
 
@@ -49,18 +50,11 @@
 </script>
 
 <Page>
-	<Navbar title={m.editGroup()}  titleClass="opacity1" transparent={true}>
+	<Navbar title={m.editGroup()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink
 				onClick={() => (window.location.href = `/group-chat/${chatId}/info`)}
 			/>
-		{/snippet}
-
-		{#snippet right()}
-			<Link onClick={save}>
-				<wa-icon src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
-				{m.save()}
-			</Link>
 		{/snippet}
 	</Navbar>
 
@@ -76,12 +70,21 @@
 					<ListInput
 						type="textarea"
 						outline
-						inputStyle={{"min-height": "2em"}}
+						inputStyle={{ 'min-height': '2em' }}
 						bind:value={description}
 						label={m.description()}
 					/>
 				</List>
 			</div>
 		</div>
+
+		<Button
+			onClick={save}
+			class="end-4 bottom-4"
+			style="position: fixed; width: auto"
+			rounded
+		>
+			{m.save()}
+		</Button>
 	{/await}
 </Page>

@@ -22,7 +22,7 @@
 	import { setupInsets } from '../utils/insets';
 
 	import { setLocale } from '$lib/paraglide/runtime';
-	// setLocale('en');
+	setLocale('en');
 
 	let { children } = $props();
 

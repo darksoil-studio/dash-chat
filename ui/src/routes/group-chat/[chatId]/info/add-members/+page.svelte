@@ -1,0 +1,110 @@
+<script lang="ts">
+	import '@awesome.me/webawesome/dist/components/icon/icon.js';
+	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
+	import { m } from '$lib/paraglide/messages.js';
+	import { mdiAccountMultiplePlus, mdiAccountPlus } from '@mdi/js';
+	import type { ContactsStore, PublicKey } from 'dash-chat-stores';
+	import { getContext } from 'svelte';
+	import {
+		Page,
+		Navbar,
+		NavbarBackLink,
+		BlockTitle,
+		List,
+		ListItem,
+		Button,
+		Link,
+		Preloader,
+		Checkbox,
+		useTheme,
+	} from 'konsta/svelte';
+	import { useReactivePromise } from '../../../../../stores/use-signal';
+	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { page } from '$app/state';
+	import Avatar from '../../../../../components/Avatar.svelte';
+	let chatId = page.params.chatId!;
+
+	const contactsStore: ContactsStore = getContext('contacts-store');
+	let selectedContacts = $state<PublicKey[]>([]);
+
+	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
+	const theme = $derived(useTheme());
+
+	async function addMembers() {
+		window.location.href = `/group-chat/${chatId}/info`;
+	}
+</script>
+
+<Page>
+	<Navbar
+		title={m.addMembers()}
+		titleClass="opacity1"
+		transparent={true}
+		rightClass={selectedContacts.length === 0
+			? 'pointer-events-none opacity-50'
+			: ''}
+	>
+		{#snippet left()}
+			<NavbarBackLink
+				onClick={() => (window.location.href = `/group-chat/${chatId}/info`)}
+			/>
+		{/snippet}
+		{#snippet right()}
+			{#if theme === 'ios'}
+				<Link onClick={addMembers}>
+					{m.add()}
+				</Link>
+			{/if}
+		{/snippet}
+	</Navbar>
+
+	{#await $contacts}
+		<div
+			class="column"
+			style="height: 100%; align-items: center; justify-content: center"
+		>
+			<Preloader />
+		</div>
+	{:then contacts}
+		<BlockTitle>{m.contacts()}</BlockTitle>
+		<List strongIos inset>
+			{#each contacts as [publicKey, profile]}
+				<ListItem label title={profile.name}>
+					{#snippet media()}
+						<Avatar chatActorId={publicKey}></Avatar>
+					{/snippet}
+
+					{#snippet after()}
+						<Checkbox
+							checked={selectedContacts.includes(publicKey)}
+							onChange={e => {
+								const target = e.target as HTMLInputElement;
+								if (target.checked) {
+									selectedContacts = [...selectedContacts, publicKey];
+								} else {
+									selectedContacts = selectedContacts.filter(
+										c => c !== publicKey,
+									);
+								}
+							}}
+						/>
+					{/snippet}
+				</ListItem>
+			{:else}
+				<ListItem title={m.noContactsYet()} />
+			{/each}
+		</List>
+
+		{#if theme === 'material'}
+			<Button
+				onClick={addMembers}
+				class="end-4 bottom-4"
+				style="position: fixed; width: auto"
+				rounded
+				disabled={selectedContacts.length === 0}
+			>
+				{m.add()}
+			</Button>
+		{/if}
+	{/await}
+</Page>

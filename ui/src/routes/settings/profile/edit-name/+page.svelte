@@ -3,8 +3,8 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
-	import { useReactivePromise } from '../../../stores/use-signal';
-	import SelectAvatar from '../../../components/SelectAvatar.svelte';
+	import { useReactivePromise } from '../../../../stores/use-signal';
+	import SelectAvatar from '../../../../components/SelectAvatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiClose, mdiContentSave } from '@mdi/js';
 	import { editProfile, m } from '$lib/paraglide/messages.js';
@@ -18,10 +18,11 @@
 		Preloader,
 		ListInput,
 		List,
+		useTheme,
 	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	let avatar: string | undefined;
+	let avatar = $state<string | undefined>(undefined);
 	let name = $state<string>('');
 
 	const myProfile = useReactivePromise(contactsStore.myProfile);
@@ -32,29 +33,17 @@
 		});
 	});
 
-	async function setProfile() {
+	async function save() {
 		await contactsStore.client.setProfile({
 			name: name!,
 			avatar,
 		});
-		window.location.href = '/my-profile';
+		window.location.href = '/settings/profile';
 	}
+	const theme = $derived(useTheme());
 </script>
 
 <Page>
-	<Navbar title={m.editProfile()}  titleClass="opacity1"  transparent={true}>
-		{#snippet left()}
-			<NavbarBackLink onClick={() => (window.location.href = '/my-profile')} />
-		{/snippet}
-
-		{#snippet right()}
-			<Link onClick={setProfile}>
-				<wa-icon src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
-				{m.save()}
-			</Link>
-		{/snippet}
-	</Navbar>
-
 	{#await $myProfile}
 		<div
 			class="column"
@@ -63,17 +52,44 @@
 			<Preloader />
 		</div>
 	{:then myProfile}
-		<div class="column" style="flex: 1">
-			<Card class="center-in-desktop" raised>
-				<div class="row gap-1" style="align-items: center;">
-					<SelectAvatar bind:value={avatar} defaultValue={myProfile?.avatar}
-					></SelectAvatar>
+		<Navbar
+			title={m.editName()}
+			titleClass="opacity1"
+			transparent={true}
+			rightClass={myProfile?.name === name
+				? 'pointer-events-none opacity-50'
+				: ''}
+		>
+			{#snippet left()}
+				<NavbarBackLink
+					onClick={() => (window.location.href = '/settings/profile')}
+				/>
+			{/snippet}
 
-					<List nested style="flex: 1">
-						<ListInput outline type="text" bind:value={name} label={m.name()} />
-					</List>
-				</div>
-			</Card>
-		</div>
+			{#snippet right()}
+				{#if theme === 'ios'}
+					<Link onClick={save}>
+						{m.save()}
+					</Link>
+				{/if}
+			{/snippet}
+		</Navbar>
+
+		<List insetIos strongIos nested={theme === 'material'}>
+			<ListInput type="text" outline  bind:value={name} label={m.name()} />
+		</List>
+
+		{#if theme === 'material'}
+			<Button
+				onClick={save}
+				class="end-4 bottom-4"
+				style="position: fixed; width: auto"
+				rounded
+				disabled={myProfile?.name === name}
+			>
+				{m.save()}
+			</Button>
+		{/if}
+		
 	{/await}
 </Page>

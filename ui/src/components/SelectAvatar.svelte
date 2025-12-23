@@ -6,8 +6,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { Button, Fab } from 'konsta/svelte';
 
-	let avatarSize = 300;
-
 	let {
 		value = $bindable(),
 		defaultValue,
@@ -28,7 +26,7 @@
 				const img = new Image();
 				img.crossOrigin = 'anonymous';
 				img.onload = () => {
-					value = resizeAndExport(img, avatarSize, avatarSize);
+					value = resizeAndExport(img );
 					avatarFilePicker.value = '';
 
 					uploading = false;
