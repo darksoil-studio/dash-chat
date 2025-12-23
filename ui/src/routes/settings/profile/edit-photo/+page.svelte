@@ -31,6 +31,7 @@
 		m.then(myProfile => {
 			if (!name) name = myProfile?.name || '';
 			if (!avatar) avatar = myProfile?.avatar;
+			console.log('aa', myProfile)
 		});
 	});
 

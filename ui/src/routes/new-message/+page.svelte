@@ -61,7 +61,7 @@
 					<Preloader />
 				</div>
 			{:then contacts}
-				<List strongIos nested={theme === 'material'} insetIos>
+				<List strongIos insetIos>
 					{#each contacts as [actorId, profile]}
 						<ListItem
 							link
