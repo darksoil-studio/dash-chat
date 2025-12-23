@@ -24,6 +24,7 @@
 		ListInput,
 		List,
 		Button,
+		useTheme,
 	} from 'konsta/svelte';
 
 	const chatId = window.location.href.split('/').reverse()[2];
@@ -43,6 +44,7 @@
 			if (!description) description = info?.description || '';
 		});
 	});
+	const theme = $derived(useTheme());
 
 	async function save() {
 		window.location.href = `/group-chat/${chatId}/info`;
@@ -59,17 +61,24 @@
 	</Navbar>
 
 	{#await $info then info}
-		<div class="column m-2">
+		<div class="column">
 			<div class="column center-in-desktop">
-				<SelectAvatar defaultValue={info.avatar} bind:value={avatar}
-				></SelectAvatar>
+				<div class="mt-4">
+					<SelectAvatar defaultValue={info.avatar} bind:value={avatar}
+					></SelectAvatar>
+				</div>
 
-				<List nested>
-					<ListInput type="text" outline bind:value={name} label={m.name()} />
+				<List strongIos insetIos>
+					<ListInput
+						type="text"
+						outline={theme === 'material'}
+						bind:value={name}
+						label={m.name()}
+					/>
 
 					<ListInput
 						type="textarea"
-						outline
+						outline={theme === 'material'}
 						inputStyle={{ 'min-height': '2em' }}
 						bind:value={description}
 						label={m.description()}

@@ -27,7 +27,7 @@
 					<wa-avatar
 						image={myProfile?.avatar}
 						initials={myProfile?.name.slice(0, 2)}
-						style="--size:42px"
+						style="--size: 42px"
 					>
 					</wa-avatar>
 				</Link>

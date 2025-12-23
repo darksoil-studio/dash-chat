@@ -66,34 +66,38 @@
 			<Preloader />
 		</div>
 	{:then contacts}
-		<BlockTitle>{m.contacts()}</BlockTitle>
-		<List strongIos inset>
-			{#each contacts as [publicKey, profile]}
-				<ListItem label title={profile.name}>
-					{#snippet media()}
-						<Avatar chatActorId={publicKey}></Avatar>
-					{/snippet}
+		<div class="column">
+			<div class="center-in-desktop">
+				<BlockTitle>{m.contacts()}</BlockTitle>
+				<List strongIos inset>
+					{#each contacts as [publicKey, profile]}
+						<ListItem label title={profile.name}>
+							{#snippet media()}
+								<Avatar chatActorId={publicKey}></Avatar>
+							{/snippet}
 
-					{#snippet after()}
-						<Checkbox
-							checked={selectedContacts.includes(publicKey)}
-							onChange={e => {
-								const target = e.target as HTMLInputElement;
-								if (target.checked) {
-									selectedContacts = [...selectedContacts, publicKey];
-								} else {
-									selectedContacts = selectedContacts.filter(
-										c => c !== publicKey,
-									);
-								}
-							}}
-						/>
-					{/snippet}
-				</ListItem>
-			{:else}
-				<ListItem title={m.noContactsYet()} />
-			{/each}
-		</List>
+							{#snippet after()}
+								<Checkbox
+									checked={selectedContacts.includes(publicKey)}
+									onChange={e => {
+										const target = e.target as HTMLInputElement;
+										if (target.checked) {
+											selectedContacts = [...selectedContacts, publicKey];
+										} else {
+											selectedContacts = selectedContacts.filter(
+												c => c !== publicKey,
+											);
+										}
+									}}
+								/>
+							{/snippet}
+						</ListItem>
+					{:else}
+						<ListItem title={m.noContactsYet()} />
+					{/each}
+				</List>
+			</div>
+		</div>
 
 		{#if theme === 'material'}
 			<Button

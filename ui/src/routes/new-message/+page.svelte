@@ -33,7 +33,7 @@
 
 	<div class="column" style="flex: 1">
 		<div class="column center-in-desktop">
-			<div class="column gap-4 m-4">
+			<div class="column gap-4 mt-2 mx-4">
 				<Link href="/add-contact">
 					<Button tonal large class="w-full gap-2">
 						<wa-icon src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
@@ -59,7 +59,7 @@
 					<Preloader />
 				</div>
 			{:then contacts}
-				<List strong insetMaterial>
+				<List strongIos nested insetIos>
 					{#each contacts as [actorId, profile]}
 						<ListItem
 							link

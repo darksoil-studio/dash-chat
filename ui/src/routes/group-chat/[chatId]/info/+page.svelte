@@ -31,6 +31,7 @@
 		Sheet,
 		ActionsButton,
 		BlockTitle,
+		useTheme,
 	} from 'konsta/svelte';
 	import Layout from '../../../+layout.svelte';
 
@@ -50,6 +51,7 @@
 	>(null);
 	let dialogActorId = $state<string | null>(null);
 	let loading = $state(false);
+	const theme = $derived(useTheme());
 
 	async function handleDemote(actorId: string) {
 		loading = true;
@@ -135,8 +137,12 @@
 			{/snippet}
 
 			{#snippet right()}
-				<Link href={`/group-chat/${chatId}/info/edit`} iconOnly>
-					<wa-icon src={wrapPathInSvg(mdiPencil)}> </wa-icon>
+				<Link href={`/group-chat/${chatId}/info/edit`} iconOnly={theme === 'material'}>
+					{#if theme === 'material'}
+						<wa-icon src={wrapPathInSvg(mdiPencil)}> </wa-icon>
+					{:else}
+						{m.edit()}
+					{/if}
 				</Link>
 			{/snippet}
 		</Navbar>

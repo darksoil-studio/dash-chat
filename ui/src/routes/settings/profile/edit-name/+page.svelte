@@ -75,9 +75,22 @@
 			{/snippet}
 		</Navbar>
 
-		<List insetIos strongIos nested={theme === 'material'}>
-			<ListInput type="text" outline  bind:value={name} label={m.name()} />
-		</List>
+		<div class="column">
+			<List
+				class="center-in-desktop"
+				insetIos
+				strongIos
+				nested={theme === 'material'}
+			>
+				<ListInput
+					type="text"
+					outline={theme === 'material'}
+					bind:value={name}
+					label={theme === 'material' ? m.name() : ''}
+					placeholder={theme === 'ios' ? m.name() : ''}
+				/>
+			</List>
+		</div>
 
 		{#if theme === 'material'}
 			<Button
@@ -90,6 +103,5 @@
 				{m.save()}
 			</Button>
 		{/if}
-		
 	{/await}
 </Page>
