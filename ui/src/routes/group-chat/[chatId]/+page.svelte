@@ -25,8 +25,8 @@
 		Icon,
 		useTheme,
 	} from 'konsta/svelte';
-
-	const chatId = window.location.href.split('/').reverse()[0];
+	import { page } from '$app/state';
+	let chatId = page.params.chatId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	const myActorId = useReactivePromise(contactsStore.myChatActorId);
@@ -56,29 +56,31 @@
 	const theme = $derived(useTheme());
 </script>
 
-<Page style={theme === 'material' ? "height: calc(100vh - 57px)" : ''}>
-	<Navbar transparent={true}>
+<Page style={theme === 'material' ? 'height: calc(100vh - 57px)' : ''}>
+	<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => (window.location.href = '/')} />
 		{/snippet}
-		{#await $info then info}
-			<Link
-				href={`/group-chat/${chatId}/info`}
-				class="gap-2"
-				style="display: flex; justify-content: start; align-items: center; flex: 1"
-			>
-				<wa-avatar
-					image={info.avatar}
-					initials={info.name.slice(0, 2)}
-					style="--size: 2.5rem"
+		{#snippet title()}
+			{#await $info then info}
+				<Link
+					href={`/group-chat/${chatId}/info`}
+					class="gap-2"
+					style="display: flex; justify-content: start; align-items: center;"
 				>
-				</wa-avatar>
-				<span>{info.name}</span>
-			</Link>
-		{/await}
+					<wa-avatar
+						image={info.avatar}
+						initials={info.name.slice(0, 2)}
+						style="--size: 2.5rem"
+					>
+					</wa-avatar>
+					<span>{info.name}</span>
+				</Link>
+			{/await}
+		{/snippet}
 	</Navbar>
 
-	<div class="column">
+	<div class={`column ${theme === 'ios'? 'pb-16':''}`}>
 		{#await $allMembers then members}
 			<div class="center-in-desktop" style="flex:1">
 				<div class="column m-2 gap-2">
@@ -86,10 +88,7 @@
 						{#await $messages then messages}
 							{#each messages as message}
 								{#if myActorId == message.author}
-									<Card
-										raised
-										class="message my-message"
-									>
+									<Card raised class="message my-message">
 										<div class="row gap-2" style="align-items: center">
 											<span>{message.content}</span>
 
@@ -125,8 +124,7 @@
 											style="--size: 2.5rem"
 										>
 										</wa-avatar>
-										<Card raised  
-										class="message others-message">
+										<Card raised class="message others-message">
 											<div class="row gap-2" style="align-items: center">
 												<span>{message.content}</span>
 
@@ -181,7 +179,7 @@
 				{/snippet}
 			</Messagebar>
 
-<!--			<div
+			<!--			<div
 				class="column pr-4 bottom-0 left-0 right-0 fixed bg-white dark:bg-gray-800"
 				style="display:none"
 			>

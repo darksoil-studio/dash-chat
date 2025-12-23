@@ -67,7 +67,7 @@
 			{:then incomingContactRequests}
 				{#if incomingContactRequests.length > 0}
 					<BlockTitle>{m.contactRequests()}</BlockTitle>
-					<List strong insetMaterial>
+					<List strongIos insetIos>
 						{#each incomingContactRequests as incomingContactRequest}
 							<ListItem title={incomingContactRequest.profile.name}>
 								{#snippet media()}
@@ -112,11 +112,10 @@
 				</div>
 			{:then contacts}
 				<BlockTitle>{m.contacts()}</BlockTitle>
-				<List strong insetMaterial>
+				<List strongIos insetIos>
 					{#each contacts as [actorId, profile]}
 						<ListItem
 							link
-							chevron={false}
 							linkProps={{ href: `/direct-messages/${actorId}` }}
 							title={profile.name}
 						>

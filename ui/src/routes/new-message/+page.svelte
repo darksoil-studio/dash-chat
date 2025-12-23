@@ -17,11 +17,13 @@
 		Button,
 		Link,
 		Preloader,
+		useTheme,
 	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
+	const theme = $derived(useTheme());
 </script>
 
 <Page>
@@ -59,7 +61,7 @@
 					<Preloader />
 				</div>
 			{:then contacts}
-				<List strongIos nested insetIos>
+				<List strongIos nested={theme === 'material'} insetIos>
 					{#each contacts as [actorId, profile]}
 						<ListItem
 							link

@@ -118,7 +118,7 @@
 	{#await $info then info}
 		<Navbar transparent={true}>
 			{#snippet left()}
-				<NavbarBackLink onClick={() => (window.location.href = '/')} />
+				<NavbarBackLink onClick={() => (window.location.href = `/group-chat/${chatId}`)} />
 			{/snippet}
 
 			{#snippet title()}

@@ -26,8 +26,8 @@
 		Button,
 		useTheme,
 	} from 'konsta/svelte';
-
-	const chatId = window.location.href.split('/').reverse()[2];
+	import { page } from '$app/state';
+	let chatId = page.params.chatId!;
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.groupChats(chatId);

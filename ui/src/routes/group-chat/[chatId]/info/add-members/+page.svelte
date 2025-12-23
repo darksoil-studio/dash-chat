@@ -20,8 +20,8 @@
 	} from 'konsta/svelte';
 	import { useReactivePromise } from '../../../../../stores/use-signal';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
-	import { page } from '$app/state';
 	import Avatar from '../../../../../components/Avatar.svelte';
+	import { page } from '$app/state';
 	let chatId = page.params.chatId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
