@@ -1,13 +1,88 @@
+@import 'tailwindcss';
+/* import Konsta UI theme */
+@import 'konsta/svelte/theme.css';
+
+@theme {
+	--color-brand-primary: #007aff;
+	--color-brand-red: #ff0000;
+	--color-brand-green: #00ff00;
+}
+
 body {
 	display: flex;
+	--background-color: #dddddd;
+	background-color: var(--background-color);
 }
 
 .column {
 	display: flex;
-	display-direction: column;
+	flex-direction: column;
 }
 
 .row {
 	display: flex;
-	display-direction: column;
+	flex-direction: row;
+}
+
+.title {
+	font-size: 1.125rem;
+}
+
+@media screen and (min-width: 600px) {
+	.center-in-desktop {
+		align-self: center;
+		width: 600px;
+	}
+}
+
+wa-icon {
+	font-size: 24px;
+}
+
+wa-icon[slot='start'] {
+	font-size: 20px;
+}
+
+wa-icon[slot='end'] {
+	font-size: 20px;
+}
+
+.quiet {
+	color: #64748b;
+}
+
+.dark-quiet {
+	color: var(--wa-color-neutral-80);
+}
+
+li > label {
+	width: 100%;
+}
+
+.opacity1 {
+	opacity: 1 !important;
+}
+
+li.plain > div {
+	border: none !important;
+}
+li.plain span {
+	border: none !important;
+}
+
+.message {
+	margin: 0;
+}
+.message > div {
+	padding: 8px;
+}
+
+.my-message {
+	align-self: end;
+	background-color: var(--color-brand-primary);
+	color: white;
+}
+
+.others-message {
+	align-self: start;
 }

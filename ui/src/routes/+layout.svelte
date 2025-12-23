@@ -1,5 +1,7 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/styles/webawesome.css';
+
+	import '../app.css';
 	import { setContext } from 'svelte';
 	import {
 		ChatsClient,
@@ -13,13 +15,14 @@
 		DevicesClient,
 		DevicesStore,
 	} from 'dash-chat-stores';
+	import { App, KonstaProvider } from 'konsta/svelte';
 
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
 	import { isMobile } from '../utils/environment';
-	import { setupInsets} from '../utils/insets';
-	import '../utils/localization';
+	import { setupInsets } from '../utils/insets';
+
 	import { setLocale } from '$lib/paraglide/runtime';
-	// setLocale('es')
+	setLocale('en');
 
 	let { children } = $props();
 
@@ -43,14 +46,18 @@
 	setContext('chats-store', chatsStore);
 
 	if (isMobile) setupInsets();
-
+	let theme: 'ios' | 'material' = 'material';
 </script>
 
-<main class="container column" style="flex: 1">
-	<SplashscreenPrompt>
-		{@render children()}
-	</SplashscreenPrompt>
-</main>
+<KonstaProvider {theme}>
+	<App {theme} class={`k-${theme}`}>
+		<main style="height: 100vh; width: 100vw; display: flex">
+			<SplashscreenPrompt>
+				{@render children()}
+			</SplashscreenPrompt>
+		</main>
+	</App>
+</KonstaProvider>
 
 <style>
 	main {

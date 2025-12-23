@@ -84,6 +84,8 @@ export class ContactsStore {
 			}
 		}
 
+		const myActorId = await this.myChatActorId();
+		return [myActorId,myActorId]
 		return Array.from(contacts);
 	});
 

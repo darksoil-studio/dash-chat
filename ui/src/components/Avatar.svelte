@@ -1,9 +1,9 @@
 <script lang="ts">
-	import '@awesome.me/webawesome/dist/components/skeleton/skeleton.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore, PublicKey } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
+	import { Preloader } from 'konsta/svelte';
 
 	let { chatActorId }: { chatActorId: PublicKey} = $props();
 
@@ -13,7 +13,12 @@
 </script>
 
 {#await $profile}
-	<wa-skeleton> </wa-skeleton>
+		<div
+			class="column"
+			style="display: flex; align-items: center; justify-content: center"
+		>
+			<Preloader />
+		</div>
 {:then profile}
 	<wa-avatar
 		image={profile?.avatar}

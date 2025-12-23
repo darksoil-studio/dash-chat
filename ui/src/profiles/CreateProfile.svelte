@@ -1,16 +1,13 @@
 <script lang="ts">
-	import '@awesome.me/webawesome/dist/components/input/input.js';
-	import '@awesome.me/webawesome/dist/components/card/card.js';
-	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import { getContext } from 'svelte';
 	import type { ContactsStore } from 'dash-chat-stores';
-	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 	import SelectAvatar from '../components/SelectAvatar.svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { Card, Button, ListInput, List, BlockTitle } from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	let nickname: string | undefined;
-	let avatar: string | undefined
+	let nickname = $state<string>('');
+	let avatar= $state<string | undefined>(undefined);
 
 	async function setProfile() {
 		await contactsStore.client.setProfile({
@@ -20,23 +17,21 @@
 	}
 </script>
 
-<wa-card>
-	<div class="column" style="gap: var(--wa-space-m)">
-
+<Card raised>
+	<div class="column gap-2">
 		<span class="title">{m.createProfile()}</span>
-
-		<div class="row" style="gap: var(--wa-space-xs)">
-			<SelectAvatar bind:value={avatar}>
-			</SelectAvatar>
-
-			<wa-input
-				oninput={(e: CustomEvent) => {
-					nickname = (e.target as WaInput).value!;
-				}}
-			>
-			</wa-input>
+		<div class="row gap-1" style="align-items: center;">
+			<SelectAvatar bind:value={avatar}></SelectAvatar>
+			<List nested>
+				<ListInput
+					outline
+					type="text"
+					bind:value={nickname}
+					label={m.name()}
+				/>
+			</List>
 		</div>
 
-		<wa-button onclick={setProfile}>{m.createProfile()}</wa-button>
+		<Button onClick={setProfile}>{m.createProfile()}</Button>
 	</div>
-</wa-card>
+</Card>

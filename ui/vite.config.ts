@@ -1,5 +1,6 @@
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import localIpAddress from 'local-ip-address';
 import { defineConfig } from 'vite';
 
@@ -11,6 +12,7 @@ const host = localIpAddress();
 export default defineConfig(async () => ({
 	optimizeDeps: { exclude: ['../packages/dash-chat-stores'] },
 	plugins: [
+		tailwindcss(),
 		sveltekit(),
 		paraglideVitePlugin({
 			project: './project.inlang',
