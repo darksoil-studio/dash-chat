@@ -2,54 +2,59 @@
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/badge/badge.js';
 	import '@awesome.me/webawesome/dist/components/button/button.js';
-	import { ChatsStore, type ContactsStore } from 'dash-chat-stores';
+	import { type ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../stores/use-signal';
-	import Avatar from '../components/Avatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import { mdiAccountGroup, mdiSquareEditOutline } from '@mdi/js';
 	import AllChats from '../components/AllChats.svelte';
+	import { Badge, Icon, Link, Navbar, Page, useTheme } from 'konsta/svelte';
+	import { m } from '$lib/paraglide/messages';
+	const theme = $derived(useTheme());
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	const myChatActorId = useReactivePromise(contactsStore.myChatActorId);
+	const myProfile = useReactivePromise(contactsStore.myProfile);
 	const incomingContactRequests = useReactivePromise(
 		contactsStore.incomingContactRequests,
 	);
 </script>
 
-{#await $myChatActorId then myChatActorId}
-	<div class="column">
-		<div class="top-bar">
-			<a href="/my-profile">
-				<Avatar chatActorId={myChatActorId}></Avatar>
-			</a>
+<Page>
+	<Navbar title={m.chats()} titleClass="opacity1" transparent={true}>
+		{#snippet left()}
+			{#await $myProfile then myProfile}
+				<Link iconOnly href="/settings">
+					<wa-avatar
+						image={myProfile?.avatar}
+						initials={myProfile?.name.slice(0, 2)}
+						style="--size: 42px"
+					>
+					</wa-avatar>
+				</Link>
+			{/await}
+		{/snippet}
 
-			<div style="flex: 1"></div>
+		{#snippet right()}
+			{#await $incomingContactRequests then incomingContactRequests}
+				<Link iconOnly href="/contacts" style="position: relative;"
+					><Icon
+						badge={incomingContactRequests.length > 0
+							? incomingContactRequests.length.toString()
+							: ''}
+					>
+						<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon></Icon
+					>
+				</Link>
+			{/await}
 
-			<wa-button
-				class="circle"
-				href="/contacts"
-				appearance="plain"
-				style="position: relative"
-			>
-				<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon>
-				{#await $incomingContactRequests then incomingContactRequests}
-					{#if incomingContactRequests.length > 0}
-						<wa-badge
-							variant="brand"
-							pill
-							style="position:absolute; right: -4px; bottom: -2px"
-							>{incomingContactRequests.length}
-						</wa-badge>
-					{/if}
-				{/await}
-			</wa-button>
-
-			<wa-button class="circle" href="/new-message" appearance="plain">
+			<Link iconOnly href="/new-message">
 				<wa-icon src={wrapPathInSvg(mdiSquareEditOutline)}> </wa-icon>
-			</wa-button>
-		</div>
-	</div>
-{/await}
+			</Link>
+			{#if theme == 'material'}
+				<div></div>
+			{/if}
+		{/snippet}
+	</Navbar>
 
-<AllChats></AllChats>
+	<AllChats></AllChats>
+</Page>

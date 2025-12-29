@@ -1,68 +1,87 @@
 <script lang="ts">
-	import '@awesome.me/webawesome/dist/components/button/button.js';
+	import '@awesome.me/webawesome/dist/components/icon/icon.js';
+	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import {
-		mdiAccountMultiplePlus,
-		mdiAccountPlus,
-	} from '@mdi/js';
+	import { mdiAccountMultiplePlus, mdiAccountPlus } from '@mdi/js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '../../stores/use-signal';
-	import { mdiArrowBack, wrapPathInSvg } from '../../utils/icon';
+	import { wrapPathInSvg } from '../../utils/icon';
+	import {
+		Page,
+		Navbar,
+		NavbarBackLink,
+		BlockTitle,
+		List,
+		ListItem,
+		Button,
+		Link,
+		Preloader,
+		useTheme,
+	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
+	const theme = $derived(useTheme());
 </script>
 
-<div class="top-bar">
-	<wa-button class="circle" href="/" appearance="plain">
-		<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
-	</wa-button>
-	<span class="title">{m.newMessage()}</span>
-</div>
+<Page>
+	<Navbar title={m.newMessage()} titleClass="opacity1" transparent={true}>
+		{#snippet left()}
+			<NavbarBackLink onClick={() => (window.location.href = '/')} />
+		{/snippet}
+	</Navbar>
 
-<div
-	class="column center-in-desktop"
-	style="gap: var(--wa-space-l); margin: var(--wa-space-m)"
->
-	<div class="column" style="gap: var(--wa-space-m)">
-		<wa-button appearance="outlined" href="/add-contact">
-			<wa-icon slot="start" src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
-			{m.addContact()}
-		</wa-button>
+	<div class="column" style="flex: 1">
+		<div class="column center-in-desktop">
+			<div class="column gap-4 mt-2 mx-4">
+				<Link href="/add-contact">
+					<Button tonal large class="w-full gap-2">
+						<wa-icon src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
+						{m.addContact()}
+					</Button>
+				</Link>
 
-		<wa-button appearance="outlined" href="/new-group">
-			<wa-icon slot="start" src={wrapPathInSvg(mdiAccountMultiplePlus)}>
-			</wa-icon>
-			{m.newGroup()}
-		</wa-button>
-	</div>
-
-	<div class="column" style="gap: var(--wa-space-m)">
-		<span class="title">{m.contacts()}</span>
-
-		{#await $contacts then contacts}
-			<div class="column" style="gap: var(--wa-space-m)">
-				{#each contacts as [actorId, profile]}
-					<wa-button
-						appearance="plain"
-						class="button-with-avatar fill"
-						href={`/direct-messages/${actorId}`}
-					>
-						<wa-avatar
-							slot="start"
-							image={profile.avatar}
-							initials={profile.name.slice(0, 2)}
-						>
-						</wa-avatar>
-
-						{profile.name}
-					</wa-button>
-				{:else}
-					<span>{m.noContactsYet()}</span>
-				{/each}
+				<Link href="/new-group">
+					<Button tonal large class="w-full gap-2">
+						<wa-icon src={wrapPathInSvg(mdiAccountMultiplePlus)}> </wa-icon>
+						{m.newGroup()}
+					</Button>
+				</Link>
 			</div>
-		{/await}
+
+			<BlockTitle>{m.contacts()}</BlockTitle>
+
+			{#await $contacts}
+				<div
+					class="column"
+					style="height: 100%; align-items: center; justify-content: center"
+				>
+					<Preloader />
+				</div>
+			{:then contacts}
+				<List strongIos insetIos>
+					{#each contacts as [actorId, profile]}
+						<ListItem
+							link
+							linkProps={{ href: `/direct-messages/${actorId}` }}
+							title={profile.name}
+							chevron={false}
+						>
+							{#snippet media()}
+								<wa-avatar
+									image={profile.avatar}
+									initials={profile.name.slice(0, 2)}
+								>
+								</wa-avatar>
+							{/snippet}
+						</ListItem>
+					{:else}
+						<ListItem title={m.noContactsYet()} />
+					{/each}
+				</List>
+			{/await}
+		</div>
 	</div>
-</div>
+</Page>
