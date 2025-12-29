@@ -21,6 +21,17 @@ let
   cassandra_module = {
     services.cassandra = {
       enable = true;
+
+      extraConfig = { native_transport_port = 9042; };
+    };
+
+    networking = {
+      firewall = {
+        enable = true;
+        allowedTCPPorts = [
+          9042 # http
+        ];
+      };
     };
   };
 
