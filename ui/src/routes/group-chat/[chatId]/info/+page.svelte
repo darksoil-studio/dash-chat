@@ -1,10 +1,5 @@
 <script lang="ts">
-	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
-	import '@awesome.me/webawesome/dist/components/dialog/dialog.js';
-	import '@awesome.me/webawesome/dist/components/drawer/drawer.js';
-	import '@awesome.me/webawesome/dist/components/tag/tag.js';
-	import '@awesome.me/webawesome/dist/components/card/card.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import { m } from '$lib/paraglide/messages.js';
 
@@ -14,23 +9,34 @@
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import {
 		mdiAccountGroup,
-		
 		mdiClose,
 		mdiDelete,
 		mdiExport,
 		mdiKeyVariant,
 		mdiPencil,
-		mdiPlus,
-		mdiPlusCircleOutline,
-		mdiPlusOutline,
-		mdiSend,
+		mdiPlusCircle,
 	} from '@mdi/js';
-	import Avatar from '../../../../components/Avatar.svelte';
-	import WaButton from '@awesome.me/webawesome/dist/components/button/button.js';
-	import WaDialog from '@awesome.me/webawesome/dist/components/dialog/dialog.js';
-	import { mdiArrowBack } from '../../../../utils/icon';
+	import {
+		Page,
+		Navbar,
+		NavbarBackLink,
+		Button,
+		Card,
+		Link,
+		List,
+		ListItem,
+		Chip,
+		Dialog,
+		DialogButton,
+		Sheet,
+		ActionsButton,
+		BlockTitle,
+		useTheme,
+	} from 'konsta/svelte';
+	import Layout from '../../../+layout.svelte';
 
-	const chatId = window.location.href.split('/').reverse()[1];
+	import { page } from '$app/state';
+	let chatId = page.params.chatId!;
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const groupChatStore = chatsStore.groupChats(chatId);
@@ -38,342 +44,410 @@
 	const info = useReactivePromise(groupChatStore.info);
 	const members = useReactivePromise(groupChatStore.allMembers);
 	const me = useReactivePromise(groupChatStore.me);
+
+	let sheetOpenFor = $state<string | null>(null);
+	let dialogType = $state<
+		'demote' | 'promote' | 'remove' | 'leave' | 'delete' | null
+	>(null);
+	let dialogActorId = $state<string | null>(null);
+	let loading = $state(false);
+	const theme = $derived(useTheme());
+
+	async function handleDemote(actorId: string) {
+		loading = true;
+		try {
+			await groupChatStore.client.demoteFromAdministrator(chatId, actorId);
+			dialogType = null;
+			dialogActorId = null;
+		} catch (e) {
+			console.error(e);
+		}
+		loading = false;
+	}
+
+	async function handlePromote(actorId: string) {
+		loading = true;
+		try {
+			await groupChatStore.client.promoteToAdministrator(chatId, actorId);
+			dialogType = null;
+			dialogActorId = null;
+		} catch (e) {
+			console.error(e);
+		}
+		loading = false;
+	}
+
+	async function handleRemove(actorId: string) {
+		loading = true;
+		try {
+			await groupChatStore.client.removeMember(chatId, actorId);
+			dialogType = null;
+			dialogActorId = null;
+		} catch (e) {
+			console.error(e);
+		}
+		loading = false;
+	}
+
+	async function handleLeaveGroup() {
+		loading = true;
+		try {
+			await groupChatStore.client.leaveGroup();
+			dialogType = null;
+			window.location.href = '/';
+		} catch (e) {
+			console.error(e);
+		}
+		loading = false;
+	}
+
+	async function handleDeleteGroup() {
+		loading = true;
+		try {
+			await groupChatStore.client.deleteGroup();
+			dialogType = null;
+			window.location.href = '/';
+		} catch (e) {
+			console.error(e);
+		}
+		loading = false;
+	}
 </script>
 
-<div class="top-bar">
-	<wa-button class="circle" appearance="plain" href="/">
-		<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
-	</wa-button>
-	<span class="title" style="flex: 1"></span>
-</div>
+<Page>
+	{#await $info then info}
+		<Navbar transparent={true}>
+			{#snippet left()}
+				<NavbarBackLink onClick={() => (window.location.href = `/group-chat/${chatId}`)} />
+			{/snippet}
 
-{#await $me then me}
-	<div class="column center-in-desktop" style="gap: var(--wa-space-l)">
-		{#await $info then info}
-			<div class="column" style="align-items: center">
-				<div class="column" style="gap: var(--wa-space-s); align-items: center">
-					<wa-avatar image={info.avatar}>
-						<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon>
+			{#snippet title()}
+				<div
+					class="gap-2"
+					style="display: flex; justify-content: start; align-items: center; flex: 1"
+				>
+					<wa-avatar
+						image={info.avatar}
+						initials={info.name.slice(0, 2)}
+						style="--size: 2.5rem"
+					>
 					</wa-avatar>
+					<span>{info.name}</span>
+				</div>
+			{/snippet}
 
-					<div class="row" style="align-items: center; gap: var(--wa-space-s)">
-						<wa-button class="circle" appearance="plain" style="opacity: 0">
-						</wa-button>
+			{#snippet right()}
+				<Link href={`/group-chat/${chatId}/info/edit`} iconOnly={theme === 'material'}>
+					{#if theme === 'material'}
+						<wa-icon src={wrapPathInSvg(mdiPencil)}> </wa-icon>
+					{:else}
+						{m.edit()}
+					{/if}
+				</Link>
+			{/snippet}
+		</Navbar>
 
-						<span class="title">{info.name} </span>
+		{#await $me then me}
+			<div class="column" style="flex: 1">
+				<div class="column center-in-desktop gap-8 p-2">
+					<div class="column" style="align-items: center; gap: 1rem">
+						<wa-avatar image={info.avatar} style="--size: 5rem">
+							<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon>
+						</wa-avatar>
 
-						<wa-button
-							class="circle"
-							appearance="plain"
-							href={`/group-chat/${chatId}/info/edit`}
-						>
-							<wa-icon src={wrapPathInSvg(mdiPencil)}> </wa-icon>
-						</wa-button>
+						<span class="text-xl font-semibold">{info.name}</span>
+
+						<span class="quiet">{info.description}</span>
 					</div>
 
-					<span>{info.description}</span>
+					{#await $members then members}
+						<BlockTitle>
+							{m.membersCount({
+								count: Object.keys(members).length,
+							})}</BlockTitle
+						>
+						<List nested strongIos insetIos>
+							{#if me.admin}
+								<ListItem
+									link
+									chevron={false}
+									linkProps={{ href: `/group-chat/${chatId}/info/add-members` }}
+									title={m.addMembers()}
+								>
+									{#snippet media()}
+										<wa-icon
+											style="font-size: 2rem;"
+											src={wrapPathInSvg(mdiPlusCircle)}
+										></wa-icon>
+									{/snippet}
+								</ListItem>
+							{/if}
+
+							{#each Object.entries(members) as [actorId, member]}
+								<ListItem
+									link
+									chevron={false}
+									title={member.profile?.name}
+									onclick={() => (sheetOpenFor = actorId)}
+								>
+									{#snippet media()}
+										<wa-avatar
+											image={member.profile?.avatar}
+											initials={member.profile?.name.slice(0, 2)}
+										></wa-avatar>
+									{/snippet}
+
+									{#snippet after()}
+										{#if member.admin}
+											<Chip>{m.administrator()}</Chip>
+										{/if}
+									{/snippet}
+								</ListItem>
+
+								{#if sheetOpenFor === actorId}
+									<Sheet
+										class="pb-safe"
+										opened={sheetOpenFor === actorId}
+										onBackdropClick={() => (sheetOpenFor = null)}
+									>
+										<div
+											class="flex-col gap-4 py-4"
+											style="display: flex; align-items: center;"
+										>
+											<wa-avatar
+												image={member.profile?.avatar}
+												initials={member.profile?.name.slice(0, 2)}
+											></wa-avatar>
+											<span class="font-semibold">{member.profile?.name}</span>
+										</div>
+
+										<List nested strongIos insetIos class="mb-2">
+											{#if me.admin}
+												{#if member.admin}
+													<ListItem
+														link
+														chevron={false}
+														title={m.demoteFromAdministrator()}
+														onClick={() => {
+															dialogType = 'demote';
+															dialogActorId = actorId;
+															sheetOpenFor = null;
+														}}
+													>
+														{#snippet media()}
+															<wa-icon src={wrapPathInSvg(mdiKeyVariant)}
+															></wa-icon>
+														{/snippet}
+													</ListItem>
+												{:else}
+													<ListItem
+														link
+														chevron={false}
+														title={m.promoteToAdministrator()}
+														onClick={() => {
+															dialogType = 'promote';
+															dialogActorId = actorId;
+															sheetOpenFor = null;
+														}}
+													>
+														{#snippet media()}
+															<wa-icon src={wrapPathInSvg(mdiKeyVariant)}
+															></wa-icon>
+														{/snippet}
+													</ListItem>
+												{/if}
+
+												<ListItem
+													link
+													chevron={false}
+													title={m.removeMember()}
+													onClick={() => {
+														dialogType = 'remove';
+														dialogActorId = actorId;
+														sheetOpenFor = null;
+													}}
+												>
+													{#snippet media()}
+														<wa-icon src={wrapPathInSvg(mdiDelete)}></wa-icon>
+													{/snippet}
+												</ListItem>
+											{/if}
+										</List>
+									</Sheet>
+								{/if}
+							{/each}
+						</List>
+
+						<List nested strongIos insetIos class="z-1">
+							<ListItem
+								title={m.leaveGroup()}
+								link
+								chevron={false}
+								onClick={() => (dialogType = 'leave')}
+								colors={{
+									primaryTextIos: 'text-red-500',
+									primaryTextMaterial: 'text-red-600',
+								}}
+							>
+								{#snippet media()}
+									<wa-icon class="big" src={wrapPathInSvg(mdiExport)}></wa-icon>
+								{/snippet}
+							</ListItem>
+
+							<ListItem
+								title={m.deleteGroup()}
+								link
+								chevron={false}
+								onClick={() => (dialogType = 'delete')}
+								colors={{
+									primaryTextIos: 'text-red-500',
+									primaryTextMaterial: 'text-red-600',
+								}}
+							>
+								{#snippet media()}
+									<wa-icon class="big" src={wrapPathInSvg(mdiClose)}></wa-icon>
+								{/snippet}
+							</ListItem>
+						</List>
+					{/await}
 				</div>
 			</div>
 		{/await}
 
-		{#await $members then members}
-			<wa-card>
-				<div class="column" style="gap: var(--wa-space-m)">
-					{m.membersCount({ count: Object.keys(members).length })}
-					{#if me.admin}
-						<wa-button class="fill member-button" appearance="plain">
-							<wa-icon
-								auto-width
-								style="font-size: 3rem"
-								slot="start"
-								src={wrapPathInSvg(mdiPlusCircleOutline)}
-							></wa-icon>
-
-							{m.addMembers()}
-						</wa-button>
-					{/if}
-					{#each Object.entries(members) as [actorId, member]}
-						<wa-button
-							data-drawer={`open drawer-${actorId}`}
-							class="fill member-button"
-							appearance="plain"
-						>
-							<wa-avatar
-								slot="start"
-								image={member.profile?.avatar}
-								initials={member.profile?.name.slice(0, 2)}
-							>
-							</wa-avatar>
-							<span>{member.profile?.name}</span>
-
-							{#if member.admin}
-								<wa-tag slot="end">{m.administrator()}</wa-tag>
-							{/if}
-						</wa-button>
-
-						<wa-drawer
-							light-dismiss
-							placement="bottom"
-							id={`drawer-${actorId}`}
-						>
-							<div
-								class="column center-in-desktop"
-								style="gap: var(--wa-space-m)"
-							>
-								<div
-									class="column"
-									style="align-items: center; gap: var(--wa-space-m)"
-								>
-									<wa-avatar
-										image={member.profile?.avatar}
-										initials={member.profile?.name.slice(0, 2)}
-									>
-									</wa-avatar>
-									<span>{member.profile?.name}</span>
-								</div>
-
-								{#if me.admin && me.actorId !== member.actorId}
-									{#if member.admin}
-										<wa-button
-											class="fill"
-											appearance="plain"
-											data-dialog={`open demote-dialog-${member.actorId}`}
-										>
-											<wa-icon slot="start" src={wrapPathInSvg(mdiKeyVariant)}
-											></wa-icon>
-											{m.demoteFromAdministrator()}
-										</wa-button>
-
-										<wa-dialog
-											label={m.demoteFromAdministrator()}
-											id={`demote-dialog-${member.actorId}`}
-										>
-											<span
-												>{m.areYouSureDemote()}
-											</span>
-											<wa-button
-												variant="neutral"
-												appearance="outlined"
-												data-dialog="close"
-												slot="footer"
-												>{m.cancel()}
-											</wa-button>
-											<wa-button
-												slot="footer"
-												variant="danger"
-												onclick={async (e: CustomEvent) => {
-													const button = e.target as WaButton;
-													button.loading = true;
-
-													try {
-														await groupChatStore.client.demoteFromAdministrator(
-															chatId,
-															member.actorId,
-														);
-														const dialog = document.getElementById(
-															`demote-dialog-${member.actorId}`,
-														) as WaDialog;
-														dialog.open = false;
-													} catch (e) {}
-
-													button.loading = false;
-												}}
-											>
-												{m.demote()}
-											</wa-button>
-										</wa-dialog>
-									{:else}
-										<wa-button
-											class="fill"
-											appearance="plain"
-											data-dialog={`open promote-dialog-${member.actorId}`}
-										>
-											<wa-icon slot="start" src={wrapPathInSvg(mdiKeyVariant)}
-											></wa-icon>
-											{m.promoteToAdministrator()}
-										</wa-button>
-
-										<wa-dialog
-											label={m.promoteToAdministrator()}
-											id={`promote-dialog-${member.actorId}`}
-										>
-											<span
-												>{m.areYouSurePromote()}
-											</span>
-											<wa-button
-												variant="neutral"
-												appearance="outlined"
-												data-dialog="close"
-												slot="footer"
-												>{m.cancel()}
-											</wa-button>
-											<wa-button
-												slot="footer"
-												variant="brand"
-												onclick={async (e: CustomEvent) => {
-													const button = e.target as WaButton;
-													button.loading = true;
-
-													try {
-														await groupChatStore.client.promoteToAdministrator(
-															chatId,
-															member.actorId,
-														);
-														const dialog = document.getElementById(
-															`promote-dialog-${member.actorId}`,
-														) as WaDialog;
-														dialog.open = false;
-													} catch (e) {}
-
-													button.loading = false;
-												}}
-											>
-												{m.promote()}
-											</wa-button>
-										</wa-dialog>
-									{/if}
-
-									<wa-button
-										class="fill"
-										appearance="plain"
-										data-dialog={`open remove-dialog-${member.actorId}`}
-									>
-										<wa-icon slot="start" src={wrapPathInSvg(mdiDelete)}
-										></wa-icon>
-										{m.removeMember()}
-									</wa-button>
-									<wa-dialog
-										label={m.removeMember()}
-										id={`remove-dialog-${member.actorId}`}
-									>
-										<span>{m.areYouSureRemoveMember()}</span>
-										<wa-button
-											variant="neutral"
-											appearance="outlined"
-											data-dialog="close"
-											slot="footer"
-											>{m.cancel()}
-										</wa-button>
-										<wa-button
-											slot="footer"
-											variant="danger"
-											onclick={async (e: CustomEvent) => {
-												const button = e.target as WaButton;
-												button.loading = true;
-
-												try {
-													await groupChatStore.client.removeMember(
-														chatId,
-														member.actorId,
-													);
-													const dialog = document.getElementById(
-														`remove-dialog-${member.actorId}`,
-													) as WaDialog;
-													dialog.open = false;
-												} catch (e) {}
-
-												button.loading = false;
-											}}
-										>
-											{m.removeMember()}
-										</wa-button>
-									</wa-dialog>
-								{/if}
-							</div>
-						</wa-drawer>
-					{/each}
-				</div>
-			</wa-card>
-		{/await}
-
-		<div class="column" style="gap: var(--wa-space-m)">
-			<wa-button
-				class="fill"
-				variant="danger"
-				appearance="plain"
-				data-dialog="open leave-group-dialog"
-			>
-				<wa-icon src={wrapPathInSvg(mdiExport)} slot="start"></wa-icon>
-
-				{m.leaveGroup()}
-			</wa-button>
-			<wa-dialog label={m.leaveGroup()} id="leave-group-dialog">
-				<span>{m.areYouSureLeaveGroup()}</span>
-				<wa-button
-					variant="neutral"
-					appearance="outlined"
-					data-dialog="close"
-					slot="footer"
-					>{m.cancel()}
-				</wa-button>
-				<wa-button
-					slot="footer"
-					variant="danger"
-					onclick={async (e: CustomEvent) => {
-						const button = e.target as WaButton;
-						button.loading = true;
-
-						try {
-							await groupChatStore.client.leaveGroup();
-							const dialog = document.getElementById(
-								'leave-group-dialog',
-							) as WaDialog;
-							dialog.open = false;
-						} catch (e) {}
-
-						button.loading = false;
+		<!-- Dialogs -->
+		<Dialog
+			opened={dialogType === 'demote' && dialogActorId !== null}
+			onBackdropClick={() => {
+				dialogType = null;
+				dialogActorId = null;
+			}}
+		>
+			{#snippet title()}
+				{m.demoteFromAdministrator()}
+			{/snippet}
+			<span>{m.areYouSureDemote()}</span>
+			{#snippet buttons()}
+				<DialogButton
+					onClick={() => {
+						dialogType = null;
+						dialogActorId = null;
 					}}
 				>
+					{m.cancel()}
+				</DialogButton>
+				<DialogButton
+					strong
+					onClick={() => dialogActorId && handleDemote(dialogActorId)}
+					disabled={loading}
+				>
+					{loading ? '...' : m.demote()}
+				</DialogButton>
+			{/snippet}
+		</Dialog>
+
+		<Dialog
+			opened={dialogType === 'promote' && dialogActorId !== null}
+			onBackdropClick={() => {
+				dialogType = null;
+				dialogActorId = null;
+			}}
+		>
+			{#snippet title()}
+				{m.promoteToAdministrator()}
+			{/snippet}
+			<span>{m.areYouSurePromote()}</span>
+			{#snippet buttons()}
+				<DialogButton
+					onClick={() => {
+						dialogType = null;
+						dialogActorId = null;
+					}}
+				>
+					{m.cancel()}
+				</DialogButton>
+				<DialogButton
+					onClick={() => dialogActorId && handlePromote(dialogActorId)}
+					disabled={loading}
+					strong
+				>
+					{loading ? '...' : m.promote()}
+				</DialogButton>
+			{/snippet}
+		</Dialog>
+
+		<Dialog
+			opened={dialogType === 'remove' && dialogActorId !== null}
+			onBackdropClick={() => {
+				dialogType = null;
+				dialogActorId = null;
+			}}
+		>
+			{#snippet title()}
+				{m.removeMember()}
+			{/snippet}
+			<span>{m.areYouSureRemoveMember()}</span>
+			{#snippet buttons()}
+				<DialogButton
+					onClick={() => {
+						dialogType = null;
+						dialogActorId = null;
+					}}
+				>
+					{m.cancel()}
+				</DialogButton>
+				<DialogButton
+					strong
+					onClick={() => dialogActorId && handleRemove(dialogActorId)}
+					disabled={loading}
+				>
+					{loading ? '...' : m.remove()}
+				</DialogButton>
+			{/snippet}
+		</Dialog>
+
+		<Dialog
+			opened={dialogType === 'leave'}
+			onBackdropClick={() => (dialogType = null)}
+		>
+			{#snippet title()}
 				{m.leaveGroup()}
-				</wa-button>
-			</wa-dialog>
+			{/snippet}
+			<span>{m.areYouSureLeaveGroup()}</span>
+			{#snippet buttons()}
+				<DialogButton onClick={() => (dialogType = null)}
+					>{m.cancel()}</DialogButton
+				>
+				<DialogButton strong onClick={handleLeaveGroup} disabled={loading}>
+					{loading ? '...' : m.leave()}
+				</DialogButton>
+			{/snippet}
+		</Dialog>
 
-			<wa-button
-				class="fill"
-				variant="danger"
-				appearance="plain"
-				data-dialog="open delete-group-dialog"
-			>
-				<wa-icon src={wrapPathInSvg(mdiClose)} slot="start"></wa-icon>
-
+		<Dialog
+			opened={dialogType === 'delete'}
+			onBackdropClick={() => (dialogType = null)}
+		>
+			{#snippet title()}
 				{m.deleteGroup()}
-			</wa-button>
-			<wa-dialog label={m.deleteGroup()} id="delete-group-dialog">
-				<span>{m.areYouSureDeleteGroup()}</span>
-				<wa-button
-					variant="neutral"
-					appearance="outlined"
-					data-dialog="close"
-					slot="footer"
-					>{m.cancel()}
-				</wa-button>
-				<wa-button
-					slot="footer"
-					variant="danger"
-					onclick={async (e: CustomEvent) => {
-						const button = e.target as WaButton;
-						button.loading = true;
-
-						try {
-							await groupChatStore.client.deleteGroup();
-							const dialog = document.getElementById(
-								'delete-group-dialog',
-							) as WaDialog;
-							dialog.open = false;
-						} catch (e) {}
-
-						button.loading = false;
-					}}
+			{/snippet}
+			<span>{m.areYouSureDeleteGroup()}</span>
+			{#snippet buttons()}
+				<DialogButton onClick={() => (dialogType = null)}
+					>{m.cancel()}</DialogButton
 				>
-					{m.deleteGroup()}
-				</wa-button>
-			</wa-dialog>
-		</div>
-	</div>
-{/await}
+				<DialogButton strong onClick={handleDeleteGroup} disabled={loading}>
+					{loading ? '...' : m.delete()}
+				</DialogButton>
+			{/snippet}
+		</Dialog>
+	{/await}
+</Page>
 
 <style>
-	wa-button.member-button::part(base) {
-		height: 68px;
+	wa-avatar {
+		--size: 32px;
+	}
+	wa-icon {
+		width: 32px;
 	}
 </style>

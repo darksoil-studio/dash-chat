@@ -1,7 +1,7 @@
 export function resizeAndExport(
 	img: HTMLImageElement,
-	maxWidth: number,
-	maxHeight: number,
+	maxWidth: number  =300,
+	maxHeight: number =300,
 ) {
 	let width = img.width;
 	let height = img.height;

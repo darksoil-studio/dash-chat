@@ -1,32 +1,31 @@
 <script lang="ts">
 	import { splashscreenDismissed } from './utils';
-	import '@awesome.me/webawesome/dist/components/input/input.js';
-	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import { getContext } from 'svelte';
-	import type { UsersStore } from 'dash-chat-stores';
-	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
+	import type { ContactsStore } from 'dash-chat-stores';
 	import { useReactivePromise} from '../stores/use-signal';
 	import { m } from '$lib/paraglide/messages.js';
+	import { ListInput, Button, List } from 'konsta/svelte';
 
-	const usersStore: UsersStore = getContext('users-store');
-	let nickname: string | undefined;
+	const contactsStore: ContactsStore = getContext('contacts-store');
+	let nickname = $state<string>('');
 
 	async function setProfile() {
-		await usersStore.client.setProfile({
+		await contactsStore.client.setProfile({
 			name: nickname!,
 			avatar: undefined,
 		});
 
 		splashscreenDismissed.dismiss();
 	}
-	
-	const me = useReactivePromise(usersStore.me)
+
+	const me = useReactivePromise(contactsStore.myProfile)
 </script>
 
-<wa-input
-	oninput={(e: CustomEvent) => {
-		nickname = (e.target as WaInput).value!;
-	}}
->
-</wa-input>
-<wa-button onclick={setProfile}>{m.createProfile()}</wa-button>
+<List nested>
+	<ListInput
+		type="text"
+		bind:value={nickname}
+		label={m.name()}
+	/>
+</List>
+<Button onClick={setProfile}>{m.createProfile()}</Button>
