@@ -7,8 +7,10 @@
 	import type { ContactRequestId, ContactsStore } from 'dash-chat-stores';
 	import Avatar from '../../components/Avatar.svelte';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
-	import { mdiAccountPlus, mdiArrowLeft } from '@mdi/js';
+	import { mdiAccountPlus } from '@mdi/js';
 	import WaButton from '@awesome.me/webawesome/dist/components/button/button.js';
+	import { m } from '$lib/paraglide/messages.js';
+	import { mdiArrowBack } from '../../utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -25,10 +27,10 @@
 <div class="column">
 	<div class="top-bar">
 		<wa-button class="circle" appearance="plain" href="/">
-			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 		</wa-button>
 
-		<span class="title">My contacts</span>
+		<span class="title">{m.myContacts()}</span>
 
 		<div style="flex: 1"></div>
 		<wa-button class="circle" href="/add-contact" appearance="plain">
@@ -40,7 +42,7 @@
 		{#if incomingContactRequests.length > 0}
 			<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
 				<div class="column" style="gap: var(--wa-space-m)">
-					<span class="title">Contact Requests</span>
+					<span class="title">{m.contactRequests()}</span>
 
 					{#each incomingContactRequests as incomingContactRequest}
 						<div
@@ -71,7 +73,7 @@
 
 									button.loading = false;
 								}}
-								>Reject
+								>{m.reject()}
 							</wa-button>
 
 							<wa-button
@@ -88,7 +90,7 @@
 
 									button.loading = false;
 								}}
-								>Accept
+								>{m.accept()}
 							</wa-button>
 						</div>
 					{/each}
@@ -115,7 +117,7 @@
 
 						{profile.name}
 					</wa-button>
-				{:else}<span>You don't have any contacts yet.</span>
+				{:else}<span>{m.noContactsYet()}</span>
 				{/each}
 			</div>
 		</wa-card>

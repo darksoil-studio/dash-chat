@@ -6,6 +6,7 @@
 	import '@awesome.me/webawesome/dist/components/tag/tag.js';
 	import '@awesome.me/webawesome/dist/components/card/card.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import { useReactivePromise } from '../../../../stores/use-signal';
 	import { getContext } from 'svelte';
@@ -13,7 +14,7 @@
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
 	import {
 		mdiAccountGroup,
-		mdiArrowLeft,
+		
 		mdiClose,
 		mdiDelete,
 		mdiExport,
@@ -27,6 +28,7 @@
 	import Avatar from '../../../../components/Avatar.svelte';
 	import WaButton from '@awesome.me/webawesome/dist/components/button/button.js';
 	import WaDialog from '@awesome.me/webawesome/dist/components/dialog/dialog.js';
+	import { mdiArrowBack } from '../../../../utils/icon';
 
 	const chatId = window.location.href.split('/').reverse()[1];
 
@@ -40,7 +42,7 @@
 
 <div class="top-bar">
 	<wa-button class="circle" appearance="plain" href="/">
-		<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+		<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 	</wa-button>
 	<span class="title" style="flex: 1"></span>
 </div>
@@ -69,7 +71,7 @@
 						</wa-button>
 					</div>
 
-					<span>{info.description} </span>
+					<span>{info.description}</span>
 				</div>
 			</div>
 		{/await}
@@ -77,7 +79,7 @@
 		{#await $members then members}
 			<wa-card>
 				<div class="column" style="gap: var(--wa-space-m)">
-					{Object.keys(members).length} members
+					{m.membersCount({ count: Object.keys(members).length })}
 					{#if me.admin}
 						<wa-button class="fill member-button" appearance="plain">
 							<wa-icon
@@ -87,7 +89,7 @@
 								src={wrapPathInSvg(mdiPlusCircleOutline)}
 							></wa-icon>
 
-							Add members
+							{m.addMembers()}
 						</wa-button>
 					{/if}
 					{#each Object.entries(members) as [actorId, member]}
@@ -105,7 +107,7 @@
 							<span>{member.profile?.name}</span>
 
 							{#if member.admin}
-								<wa-tag slot="end">Administrator</wa-tag>
+								<wa-tag slot="end">{m.administrator()}</wa-tag>
 							{/if}
 						</wa-button>
 
@@ -139,23 +141,22 @@
 										>
 											<wa-icon slot="start" src={wrapPathInSvg(mdiKeyVariant)}
 											></wa-icon>
-											Demote from administrator
+											{m.demoteFromAdministrator()}
 										</wa-button>
 
 										<wa-dialog
-											label="Demote from administrator"
+											label={m.demoteFromAdministrator()}
 											id={`demote-dialog-${member.actorId}`}
 										>
 											<span
-												>Are you sure you want to demote this member from the
-												administrator role?
+												>{m.areYouSureDemote()}
 											</span>
 											<wa-button
 												variant="neutral"
 												appearance="outlined"
 												data-dialog="close"
 												slot="footer"
-												>Cancel
+												>{m.cancel()}
 											</wa-button>
 											<wa-button
 												slot="footer"
@@ -178,7 +179,7 @@
 													button.loading = false;
 												}}
 											>
-												Demote
+												{m.demote()}
 											</wa-button>
 										</wa-dialog>
 									{:else}
@@ -189,23 +190,22 @@
 										>
 											<wa-icon slot="start" src={wrapPathInSvg(mdiKeyVariant)}
 											></wa-icon>
-											Promote to administrator
+											{m.promoteToAdministrator()}
 										</wa-button>
 
 										<wa-dialog
-											label="Promote to administrator"
+											label={m.promoteToAdministrator()}
 											id={`promote-dialog-${member.actorId}`}
 										>
 											<span
-												>Are you sure you want to promote this member to the
-												administrator role?
+												>{m.areYouSurePromote()}
 											</span>
 											<wa-button
 												variant="neutral"
 												appearance="outlined"
 												data-dialog="close"
 												slot="footer"
-												>Cancel
+												>{m.cancel()}
 											</wa-button>
 											<wa-button
 												slot="footer"
@@ -228,7 +228,7 @@
 													button.loading = false;
 												}}
 											>
-												Promote
+												{m.promote()}
 											</wa-button>
 										</wa-dialog>
 									{/if}
@@ -240,19 +240,19 @@
 									>
 										<wa-icon slot="start" src={wrapPathInSvg(mdiDelete)}
 										></wa-icon>
-										Remove member
+										{m.removeMember()}
 									</wa-button>
 									<wa-dialog
-										label="Remove member"
+										label={m.removeMember()}
 										id={`remove-dialog-${member.actorId}`}
 									>
-										<span>Are you sure you want to remove this member? </span>
+										<span>{m.areYouSureRemoveMember()}</span>
 										<wa-button
 											variant="neutral"
 											appearance="outlined"
 											data-dialog="close"
 											slot="footer"
-											>Cancel
+											>{m.cancel()}
 										</wa-button>
 										<wa-button
 											slot="footer"
@@ -275,7 +275,7 @@
 												button.loading = false;
 											}}
 										>
-											Remove member
+											{m.removeMember()}
 										</wa-button>
 									</wa-dialog>
 								{/if}
@@ -295,16 +295,16 @@
 			>
 				<wa-icon src={wrapPathInSvg(mdiExport)} slot="start"></wa-icon>
 
-				Leave group
+				{m.leaveGroup()}
 			</wa-button>
-			<wa-dialog label="Leave group" id="leave-group-dialog">
-				<span>Are you sure you want to leave this group? </span>
+			<wa-dialog label={m.leaveGroup()} id="leave-group-dialog">
+				<span>{m.areYouSureLeaveGroup()}</span>
 				<wa-button
 					variant="neutral"
 					appearance="outlined"
 					data-dialog="close"
 					slot="footer"
-					>Cancel
+					>{m.cancel()}
 				</wa-button>
 				<wa-button
 					slot="footer"
@@ -324,7 +324,7 @@
 						button.loading = false;
 					}}
 				>
-					Leave group
+				{m.leaveGroup()}
 				</wa-button>
 			</wa-dialog>
 
@@ -336,16 +336,16 @@
 			>
 				<wa-icon src={wrapPathInSvg(mdiClose)} slot="start"></wa-icon>
 
-				Delete group
+				{m.deleteGroup()}
 			</wa-button>
-			<wa-dialog label="Delete group" id="delete-group-dialog">
-				<span>Are you sure you want to delete this group? </span>
+			<wa-dialog label={m.deleteGroup()} id="delete-group-dialog">
+				<span>{m.areYouSureDeleteGroup()}</span>
 				<wa-button
 					variant="neutral"
 					appearance="outlined"
 					data-dialog="close"
 					slot="footer"
-					>Cancel
+					>{m.cancel()}
 				</wa-button>
 				<wa-button
 					slot="footer"
@@ -365,7 +365,7 @@
 						button.loading = false;
 					}}
 				>
-					Delete group
+					{m.deleteGroup()}
 				</wa-button>
 			</wa-dialog>
 		</div>

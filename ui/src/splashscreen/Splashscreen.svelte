@@ -6,6 +6,7 @@
 	import type { UsersStore } from 'dash-chat-stores';
 	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 	import { useReactivePromise} from '../stores/use-signal';
+	import { m } from '$lib/paraglide/messages.js';
 
 	const usersStore: UsersStore = getContext('users-store');
 	let nickname: string | undefined;
@@ -25,8 +26,7 @@
 <wa-input
 	oninput={(e: CustomEvent) => {
 		nickname = (e.target as WaInput).value!;
-		console.log(nickname);
 	}}
 >
 </wa-input>
-<wa-button onclick={setProfile}>Create Profile </wa-button>
+<wa-button onclick={setProfile}>{m.createProfile()}</wa-button>

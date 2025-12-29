@@ -95,7 +95,7 @@ pub struct ReppedGroup {
 #[derive(Clone)]
 pub struct NodeState {
     pub spaces_events:
-        Arc<RwLock<HashMap<Hash, Vec<Event<ChatId, TestConditions>>>>>,
+        Arc<RwLock<HashMap<p2panda_core::Hash, Vec<Event<ChatId, TestConditions>>>>>,
     pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
     pub(crate) contacts: Arc<RwLock<HashMap<PK, QrCode>>>,
     pub(crate) chat_actor_id: ActorId,

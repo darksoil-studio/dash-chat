@@ -6,13 +6,15 @@
 	import '@awesome.me/webawesome/dist/components/relative-time/relative-time.js';
 	import '@awesome.me/webawesome/dist/components/format-date/format-date.js';
 	import type WaTextarea from '@awesome.me/webawesome/dist/components/textarea/textarea.js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import { useReactivePromise } from '../../../stores/use-signal';
 	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '../../../utils/time';
 	import { getContext } from 'svelte';
 	import type { ChatsStore, ContactsStore } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
-	import { mdiArrowLeft, mdiSend } from '@mdi/js';
+	import {  mdiSend } from '@mdi/js';
+	import { mdiArrowBack } from '../../../utils/icon';
 
 	const chatId = window.location.href.split('/').reverse()[0];
 
@@ -38,7 +40,7 @@
 
 <div class="top-bar" style="gap: 0">
 	<wa-button class="circle" appearance="plain" href="/">
-		<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+		<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 	</wa-button>
 
 	<wa-button
@@ -74,7 +76,7 @@
 
 									<div class="quiet">
 										{#if lessThanAMinuteAgo(message.timestamp)}
-											<span>now</span>
+											<span>{m.now()}</span>
 										{:else if moreThanAnHourAgo(message.timestamp)}
 											<wa-format-date
 												hour="numeric"
@@ -107,7 +109,7 @@
 
 										<div class="quiet">
 											{#if lessThanAMinuteAgo(message.timestamp)}
-												<span>now</span>
+												<span>{m.now()}</span>
 											{:else if moreThanAnHourAgo(message.timestamp)}
 												<wa-format-date
 													hour="numeric"

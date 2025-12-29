@@ -10,10 +10,12 @@
 		type ContactsStore,
 	} from 'dash-chat-stores';
 	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
-	import { mdiArrowLeft, mdiQrcode } from '@mdi/js';
+	import { mdiQrcode } from '@mdi/js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import { isMobile } from '../../utils/environment';
 	import { scanQrcode } from '../../utils/qrcode';
+	import { mdiArrowBack } from '../../utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -36,9 +38,9 @@
 				window.history.back();
 			}}
 		>
-			<wa-icon src={wrapPathInSvg(mdiArrowLeft)}> </wa-icon>
+			<wa-icon src={wrapPathInSvg(mdiArrowBack)}> </wa-icon>
 		</wa-button>
-		<span class="title">Add contact</span>
+		<span class="title">{m.addContact()}</span>
 
 		<div style="flex:1"></div>
 
@@ -61,7 +63,7 @@
 
 	{#await code then code}
 		<div class="column center-in-desktop" style="gap: var(--wa-space-m); margin: var(--wa-space-m); ">
-			Share this code:
+			{m.shareThisCode()}
 
 			<wa-qr-code value={code} size="300" style="align-self: center"
 			></wa-qr-code>
@@ -71,7 +73,7 @@
 				<wa-copy-button value={code}> </wa-copy-button>
 			</div>
 
-			Enter your contact's code:
+			{m.enterYourContactsCode()}
 
 			<wa-input oninput={(e: InputEvent) => receiveCode(e.data!)}> </wa-input>
 		</div>

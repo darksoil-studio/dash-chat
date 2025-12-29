@@ -6,9 +6,7 @@ import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { ActorId, PublicKey, TopicId } from '../p2panda/types';
 import { personalTopicFor } from '../topics';
 import { AnnouncementPayload, Payload } from '../types';
-import { IContactsClient, Profile } from './contacts-client';
-
-export type ContactRequestId = string
+import { ContactRequestId, IContactsClient, Profile } from './contacts-client';
 
 export interface IncomingContactRequest {
 	profile: Profile;

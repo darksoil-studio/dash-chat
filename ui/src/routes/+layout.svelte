@@ -17,6 +17,10 @@
 	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
 	import { isMobile } from '../utils/environment';
 	import { setupInsets} from '../utils/insets';
+	import '../utils/localization';
+	import { setLocale } from '$lib/paraglide/runtime';
+	// setLocale('es')
+
 	let { children } = $props();
 
 	const logsClient = new TauriLogsClient<TopicId, Payload>();
