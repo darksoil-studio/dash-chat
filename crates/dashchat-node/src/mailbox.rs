@@ -76,7 +76,7 @@ where
     }
 }
 
-pub trait RelayItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'static {
+pub trait MailboxItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'static {
     fn hash(&self) -> p2panda_core::Hash;
 }
 
@@ -86,13 +86,13 @@ pub struct RelayOperation {
     pub body: Option<Body>,
 }
 
-impl RelayItem for RelayOperation {
+impl MailboxItem for RelayOperation {
     fn hash(&self) -> p2panda_core::Hash {
         self.header.hash()
     }
 }
 
-impl RelayItem for bytes::Bytes {
+impl MailboxItem for bytes::Bytes {
     fn hash(&self) -> p2panda_core::Hash {
         p2panda_core::Hash::new(self)
     }

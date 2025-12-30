@@ -60,13 +60,13 @@ async fn test_group_2() {
 
     assert!(
         alice
-            .initialized_topics()
+            .subscribed_topics()
             .await
             .contains(&alice.direct_chat_topic(bobbi.chat_actor_id()).into())
     );
     assert!(
         bobbi
-            .initialized_topics()
+            .subscribed_topics()
             .await
             .contains(&bobbi.direct_chat_topic(alice.chat_actor_id()).into())
     );

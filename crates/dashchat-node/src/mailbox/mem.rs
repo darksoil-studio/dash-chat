@@ -1,7 +1,7 @@
 use super::*;
 
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeSet, HashMap, HashSet},
     sync::Arc,
 };
 
@@ -40,17 +40,23 @@ impl From<(Header, Option<Body>)> for RelayOperation {
 /// This client is stateful, so all requests for a node should go through a single client
 /// instance. State is shared between all cloned copies of this.
 #[derive(Clone)]
-pub struct MemMailboxClient<Op: RelayItem = RelayOperation> {
+pub struct MemMailboxClient<Op: MailboxItem = RelayOperation> {
     mailbox: MemMailbox<Op>,
     latest: Arc<Mutex<HashMap<LogId, usize>>>,
 }
 
+impl<Op: MailboxItem> MemMailboxClient<Op> {
+    pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
+        self.latest.lock().await.keys().cloned().collect()
+    }
+}
+
 #[derive(Clone)]
-pub struct MemMailbox<Op: RelayItem = RelayOperation> {
+pub struct MemMailbox<Op: MailboxItem = RelayOperation> {
     ops: Arc<RwLock<HashMap<LogId, Vec<Op>>>>,
 }
 
-impl<Op: RelayItem> MemMailbox<Op> {
+impl<Op: MailboxItem> MemMailbox<Op> {
     pub fn new() -> Self {
         Self {
             ops: Arc::new(RwLock::new(HashMap::new())),
@@ -66,7 +72,7 @@ impl<Op: RelayItem> MemMailbox<Op> {
 }
 
 #[async_trait::async_trait]
-impl<Op: RelayItem> MailboxClient<Op> for MemMailboxClient<Op> {
+impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
     async fn publish(&self, topic: LogId, op: Op) -> Result<(), anyhow::Error> {
         let mut ops = self.mailbox.ops.write().await;
         tracing::info!(topic = ?topic.renamed(), hash = ?op.hash().renamed(), "publishing mailbox operation");
