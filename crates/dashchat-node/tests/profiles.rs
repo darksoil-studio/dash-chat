@@ -15,8 +15,8 @@ async fn test_profiles() {
 
     println!("nodes:");
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice")).await;
-    let bobbi = TestNode::new(NodeConfig::default(), mailbox.client(), Some("bobbi")).await;
+    let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice--")).await;
+    let bobbi = TestNode::new(NodeConfig::default(), mailbox.client(), Some("--bobbi")).await;
     println!("alice: {:?}", alice.public_key().short());
     println!("bobbi: {:?}", bobbi.public_key().short());
 
@@ -57,10 +57,11 @@ async fn test_profiles() {
                 .await
                 .map_err(|_| "failed to get log")?
                 .ok_or("no log found")?
-                .first()
-                .filter(|(_, body)| {
+                .iter()
+                .find(|(_, body)| {
+                    let p = Payload::try_from_body(body.as_ref().unwrap()).unwrap();
                     matches!(
-                        Payload::try_from_body(body.as_ref().unwrap()).unwrap(),
+                        p,
                         Payload::Announcements(AnnouncementsPayload::SetProfile(p)) if p == profile
                     )
                 })

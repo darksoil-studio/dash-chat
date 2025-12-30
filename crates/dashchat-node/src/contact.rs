@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use named_id::RenameAll;
 use p2panda_core::cbor::{decode_cbor, encode_cbor};
 use p2panda_encryption::key_bundle::LongTermKeyBundle;
 use p2panda_spaces::ActorId;
@@ -23,7 +24,7 @@ use crate::{DeviceGroupId, Topic, topic::GlobalTopic};
 ///
 /// When adding a contact, no groups are joined, it's only for the purpose of exchanging
 /// pubkeys and key bundles, so that chat groups can be joined in the future.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
 #[serde(into = "String", try_from = "String")]
 pub struct QrCode {
     /// Pubkey and key bundle of this node: allows adding this node to encrypted spaces.
@@ -41,20 +42,21 @@ pub struct QrCode {
     pub share_intent: ShareIntent,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
 pub enum ShareIntent {
     AddDevice,
     AddContact,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, RenameAll)]
 pub struct InboxTopic {
+    #[named_id(skip)]
     pub expires_at: DateTime<Utc>,
     pub topic: GlobalTopic,
 }
 
 /// Just add serialization around [`p2panda_spaces::Member`]`
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, derive_more::From)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, derive_more::From, RenameAll)]
 pub struct MemberCode {
     pub actor_id: ActorId,
     pub key_bundle: LongTermKeyBundle,

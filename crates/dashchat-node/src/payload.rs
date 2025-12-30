@@ -1,3 +1,4 @@
+use named_id::{RenameAll, RenameNone};
 use p2panda_core::cbor::{DecodeError, EncodeError, decode_cbor, encode_cbor};
 use p2panda_core::{Body, Extension, PruneFlag};
 use serde::{Deserialize, Serialize};
@@ -19,25 +20,25 @@ impl Extensions {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameNone)]
 pub struct Profile {
     pub name: String,
     pub avatar: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
 pub enum AnnouncementsPayload {
     SetProfile(Profile),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
 pub enum InboxPayload {
     /// Invites the recipient to add the sender as a contact.
     Contact(QrCode),
 }
 
 // TODO: consolidate into something else
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
 pub enum ChatPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
     /// This is only sent in direct chat messages.
@@ -50,12 +51,12 @@ pub enum ChatPayload {
     JoinGroup(ChatId),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
 pub enum DeviceGroupPayload {
     AddContact(QrCode),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
 pub enum Payload {
     /// Pushing data out to my contacts.
     Announcements(AnnouncementsPayload),

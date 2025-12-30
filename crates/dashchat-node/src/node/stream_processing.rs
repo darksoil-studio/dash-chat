@@ -61,7 +61,25 @@ impl Node {
 
         {
             if let Some(mailbox_rx) = self.mailbox.subscribe(topic.into()).await? {
-                let stream = ReceiverStream::new(mailbox_rx);
+                let stream = ReceiverStream::new(mailbox_rx).filter_map(async |op| {
+                    let hash = op.hash;
+                    if hash == op.header.hash() {
+                        let header_bytes = op.header.to_bytes();
+                        Some((op.header, op.body, header_bytes))
+                    } else {
+                        tracing::error!(hash = ?hash.renamed(), "hash mismatch from mailbox server");
+                        None
+                    }
+                }).ingest(self.op_store.clone(), 128) .filter_map(|result| async {
+                    match result {
+                        Ok(operation) => Some(operation),
+                        Err(err) => {
+                            tracing::warn!(?err, "ingest operation error");
+                            None
+                        }
+                    }
+                });
+
                 self.stream_tx
                     .send(Pin::from(Box::new(stream)))
                     .await
@@ -146,13 +164,15 @@ impl Node {
                 loop {
                     tokio::select! {
                         Some(stream) = stream_rx.recv() => {
+                            tracing::info!("received new STREAM");
                             // Stream is already Pin<Box<...>> from the channel, push directly
                             streams.push(stream);
                         }
 
-                        Some(from_network) = streams.next() => {
+                        Some(op) = streams.next() => {
+                            tracing::info!(op = ?op.hash.renamed(), topic = ?op.header.extensions.log_id.renamed(), "processing stream item");
                             // Process the FromNetwork item here
-                            if let Err(err) = node.process_stream_item(from_network).await {
+                            if let Err(err) = node.process_stream_item(op).await {
                                 tracing::error!(?err, "process stream item error");
                             }
                         }
@@ -281,7 +301,7 @@ impl Node {
         Ok(())
     }
 
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me=?self.public_key())))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me=?self.public_key().renamed())))]
     pub async fn process_payload(
         &self,
         // topic: Topic<K>,

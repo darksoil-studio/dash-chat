@@ -2,6 +2,7 @@ pub mod mem;
 
 use std::time::Duration;
 
+use named_id::Rename;
 use p2panda_core::Body;
 use tokio::sync::mpsc;
 use tracing::Instrument;
@@ -46,8 +47,10 @@ where
         topic: LogId,
     ) -> Result<Option<mpsc::Receiver<Operation>>, anyhow::Error> {
         if !self.touch(topic).await {
+            tracing::warn!(topic = ?topic.renamed(), "mailbox already subscribed");
             return Ok(None);
         }
+        tracing::info!(topic = ?topic.renamed(), "subscribing to mailbox");
         let (tx, rx) = mpsc::channel(100);
         let mailbox = self.clone();
         tokio::spawn(
