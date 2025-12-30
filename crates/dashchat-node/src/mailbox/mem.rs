@@ -36,46 +36,46 @@ impl From<(Header, Option<Body>)> for RelayOperation {
     }
 }
 
-/// A client for the memory relay.
+/// A client for the in-memory mailbox server.
 /// This client is stateful, so all requests for a node should go through a single client
 /// instance. State is shared between all cloned copies of this.
 #[derive(Clone)]
-pub struct MemRelayClient<Op: RelayItem = RelayOperation> {
-    relay: MemRelay<Op>,
+pub struct MemMailboxClient<Op: RelayItem = RelayOperation> {
+    mailbox: MemMailbox<Op>,
     latest: Arc<Mutex<HashMap<LogId, usize>>>,
 }
 
 #[derive(Clone)]
-pub struct MemRelay<Op: RelayItem = RelayOperation> {
+pub struct MemMailbox<Op: RelayItem = RelayOperation> {
     ops: Arc<RwLock<HashMap<LogId, Vec<Op>>>>,
 }
 
-impl<Op: RelayItem> MemRelay<Op> {
+impl<Op: RelayItem> MemMailbox<Op> {
     pub fn new() -> Self {
         Self {
             ops: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    pub fn client(&self) -> MemRelayClient<Op> {
-        MemRelayClient {
-            relay: self.clone(),
+    pub fn client(&self) -> MemMailboxClient<Op> {
+        MemMailboxClient {
+            mailbox: self.clone(),
             latest: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 }
 
 #[async_trait::async_trait]
-impl<Op: RelayItem> RelayClient<Op> for MemRelayClient<Op> {
+impl<Op: RelayItem> MailboxClient<Op> for MemMailboxClient<Op> {
     async fn publish(&self, topic: LogId, op: Op) -> Result<(), anyhow::Error> {
-        let mut ops = self.relay.ops.write().await;
-        tracing::info!(topic = ?topic.renamed(), hash = ?op.hash().renamed(), "publishing relay operation");
+        let mut ops = self.mailbox.ops.write().await;
+        tracing::info!(topic = ?topic.renamed(), hash = ?op.hash().renamed(), "publishing mailbox operation");
         ops.entry(topic).or_insert_with(Vec::new).push(op.into());
         Ok(())
     }
 
     async fn fetch(&self, topic: LogId) -> anyhow::Result<Vec<Op>> {
-        let ops = self.relay.ops.read().await;
+        let ops = self.mailbox.ops.read().await;
         let mut since_lock = self.latest.lock().await;
         let since = *since_lock.get(&topic).unwrap_or(&0);
         if let Some(ops) = ops.get(&topic) {
@@ -89,7 +89,7 @@ impl<Op: RelayItem> RelayClient<Op> for MemRelayClient<Op> {
                 topic = ?topic.renamed(),
                 num = new.len(),
                 hashes = ?new.iter().map(|op: &Op| op.hash().renamed()).collect::<Vec<_>>(),
-                "fetching relay operations"
+                "fetching mailbox operations"
             );
 
             Ok(new)
@@ -123,9 +123,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_mem_relay() {
-        let relay = MemRelay::<Bytes>::new();
-        let client = relay.client();
+    async fn test_mem_mailbox() {
+        let mailbox = MemMailbox::<Bytes>::new();
+        let client = mailbox.client();
 
         let tt: [LogId; 2] = [Topic::random().into(), Topic::random().into()];
 
@@ -156,10 +156,10 @@ mod tests {
     }
 
     // #[tokio::test]
-    // async fn test_mem_relay_clients() {
-    //     let relay = MemRelay::new();
+    // async fn test_mem_mailbox_clients() {
+    //     let mailbox = MemRelay::new();
 
-    //     let cc = [relay.client(), relay.client()];
+    //     let cc = [mailbox.client(), mailbox.client()];
 
     //     let tt = [Topic::random(), Topic::random(), Topic::random()];
 
@@ -177,8 +177,8 @@ mod tests {
     //     }
 
     //     let op = Bytes::from_static(b"test");
-    //     relay.publish(t1.into(), op).await.unwrap();
-    //     let ops = relay.fetch(topic, 0).await.unwrap();
+    //     mailbox.publish(t1.into(), op).await.unwrap();
+    //     let ops = mailbox.fetch(topic, 0).await.unwrap();
     //     assert_eq!(ops.len(), 1);
     //     assert_eq!(ops[0], op);
     // }

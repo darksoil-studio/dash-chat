@@ -5,7 +5,7 @@
 
 use std::time::Duration;
 
-use dashchat_node::{relay::mem::MemRelay, testing::*, *};
+use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
 
 use anyhow::anyhow;
 use named_id::*;
@@ -41,9 +41,9 @@ async fn test_group_2() {
         true,
     );
 
-    let relay = MemRelay::new();
-    let alice = TestNode::new(NodeConfig::default(), relay.client(), Some("alice")).await;
-    let bobbi = TestNode::new(NodeConfig::default(), relay.client(), Some("bobbi")).await;
+    let mailbox = MemMailbox::new();
+    let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice")).await;
+    let bobbi = TestNode::new(NodeConfig::default(), mailbox.client(), Some("bobbi")).await;
 
     #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;

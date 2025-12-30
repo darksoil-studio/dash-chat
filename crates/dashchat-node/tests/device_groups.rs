@@ -2,7 +2,7 @@
 
 use named_id::*;
 
-use dashchat_node::{relay::mem::MemRelay, testing::*, *};
+use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
 
 const TRACING_FILTER: &str =
     "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
@@ -11,9 +11,9 @@ const TRACING_FILTER: &str =
 async fn device_group_solo() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
-    let relay = MemRelay::new();
-    let alice = TestNode::new(NodeConfig::default(), relay.client(), Some("alice")).await;
-    let alicia = TestNode::new(NodeConfig::default(), relay.client(), Some("alicia")).await;
+    let mailbox = MemMailbox::new();
+    let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice")).await;
+    let alicia = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alicia")).await;
 
     println!("nodes:");
     println!("alice: {:?}", alice.public_key().short());

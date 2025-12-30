@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use tokio::task;
 use tracing::Instrument;
 
-use crate::relay::RelaySubscription;
+use crate::mailbox::MailboxSubscription;
 use crate::spaces::SpaceOperation;
 use crate::{
     payload::InboxPayload,
@@ -60,8 +60,8 @@ impl Node {
         }
 
         {
-            if let Some(relay_rx) = self.relay.subscribe(topic.into()).await? {
-                let stream = ReceiverStream::new(relay_rx);
+            if let Some(mailbox_rx) = self.mailbox.subscribe(topic.into()).await? {
+                let stream = ReceiverStream::new(mailbox_rx);
                 self.stream_tx
                     .send(Pin::from(Box::new(stream)))
                     .await

@@ -1,7 +1,7 @@
 use bytes::Bytes;
 
+use crate::mailbox::MailboxClient;
 use crate::polestar as p;
-use crate::relay::RelayClient;
 use crate::spaces::SpaceOperation;
 use crate::topic::TopicKind;
 
@@ -58,7 +58,7 @@ impl Node {
         // self.notify_payload(&header, &payload).await?;
         tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");
 
-        self.relay
+        self.mailbox
             .publish(log_id.into(), (header.clone(), body).into())
             .await?;
 

@@ -32,11 +32,11 @@ use tracing::Instrument;
 use crate::chat::Chat;
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
+use crate::mailbox::mem::MemMailboxClient;
 use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
     decode_gossip_message, encode_gossip_message,
 };
-use crate::relay::mem::MemRelayClient;
 use crate::spaces::{DashForge, DashManager, DashSpace};
 use crate::stores::{AuthorStore, OpStore, SpacesStore};
 use crate::testing::alias_space_messages;
@@ -126,7 +126,7 @@ pub struct Node {
     #[cfg(feature = "p2p")]
     pub network: Network<LogId>,
 
-    pub relay: MemRelayClient,
+    pub mailbox: MemMailboxClient,
 
     author_store: AuthorStore<LogId>,
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
@@ -153,7 +153,7 @@ impl Node {
         local_data: NodeLocalData,
         config: NodeConfig,
         notification_tx: Option<mpsc::Sender<Notification>>,
-        relay: MemRelayClient,
+        mailbox: MemMailboxClient,
     ) -> Result<Self> {
         let rng = Rng::default();
         let NodeLocalData {
@@ -224,7 +224,7 @@ impl Node {
             spaces_store,
             #[cfg(feature = "p2p")]
             network,
-            relay,
+            mailbox,
             manager: manager.clone(),
             config,
             local_data,
