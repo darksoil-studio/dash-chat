@@ -21,7 +21,7 @@ use crate::{
 pub struct OpStore {
     #[deref]
     #[deref_mut]
-    store: MemoryStore<LogId, Extensions>,
+    pub(crate) store: MemoryStore<LogId, Extensions>,
     pub orderer: Arc<tokio::sync::RwLock<Orderer>>,
     pub processed_ops: Arc<RwLock<HashMap<LogId, HashSet<Hash>>>>,
     write_mutex: Arc<Mutex<()>>,
@@ -110,9 +110,6 @@ impl OpStore {
         )
         .await?;
 
-        // Let the next op be authored as soon as this one's ingested
-        drop(lock);
-
         match result {
             IngestResult::Complete(op @ Operation { hash: hash2, .. }) => {
                 assert_eq!(hash, hash2);
@@ -138,6 +135,9 @@ impl OpStore {
                 panic!("operation is outdated");
             }
         }
+
+        // Let the next op be authored as soon as this one's ingested
+        drop(lock);
 
         Ok((header, body))
     }
