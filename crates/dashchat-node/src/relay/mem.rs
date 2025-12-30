@@ -1,6 +1,9 @@
 use super::*;
 
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use named_id::Rename;
 use p2panda_core::Body;
@@ -92,6 +95,17 @@ impl<Op: RelayItem> RelayClient<Op> for MemRelayClient<Op> {
             Ok(new)
         } else {
             Ok(vec![])
+        }
+    }
+
+    async fn touch(&self, topic: LogId) -> bool {
+        let mut latest = self.latest.lock().await;
+        match latest.entry(topic) {
+            std::collections::hash_map::Entry::Occupied(_) => false,
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert(0);
+                true
+            }
         }
     }
 }

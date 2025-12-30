@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use p2panda_core::Body;
 use tokio::sync::mpsc;
+use tracing::Instrument;
 
 use crate::{Header, Operation, topic::LogId};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
@@ -20,36 +21,55 @@ pub trait RelayClient<Op>: Clone + Send + Sync + 'static {
     /// The implementation is expected to return only operations that were not previously fetched,
     /// though duplicates will be tolerated.
     async fn fetch(&self, topic: LogId) -> Result<Vec<Op>, anyhow::Error>;
+
+    /// Touch the relay to indicate that the given topic has been subscribed to.
+    /// Returns true if the topic was not previously touched, false otherwise.
+    async fn touch(&self, topic: LogId) -> bool;
 }
 
+/// Subscription can only be implemented for a relay that returns Operation-equivalent items.
+#[async_trait::async_trait]
 pub trait RelaySubscription {
-    fn subscribe(&self, topic: LogId) -> Result<mpsc::Receiver<Operation>, anyhow::Error>;
+    async fn subscribe(
+        &self,
+        topic: LogId,
+    ) -> Result<Option<mpsc::Receiver<Operation>>, anyhow::Error>;
 }
 
+#[async_trait::async_trait]
 impl<T> RelaySubscription for T
 where
     T: RelayClient<RelayOperation>,
 {
-    fn subscribe(&self, topic: LogId) -> Result<mpsc::Receiver<Operation>, anyhow::Error> {
+    async fn subscribe(
+        &self,
+        topic: LogId,
+    ) -> Result<Option<mpsc::Receiver<Operation>>, anyhow::Error> {
+        if !self.touch(topic).await {
+            return Ok(None);
+        }
         let (tx, rx) = mpsc::channel(100);
         let relay = self.clone();
-        tokio::spawn(async move {
-            loop {
-                match relay.fetch(topic).await {
-                    Ok(ops) => {
-                        for op in ops {
-                            tx.send(op.into()).await.unwrap();
+        tokio::spawn(
+            async move {
+                loop {
+                    match relay.fetch(topic).await {
+                        Ok(ops) => {
+                            for op in ops {
+                                tx.send(op.into()).await.unwrap();
+                            }
+                            tokio::time::sleep(RELAY_FETCH_INTERVAL).await;
                         }
-                        tokio::time::sleep(RELAY_FETCH_INTERVAL).await;
-                    }
-                    Err(err) => {
-                        tracing::error!(?err, "fetch relay error");
-                        tokio::time::sleep(RELAY_ERROR_INTERVAL).await;
+                        Err(err) => {
+                            tracing::error!(?err, "fetch relay error");
+                            tokio::time::sleep(RELAY_ERROR_INTERVAL).await;
+                        }
                     }
                 }
             }
-        });
-        Ok(rx)
+            .instrument(tracing::info_span!("relay subscription")),
+        );
+        Ok(Some(rx))
     }
 }
 

@@ -60,12 +60,13 @@ impl Node {
         }
 
         {
-            let relay_rx = self.relay.subscribe(topic.into())?;
-            let stream = ReceiverStream::new(relay_rx);
-            self.stream_tx
-                .send(Pin::from(Box::new(stream)))
-                .await
-                .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
+            if let Some(relay_rx) = self.relay.subscribe(topic.into()).await? {
+                let stream = ReceiverStream::new(relay_rx);
+                self.stream_tx
+                    .send(Pin::from(Box::new(stream)))
+                    .await
+                    .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
+            }
         }
 
         #[cfg(feature = "p2p")]
