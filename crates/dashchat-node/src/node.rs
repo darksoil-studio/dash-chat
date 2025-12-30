@@ -128,6 +128,7 @@ pub struct Node {
 
     pub mailbox: MemMailboxClient,
 
+    #[cfg(feature = "p2p")]
     author_store: AuthorStore<LogId>,
     /// TODO: should not be necessary, only used to manually persist messages from other nodes
     spaces_store: SpacesStore,
@@ -140,6 +141,7 @@ pub struct Node {
     /// Add new subscription streams
     stream_tx: mpsc::Sender<Pin<Box<dyn Stream<Item = Operation> + Send + 'static>>>,
 
+    #[cfg(feature = "p2p")]
     pub(crate) initialized_topics: Arc<RwLock<HashMap<LogId, mpsc::Sender<ToNetwork>>>>,
 
     /// TODO: some of the stuff in here is only for testing.
@@ -164,6 +166,8 @@ impl Node {
         let public_key = PublicKey::from(private_key.public_key());
 
         let op_store = MemoryStore::<LogId, Extensions>::new();
+
+        #[cfg(feature = "p2p")]
         let author_store: AuthorStore<LogId> = AuthorStore::new();
 
         #[cfg(feature = "p2p")]
@@ -220,6 +224,7 @@ impl Node {
 
         let node = Self {
             op_store: op_store.clone(),
+            #[cfg(feature = "p2p")]
             author_store: author_store.clone(),
             spaces_store,
             #[cfg(feature = "p2p")]
@@ -230,6 +235,7 @@ impl Node {
             local_data,
             notification_tx,
             stream_tx,
+            #[cfg(feature = "p2p")]
             initialized_topics: Arc::new(RwLock::new(HashMap::new())),
             nodestate: NodeState {
                 chats: Arc::new(RwLock::new(HashMap::new())),
@@ -238,7 +244,7 @@ impl Node {
             },
         };
 
-        node.spawn_stream_process_loop(stream_rx, author_store.clone());
+        node.spawn_stream_process_loop(stream_rx);
 
         node.initialize_topic(
             device_space_id.with_name(&format!("device_group({})", public_key.renamed())),
@@ -271,7 +277,6 @@ impl Node {
         node.process_authored_ingested_space_messages(device_group_msgs)
             .await?;
 
-        let author_store = author_store.clone();
         let me = public_key.clone();
 
         // TODO: accomodate new inbox topics as they are added
@@ -357,13 +362,20 @@ impl Node {
         &self,
         topic_id: LogId,
     ) -> anyhow::Result<std::collections::HashSet<PublicKey>> {
-        match self.author_store.authors(&topic_id).await {
-            Some(authors) => Ok(authors.into_iter().map(|a| a.into()).collect()),
-            None => {
-                tracing::warn!("No authors found for topic {topic_id:?}");
-                Ok(Default::default())
-            }
-        }
+        Ok(self
+            .mailbox
+            .authors(topic_id)
+            .await
+            .ok_or_else(|| anyhow!("No authors found for topic {topic_id:?}"))?
+            .into_iter()
+            .collect())
+        // match self.author_store.authors(&topic_id).await {
+        //     Some(authors) => Ok(authors.into_iter().map(|a| a.into()).collect()),
+        //     None => {
+        //         tracing::warn!("No authors found for topic {topic_id:?}");
+        //         Ok(Default::default())
+        //     }
+        // }
     }
 
     /// Create a new contact QR code with configured expiry time,
@@ -763,10 +775,14 @@ impl Node {
         self.initialize_topic(direct_topic, true).await?;
 
         // TODO: needed?
-        let pubkey: PublicKey = actor_to_pubkey(contact.member_code.id());
-        self.author_store
-            .add_author(direct_topic.into(), pubkey)
-            .await;
+        #[cfg(feature = "p2p")]
+        {
+            let pubkey: PublicKey = actor_to_pubkey(contact.member_code.id());
+
+            self.author_store
+                .add_author(direct_topic.into(), pubkey)
+                .await;
+        }
 
         self.author_operation(
             self.device_group_topic(),

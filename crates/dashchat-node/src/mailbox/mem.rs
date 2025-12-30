@@ -11,7 +11,7 @@ use tokio::sync::{Mutex, RwLock};
 
 use crate::{Header, topic::LogId};
 
-impl From<Operation> for RelayOperation {
+impl From<Operation> for MailboxOperation {
     fn from(op: Operation) -> Self {
         Self {
             header: op.header,
@@ -20,8 +20,8 @@ impl From<Operation> for RelayOperation {
     }
 }
 
-impl From<RelayOperation> for Operation {
-    fn from(op: RelayOperation) -> Self {
+impl From<MailboxOperation> for Operation {
+    fn from(op: MailboxOperation) -> Self {
         Self {
             hash: op.header.hash(),
             header: op.header,
@@ -30,7 +30,7 @@ impl From<RelayOperation> for Operation {
     }
 }
 
-impl From<(Header, Option<Body>)> for RelayOperation {
+impl From<(Header, Option<Body>)> for MailboxOperation {
     fn from((header, body): (Header, Option<Body>)) -> Self {
         Self { header, body }
     }
@@ -40,19 +40,25 @@ impl From<(Header, Option<Body>)> for RelayOperation {
 /// This client is stateful, so all requests for a node should go through a single client
 /// instance. State is shared between all cloned copies of this.
 #[derive(Clone)]
-pub struct MemMailboxClient<Op: MailboxItem = RelayOperation> {
+pub struct MemMailboxClient<Op: MailboxItem = MailboxOperation> {
     mailbox: MemMailbox<Op>,
     latest: Arc<Mutex<HashMap<LogId, usize>>>,
+    authors: Arc<RwLock<HashMap<LogId, HashSet<PublicKey>>>>,
 }
 
 impl<Op: MailboxItem> MemMailboxClient<Op> {
     pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
         self.latest.lock().await.keys().cloned().collect()
     }
+
+    pub async fn authors(&self, topic: LogId) -> Option<HashSet<PublicKey>> {
+        let authors = self.authors.read().await;
+        authors.get(&topic).cloned()
+    }
 }
 
 #[derive(Clone)]
-pub struct MemMailbox<Op: MailboxItem = RelayOperation> {
+pub struct MemMailbox<Op: MailboxItem = MailboxOperation> {
     ops: Arc<RwLock<HashMap<LogId, Vec<Op>>>>,
 }
 
@@ -67,6 +73,7 @@ impl<Op: MailboxItem> MemMailbox<Op> {
         MemMailboxClient {
             mailbox: self.clone(),
             latest: Arc::new(Mutex::new(HashMap::new())),
+            authors: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 }
@@ -113,6 +120,15 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
                 true
             }
         }
+    }
+
+    async fn add_author(&self, topic: LogId, author: PublicKey) -> Result<(), anyhow::Error> {
+        let mut authors = self.authors.write().await;
+        authors
+            .entry(topic)
+            .or_insert_with(HashSet::new)
+            .insert(author);
+        Ok(())
     }
 }
 

@@ -51,8 +51,7 @@ impl Node {
     ) -> Result<Header, anyhow::Error> {
         let log_id = op.header.extensions.log_id;
         op.hash.with_serial();
-        self.process_operation(op.clone(), self.author_store.clone(), true, false)
-            .await?;
+        self.process_operation(op.clone(), true, false).await?;
         let Operation { header, body, hash } = op;
 
         // self.notify_payload(&header, &payload).await?;

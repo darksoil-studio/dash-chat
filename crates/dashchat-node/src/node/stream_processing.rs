@@ -43,20 +43,23 @@ impl Node {
         topic: Topic<K>,
         is_author: bool,
     ) -> anyhow::Result<()> {
-        // TODO: this has a race condition
-        if self
-            .initialized_topics
-            .read()
-            .await
-            .contains_key(&topic.into())
+        #[cfg(feature = "p2p")]
         {
-            return Ok(());
-        }
+            // TODO: this has a race condition
+            if self
+                .initialized_topics
+                .read()
+                .await
+                .contains_key(&topic.into())
+            {
+                return Ok(());
+            }
 
-        if is_author {
-            self.author_store
-                .add_author(topic.into(), self.public_key())
-                .await;
+            if is_author {
+                self.author_store
+                    .add_author(topic.into(), self.public_key())
+                    .await;
+            }
         }
 
         {
@@ -152,7 +155,6 @@ impl Node {
         mut stream_rx: mpsc::Receiver<
             Pin<Box<dyn Stream<Item = Operation<Extensions>> + Send + 'static>>,
         >,
-        _author_store: AuthorStore<LogId>,
     ) {
         let node = self.clone();
 
@@ -208,10 +210,7 @@ impl Node {
         // let reordered = vec![operation];
 
         for operation in reordered {
-            match self
-                .process_operation(operation, self.author_store.clone(), false, false)
-                .await
-            {
+            match self.process_operation(operation, false, false).await {
                 Ok(()) => (),
                 Err(err) => {
                     tracing::error!(
@@ -230,7 +229,6 @@ impl Node {
         &self,
         // topic: Topic<K>,
         operation: Operation<Extensions>,
-        author_store: AuthorStore<LogId>,
         is_author: bool,
         _is_repair: bool,
     ) -> anyhow::Result<()> {
@@ -239,7 +237,7 @@ impl Node {
         let log_id = header.extensions.log_id;
 
         // XXX: this eventually needs to be more selective than just adding any old author
-        author_store.add_author(log_id, header.public_key).await;
+        // author_store.add_author(log_id, header.public_key).await;
         tracing::debug!(?log_id, "adding author");
 
         tracing::info!(log_id = ?log_id.renamed(), hash = ?hash.renamed(), "PROC: processing operation");

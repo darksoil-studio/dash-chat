@@ -3,7 +3,7 @@ pub mod mem;
 use std::time::Duration;
 
 use named_id::Rename;
-use p2panda_core::Body;
+use p2panda_core::{Body, PublicKey};
 use tokio::sync::mpsc;
 use tracing::Instrument;
 
@@ -26,6 +26,8 @@ pub trait MailboxClient<Op>: Clone + Send + Sync + 'static {
     /// Touch the mailbox to indicate that the given topic has been subscribed to.
     /// Returns true if the topic was not previously touched, false otherwise.
     async fn touch(&self, topic: LogId) -> bool;
+
+    async fn add_author(&self, topic: LogId, author: PublicKey) -> Result<(), anyhow::Error>;
 }
 
 /// Subscription can only be implemented for a mailbox that returns Operation-equivalent items.
@@ -40,7 +42,7 @@ pub trait MailboxSubscription {
 #[async_trait::async_trait]
 impl<T> MailboxSubscription for T
 where
-    T: MailboxClient<RelayOperation>,
+    T: MailboxClient<MailboxOperation>,
 {
     async fn subscribe(
         &self,
@@ -59,6 +61,7 @@ where
                     match mailbox.fetch(topic).await {
                         Ok(ops) => {
                             for op in ops {
+                                mailbox.add_author(topic, op.header.public_key).await;
                                 tx.send(op.into()).await.unwrap();
                             }
                             tokio::time::sleep(RELAY_FETCH_INTERVAL).await;
@@ -81,12 +84,12 @@ pub trait MailboxItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'sta
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct RelayOperation {
+pub struct MailboxOperation {
     pub header: Header,
     pub body: Option<Body>,
 }
 
-impl MailboxItem for RelayOperation {
+impl MailboxItem for MailboxOperation {
     fn hash(&self) -> p2panda_core::Hash {
         self.header.hash()
     }
