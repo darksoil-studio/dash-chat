@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use axum::{
     routing::{get, post},
     Router,
@@ -38,10 +39,8 @@ async fn health_check() -> Json<HealthResponse> {
     })
 }
 
-pub fn init_db() -> Result<Database, Box<dyn std::error::Error>> {
-    let db_path = std::env::var("REDB_PATH").unwrap_or_else(|_| "mailbox.redb".to_string());
-
-    tracing::info!("Opening redb database at {}", db_path);
+pub fn init_db(db_path: PathBuf) -> Result<Database, Box<dyn std::error::Error>> {
+    tracing::info!("Opening redb database at {:?}", db_path);
 
     let db = Database::create(&db_path)?;
 

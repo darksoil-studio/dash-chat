@@ -41,3 +41,6 @@ target
 result*
 **/*/google-services.json
 service-account-key.json
+
+# Redb database files
+*.redb

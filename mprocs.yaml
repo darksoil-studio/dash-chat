@@ -9,6 +9,7 @@ procs:
   #   shell: test-safehold-service somesecretnetworkseedv0.5.0
   ui:  pnpm -F ./packages/stores build && pnpm -F ./ui start
   stores: pnpm -F ./packages/stores dev
+  mailbox_server: cargo run -p mailbox_server
   android:
     shell: pnpm tauri android dev
   logcat:
