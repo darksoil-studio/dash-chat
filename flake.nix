@@ -35,7 +35,6 @@
         ./nix/servers.nix
         ./nix/tauri-app.nix
         ./nix/raspberry-pi.nix
-        ./nix/database.nix
         # inputs.p2p-shipyard.outputs.flakeModules.builders
       ];
 
