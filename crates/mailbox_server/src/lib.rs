@@ -14,9 +14,11 @@ use tower_http::{
 
 mod store_message;
 mod get_messages;
+mod cleanup;
 
 pub use store_message::{StoreMessageRequest, store_message};
 pub use get_messages::{GetMessagesRequest, GetMessagesResponse, get_messages_for_topics};
+pub use cleanup::spawn_cleanup_task;
 
 pub type TopicId = String;
 pub type Message = Vec<u8>;
@@ -56,9 +58,11 @@ pub fn init_db(db_path: PathBuf) -> Result<Database, Box<dyn std::error::Error>>
 }
 
 pub fn create_app(db: Database) -> Router {
-    let state = AppState {
-        db: Arc::new(db),
-    };
+    create_app_with_arc(Arc::new(db))
+}
+
+pub fn create_app_with_arc(db: Arc<Database>) -> Router {
+    let state = AppState { db };
 
     Router::new()
         .route("/health", get(health_check))

@@ -1,5 +1,6 @@
 use clap::Parser;
-use mailbox_server::{create_app, init_db};
+use mailbox_server::{create_app_with_arc, init_db, spawn_cleanup_task};
+use std::sync::Arc;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Parser, Debug)]
@@ -28,7 +29,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     let db = init_db(args.db_path.into())?;
-    let app = create_app(db);
+    let db_arc = Arc::new(db);
+
+    // Spawn background cleanup task
+    spawn_cleanup_task(Arc::clone(&db_arc));
+    tracing::info!("Started background cleanup task (runs every 5 minutes)");
+
+    let app = create_app_with_arc(db_arc);
 
     let listener = tokio::net::TcpListener::bind(&args.addr).await?;
     let addr = listener.local_addr()?;
