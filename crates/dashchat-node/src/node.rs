@@ -5,18 +5,15 @@ use std::collections::{BTreeSet, HashMap};
 use std::pin::Pin;
 use std::sync::Arc;
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Result, anyhow};
 use chrono::{Duration, Utc};
 use futures::Stream;
 use named_id::*;
 use p2panda_auth::Access;
 use p2panda_core::cbor::encode_cbor;
 use p2panda_core::{Body, PrivateKey, PublicKey};
-use p2panda_discovery::Discovery;
 use p2panda_encryption::Rng;
-use p2panda_net::{
-    FromNetwork, Network, NetworkBuilder, ResyncConfiguration, SyncConfiguration, ToNetwork,
-};
+use p2panda_net::ResyncConfiguration;
 use p2panda_spaces::ActorId;
 use p2panda_spaces::event::Event;
 use p2panda_spaces::traits::AuthoredMessage;
@@ -122,17 +119,8 @@ impl NodeLocalData {
 #[derive(Clone)]
 pub struct Node {
     pub op_store: OpStore,
-    // pub ordering_store: p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
-    #[cfg(feature = "p2p")]
-    pub network: Network<LogId>,
 
     pub mailbox: MemMailboxClient,
-
-    #[cfg(feature = "p2p")]
-    author_store: AuthorStore<LogId>,
-    /// TODO: should not be necessary, only used to manually persist messages from other nodes
-    spaces_store: SpacesStore,
-    pub(crate) manager: DashManager,
 
     config: NodeConfig,
     local_data: NodeLocalData,
@@ -140,9 +128,6 @@ pub struct Node {
 
     /// Add new subscription streams
     stream_tx: mpsc::Sender<Pin<Box<dyn Stream<Item = Operation> + Send + 'static>>>,
-
-    #[cfg(feature = "p2p")]
-    pub(crate) initialized_topics: Arc<RwLock<HashMap<LogId, mpsc::Sender<ToNetwork>>>>,
 
     /// TODO: some of the stuff in here is only for testing.
     /// The channel senders are needed but any stateful stuff should go.
@@ -166,77 +151,21 @@ impl Node {
         let public_key = PublicKey::from(private_key.public_key());
 
         let op_store = MemoryStore::<LogId, Extensions>::new();
-
-        #[cfg(feature = "p2p")]
-        let author_store: AuthorStore<LogId> = AuthorStore::new();
-
-        #[cfg(feature = "p2p")]
-        let mdns = LocalDiscovery::new();
-        #[cfg(feature = "p2p")]
-        let mut new_peers = mdns.subscribe(NETWORK_ID).unwrap();
-
-        #[cfg(feature = "p2p")]
-        let network = {
-            let sync_protocol = LogSyncProtocol::new(author_store.clone(), op_store.clone());
-            let sync_config = SyncConfiguration::new(sync_protocol).resync(config.resync.clone());
-            NetworkBuilder::new(NETWORK_ID)
-                .private_key(private_key.clone())
-                .discovery(mdns)
-                .gossip(GossipConfig {
-                    max_message_size: MAX_MESSAGE_SIZE,
-                })
-                // .relay(relay_url, false, 0)
-                .sync(sync_config)
-                .build()
-                .await
-                .context("spawn p2p network")?
-        };
-
-        // if config.bootstrap {
-        //     network_builder = network_builder.bootstrap();
-        // }
-
-        // if let Some(bootstrap) = config.use_bootstrap {
-        //     network_builder = network_builder.direct_address(bootstrap, vec![], None);
-        // }
-
         let op_store = OpStore::new(op_store);
 
         let chat_actor_id: ActorId = PrivateKey::from_bytes(&rng.random_array()?)
             .public_key()
             .into();
 
-        let spaces_store = SpacesStore::new();
-        let (manager, device_group_msgs) = DashManager::new(
-            private_key.clone(),
-            chat_actor_id.clone(),
-            spaces_store.clone(),
-            op_store.clone(),
-            rng,
-        )
-        .await
-        .unwrap();
-
-        // // nope
-        // manager.register_member(&manager.me().await?).await?;
-
         let (stream_tx, stream_rx) = mpsc::channel(100);
 
         let node = Self {
             op_store: op_store.clone(),
-            #[cfg(feature = "p2p")]
-            author_store: author_store.clone(),
-            spaces_store,
-            #[cfg(feature = "p2p")]
-            network,
             mailbox,
-            manager: manager.clone(),
             config,
             local_data,
             notification_tx,
             stream_tx,
-            #[cfg(feature = "p2p")]
-            initialized_topics: Arc::new(RwLock::new(HashMap::new())),
             nodestate: NodeState {
                 chats: Arc::new(RwLock::new(HashMap::new())),
                 contacts: Arc::new(RwLock::new(HashMap::new())),
@@ -273,9 +202,6 @@ impl Node {
             )
             .await?;
         }
-
-        node.process_authored_ingested_space_messages(device_group_msgs)
-            .await?;
 
         let me = public_key.clone();
 
