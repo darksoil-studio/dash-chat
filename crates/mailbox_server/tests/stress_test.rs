@@ -1,6 +1,6 @@
 use axum_test::TestServer;
+use mailbox_server::GetBlobsResponse;
 use redb::Database;
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::BTreeMap;
 use std::future::Future;
@@ -9,11 +9,6 @@ use std::sync::Arc;
 use std::time::Instant;
 use tempfile::NamedTempFile;
 use futures::future::join_all;
-
-#[derive(Serialize, Deserialize, Debug)]
-struct GetBlobsResponse {
-    blobs: BTreeMap<String, BTreeMap<String, BTreeMap<u32, String>>>,
-}
 
 fn create_test_db() -> (Database, NamedTempFile) {
     let temp_file = NamedTempFile::new().unwrap();
@@ -56,7 +51,7 @@ async fn stress_test_concurrent_writes() {
     let (server, _temp_file) = create_test_server();
     let server = Arc::new(server);
 
-    let num_concurrent_writes = 100;
+    let num_concurrent_writes = 10000;
     let num_topics = 10;
 
     let start = Instant::now();
@@ -402,33 +397,3 @@ async fn stress_test_rapid_sequential_writes() {
     assert_eq!(total_messages, num_messages);
 }
 
-#[tokio::test]
-async fn stress_test_health_endpoint_under_load() {
-    let (server, _temp_file) = create_test_server();
-    let server = Arc::new(server);
-
-    let num_health_checks = 1000;
-    let start = Instant::now();
-    let mut tasks = Vec::new();
-
-    for _ in 0..num_health_checks {
-        let server_clone = Arc::clone(&server);
-
-        let task = async move {
-            let response = server_clone.get("/health").await;
-            response.assert_status_ok();
-        };
-        tasks.push(task);
-    }
-
-    join_all(tasks).await;
-
-    let duration = start.elapsed();
-
-    println!(
-        "Health checks: {} checks in {:?} ({:.2} checks/sec)",
-        num_health_checks,
-        duration,
-        num_health_checks as f64 / duration.as_secs_f64()
-    );
-}

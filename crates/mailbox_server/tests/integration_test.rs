@@ -1,14 +1,8 @@
 use axum_test::TestServer;
+use mailbox_server::GetBlobsResponse;
 use redb::Database;
-use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::collections::BTreeMap;
 use tempfile::NamedTempFile;
-
-#[derive(Serialize, Deserialize, Debug)]
-struct GetBlobsResponse {
-    blobs: BTreeMap<String, BTreeMap<String, BTreeMap<u32, String>>>,
-}
 
 fn create_test_db() -> (Database, NamedTempFile) {
     let temp_file = NamedTempFile::new().unwrap();
@@ -84,10 +78,7 @@ async fn test_store_and_retrieve_single_message() {
     let log_sequences = &topic_logs["log-a"];
     assert!(log_sequences.contains_key(&0));
 
-    let retrieved_message = base64::Engine::decode(
-        &base64::engine::general_purpose::STANDARD,
-        &log_sequences[&0]
-    ).unwrap();
+    let retrieved_message = &log_sequences[&0];
     assert_eq!(retrieved_message, message_data);
 }
 
@@ -95,29 +86,18 @@ async fn test_store_and_retrieve_single_message() {
 async fn test_store_and_retrieve_multiple_messages_same_topic() {
     let (server, _temp_file) = create_test_server();
 
-    let messages = vec![
-        b"First message".to_vec(),
-        b"Second message".to_vec(),
-        b"Third message".to_vec(),
-    ];
-
-    // Store all messages in a single request
-    let mut blobs = BTreeMap::new();
-    let mut log_map = BTreeMap::new();
-    let mut seq_map = BTreeMap::new();
-
-    for (i, message) in messages.iter().enumerate() {
-        let message_b64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message);
-        seq_map.insert(i.to_string(), message_b64);
-    }
-
-    log_map.insert("log-1".to_string(), seq_map);
-    blobs.insert("test-topic-multi".to_string(), log_map);
-
     server
         .post("/blobs/store")
         .json(&json!({
-            "blobs": blobs
+            "blobs": {
+                "test-topic-multi": {
+                    "log-1": {
+                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"First message".to_vec()),
+                        "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Second message".to_vec()),
+                        "2": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Third message".to_vec()),
+                    }
+                }
+            }
         }))
         .await
         .assert_status(axum::http::StatusCode::CREATED);
@@ -139,13 +119,9 @@ async fn test_store_and_retrieve_multiple_messages_same_topic() {
 
     assert_eq!(log_sequences.len(), 3);
 
-    for i in 0..3 {
-        let retrieved = base64::Engine::decode(
-            &base64::engine::general_purpose::STANDARD,
-            &log_sequences[&(i as u32)]
-        ).unwrap();
-        assert_eq!(retrieved, messages[i]);
-    }
+    assert_eq!(log_sequences[&(0 as u32)], b"First message");
+    assert_eq!(log_sequences[&(1 as u32)], b"Second message");
+    assert_eq!(log_sequences[&(2 as u32)], b"Third message");
 }
 
 #[tokio::test]
@@ -198,14 +174,8 @@ async fn test_retrieve_messages_from_multiple_topics() {
     assert_eq!(topic_a_logs["log-1"].len(), 1);
     assert_eq!(topic_b_logs["log-1"].len(), 1);
 
-    let retrieved_a = base64::Engine::decode(
-        &base64::engine::general_purpose::STANDARD,
-        &topic_a_logs["log-1"][&0]
-    ).unwrap();
-    let retrieved_b = base64::Engine::decode(
-        &base64::engine::general_purpose::STANDARD,
-        &topic_b_logs["log-1"][&0]
-    ).unwrap();
+    let retrieved_a = &topic_a_logs["log-1"][&0];
+    let retrieved_b = &topic_b_logs["log-1"][&0];
 
     assert_eq!(retrieved_a, topic1_msg);
     assert_eq!(retrieved_b, topic2_msg);
@@ -320,14 +290,8 @@ async fn test_sequence_number_filtering() {
     assert!(!log_sequences.contains_key(&1));
     assert!(!log_sequences.contains_key(&0));
 
-    let msg3 = base64::Engine::decode(
-        &base64::engine::general_purpose::STANDARD,
-        &log_sequences[&3]
-    ).unwrap();
-    let msg4 = base64::Engine::decode(
-        &base64::engine::general_purpose::STANDARD,
-        &log_sequences[&4]
-    ).unwrap();
+    let msg3 = &log_sequences[&3];
+    let msg4 = &log_sequences[&4];
 
     assert_eq!(msg3, b"Message 3");
     assert_eq!(msg4, b"Message 4");
@@ -403,15 +367,9 @@ async fn test_get_returns_all_logs_for_topic() {
     assert!(log_c.contains_key(&0));
 
     // Verify content
-    let msg_a1 = base64::Engine::decode(
-        &base64::engine::general_purpose::STANDARD,
-        &log_a[&1]
-    ).unwrap();
+    let msg_a1 = &log_a[&1];
     assert_eq!(msg_a1, b"Log A - Message 1");
 
-    let msg_b0 = base64::Engine::decode(
-        &base64::engine::general_purpose::STANDARD,
-        &log_b[&0]
-    ).unwrap();
+    let msg_b0 = &log_b[&0];
     assert_eq!(msg_b0, b"Log B - Message 0");
 }
