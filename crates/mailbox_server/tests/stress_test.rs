@@ -2,7 +2,7 @@ use axum_test::TestServer;
 use redb::Database;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -11,8 +11,8 @@ use tempfile::NamedTempFile;
 use futures::future::join_all;
 
 #[derive(Serialize, Deserialize, Debug)]
-struct GetMessagesResponse {
-    messages: HashMap<String, Vec<String>>,
+struct GetBlobsResponse {
+    blobs: BTreeMap<String, BTreeMap<String, BTreeMap<u32, String>>>,
 }
 
 fn create_test_db() -> (Database, NamedTempFile) {
@@ -22,7 +22,7 @@ fn create_test_db() -> (Database, NamedTempFile) {
     let write_txn = db.begin_write().unwrap();
     {
         let _table = write_txn
-            .open_table(mailbox_server::MESSAGES_TABLE)
+            .open_table(mailbox_server::BLOBS_TABLE)
             .unwrap();
     }
     write_txn.commit().unwrap();
@@ -35,6 +35,20 @@ fn create_test_server() -> (TestServer, NamedTempFile) {
     let app = mailbox_server::create_app(db);
     let server = TestServer::new(app).unwrap();
     (server, temp_file)
+}
+
+// Helper to create a simple store request with a single message
+fn create_store_request(topic_id: &str, message: &[u8], seq_num: u32) -> serde_json::Value {
+    let message_b64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message);
+    json!({
+        "blobs": {
+            topic_id: {
+                "log-1": {
+                    seq_num.to_string(): message_b64
+                }
+            }
+        }
+    })
 }
 
 #[tokio::test]
@@ -54,15 +68,9 @@ async fn stress_test_concurrent_writes() {
         let message = format!("Message {}", i);
 
         let task = async move {
-            let message_b64 =
-                base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message.as_bytes());
-
             let response = server_clone
-                .post("/messages/store")
-                .json(&json!({
-                    "topic_id": topic_id,
-                    "message": message_b64
-                }))
+                .post("/blobs/store")
+                .json(&create_store_request(&topic_id, message.as_bytes(), i as u32))
                 .await;
 
             response.assert_status(axum::http::StatusCode::CREATED);
@@ -85,17 +93,20 @@ async fn stress_test_concurrent_writes() {
     for topic_idx in 0..num_topics {
         let topic_id = format!("stress-topic-{}", topic_idx);
         let get_response = server
-            .post("/messages/get")
+            .post("/blobs/get")
             .json(&json!({
-                "topic_ids": [topic_id]
+                "topics": {
+                    topic_id: {}
+                }
             }))
             .await;
 
         get_response.assert_status_ok();
-        let body: GetMessagesResponse = get_response.json();
-        let messages = &body.messages[&format!("stress-topic-{}", topic_idx)];
+        let body: GetBlobsResponse = get_response.json();
+        let topic_logs = &body.blobs[&format!("stress-topic-{}", topic_idx)];
+        let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
 
-        assert_eq!(messages.len(), num_concurrent_writes / num_topics);
+        assert_eq!(total_messages, num_concurrent_writes / num_topics);
     }
 }
 
@@ -112,15 +123,10 @@ async fn stress_test_concurrent_reads() {
         for msg_idx in 0..messages_per_topic {
             let topic_id = format!("read-stress-topic-{}", topic_idx);
             let message = format!("Message {} for topic {}", msg_idx, topic_idx);
-            let message_b64 =
-                base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message.as_bytes());
 
             server
-                .post("/messages/store")
-                .json(&json!({
-                    "topic_id": topic_id,
-                    "message": message_b64
-                }))
+                .post("/blobs/store")
+                .json(&create_store_request(&topic_id, message.as_bytes(), msg_idx as u32))
                 .await
                 .assert_status(axum::http::StatusCode::CREATED);
         }
@@ -136,16 +142,21 @@ async fn stress_test_concurrent_reads() {
         let topic_id = format!("read-stress-topic-{}", i % num_topics);
 
         let task = async move {
+            let topic_id_clone = topic_id.clone();
             let response = server_clone
-                .post("/messages/get")
+                .post("/blobs/get")
                 .json(&json!({
-                    "topic_ids": [topic_id]
+                    "topics": {
+                        &topic_id: {}
+                    }
                 }))
                 .await;
 
             response.assert_status_ok();
-            let body: GetMessagesResponse = response.json();
-            assert_eq!(body.messages[&topic_id].len(), messages_per_topic);
+            let body: GetBlobsResponse = response.json();
+            let topic_logs = &body.blobs[&topic_id_clone];
+            let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+            assert_eq!(total_messages, messages_per_topic);
         };
         tasks.push(task);
     }
@@ -181,17 +192,10 @@ async fn stress_test_mixed_read_write_operations() {
             // Write operation
             let task = Box::pin(async move {
                 let message = format!("Mixed message {}", i);
-                let message_b64 = base64::Engine::encode(
-                    &base64::engine::general_purpose::STANDARD,
-                    message.as_bytes(),
-                );
 
                 let response = server_clone
-                    .post("/messages/store")
-                    .json(&json!({
-                        "topic_id": topic_id,
-                        "message": message_b64
-                    }))
+                    .post("/blobs/store")
+                    .json(&create_store_request(&topic_id, message.as_bytes(), i as u32))
                     .await;
 
                 response.assert_status(axum::http::StatusCode::CREATED);
@@ -201,9 +205,11 @@ async fn stress_test_mixed_read_write_operations() {
             // Read operation
             let task = Box::pin(async move {
                 let response = server_clone
-                    .post("/messages/get")
+                    .post("/blobs/get")
                     .json(&json!({
-                        "topic_ids": [topic_id]
+                        "topics": {
+                            topic_id: {}
+                        }
                     }))
                     .await;
 
@@ -242,15 +248,10 @@ async fn stress_test_large_messages() {
 
         let task = async move {
             let message = vec![b'X'; message_size];
-            let message_b64 =
-                base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &message);
 
             let response = server_clone
-                .post("/messages/store")
-                .json(&json!({
-                    "topic_id": topic_id,
-                    "message": message_b64
-                }))
+                .post("/blobs/store")
+                .json(&create_store_request(&topic_id, &message, i as u32))
                 .await;
 
             response.assert_status(axum::http::StatusCode::CREATED);
@@ -275,18 +276,19 @@ async fn stress_test_large_messages() {
     for topic_idx in 0..5 {
         let topic_id = format!("large-msg-topic-{}", topic_idx);
         let response = server
-            .post("/messages/get")
+            .post("/blobs/get")
             .json(&json!({
-                "topic_ids": [topic_id]
+                "topics": {
+                    &topic_id: {}
+                }
             }))
             .await;
 
         response.assert_status_ok();
-        let body: GetMessagesResponse = response.json();
-        assert_eq!(
-            body.messages[&topic_id].len(),
-            num_large_messages / 5
-        );
+        let body: GetBlobsResponse = response.json();
+        let topic_logs = &body.blobs[&topic_id];
+        let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+        assert_eq!(total_messages, num_large_messages / 5);
     }
 }
 
@@ -303,15 +305,10 @@ async fn stress_test_many_topics() {
         let topic_id = format!("many-topics-{}", topic_idx);
         for msg_idx in 0..messages_per_topic {
             let message = format!("Message {} for topic {}", msg_idx, topic_idx);
-            let message_b64 =
-                base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message.as_bytes());
 
             server
-                .post("/messages/store")
-                .json(&json!({
-                    "topic_id": topic_id,
-                    "message": message_b64
-                }))
+                .post("/blobs/store")
+                .json(&create_store_request(&topic_id, message.as_bytes(), msg_idx as u32))
                 .await
                 .assert_status(axum::http::StatusCode::CREATED);
         }
@@ -329,22 +326,29 @@ async fn stress_test_many_topics() {
         .map(|i| format!("many-topics-{}", i))
         .collect();
 
+    let mut topics_map = BTreeMap::new();
+    for topic_id in &topic_ids {
+        topics_map.insert(topic_id.clone(), BTreeMap::<String, u32>::new());
+    }
+
     let start = Instant::now();
     let response = server
-        .post("/messages/get")
+        .post("/blobs/get")
         .json(&json!({
-            "topic_ids": topic_ids
+            "topics": topics_map
         }))
         .await;
 
     response.assert_status_ok();
-    let body: GetMessagesResponse = response.json();
+    let body: GetBlobsResponse = response.json();
 
     let retrieve_duration = start.elapsed();
 
-    assert_eq!(body.messages.len(), 100);
+    assert_eq!(body.blobs.len(), 100);
     for topic_id in &topic_ids {
-        assert_eq!(body.messages[topic_id].len(), messages_per_topic);
+        let topic_logs = &body.blobs[topic_id];
+        let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+        assert_eq!(total_messages, messages_per_topic);
     }
 
     println!(
@@ -364,15 +368,10 @@ async fn stress_test_rapid_sequential_writes() {
 
     for i in 0..num_messages {
         let message = format!("Rapid message {}", i);
-        let message_b64 =
-            base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message.as_bytes());
 
         server
-            .post("/messages/store")
-            .json(&json!({
-                "topic_id": topic_id,
-                "message": message_b64
-            }))
+            .post("/blobs/store")
+            .json(&create_store_request(topic_id, message.as_bytes(), i as u32))
             .await
             .assert_status(axum::http::StatusCode::CREATED);
     }
@@ -388,15 +387,19 @@ async fn stress_test_rapid_sequential_writes() {
 
     // Verify all messages were stored
     let response = server
-        .post("/messages/get")
+        .post("/blobs/get")
         .json(&json!({
-            "topic_ids": [topic_id]
+            "topics": {
+                topic_id: {}
+            }
         }))
         .await;
 
     response.assert_status_ok();
-    let body: GetMessagesResponse = response.json();
-    assert_eq!(body.messages[topic_id].len(), num_messages);
+    let body: GetBlobsResponse = response.json();
+    let topic_logs = &body.blobs[topic_id];
+    let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+    assert_eq!(total_messages, num_messages);
 }
 
 #[tokio::test]
