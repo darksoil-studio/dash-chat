@@ -41,5 +41,19 @@
     "edit": "Bearbeiten",
     "name": "Name",
     "addAvatarImage": "Avatarbild hinzufügen",
-    "members": "Mitglieder"
+    "members": "Mitglieder",
+    "remove": "Entfernen",
+    "create": "Erstellen",
+    "description": "Beschreibung",
+    "editName": "Name bearbeiten",
+    "editPhoto": "Foto bearbeiten",
+    "photo": "Foto",
+    "chats": "Chats",
+    "typeMessage": "Nachricht eintippen...",
+    "groupName": "Gruppenname",
+    "add": "Hinzufügen",
+    "leave": "Verlassen",
+    "delete": "Löschen",
+    "settings": "Einstellungen",
+    "omit": "Weglassen"
 }
