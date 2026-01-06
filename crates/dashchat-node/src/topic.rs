@@ -62,7 +62,6 @@ pub trait TopicKind:
 
 pub type DeviceGroupTopic = ActorId;
 
-pub type GlobalTopic = Topic<kind::Global>;
 pub type UntypedTopic = Topic<kind::Untyped>;
 
 pub mod kind {
@@ -98,12 +97,10 @@ pub mod kind {
 
     topic_kind!(Announcements);
     topic_kind!(Inbox);
+    topic_kind!(DeviceGroup);
 
     // Either direct or group chat
     topic_kind!(Chat);
-    // Global topic!
-    // TODO: alpha: this needs to be refined
-    topic_kind!(Global);
 
     topic_kind!(Untyped);
 
@@ -192,12 +189,6 @@ impl<K: TopicKind> Topic<K> {
     }
 }
 
-impl Topic<kind::Global> {
-    pub fn global() -> Self {
-        Self::new([255; 32]).with_name("GLOBAL")
-    }
-}
-
 impl Topic<kind::Announcements> {
     pub fn announcements(agent_id: AgentId) -> Self {
         Self::new(*agent_id.as_bytes())
@@ -214,6 +205,21 @@ impl Topic<kind::Chat> {
         let mut hasher = blake3::Hasher::new();
         hasher.update(pks[0].as_bytes());
         hasher.update(pks[1].as_bytes());
+        Self::new(hasher.finalize().into())
+    }
+}
+
+impl Topic<kind::Inbox> {
+    pub fn inbox() -> Self {
+        Self::new(rand::random())
+    }
+}
+
+impl Topic<kind::DeviceGroup> {
+    // TODO: use a random topic stored in NodeLocalData instead
+    pub fn device_group(agent_id: AgentId) -> Self {
+        let mut hasher = blake3::Hasher::new();
+        hasher.update(agent_id.as_bytes());
         Self::new(hasher.finalize().into())
     }
 }

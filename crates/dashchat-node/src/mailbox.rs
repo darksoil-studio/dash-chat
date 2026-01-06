@@ -61,7 +61,10 @@ where
                     match mailbox.fetch(topic).await {
                         Ok(ops) => {
                             for op in ops {
-                                mailbox.add_author(topic, op.header.public_key.into()).await;
+                                mailbox
+                                    .add_author(topic, op.header.public_key.into())
+                                    .await
+                                    .unwrap();
                                 tx.send(op.into()).await.unwrap();
                             }
                             tokio::time::sleep(RELAY_FETCH_INTERVAL).await;

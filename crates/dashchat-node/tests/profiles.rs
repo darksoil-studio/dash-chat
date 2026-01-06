@@ -50,8 +50,7 @@ async fn test_profiles() {
                 .op_store
                 .get_log(
                     &alice.device_id(),
-                    &Topic::global().into(),
-                    // &Topic::announcements(alice.chat_actor_id()).into(),
+                    &Topic::announcements(alice.agent_id()).into(),
                     None,
                 )
                 .await

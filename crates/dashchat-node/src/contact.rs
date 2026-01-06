@@ -9,7 +9,7 @@ use p2panda_spaces::ActorId;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-use crate::{AgentId, DeviceGroupId, DeviceId, Topic, topic::GlobalTopic};
+use crate::{AgentId, DeviceGroupId, DeviceId, Topic, topic::kind};
 
 /// The content for a QR code or deep link.
 ///
@@ -53,7 +53,7 @@ pub enum ShareIntent {
 pub struct InboxTopic {
     #[named_id(skip)]
     pub expires_at: DateTime<Utc>,
-    pub topic: GlobalTopic,
+    pub topic: Topic<kind::Inbox>,
 }
 
 impl std::fmt::Display for QrCode {
@@ -108,7 +108,7 @@ mod tests {
         let contact = QrCode {
             device_pubkey: DeviceId::from(pubkey),
             inbox_topic: Some(InboxTopic {
-                topic: Topic::global(),
+                topic: Topic::inbox(),
                 expires_at: Utc::now() + chrono::Duration::seconds(3600),
             }),
             agent_id,

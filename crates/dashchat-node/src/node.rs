@@ -1,7 +1,7 @@
 pub(crate) mod author_operation;
 mod stream_processing;
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::pin::Pin;
 use std::sync::Arc;
 
@@ -9,19 +9,13 @@ use anyhow::{Result, anyhow};
 use chrono::{Duration, Utc};
 use futures::Stream;
 use named_id::*;
-use p2panda_auth::Access;
-use p2panda_core::cbor::encode_cbor;
 use p2panda_core::{Body, PrivateKey, PublicKey};
-use p2panda_encryption::Rng;
 use p2panda_net::ResyncConfiguration;
 use p2panda_spaces::ActorId;
-use p2panda_spaces::event::Event;
-use p2panda_spaces::traits::AuthoredMessage;
 use p2panda_store::{LogStore, MemoryStore, SqliteStore};
 use p2panda_stream::IngestExt;
 use p2panda_stream::partial::operations::PartialOrder;
 use tokio::sync::{RwLock, mpsc};
-use tokio_stream::StreamExt;
 
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
@@ -31,19 +25,12 @@ use crate::payload::{
 };
 use crate::stores::OpStore;
 use crate::topic::{LogId, Topic, kind};
-use crate::util::actor_to_pubkey;
 use crate::{
-    AgentId, AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DeviceId, DirectChatId,
-    GroupChatId, Header, Operation, timestamp_now,
+    AgentId, AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DeviceId, DirectChatId, Header,
+    Operation,
 };
 
 pub use stream_processing::Notification;
-
-// const RELAY_ENDPOINT: &str = "https://wasser.liebechaos.org";
-
-const NETWORK_ID: [u8; 32] = [88; 32];
-
-const MAX_MESSAGE_SIZE: usize = 1000 * 10; // 10kb max. UDP payload size
 
 #[derive(Clone, Debug)]
 pub struct NodeConfig {
@@ -69,7 +56,6 @@ pub type Orderer<S> =
 pub struct NodeLocalData {
     pub private_key: PrivateKey,
     pub agent_id: AgentId,
-    pub contacts: Arc<RwLock<HashMap<DeviceId, QrCode>>>,
     pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
 }
 
@@ -80,7 +66,6 @@ impl NodeLocalData {
         Self {
             private_key,
             agent_id,
-            contacts: Arc::new(RwLock::new(HashMap::new())),
             active_inbox_topics: Arc::new(RwLock::new(BTreeSet::new())),
         }
     }
@@ -136,13 +121,9 @@ impl Node {
 
         node.spawn_stream_process_loop(stream_rx);
 
-        node.initialize_topic(Topic::global().with_name("GLOBAL"), true)
-            .await?;
-
         node.initialize_topic(
-            // Topic::announcements(node.repped_group().group)
-            //     .with_name(&format!("announce({})", public_key.renamed())),
-            Topic::global(),
+            Topic::announcements(node.agent_id())
+                .with_name(&format!("announce({})", node.agent_id().renamed())),
             true,
         )
         .await?;
@@ -209,17 +190,8 @@ impl Node {
         }
     }
 
-    pub async fn get_authors(
-        &self,
-        topic_id: LogId,
-    ) -> anyhow::Result<std::collections::HashSet<DeviceId>> {
-        Ok(self
-            .mailbox
-            .authors(topic_id)
-            .await
-            .ok_or_else(|| anyhow!("No authors found for topic {topic_id:?}"))?
-            .into_iter()
-            .collect())
+    pub async fn get_authors(&self, topic_id: LogId) -> HashSet<DeviceId> {
+        self.mailbox.authors(topic_id).await.unwrap_or_default()
         // match self.author_store.authors(&topic_id).await {
         //     Some(authors) => Ok(authors.into_iter().map(|a| a.into()).collect()),
         //     None => {
@@ -239,8 +211,7 @@ impl Node {
         let mut topics = self.local_data.active_inbox_topics.write().await;
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
-                topic: Topic::global(),
-                // topic: Topic::inbox().with_name(&format!("inbox({})", self.device_id().renamed())),
+                topic: Topic::inbox().with_name(&format!("inbox({})", self.device_id().renamed())),
                 expires_at: Utc::now() + self.config.contact_code_expiry,
             };
             self.initialize_topic(inbox_topic.topic, false).await?;
@@ -268,8 +239,6 @@ impl Node {
     /// Anyone who knows the two public keys can derive the same topic.
     // TODO: is this a problem? Should we use a random topic instead?
     pub fn direct_chat_topic(&self, other: AgentId) -> DirectChatId {
-        return Topic::global().recast();
-
         let me = self.agent_id();
         // TODO: use two secrets from each party to construct the topic
         let topic = Topic::direct_chat([me, other]);
@@ -312,8 +281,7 @@ impl Node {
 
     pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
         self.author_operation(
-            Topic::global(),
-            // Topic::announcements(self.repped_group().group),
+            Topic::announcements(self.agent_id()),
             Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
             Some(&format!("set_profile({})", self.device_id().renamed())),
         )
@@ -337,7 +305,7 @@ impl Node {
             .await
             .unwrap_or_default();
 
-        let authors = self.get_authors(chat_id.into()).await?;
+        let authors = self.get_authors(chat_id.into()).await;
 
         for (header, payload) in self
             .get_interleaved_logs(chat_id.into(), authors.into_iter().collect())
@@ -391,8 +359,7 @@ impl Node {
     }
 
     pub fn device_group_topic(&self) -> DeviceGroupId {
-        return Topic::global().recast();
-        // self.local_data.device_space_id
+        Topic::device_group(self.agent_id()).into()
     }
 
     /// Store someone as a contact, and:

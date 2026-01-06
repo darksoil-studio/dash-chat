@@ -33,6 +33,7 @@ impl TestNode {
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = name {
             local_data.device_id().with_name(alias);
+            local_data.agent_id.with_name(alias);
         }
         Self {
             node: Node::new(local_data, config, Some(notification_tx), mailbox)
