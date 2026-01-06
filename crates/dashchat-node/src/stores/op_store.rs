@@ -32,6 +32,13 @@ where
     write_mutex: Arc<Mutex<()>>,
 }
 
+impl OpStore<MemoryStore<LogId, Extensions>> {
+    pub fn new_memory() -> Self {
+        let store = MemoryStore::new();
+        Self::new(store)
+    }
+}
+
 impl OpStore<SqliteStore<LogId, Extensions>> {
     pub async fn new_sqlite() -> anyhow::Result<Self> {
         let rand = rand::distr::Alphanumeric

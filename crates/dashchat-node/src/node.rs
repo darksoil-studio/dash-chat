@@ -92,7 +92,7 @@ impl NodeLocalData {
 
 #[derive(Clone)]
 pub struct Node {
-    pub op_store: OpStore<SqliteStore<LogId, Extensions>>,
+    pub op_store: OpStore<MemoryStore<LogId, Extensions>>,
 
     pub mailbox: MemMailboxClient,
 
@@ -120,7 +120,8 @@ impl Node {
             ..
         } = local_data.clone();
 
-        let op_store = OpStore::new_sqlite().await?;
+        let op_store = OpStore::new_memory();
+        // let op_store = OpStore::new_sqlite().await?;
 
         let (stream_tx, stream_rx) = mpsc::channel(100);
 
