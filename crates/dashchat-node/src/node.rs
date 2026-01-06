@@ -64,26 +64,12 @@ impl Default for NodeConfig {
 pub type Orderer<S> =
     PartialOrder<LogId, Extensions, S, p2panda_stream::partial::MemoryStore<p2panda_core::Hash>>;
 
-#[derive(Clone)]
-pub struct NodeState {
-    pub(crate) contacts: Arc<RwLock<HashMap<DeviceId, QrCode>>>,
-}
-
-impl NodeState {
-    pub async fn agent_id(&self, device_id: DeviceId) -> anyhow::Result<AgentId> {
-        self.contacts
-            .read()
-            .await
-            .get(&device_id)
-            .map(|qr| qr.agent_id.clone())
-            .ok_or_else(|| anyhow!("No agent id found for device {device_id:?}"))
-    }
-}
-
+// TODO: persist
 #[derive(Clone)]
 pub struct NodeLocalData {
     pub private_key: PrivateKey,
     pub agent_id: AgentId,
+    pub contacts: Arc<RwLock<HashMap<DeviceId, QrCode>>>,
     pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
 }
 
@@ -94,6 +80,7 @@ impl NodeLocalData {
         Self {
             private_key,
             agent_id,
+            contacts: Arc::new(RwLock::new(HashMap::new())),
             active_inbox_topics: Arc::new(RwLock::new(BTreeSet::new())),
         }
     }
@@ -117,9 +104,6 @@ pub struct Node {
     stream_tx: mpsc::Sender<Pin<Box<dyn Stream<Item = Operation> + Send + 'static>>>,
 
     local_data: NodeLocalData,
-    /// TODO: some of the stuff in here is only for testing.
-    /// The channel senders are needed but any stateful stuff should go.
-    pub(crate) nodestate: NodeState,
 }
 
 impl Node {
@@ -130,12 +114,10 @@ impl Node {
         notification_tx: Option<mpsc::Sender<Notification>>,
         mailbox: MemMailboxClient,
     ) -> Result<Self> {
-        let rng = Rng::default();
         let device_id = local_data.device_id();
         let NodeLocalData {
-            private_key,
-            agent_id,
             active_inbox_topics,
+            ..
         } = local_data.clone();
 
         let op_store = OpStore::new_sqlite().await?;
@@ -149,9 +131,6 @@ impl Node {
             local_data,
             notification_tx,
             stream_tx,
-            nodestate: NodeState {
-                contacts: Arc::new(RwLock::new(HashMap::new())),
-            },
         };
 
         node.spawn_stream_process_loop(stream_rx);
