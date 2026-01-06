@@ -13,13 +13,12 @@ use p2panda_spaces::{
 };
 use serde::{Deserialize, Serialize};
 use tokio::task;
+use tokio_stream::wrappers::ReceiverStream;
 use tracing::Instrument;
 
 use crate::mailbox::MailboxSubscription;
-use crate::spaces::SpaceOperation;
 use crate::{
     payload::InboxPayload,
-    spaces::ArgType,
     topic::{LogId, TopicKind},
 };
 
@@ -41,27 +40,8 @@ impl Node {
     pub(super) async fn initialize_topic<K: TopicKind>(
         &self,
         topic: Topic<K>,
-        is_author: bool,
+        _is_author: bool,
     ) -> anyhow::Result<()> {
-        #[cfg(feature = "p2p")]
-        {
-            // TODO: this has a race condition
-            if self
-                .initialized_topics
-                .read()
-                .await
-                .contains_key(&topic.into())
-            {
-                return Ok(());
-            }
-
-            if is_author {
-                self.author_store
-                    .add_author(topic.into(), self.public_key())
-                    .await;
-            }
-        }
-
         {
             if let Some(mailbox_rx) = self.mailbox.subscribe(topic.into()).await? {
                 let stream = ReceiverStream::new(mailbox_rx).filter_map(async |op| {
@@ -88,63 +68,6 @@ impl Node {
                     .await
                     .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
             }
-        }
-
-        #[cfg(feature = "p2p")]
-        {
-            let (network_tx, network_rx, _gossip_ready) =
-                self.network.subscribe(topic.into()).await?;
-            tracing::info!(?topic, "SUB: subscribed to topic");
-
-            let stream = ReceiverStream::new(network_rx);
-            let stream = stream.filter_map(|event| async {
-                match event {
-                    FromNetwork::GossipMessage { bytes, .. } => match decode_gossip_message(&bytes)
-                    {
-                        Ok(result) => Some(result),
-                        Err(err) => {
-                            tracing::warn!(?err, "decode gossip message error");
-                            None
-                        }
-                    },
-                    FromNetwork::SyncMessage {
-                        header, payload, ..
-                    } => Some((header, payload)),
-                }
-            });
-
-            // Decode and ingest the p2panda operations.
-            let stream = stream
-                .decode()
-                .filter_map(|result| async {
-                    match result {
-                        Ok(operation) => Some(operation),
-                        Err(err) => {
-                            tracing::warn!(?err, "decode operation error");
-                            None
-                        }
-                    }
-                })
-                .ingest(self.op_store.clone(), 128)
-                .filter_map(|result| async {
-                    match result {
-                        Ok(operation) => Some(operation),
-                        Err(err) => {
-                            tracing::warn!(?err, "ingest operation error");
-                            None
-                        }
-                    }
-                });
-
-            self.stream_tx
-                .send(Pin::from(Box::new(stream)))
-                .await
-                .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
-
-            self.initialized_topics
-                .write()
-                .await
-                .insert(topic.into(), network_tx);
         }
 
         Ok(())
@@ -274,18 +197,6 @@ impl Node {
         anyhow::Ok(())
     }
 
-    pub async fn repair_spaces_and_publish(&self) -> anyhow::Result<()> {
-        let repair_required = self.manager.spaces_repair_required().await?;
-        if !repair_required.is_empty() {
-            tracing::warn!(missing = ?repair_required, "spaces repair required");
-            for space_id in repair_required {
-                let (msgs, _) = self.manager.repair_spaces(&vec![space_id]).await?;
-                self.process_authored_ingested_space_messages(msgs).await?;
-            }
-        }
-        Ok(())
-    }
-
     pub async fn notify_payload(&self, header: &Header, payload: &Payload) -> anyhow::Result<()> {
         if let Some((notification_tx, payload)) = self.notification_tx.clone().zip(Some(payload)) {
             notification_tx
@@ -299,7 +210,7 @@ impl Node {
         Ok(())
     }
 
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me=?self.public_key().renamed())))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me=?self.device_id().renamed())))]
     pub async fn process_payload(
         &self,
         // topic: Topic<K>,
@@ -310,77 +221,6 @@ impl Node {
         let log_id = header.extensions.log_id;
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match &payload {
-            Some(Payload::Space(args)) => {
-                let space_op = SpaceOperation::new(header.clone(), args.clone());
-                let opid = space_op.id();
-                let chat_id = header.extensions.topic().recast::<kind::Chat>();
-                let mut chats = self.nodestate.chats.write().await;
-                let chat = chats.entry(chat_id).or_insert(Chat::new(chat_id));
-                // Skip already processed messages
-                if self.spaces_store.message(&opid).await?.is_some() {
-                    return Ok(());
-                }
-
-                self.spaces_store.set_message(&opid, &space_op).await?;
-
-                // While authoring, all message types other than Application
-                // are already processed
-                if is_author && space_op.arg_type() != ArgType::Application {
-                    return Ok(());
-                }
-
-                tracing::info!(opid = ?opid.renamed(), "SM: processing space msg");
-                match self.manager.process(&space_op).await {
-                    Ok(events) => {
-                        for (i, event) in events.into_iter().enumerate() {
-                            // TODO: need to get this from the space message, not the header!
-                            // because the welcome message could be passed from a differetn author
-                            self.process_chat_event(chat, event)
-                                .instrument(tracing::info_span!("chat event loop", ?i))
-                                .await?;
-                        }
-                    }
-                    Err(ManagerError::Space(SpaceError::AuthGroup(
-                        AuthGroupError::DuplicateOperation(op, _id),
-                    )))
-                    | Err(ManagerError::Group(GroupError::AuthGroup(
-                        AuthGroupError::DuplicateOperation(op, _id),
-                    ))) => {
-                        // assert_eq!(op, msg.id());
-                        tracing::error!(
-                            argtype = ?space_op.arg_type(),
-                            opid = ?op.renamed(),
-                            "duplicate space control msg"
-                        );
-                    }
-
-                    Err(ManagerError::UnexpectedMessage(op)) => {
-                        tracing::error!(
-                            header = ?header.hash().renamed(),
-                            op = ?op.renamed(),
-                            "space manager unexpected operation"
-                        );
-                    }
-
-                    Err(ManagerError::MissingAuthMessage(op, auth_op)) => {
-                        tracing::error!(
-                            op = ?op.renamed(),
-                            auth_op = ?auth_op.renamed(),
-                            "space manager missing auth message"
-                        );
-                    }
-
-                    Err(err) => {
-                        tracing::error!(
-                            hash = ?header.hash().renamed(),
-                            opid = ?opid.renamed(),
-                            ?err,
-                            "space manager process error"
-                        );
-                    }
-                }
-            }
-
             Some(Payload::Chat(ChatPayload::JoinGroup(chat_id))) => {
                 // TODO: maybe close down the chat tasks if we are kicked out?
             }
@@ -401,6 +241,10 @@ impl Node {
                         // Nothing to do.
                     }
                 }
+            }
+
+            Some(Payload::Chat(ChatPayload::Message(_))) => {
+                // Nothing to do.
             }
 
             Some(Payload::Announcements(_)) => {

@@ -31,7 +31,7 @@
 
 use std::marker::PhantomData;
 
-use crate::chat::ChatId;
+use crate::{AgentId, QrCode, chat::ChatId};
 use named_id::*;
 
 use p2panda_net::TopicId;
@@ -95,6 +95,9 @@ pub mod kind {
             }
         };
     }
+
+    topic_kind!(Announcements);
+    topic_kind!(Inbox);
 
     // Either direct or group chat
     topic_kind!(Chat);
@@ -195,12 +198,18 @@ impl Topic<kind::Global> {
     }
 }
 
+impl Topic<kind::Announcements> {
+    pub fn announcements(agent_id: AgentId) -> Self {
+        Self::new(*agent_id.as_bytes())
+    }
+}
+
 impl Topic<kind::Chat> {
     pub fn random() -> Self {
         Self::new(rand::random())
     }
 
-    pub fn direct_chat(mut pks: [ActorId; 2]) -> Self {
+    pub fn direct_chat(mut pks: [AgentId; 2]) -> Self {
         pks.sort();
         let mut hasher = blake3::Hasher::new();
         hasher.update(pks[0].as_bytes());

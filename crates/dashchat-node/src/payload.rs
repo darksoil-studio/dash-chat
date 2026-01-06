@@ -5,9 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
 use crate::contact::QrCode;
-use crate::spaces::{SpaceOperation, SpacesArgs};
 use crate::topic::LogId;
-use crate::{AsBody, Cbor, Topic};
+use crate::{AsBody, Cbor, ChatMessage, ChatMessageContent, Topic};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Extensions {
@@ -49,6 +48,8 @@ pub enum ChatPayload {
     /// is that it can only be sent to contacts, and we want it to be
     /// long-lasting, so using an Inbox is not an option.
     JoinGroup(ChatId),
+
+    Message(ChatMessageContent),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
@@ -66,9 +67,6 @@ pub enum Payload {
 
     /// Group chat data, including direct 1:1 chats
     Chat(ChatPayload),
-
-    /// Space control message
-    Space(SpacesArgs),
 
     /// Data only seen within your private device group.
     /// No other person sees these.

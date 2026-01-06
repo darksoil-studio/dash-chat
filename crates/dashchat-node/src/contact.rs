@@ -1,12 +1,15 @@
 use chrono::{DateTime, Utc};
 use named_id::RenameAll;
-use p2panda_core::cbor::{decode_cbor, encode_cbor};
+use p2panda_core::{
+    PublicKey,
+    cbor::{decode_cbor, encode_cbor},
+};
 use p2panda_encryption::key_bundle::LongTermKeyBundle;
 use p2panda_spaces::ActorId;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-use crate::{DeviceGroupId, Topic, topic::GlobalTopic};
+use crate::{AgentId, DeviceGroupId, DeviceId, Topic, topic::GlobalTopic};
 
 /// The content for a QR code or deep link.
 ///
@@ -27,17 +30,15 @@ use crate::{DeviceGroupId, Topic, topic::GlobalTopic};
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
 #[serde(into = "String", try_from = "String")]
 pub struct QrCode {
-    /// Pubkey and key bundle of this node: allows adding this node to encrypted spaces.
-    pub member_code: MemberCode,
+    /// Pubkey of this node: allows adding this node to groups.
+    pub device_pubkey: DeviceId,
+    /// Agent ID to add to spaces
+    pub agent_id: AgentId,
     /// Topic for receiving messages from this node during the lifetime of the QR code.
     /// The initiator will specify an InboxTopic, and the recipient will send back a QR
     /// code without an associated inbox, because after this exchange the two nodes
     /// can communicate directly.
     pub inbox_topic: Option<InboxTopic>,
-    /// Topic for the device group of this node.
-    pub device_space_id: DeviceGroupId,
-    /// Actor ID to add to spaces
-    pub chat_actor_id: ActorId,
     /// The intent of the QR code: whether to add this node as a contact or a device.
     pub share_intent: ShareIntent,
 }
@@ -55,30 +56,12 @@ pub struct InboxTopic {
     pub topic: GlobalTopic,
 }
 
-/// Just add serialization around [`p2panda_spaces::Member`]`
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, derive_more::From, RenameAll)]
-pub struct MemberCode {
-    pub actor_id: ActorId,
-    pub key_bundle: LongTermKeyBundle,
-}
-
-impl MemberCode {
-    pub fn id(&self) -> ActorId {
-        self.actor_id
-    }
-
-    pub fn key_bundle(&self) -> &LongTermKeyBundle {
-        &self.key_bundle
-    }
-}
-
 impl std::fmt::Display for QrCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let bytes = encode_cbor(&(
-            &self.member_code,
+            &self.device_pubkey,
             &self.inbox_topic,
-            &self.device_space_id,
-            &self.chat_actor_id,
+            &self.agent_id,
             &self.share_intent,
         ))
         .map_err(|_| std::fmt::Error)?;
@@ -90,30 +73,13 @@ impl FromStr for QrCode {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let bytes = hex::decode(s)?;
-        let (member_code, inbox_topic, device_space_id, chat_actor_id, share_intent) =
-            decode_cbor(bytes.as_slice())?;
+        let (device_pubkey, inbox_topic, agent_id, share_intent) = decode_cbor(bytes.as_slice())?;
         Ok(QrCode {
-            member_code,
+            device_pubkey,
             inbox_topic,
-            device_space_id,
-            chat_actor_id,
+            agent_id,
             share_intent,
         })
-    }
-}
-
-impl From<p2panda_spaces::Member> for MemberCode {
-    fn from(member: p2panda_spaces::Member) -> Self {
-        Self {
-            key_bundle: member.key_bundle().clone(),
-            actor_id: member.id(),
-        }
-    }
-}
-
-impl From<MemberCode> for p2panda_spaces::Member {
-    fn from(member_code: MemberCode) -> Self {
-        p2panda_spaces::Member::new(member_code.id(), member_code.key_bundle().clone())
     }
 }
 
@@ -132,31 +98,20 @@ impl TryFrom<String> for QrCode {
 
 #[cfg(test)]
 mod tests {
-    use crate::topic::kind;
 
     use super::*;
 
     #[test]
     fn test_contact_roundtrip() {
-        let pubkey = p2panda_encryption::crypto::x25519::PublicKey::from_bytes([11; 32]);
+        let pubkey = PublicKey::from_bytes(&[11; 32]).unwrap();
+        let agent_id = AgentId::from(ActorId::from_bytes(&[22; 32]).unwrap());
         let contact = QrCode {
-            member_code: MemberCode {
-                actor_id: ActorId::from_bytes(&[22; 32]).unwrap(),
-                key_bundle: LongTermKeyBundle::new(
-                    pubkey,
-                    p2panda_encryption::key_bundle::PreKey::new(
-                        pubkey,
-                        p2panda_encryption::key_bundle::Lifetime::new(3600),
-                    ),
-                    p2panda_encryption::crypto::xeddsa::XSignature::from_bytes([33; 64]),
-                ),
-            },
+            device_pubkey: DeviceId::from(pubkey),
             inbox_topic: Some(InboxTopic {
                 topic: Topic::global(),
                 expires_at: Utc::now() + chrono::Duration::seconds(3600),
             }),
-            device_space_id: DeviceGroupId::random(),
-            chat_actor_id: ActorId::from_bytes(&[44; 32]).unwrap(),
+            agent_id,
             share_intent: ShareIntent::AddDevice,
         };
         let encoded = contact.to_string();

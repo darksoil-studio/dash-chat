@@ -12,7 +12,6 @@ use tokio::sync::Mutex;
 use crate::{
     node::Orderer,
     payload::{Extensions, Payload},
-    spaces::SpaceOperation,
     topic::{LogId, Topic, TopicKind},
     *,
 };
@@ -50,7 +49,7 @@ impl OpStore {
         deps: Vec<p2panda_core::Hash>,
         alias: Option<&str>,
     ) -> Result<(Header, Option<Body>), anyhow::Error> {
-        let public_key = private_key.public_key();
+        let device_id = DeviceId::from(private_key.public_key());
         let log_id = topic.clone();
 
         let body = Some(payload.try_into_body()?);
@@ -60,7 +59,7 @@ impl OpStore {
         };
 
         let lock = self.write_mutex.lock().await;
-        let latest_operation = self.latest_operation(&public_key, &log_id.into()).await?;
+        let latest_operation = self.latest_operation(&device_id, &log_id.into()).await?;
 
         let (seq_num, backlink) = match latest_operation {
             Some((header, _)) => (header.seq_num + 1, Some(header.hash())),
@@ -71,7 +70,7 @@ impl OpStore {
 
         let mut header = Header {
             version: 1,
-            public_key,
+            public_key: *device_id,
             signature: None,
             payload_size: body.as_ref().map_or(0, |body| body.size()),
             payload_hash: body.as_ref().map(|body| body.hash()),
@@ -174,10 +173,10 @@ impl OpStore {
                     .clone()
                     .map(|body| Payload::try_from_body(&body).unwrap())
                 {
-                    Some(Payload::Space(args)) => {
-                        let space_op = SpaceOperation::new(header.clone(), args);
-                        format!("{:?}", space_op.arg_type())
-                    }
+                    // Some(Payload::Space(args)) => {
+                    //     let space_op = GroupOp::new(header.clone(), args);
+                    //     format!("{:?}", space_op.arg_type())
+                    // }
                     Some(p) => format!("{p:?}"),
                     None => "_".to_string(),
                 };

@@ -17,8 +17,8 @@ async fn test_inbox_2() {
     let bobbi = TestNode::new(NodeConfig::default(), mailbox.client(), Some("bobbi")).await;
 
     println!("nodes:");
-    println!("alice: {:?}", alice.public_key().short());
-    println!("bobbi: {:?}", bobbi.public_key().short());
+    println!("alice: {:?}", alice.device_id().short());
+    println!("bobbi: {:?}", bobbi.device_id().short());
 
     #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;
@@ -31,47 +31,15 @@ async fn test_inbox_2() {
         .await
         .unwrap();
 
-    assert_eq!(
-        alice.get_contacts().await.unwrap(),
-        vec![bobbi.chat_actor_id()]
-    );
-    assert_eq!(
-        bobbi.get_contacts().await.unwrap(),
-        vec![alice.chat_actor_id()]
-    );
+    assert_eq!(alice.get_contacts().await.unwrap(), vec![bobbi.agent_id()]);
+    assert_eq!(bobbi.get_contacts().await.unwrap(), vec![alice.agent_id()]);
 
-    let direct_chat_topic = alice.direct_chat_topic(bobbi.chat_actor_id());
+    let direct_chat_topic = alice.direct_chat_topic(bobbi.agent_id());
 
     tracing::info!(%direct_chat_topic, ?direct_chat_topic, "direct chat id");
 
-    wait_for(
-        Duration::from_millis(100),
-        Duration::from_secs(5),
-        || async { alice.space(direct_chat_topic).await.map(|_| ()) },
-    )
-    .await
-    .unwrap();
-
     alice
-        .send_message(
-            alice.direct_chat_topic(bobbi.chat_actor_id()),
-            "Hello".into(),
-        )
+        .send_message(direct_chat_topic, "Hello".into())
         .await
         .unwrap();
-
-    let chat_id = GroupChatId::random();
-    alice.create_group_chat_space(chat_id).await.unwrap();
-    alice
-        .add_member(chat_id, bobbi.repped_group())
-        .await
-        .unwrap();
-
-    bobbi
-        .behavior()
-        .accept_next_group_invitation()
-        .await
-        .unwrap();
-
-    alice.send_message(chat_id, "Hello".into()).await.unwrap();
 }

@@ -2,7 +2,6 @@ use bytes::Bytes;
 
 use crate::mailbox::MailboxClient;
 use crate::polestar as p;
-use crate::spaces::SpaceOperation;
 use crate::topic::TopicKind;
 
 use super::*;
@@ -31,18 +30,6 @@ impl Node {
             body,
         };
         self.process_authored_ingested_operation(op).await
-    }
-
-    // Can't do this unless we allow multiple operations to be created but not yet ingested.
-    pub(crate) async fn process_authored_ingested_space_messages(
-        &self,
-        ops: Vec<SpaceOperation>,
-    ) -> Result<(), anyhow::Error> {
-        for op in ops {
-            let op = op.into_operation()?;
-            self.process_authored_ingested_operation(op).await?;
-        }
-        Ok(())
     }
 
     pub(crate) async fn process_authored_ingested_operation(

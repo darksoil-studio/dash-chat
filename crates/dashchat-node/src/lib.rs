@@ -4,23 +4,23 @@ mod chat;
 mod contact;
 pub mod node;
 mod payload;
-pub mod spaces;
 pub mod stores;
 pub mod topic;
 mod util;
 
 pub mod polestar;
 
+mod id;
 pub mod mailbox;
 #[cfg(feature = "testing")]
 pub mod testing;
 
 use named_id::*;
-use p2panda_core::IdentityError;
 
 pub use chat::*;
 pub use contact::{QrCode, ShareIntent};
-pub use node::{Node, NodeConfig, NodeLocalData, Notification, ReppedGroup};
+pub use id::*;
+pub use node::{Node, NodeConfig, NodeLocalData, Notification};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 pub use payload::*;

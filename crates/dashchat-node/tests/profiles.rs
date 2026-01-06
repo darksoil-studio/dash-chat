@@ -17,8 +17,8 @@ async fn test_profiles() {
     let mailbox = MemMailbox::new();
     let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice--")).await;
     let bobbi = TestNode::new(NodeConfig::default(), mailbox.client(), Some("--bobbi")).await;
-    println!("alice: {:?}", alice.public_key().short());
-    println!("bobbi: {:?}", bobbi.public_key().short());
+    println!("alice: {:?}", alice.device_id().short());
+    println!("bobbi: {:?}", bobbi.device_id().short());
 
     #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;
@@ -49,7 +49,7 @@ async fn test_profiles() {
             bobbi
                 .op_store
                 .get_log(
-                    &alice.public_key(),
+                    &alice.device_id(),
                     &Topic::global().into(),
                     // &Topic::announcements(alice.chat_actor_id()).into(),
                     None,

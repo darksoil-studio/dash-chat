@@ -3,11 +3,11 @@ pub mod mem;
 use std::time::Duration;
 
 use named_id::Rename;
-use p2panda_core::{Body, PublicKey};
+use p2panda_core::Body;
 use tokio::sync::mpsc;
 use tracing::Instrument;
 
-use crate::{Header, Operation, topic::LogId};
+use crate::{DeviceId, Header, Operation, topic::LogId};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 const RELAY_FETCH_INTERVAL: Duration = Duration::from_secs(3);
@@ -27,7 +27,7 @@ pub trait MailboxClient<Op>: Clone + Send + Sync + 'static {
     /// Returns true if the topic was not previously touched, false otherwise.
     async fn touch(&self, topic: LogId) -> bool;
 
-    async fn add_author(&self, topic: LogId, author: PublicKey) -> Result<(), anyhow::Error>;
+    async fn add_author(&self, topic: LogId, author: DeviceId) -> Result<(), anyhow::Error>;
 }
 
 /// Subscription can only be implemented for a mailbox that returns Operation-equivalent items.
@@ -61,7 +61,7 @@ where
                     match mailbox.fetch(topic).await {
                         Ok(ops) => {
                             for op in ops {
-                                mailbox.add_author(topic, op.header.public_key).await;
+                                mailbox.add_author(topic, op.header.public_key.into()).await;
                                 tx.send(op.into()).await.unwrap();
                             }
                             tokio::time::sleep(RELAY_FETCH_INTERVAL).await;

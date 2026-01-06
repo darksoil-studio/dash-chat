@@ -9,7 +9,7 @@ use named_id::Rename;
 use p2panda_core::Body;
 use tokio::sync::{Mutex, RwLock};
 
-use crate::{Header, topic::LogId};
+use crate::{AgentId, DeviceId, Header, topic::LogId};
 
 impl From<Operation> for MailboxOperation {
     fn from(op: Operation) -> Self {
@@ -43,7 +43,8 @@ impl From<(Header, Option<Body>)> for MailboxOperation {
 pub struct MemMailboxClient<Op: MailboxItem = MailboxOperation> {
     mailbox: MemMailbox<Op>,
     latest: Arc<Mutex<HashMap<LogId, usize>>>,
-    authors: Arc<RwLock<HashMap<LogId, HashSet<PublicKey>>>>,
+    authors: Arc<RwLock<HashMap<LogId, HashSet<DeviceId>>>>,
+    agents: Arc<RwLock<HashMap<DeviceId, AgentId>>>,
 }
 
 impl<Op: MailboxItem> MemMailboxClient<Op> {
@@ -51,7 +52,7 @@ impl<Op: MailboxItem> MemMailboxClient<Op> {
         self.latest.lock().await.keys().cloned().collect()
     }
 
-    pub async fn authors(&self, topic: LogId) -> Option<HashSet<PublicKey>> {
+    pub async fn authors(&self, topic: LogId) -> Option<HashSet<DeviceId>> {
         let authors = self.authors.read().await;
         authors.get(&topic).cloned()
     }
@@ -74,6 +75,7 @@ impl<Op: MailboxItem> MemMailbox<Op> {
             mailbox: self.clone(),
             latest: Arc::new(Mutex::new(HashMap::new())),
             authors: Arc::new(RwLock::new(HashMap::new())),
+            agents: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 }
@@ -122,7 +124,7 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
         }
     }
 
-    async fn add_author(&self, topic: LogId, author: PublicKey) -> Result<(), anyhow::Error> {
+    async fn add_author(&self, topic: LogId, author: DeviceId) -> Result<(), anyhow::Error> {
         let mut authors = self.authors.write().await;
         authors
             .entry(topic)

@@ -11,17 +11,16 @@ use p2panda_spaces::ActorId;
 use tokio::sync::{Mutex, mpsc::Receiver};
 
 use crate::{
-    ChatId, DeviceGroupPayload, NodeConfig, Notification, Payload,
+    AgentId, ChatId, DeviceGroupPayload, NodeConfig, Notification, Payload,
     mailbox::mem::{MemMailbox, MemMailboxClient},
     node::{Node, NodeLocalData},
-    spaces::DashGroup,
     testing::{behavior::Behavior, introduce},
     topic::{LogId, Topic},
     util::actor_to_pubkey,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
-#[debug("TestNode({})", self.node.public_key().renamed())]
+#[debug("TestNode({})", self.node.device_id().renamed())]
 pub struct TestNode {
     #[deref]
     node: Node,
@@ -33,7 +32,7 @@ impl TestNode {
         let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = name {
-            local_data.private_key.public_key().with_name(alias);
+            local_data.device_id().with_name(alias);
         }
         Self {
             node: Node::new(local_data, config, Some(notification_tx), mailbox)
@@ -52,34 +51,21 @@ impl TestNode {
         Ok(groups)
     }
 
-    pub async fn get_members(
-        &self,
-        chat_id: ChatId,
-    ) -> anyhow::Result<Vec<(p2panda_spaces::ActorId, Access)>> {
-        Ok(self.space(chat_id).await?.members().await?)
-    }
+    // pub async fn get_members(
+    //     &self,
+    //     chat_id: ChatId,
+    // ) -> anyhow::Result<Vec<(p2panda_spaces::ActorId, Access)>> {
+    //     Ok(self.space(chat_id).await?.members().await?)
+    // }
 
-    pub async fn get_contacts(&self) -> anyhow::Result<Vec<ActorId>> {
-        let group: DashGroup = self
-            .manager
-            .group(self.repped_group().group)
-            .await?
-            .ok_or_else(|| anyhow::anyhow!("device group not found"))?;
-        let members = group
-            .members()
-            .await?
-            .into_iter()
-            .map(|(id, _)| actor_to_pubkey(id))
-            .collect::<Vec<_>>();
-
+    pub async fn get_contacts(&self) -> anyhow::Result<Vec<AgentId>> {
+        // FIXME: use all local device IDs
         let ids = self
-            .get_interleaved_logs(self.device_group_topic().into(), members)
+            .get_interleaved_logs(self.device_group_topic().into(), vec![self.device_id()])
             .await?
             .into_iter()
             .filter_map(|(_, payload)| match payload {
-                Some(Payload::DeviceGroup(DeviceGroupPayload::AddContact(qr))) => {
-                    Some(qr.chat_actor_id)
-                }
+                Some(Payload::DeviceGroup(DeviceGroupPayload::AddContact(qr))) => Some(qr.agent_id),
                 _ => None,
             })
             .collect();
@@ -209,7 +195,7 @@ pub async fn consistency(
         for n in nodes {
             println!(
                 ">>> {:?}\n{}\n",
-                n.public_key(),
+                n.device_id(),
                 n.op_store.report(log_ids.clone())
             );
         }
