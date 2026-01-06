@@ -1,11 +1,12 @@
 use std::{
     collections::{HashMap, HashSet},
     convert::Infallible,
+    error::Error,
     sync::{Arc, RwLock},
 };
 
 use p2panda_core::{Body, Hash, Operation, PublicKey, RawOperation};
-use p2panda_store::{LogStore, MemoryStore, OperationStore};
+use p2panda_store::{LogStore, MemoryStore, OperationStore, SqliteStore};
 use p2panda_stream::operation::IngestResult;
 use tokio::sync::Mutex;
 
@@ -17,17 +18,31 @@ use crate::{
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::DerefMut)]
-pub struct OpStore {
+pub struct OpStore<S>
+where
+    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions>,
+    S: Send + Sync,
+{
     #[deref]
     #[deref_mut]
-    pub(crate) store: MemoryStore<LogId, Extensions>,
-    pub orderer: Arc<tokio::sync::RwLock<Orderer>>,
+    pub(crate) store: S,
+    pub orderer: Arc<tokio::sync::RwLock<Orderer<S>>>,
     pub processed_ops: Arc<RwLock<HashMap<LogId, HashSet<Hash>>>>,
     write_mutex: Arc<Mutex<()>>,
 }
 
-impl OpStore {
-    pub fn new(store: MemoryStore<LogId, Extensions>) -> Self {
+impl OpStore<SqliteStore<LogId, Extensions>> {
+    pub fn new_sqlite() -> Self {
+        todo!()
+    }
+}
+
+impl<S> OpStore<S>
+where
+    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions>,
+    S: Send + Sync,
+{
+    pub fn new(store: S) -> Self {
         let orderer = Arc::new(tokio::sync::RwLock::new(Orderer::new(
             store.clone(),
             Default::default(),
@@ -59,7 +74,10 @@ impl OpStore {
         };
 
         let lock = self.write_mutex.lock().await;
-        let latest_operation = self.latest_operation(&device_id, &log_id.into()).await?;
+        let latest_operation = self
+            .latest_operation(&device_id, &log_id.into())
+            .await
+            .unwrap();
 
         let (seq_num, backlink) = match latest_operation {
             Some((header, _)) => (header.seq_num + 1, Some(header.hash())),
@@ -156,6 +174,33 @@ impl OpStore {
         Ok(next)
     }
 
+    pub fn mark_op_processed(&self, log_id: LogId, hash: &Hash) {
+        self.processed_ops
+            .write()
+            .unwrap()
+            .entry(log_id)
+            .or_default()
+            .insert(hash.clone());
+    }
+
+    pub fn is_op_processed(&self, log_id: &LogId, hash: &Hash) -> bool {
+        self.processed_ops
+            .read()
+            .unwrap()
+            .get(log_id)
+            .map(|s| s.contains(hash))
+            .unwrap_or(false)
+    }
+}
+
+impl OpStore<SqliteStore<LogId, Extensions>> {
+    pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
+        tracing::warn!("report() not implemented for SqliteStore");
+        format!("report() not implemented for SqliteStore")
+    }
+}
+
+impl OpStore<MemoryStore<LogId, Extensions>> {
     pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
         let log_ids = log_ids.into_iter().collect::<Vec<_>>();
         let s = self.store.read_store();
@@ -203,28 +248,14 @@ impl OpStore {
             .collect::<Vec<_>>()
             .join("\n")
     }
-
-    pub fn mark_op_processed(&self, log_id: LogId, hash: &Hash) {
-        self.processed_ops
-            .write()
-            .unwrap()
-            .entry(log_id)
-            .or_default()
-            .insert(hash.clone());
-    }
-
-    pub fn is_op_processed(&self, log_id: &LogId, hash: &Hash) -> bool {
-        self.processed_ops
-            .read()
-            .unwrap()
-            .get(log_id)
-            .map(|s| s.contains(hash))
-            .unwrap_or(false)
-    }
 }
 
-impl OperationStore<LogId, Extensions> for OpStore {
-    type Error = Infallible;
+impl<S> OperationStore<LogId, Extensions> for OpStore<S>
+where
+    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions> + Send + Sync,
+    <S as OperationStore<LogId, Extensions>>::Error: std::error::Error + Send + Sync,
+{
+    type Error = <S as OperationStore<LogId, Extensions>>::Error;
 
     async fn insert_operation(
         &mut self,
@@ -263,8 +294,14 @@ impl OperationStore<LogId, Extensions> for OpStore {
     }
 }
 
-impl LogStore<LogId, Extensions> for OpStore {
-    type Error = Infallible;
+impl<S> LogStore<LogId, Extensions> for OpStore<S>
+where
+    S: LogStore<LogId, Extensions>,
+    S: OperationStore<LogId, Extensions>,
+    S: Send + Sync,
+    <S as LogStore<LogId, Extensions>>::Error: std::error::Error + Send + Sync,
+{
+    type Error = <S as LogStore<LogId, Extensions>>::Error;
 
     async fn get_log(
         &self,

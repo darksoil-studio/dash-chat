@@ -17,7 +17,7 @@ use p2panda_net::ResyncConfiguration;
 use p2panda_spaces::ActorId;
 use p2panda_spaces::event::Event;
 use p2panda_spaces::traits::AuthoredMessage;
-use p2panda_store::{LogStore, MemoryStore};
+use p2panda_store::{LogStore, MemoryStore, SqliteStore};
 use p2panda_stream::IngestExt;
 use p2panda_stream::partial::operations::PartialOrder;
 use tokio::sync::{RwLock, mpsc};
@@ -62,12 +62,8 @@ impl Default for NodeConfig {
     }
 }
 
-pub type Orderer = PartialOrder<
-    LogId,
-    Extensions,
-    MemoryStore<LogId, Extensions>,
-    p2panda_stream::partial::MemoryStore<p2panda_core::Hash>,
->;
+pub type Orderer<S> =
+    PartialOrder<LogId, Extensions, S, p2panda_stream::partial::MemoryStore<p2panda_core::Hash>>;
 
 #[derive(Clone)]
 pub struct NodeState {
@@ -111,7 +107,7 @@ impl NodeLocalData {
 
 #[derive(Clone)]
 pub struct Node {
-    pub op_store: OpStore,
+    pub op_store: OpStore<SqliteStore<LogId, Extensions>>,
 
     pub mailbox: MemMailboxClient,
 
@@ -144,8 +140,7 @@ impl Node {
             active_inbox_topics,
         } = local_data.clone();
 
-        let op_store = MemoryStore::<LogId, Extensions>::new();
-        let op_store = OpStore::new(op_store);
+        let op_store = OpStore::new_sqlite();
 
         let (stream_tx, stream_rx) = mpsc::channel(100);
 
