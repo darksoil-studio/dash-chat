@@ -261,28 +261,4 @@ impl Node {
         }
         Ok(())
     }
-
-    async fn process_chat_event(
-        &self,
-        chat: &mut Chat,
-        event: Event<ChatId, ()>,
-    ) -> anyhow::Result<()> {
-        match event {
-            Event::Space(space_event) => {
-                match space_event {
-                    p2panda_spaces::event::SpaceEvent::Ejected { .. } => {
-                        tracing::warn!(?chat.id, "removed from chat");
-                        chat.removed = true;
-                    }
-                    _ => {
-                        // Handle other space events if needed
-                    }
-                }
-            }
-            _ => {
-                // nothing to do
-            }
-        }
-        Ok(())
-    }
 }

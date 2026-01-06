@@ -46,18 +46,6 @@ impl TestNode {
         Behavior::new(self.clone())
     }
 
-    pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
-        let groups = self.nodestate.chats.read().await.keys().cloned().collect();
-        Ok(groups)
-    }
-
-    // pub async fn get_members(
-    //     &self,
-    //     chat_id: ChatId,
-    // ) -> anyhow::Result<Vec<(p2panda_spaces::ActorId, Access)>> {
-    //     Ok(self.space(chat_id).await?.members().await?)
-    // }
-
     pub async fn get_contacts(&self) -> anyhow::Result<Vec<AgentId>> {
         // FIXME: use all local device IDs
         let ids = self

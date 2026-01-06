@@ -8,6 +8,7 @@ use std::{
 use p2panda_core::{Body, Hash, Operation, PublicKey, RawOperation};
 use p2panda_store::{LogStore, MemoryStore, OperationStore, SqliteStore};
 use p2panda_stream::operation::IngestResult;
+use rand::{Rng, distr::Distribution};
 use tokio::sync::Mutex;
 
 use crate::{
@@ -32,8 +33,30 @@ where
 }
 
 impl OpStore<SqliteStore<LogId, Extensions>> {
-    pub fn new_sqlite() -> Self {
-        todo!()
+    pub async fn new_sqlite() -> anyhow::Result<Self> {
+        let rand = rand::distr::Alphanumeric
+            .sample_iter(&mut rand::rng())
+            .take(10)
+            .map(char::from)
+            .collect::<String>();
+        let filename = format!("/tmp/dashchat-{rand}.db");
+        let url = format!("sqlite://{filename}");
+        p2panda_store::sqlite::store::create_database(&url).await?;
+
+        let pool = sqlx::SqlitePool::connect(&url)
+            .await
+            .map_err(|e| anyhow::anyhow!("failed to connect to sqlite at '{filename}': {e}"))?;
+
+        if p2panda_store::sqlite::store::run_pending_migrations(&pool)
+            .await
+            .is_err()
+        {
+            pool.close().await;
+            panic!("Database migration failed");
+        }
+        let store = SqliteStore::new(pool);
+
+        Ok(Self::new(store))
     }
 }
 

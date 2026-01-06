@@ -50,6 +50,7 @@ tokio-stream = "0.1.17"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 bytes = "1.11.0"
+sqlx = "0.8.6"
 
 [dev-dependencies]
 dashchat-node = { path = ".", features = ["testing"] }

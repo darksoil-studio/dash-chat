@@ -23,7 +23,6 @@ use p2panda_stream::partial::operations::PartialOrder;
 use tokio::sync::{RwLock, mpsc};
 use tokio_stream::StreamExt;
 
-use crate::chat::Chat;
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
 use crate::mailbox::mem::MemMailboxClient;
@@ -67,7 +66,6 @@ pub type Orderer<S> =
 
 #[derive(Clone)]
 pub struct NodeState {
-    pub(crate) chats: Arc<RwLock<HashMap<ChatId, Chat>>>,
     pub(crate) contacts: Arc<RwLock<HashMap<DeviceId, QrCode>>>,
 }
 
@@ -140,7 +138,7 @@ impl Node {
             active_inbox_topics,
         } = local_data.clone();
 
-        let op_store = OpStore::new_sqlite();
+        let op_store = OpStore::new_sqlite().await?;
 
         let (stream_tx, stream_rx) = mpsc::channel(100);
 
@@ -152,7 +150,6 @@ impl Node {
             notification_tx,
             stream_tx,
             nodestate: NodeState {
-                chats: Arc::new(RwLock::new(HashMap::new())),
                 contacts: Arc::new(RwLock::new(HashMap::new())),
             },
         };
