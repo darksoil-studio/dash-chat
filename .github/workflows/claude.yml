@@ -31,7 +31,6 @@ jobs:
           fetch-depth: 1
 
       - name: Extend space
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: ./.github/actions/extend-space
 
       - name: Install nix
