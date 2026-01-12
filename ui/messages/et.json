@@ -41,5 +41,20 @@
     "areYouSureLeaveGroup": "Kas oled kindel, et soovid sellest grupist lahkuda?",
     "areYouSureDeleteGroup": "Kas oled kindel, et soovid selles grupi kustutada?",
     "deleteGroup": "Kustuta grupp",
-    "editGroup": "Muuda gruppi"
+    "editGroup": "Muuda gruppi",
+    "create": "Loo",
+    "omit": "Jäta vahele",
+    "description": "Kirjeldus",
+    "profile": "Profiil",
+    "editName": "Muuda nime",
+    "editPhoto": "Muuda fotot",
+    "photo": "Foto",
+    "chats": "Vestlused",
+    "typeMessage": "Koosta sõnum...",
+    "groupName": "Grupi nimi",
+    "add": "Lisa",
+    "remove": "Eemalda",
+    "leave": "Lahku",
+    "delete": "Kustuta",
+    "settings": "Seadistused"
 }
