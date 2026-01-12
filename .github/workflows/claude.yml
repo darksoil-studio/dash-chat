@@ -30,6 +30,20 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Extend space
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        uses: ./.github/actions/extend-space
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-25.11
+
+      - name: Install and test
+        run: |
+          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm i"
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
@@ -41,10 +55,11 @@ jobs:
             actions: read
 
           # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
+          custom_instructions: 'Use `nix develop` to set up the development environment. pnpm install has already been run.'
 
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           # claude_args: '--allowed-tools Bash(gh pr:*)'
 
+          allowed_tools: "Bash(npm:*),mcp__tauri__tauri_driver_session,mcp__tauri__tauri_webview_find_element,mcp__tauri__tauri_read_logs,mcp__tauri__tauri_webview_interact,mcp__tauri__tauri_webview_screenshot,mcp__tauri__tauri_webview_keyboard,mcp__tauri__tauri_webview_wait_for,mcp__tauri__tauri_webview_get_styles,mcp__tauri__tauri_webview_execute_js,mcp__tauri__tauri_manage_window"
