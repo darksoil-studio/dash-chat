@@ -116,7 +116,9 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
                             gaps.push(i);
                         }
                     }
-                    missing.insert(*author, gaps);
+                    if !gaps.is_empty() {
+                        missing.insert(*author, gaps);
+                    }
                 }
             }
 
@@ -139,34 +141,42 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
 
 #[cfg(test)]
 mod tests {
-    use bytes::Bytes;
+    use pretty_assertions::assert_eq;
 
     use crate::Topic;
 
     use super::*;
 
-    #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-    struct Msg(u64);
+    #[derive(Clone, PartialEq, Eq, Serialize, Deserialize, derive_more::Debug)]
+    #[debug("Msg({author} {seq})")]
+    struct Msg {
+        author: char,
+        seq: u64,
+    }
 
     impl MailboxItem for Msg {
-        type Hash = u64;
-        type Author = ();
+        type Author = char;
+        type Hash = (Self::Author, u64);
 
         fn hash(&self) -> Self::Hash {
-            self.0
+            (self.author, self.seq)
         }
 
         fn author(&self) -> Self::Author {
-            ()
+            self.author.clone()
         }
 
         fn seq_num(&self) -> u64 {
-            self.0
+            self.seq
         }
     }
 
-    fn m(s: u64) -> Msg {
-        Msg(s)
+    fn m(author: char, seq: u64) -> Msg {
+        Msg { author, seq }
+    }
+
+    fn mm(author: char, r: std::ops::Range<u64>) -> Vec<Msg> {
+        r.map(|i| m(author, i)).collect()
     }
 
     #[tokio::test]
@@ -174,40 +184,83 @@ mod tests {
         let mailbox = MemMailbox::<Msg>::new();
         let client = mailbox.client();
 
-        let tt: [LogId; 2] = [Topic::random().into(), Topic::random().into()];
+        let a = '.';
+        let tt: [LogId; 3] = [
+            Topic::random().into(),
+            Topic::random().into(),
+            Topic::random().into(),
+        ];
 
-        assert!(client.fetch(tt[0], &[]).await.unwrap().ops.is_empty());
-        assert!(client.fetch(tt[1], &[]).await.unwrap().ops.is_empty());
+        let empty = FetchResponse {
+            ops: vec![],
+            missing: HashMap::new(),
+        };
+        assert_eq!(client.fetch(tt[0], &[]).await.unwrap(), empty);
+        assert_eq!(client.fetch(tt[1], &[]).await.unwrap(), empty);
+        assert_eq!(client.fetch(tt[2], &[]).await.unwrap(), empty);
 
-        client
-            .publish(tt[0], vec![m(0), m(1), m(2), m(3)])
-            .await
-            .unwrap();
-
-        assert_eq!(
-            client.fetch(tt[0], &[]).await.unwrap().ops,
-            vec![m(0), m(1)]
-        );
-        assert_eq!(
-            client.fetch(tt[1], &[]).await.unwrap().ops,
-            vec![m(2), m(3)]
-        );
-        assert!(client.fetch(tt[0], &[]).await.unwrap().ops.is_empty());
-        assert!(client.fetch(tt[1], &[]).await.unwrap().ops.is_empty());
-
-        client.publish(tt[0], vec![m(4), m(5)]).await.unwrap();
-        client.publish(tt[1], vec![m(6), m(7)]).await.unwrap();
+        // only the first half
+        client.publish(tt[0], mm(a, 0..2)).await.unwrap();
+        // only the last half
+        client.publish(tt[1], mm(a, 2..4)).await.unwrap();
+        // both halves
+        client.publish(tt[2], mm(a, 0..4)).await.unwrap();
 
         assert_eq!(
-            client.fetch(tt[0], &[]).await.unwrap().ops,
-            vec![m(4), m(5)]
+            client.fetch(tt[0], &[(a, 3)]).await.unwrap(),
+            FetchResponse {
+                ops: vec![],
+                missing: HashMap::from([(a, vec![2, 3])]),
+            }
         );
         assert_eq!(
-            client.fetch(tt[1], &[]).await.unwrap().ops,
-            vec![m(6), m(7)]
+            client.fetch(tt[1], &[(a, 3)]).await.unwrap(),
+            FetchResponse {
+                ops: vec![],
+                missing: HashMap::from([(a, vec![0, 1])]),
+            }
         );
-        assert!(client.fetch(tt[0], &[]).await.unwrap().ops.is_empty());
-        assert!(client.fetch(tt[1], &[]).await.unwrap().ops.is_empty());
+        assert_eq!(client.fetch(tt[2], &[(a, 3)]).await.unwrap(), empty);
+
+        assert_eq!(
+            client.fetch(tt[0], &[(a, 4)]).await.unwrap(),
+            FetchResponse {
+                ops: vec![],
+                missing: HashMap::from([(a, vec![2, 3, 4])]),
+            }
+        );
+        assert_eq!(
+            client.fetch(tt[1], &[(a, 4)]).await.unwrap(),
+            FetchResponse {
+                ops: vec![],
+                missing: HashMap::from([(a, vec![0, 1, 4])]),
+            }
+        );
+        assert_eq!(
+            client.fetch(tt[2], &[(a, 4)]).await.unwrap(),
+            FetchResponse {
+                ops: vec![],
+                missing: HashMap::from([(a, vec![4])]),
+            }
+        );
+
+        client.publish(tt[0], vec![m(a, 4)]).await.unwrap();
+        client.publish(tt[1], vec![m(a, 4)]).await.unwrap();
+        client.publish(tt[2], vec![m(a, 4)]).await.unwrap();
+        assert_eq!(
+            client.fetch(tt[0], &[(a, 3)]).await.unwrap(),
+            FetchResponse {
+                ops: vec![m(a, 4)],
+                missing: HashMap::from([(a, vec![2, 3])]),
+            }
+        );
+        assert_eq!(
+            client.fetch(tt[1], &[(a, 3)]).await.unwrap(),
+            FetchResponse {
+                ops: vec![m(a, 4)],
+                missing: HashMap::from([(a, vec![0, 1])]),
+            }
+        );
     }
 
     #[tokio::test]

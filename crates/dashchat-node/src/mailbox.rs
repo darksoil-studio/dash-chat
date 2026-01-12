@@ -34,6 +34,8 @@ pub trait MailboxClient<Op: MailboxItem = MailboxOperation>: Send + Sync + 'stat
 }
 
 /// Returned by the `fetch` method.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(bound(deserialize = "Op: DeserializeOwned"))]
 pub struct FetchResponse<Op: MailboxItem> {
     /// The operations not held locally that were fetched.
     pub ops: Vec<Op>,
@@ -43,8 +45,8 @@ pub struct FetchResponse<Op: MailboxItem> {
 }
 
 pub trait MailboxItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'static {
-    type Hash: Copy + Eq + std::hash::Hash + Rename + Send + Sync;
-    type Author: Copy + Eq + std::hash::Hash + Rename + Send + Sync;
+    type Hash: Copy + Eq + std::hash::Hash + Rename + Serialize + DeserializeOwned + Send + Sync;
+    type Author: Copy + Eq + std::hash::Hash + Rename + Serialize + DeserializeOwned + Send + Sync;
 
     fn hash(&self) -> Self::Hash;
     fn author(&self) -> Self::Author;
