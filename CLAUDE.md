@@ -154,6 +154,10 @@ Core p2panda dependencies (from custom fork):
 - p2panda-spaces: Space management
 - p2panda-discovery: Peer discovery (mDNS)
 
+## CI
+
+Execute all CI commands inside of the default nix shell with `nix develop`.
+
 ## Testing
 
 ### Rust Tests
