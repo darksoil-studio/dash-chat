@@ -12,7 +12,10 @@ use tokio::sync::{Mutex, mpsc::Receiver};
 
 use crate::{
     AgentId, ChatId, DeviceGroupPayload, NodeConfig, Notification, Payload,
-    mailbox::mem::{MemMailbox, MemMailboxClient},
+    mailbox::{
+        MailboxClient, MailboxOperation,
+        mem::{MemMailbox, MemMailboxClient},
+    },
     node::{Node, NodeLocalData},
     testing::{behavior::Behavior, introduce},
     topic::{LogId, Topic},
@@ -28,7 +31,7 @@ pub struct TestNode {
 }
 
 impl TestNode {
-    pub async fn new(config: NodeConfig, mailbox: MemMailboxClient, name: Option<&str>) -> Self {
+    pub async fn new(config: NodeConfig, name: Option<&str>) -> Self {
         let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = name {
@@ -36,11 +39,16 @@ impl TestNode {
             local_data.agent_id.with_name(alias);
         }
         Self {
-            node: Node::new(local_data, config, Some(notification_tx), mailbox)
+            node: Node::new(local_data, config, Some(notification_tx))
                 .await
                 .unwrap(),
             watcher: Arc::new(Mutex::new(Watcher(notification_rx))),
         }
+    }
+
+    pub async fn add_mailbox(&self, mailbox: impl MailboxClient) -> Self {
+        self.node.mailboxes.add(mailbox).await;
+        self.clone()
     }
 
     pub fn behavior(&self) -> Behavior {
@@ -62,7 +70,7 @@ impl TestNode {
     }
 
     pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
-        let mailbox_topics = self.mailbox.subscribed_topics().await;
+        let mailbox_topics = self.mailboxes.subscribed_topics().await;
         mailbox_topics
 
         // self.node
@@ -99,14 +107,20 @@ pub struct TestCluster<const N: usize> {
 }
 
 impl<const N: usize> TestCluster<N> {
+    // TODO: maybe don't always add a memory mailbox
     pub async fn new(node_config: NodeConfig, config: ClusterConfig, aliases: [&str; N]) -> Self {
-        let mailbox = MemMailbox::new();
-        let nodes = futures::future::join_all(
-            (0..N).map(|i| TestNode::new(node_config.clone(), mailbox.client(), Some(aliases[i]))),
+        let mailbox = MemMailbox::<MailboxOperation>::new();
+        let nodes: [TestNode; N] = futures::future::join_all(
+            (0..N).map(|i| TestNode::new(node_config.clone(), Some(aliases[i]))),
         )
         .await
         .try_into()
         .unwrap_or_else(|_| panic!("expected {} nodes", N));
+
+        for n in nodes.iter() {
+            n.add_mailbox(mailbox.client()).await;
+        }
+
         Self { nodes, config }
     }
 

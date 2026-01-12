@@ -15,8 +15,15 @@ async fn test_profiles() {
 
     println!("nodes:");
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice--")).await;
-    let bobbi = TestNode::new(NodeConfig::default(), mailbox.client(), Some("--bobbi")).await;
+    let alice = TestNode::new(NodeConfig::default(), Some("alice--"))
+        .await
+        .add_mailbox(mailbox.client())
+        .await;
+    let bobbi = TestNode::new(NodeConfig::default(), Some("--bobbi"))
+        .await
+        .add_mailbox(mailbox.client())
+        .await;
+
     println!("alice: {:?}", alice.device_id().short());
     println!("bobbi: {:?}", bobbi.device_id().short());
 

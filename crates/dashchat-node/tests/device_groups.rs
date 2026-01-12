@@ -13,8 +13,14 @@ async fn device_group_solo() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice")).await;
-    let alicia = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alicia")).await;
+    let alice = TestNode::new(NodeConfig::default(), Some("alice"))
+        .await
+        .add_mailbox(mailbox.client())
+        .await;
+    let alicia = TestNode::new(NodeConfig::default(), Some("alicia"))
+        .await
+        .add_mailbox(mailbox.client())
+        .await;
 
     println!("nodes:");
     println!("alice: {:?}", alice.device_id().short());

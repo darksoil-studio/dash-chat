@@ -13,8 +13,14 @@ async fn test_inbox_2() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice")).await;
-    let bobbi = TestNode::new(NodeConfig::default(), mailbox.client(), Some("bobbi")).await;
+    let alice = TestNode::new(NodeConfig::default(), Some("alice"))
+        .await
+        .add_mailbox(mailbox.client())
+        .await;
+    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi"))
+        .await
+        .add_mailbox(mailbox.client())
+        .await;
 
     println!("nodes:");
     println!("alice: {:?}", alice.device_id().short());

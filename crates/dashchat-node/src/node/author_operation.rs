@@ -44,7 +44,7 @@ impl Node {
         // self.notify_payload(&header, &payload).await?;
         tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");
 
-        self.mailbox
+        self.mailboxes
             .publish(log_id.into(), (header.clone(), body).into())
             .await?;
 

@@ -1,10 +1,14 @@
 pub mod mem;
 
-use std::time::Duration;
+use std::{
+    collections::{BTreeSet, HashMap},
+    sync::Arc,
+    time::Duration,
+};
 
 use named_id::Rename;
 use p2panda_core::Body;
-use tokio::sync::mpsc;
+use tokio::sync::{Mutex, mpsc};
 use tracing::Instrument;
 
 use crate::{DeviceId, Header, Operation, topic::LogId};
@@ -14,7 +18,7 @@ const RELAY_FETCH_INTERVAL: Duration = Duration::from_secs(3);
 const RELAY_ERROR_INTERVAL: Duration = Duration::from_secs(15);
 
 #[async_trait::async_trait]
-pub trait MailboxClient<Op>: Clone + Send + Sync + 'static {
+pub trait MailboxClient<Op = MailboxOperation>: Send + Sync + 'static {
     /// Publish an operation to the mailbox for the given topic.
     async fn publish(&self, topic: LogId, op: Op) -> Result<(), anyhow::Error>;
 
@@ -42,7 +46,7 @@ pub trait MailboxSubscription {
 #[async_trait::async_trait]
 impl<T> MailboxSubscription for T
 where
-    T: MailboxClient<MailboxOperation>,
+    T: Clone + MailboxClient<MailboxOperation>,
 {
     async fn subscribe(
         &self,
@@ -101,5 +105,41 @@ impl MailboxItem for MailboxOperation {
 impl MailboxItem for bytes::Bytes {
     fn hash(&self) -> p2panda_core::Hash {
         p2panda_core::Hash::new(self)
+    }
+}
+
+#[derive(Clone)]
+pub struct Mailboxes(Arc<Mutex<HashMap<(), Arc<dyn MailboxClient>>>>);
+
+impl Mailboxes {
+    pub fn new() -> Self {
+        Self(Arc::new(Mutex::new(HashMap::new())))
+    }
+
+    pub async fn add(&self, mailbox: impl MailboxClient) {
+        self.0.lock().await.insert((), Arc::new(mailbox));
+    }
+
+    pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
+        todo!()
+    }
+}
+
+#[async_trait::async_trait]
+impl MailboxClient for Mailboxes {
+    async fn publish(&self, topic: LogId, op: MailboxOperation) -> Result<(), anyhow::Error> {
+        todo!()
+    }
+
+    async fn fetch(&self, topic: LogId) -> Result<Vec<MailboxOperation>, anyhow::Error> {
+        todo!()
+    }
+
+    async fn touch(&self, topic: LogId) -> bool {
+        todo!()
+    }
+
+    async fn add_author(&self, topic: LogId, author: DeviceId) -> Result<(), anyhow::Error> {
+        todo!()
     }
 }

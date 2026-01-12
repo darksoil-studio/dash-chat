@@ -15,11 +15,12 @@ use p2panda_spaces::ActorId;
 use p2panda_store::{LogStore, MemoryStore, SqliteStore};
 use p2panda_stream::IngestExt;
 use p2panda_stream::partial::operations::PartialOrder;
-use tokio::sync::{RwLock, mpsc};
+use tokio::sync::{Mutex, RwLock, mpsc};
 
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
 use crate::mailbox::mem::MemMailboxClient;
+use crate::mailbox::{MailboxClient, Mailboxes};
 use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
 };
@@ -79,7 +80,7 @@ impl NodeLocalData {
 pub struct Node {
     pub op_store: OpStore<MemoryStore<LogId, Extensions>>,
 
-    pub mailbox: MemMailboxClient,
+    pub mailboxes: Mailboxes,
 
     // groups: p2panda_auth::group::Groups,
     config: NodeConfig,
@@ -97,7 +98,6 @@ impl Node {
         local_data: NodeLocalData,
         config: NodeConfig,
         notification_tx: Option<mpsc::Sender<Notification>>,
-        mailbox: MemMailboxClient,
     ) -> Result<Self> {
         let device_id = local_data.device_id();
         let NodeLocalData {
@@ -112,7 +112,7 @@ impl Node {
 
         let node = Self {
             op_store: op_store.clone(),
-            mailbox,
+            mailboxes: Mailboxes::new(),
             config,
             local_data,
             notification_tx,
@@ -191,7 +191,10 @@ impl Node {
     }
 
     pub async fn get_authors(&self, topic_id: LogId) -> HashSet<DeviceId> {
-        self.mailbox.authors(topic_id).await.unwrap_or_default()
+        todo!("get from all mailboxes")
+
+        // self.mailbox.authors(topic_id).await.unwrap_or_default()
+
         // match self.author_store.authors(&topic_id).await {
         //     Some(authors) => Ok(authors.into_iter().map(|a| a.into()).collect()),
         //     None => {
@@ -298,12 +301,6 @@ impl Node {
     pub async fn get_messages(&self, topic: impl Into<ChatId>) -> anyhow::Result<Vec<ChatMessage>> {
         let chat_id = topic.into();
         let mut messages = vec![];
-
-        let members = self
-            .mailbox
-            .authors(chat_id.into())
-            .await
-            .unwrap_or_default();
 
         let authors = self.get_authors(chat_id.into()).await;
 

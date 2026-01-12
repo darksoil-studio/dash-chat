@@ -42,8 +42,14 @@ async fn test_direct_chat() {
     );
 
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::default(), mailbox.client(), Some("alice")).await;
-    let bobbi = TestNode::new(NodeConfig::default(), mailbox.client(), Some("bobbi")).await;
+    let alice = TestNode::new(NodeConfig::default(), Some("alice"))
+        .await
+        .add_mailbox(mailbox.client())
+        .await;
+    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi"))
+        .await
+        .add_mailbox(mailbox.client())
+        .await;
 
     #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;

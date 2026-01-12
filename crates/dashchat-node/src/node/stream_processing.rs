@@ -43,7 +43,7 @@ impl Node {
         _is_author: bool,
     ) -> anyhow::Result<()> {
         {
-            if let Some(mailbox_rx) = self.mailbox.subscribe(topic.into()).await? {
+            if let Some(mailbox_rx) = self.mailboxes.subscribe(topic.into()).await? {
                 let stream = ReceiverStream::new(mailbox_rx).filter_map(async |op| {
                     let hash = op.hash;
                     if hash == op.header.hash() {
