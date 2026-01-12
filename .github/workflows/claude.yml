@@ -62,4 +62,4 @@ jobs:
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           # claude_args: '--allowed-tools Bash(gh pr:*)'
 
-          allowed_tools: "Bash(npm:*),mcp__tauri__tauri_driver_session,mcp__tauri__tauri_webview_find_element,mcp__tauri__tauri_read_logs,mcp__tauri__tauri_webview_interact,mcp__tauri__tauri_webview_screenshot,mcp__tauri__tauri_webview_keyboard,mcp__tauri__tauri_webview_wait_for,mcp__tauri__tauri_webview_get_styles,mcp__tauri__tauri_webview_execute_js,mcp__tauri__tauri_manage_window"
+          allowed_tools: "Bash(pnpm:*),mcp__tauri__tauri_driver_session,mcp__tauri__tauri_webview_find_element,mcp__tauri__tauri_read_logs,mcp__tauri__tauri_webview_interact,mcp__tauri__tauri_webview_screenshot,mcp__tauri__tauri_webview_keyboard,mcp__tauri__tauri_webview_wait_for,mcp__tauri__tauri_webview_get_styles,mcp__tauri__tauri_webview_execute_js,mcp__tauri__tauri_manage_window"
