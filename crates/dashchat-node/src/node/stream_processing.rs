@@ -16,7 +16,6 @@ use tokio::task;
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::Instrument;
 
-use crate::mailbox::MailboxSubscription;
 use crate::{
     payload::InboxPayload,
     topic::{LogId, TopicKind},
@@ -43,7 +42,11 @@ impl Node {
         _is_author: bool,
     ) -> anyhow::Result<()> {
         {
-            if let Some(mailbox_rx) = self.mailboxes.subscribe(topic.into()).await? {
+            if let Some(mailbox_rx) = self
+                .mailboxes
+                .subscribe(topic.into(), self.op_store.clone())
+                .await?
+            {
                 let stream = ReceiverStream::new(mailbox_rx).filter_map(async |op| {
                     let hash = op.hash;
                     if hash == op.header.hash() {

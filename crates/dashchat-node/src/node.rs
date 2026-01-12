@@ -1,26 +1,25 @@
 pub(crate) mod author_operation;
 mod stream_processing;
 
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashSet};
 use std::pin::Pin;
 use std::sync::Arc;
 
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 use chrono::{Duration, Utc};
 use futures::Stream;
 use named_id::*;
-use p2panda_core::{Body, PrivateKey, PublicKey};
+use p2panda_core::{Body, PrivateKey};
 use p2panda_net::ResyncConfiguration;
 use p2panda_spaces::ActorId;
-use p2panda_store::{LogStore, MemoryStore, SqliteStore};
+use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::IngestExt;
 use p2panda_stream::partial::operations::PartialOrder;
-use tokio::sync::{Mutex, RwLock, mpsc};
+use tokio::sync::{RwLock, mpsc};
 
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
-use crate::mailbox::mem::MemMailboxClient;
-use crate::mailbox::{MailboxClient, Mailboxes};
+use crate::mailbox::Mailboxes;
 use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
 };

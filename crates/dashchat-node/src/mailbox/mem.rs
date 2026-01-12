@@ -1,7 +1,7 @@
 use super::*;
 
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     sync::Arc,
 };
 
@@ -42,25 +42,21 @@ impl From<(Header, Option<Body>)> for MailboxOperation {
 #[derive(Clone)]
 pub struct MemMailboxClient<Op: MailboxItem = MailboxOperation> {
     mailbox: MemMailbox<Op>,
-    latest: Arc<Mutex<HashMap<LogId, usize>>>,
-    authors: Arc<RwLock<HashMap<LogId, HashSet<DeviceId>>>>,
-    agents: Arc<RwLock<HashMap<DeviceId, AgentId>>>,
+    subscribed_topics: Arc<RwLock<BTreeSet<LogId>>>,
 }
 
 impl<Op: MailboxItem> MemMailboxClient<Op> {
     pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
-        self.latest.lock().await.keys().cloned().collect()
-    }
-
-    pub async fn authors(&self, topic: LogId) -> Option<HashSet<DeviceId>> {
-        let authors = self.authors.read().await;
-        authors.get(&topic).cloned()
+        self.subscribed_topics.read().await.clone()
     }
 }
 
+pub type MemMailboxLogs<Op> =
+    HashMap<LogId, HashMap<<Op as MailboxItem>::Author, BTreeMap<u64, Op>>>;
+
 #[derive(Clone)]
 pub struct MemMailbox<Op: MailboxItem = MailboxOperation> {
-    ops: Arc<RwLock<HashMap<LogId, Vec<Op>>>>,
+    ops: Arc<RwLock<MemMailboxLogs<Op>>>,
 }
 
 impl<Op: MailboxItem> MemMailbox<Op> {
@@ -73,32 +69,56 @@ impl<Op: MailboxItem> MemMailbox<Op> {
     pub fn client(&self) -> MemMailboxClient<Op> {
         MemMailboxClient {
             mailbox: self.clone(),
-            latest: Arc::new(Mutex::new(HashMap::new())),
-            authors: Arc::new(RwLock::new(HashMap::new())),
-            agents: Arc::new(RwLock::new(HashMap::new())),
+            subscribed_topics: Arc::new(RwLock::new(BTreeSet::new())),
         }
     }
 }
 
 #[async_trait::async_trait]
 impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
-    async fn publish(&self, topic: LogId, op: Op) -> Result<(), anyhow::Error> {
-        let mut ops = self.mailbox.ops.write().await;
-        tracing::info!(topic = ?topic.renamed(), hash = ?op.hash().renamed(), "publishing mailbox operation");
-        ops.entry(topic).or_insert_with(Vec::new).push(op.into());
+    async fn publish(&self, topic: LogId, ops: Vec<Op>) -> Result<(), anyhow::Error> {
+        let mut store = self.mailbox.ops.write().await;
+        // ops.entry(topic).or_insert_with(Vec::new).push(op.into());
+        for op in ops {
+            let author = op.author();
+            let seq_num = op.seq_num();
+            tracing::info!(topic = ?topic.renamed(), hash = ?op.hash().renamed(), "publishing mailbox operation");
+            store
+                .entry(topic)
+                .or_default()
+                .entry(author)
+                .or_default()
+                .insert(seq_num, op);
+        }
         Ok(())
     }
 
-    async fn fetch(&self, topic: LogId) -> anyhow::Result<Vec<Op>> {
+    async fn fetch(
+        &self,
+        topic: LogId,
+        min_heights: &[(Op::Author, u64)],
+    ) -> anyhow::Result<FetchResponse<Op>> {
         let ops = self.mailbox.ops.read().await;
-        let mut since_lock = self.latest.lock().await;
-        let since = *since_lock.get(&topic).unwrap_or(&0);
         if let Some(ops) = ops.get(&topic) {
-            if since >= ops.len() {
-                return Ok(vec![]);
+            let mut new = vec![];
+            let mut missing = HashMap::new();
+            for (author, height) in min_heights {
+                let mut gaps = vec![];
+                if let Some(slots) = ops.get(author) {
+                    let last_seq = slots.last_key_value().map(|(seq, _)| *seq).unwrap_or(0);
+                    let max = (*height).max(last_seq);
+                    for i in 0..=max {
+                        if let Some(op) = slots.get(&i) {
+                            if i > *height {
+                                new.push(op.clone());
+                            }
+                        } else {
+                            gaps.push(i);
+                        }
+                    }
+                    missing.insert(*author, gaps);
+                }
             }
-            since_lock.insert(topic, ops.len());
-            let new: Vec<Op> = ops.iter().skip(since).cloned().collect();
 
             tracing::info!(
                 topic = ?topic.renamed(),
@@ -107,30 +127,13 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
                 "fetching mailbox operations"
             );
 
-            Ok(new)
+            Ok(FetchResponse { ops: new, missing })
         } else {
-            Ok(vec![])
+            Ok(FetchResponse {
+                ops: vec![],
+                missing: HashMap::new(),
+            })
         }
-    }
-
-    async fn touch(&self, topic: LogId) -> bool {
-        let mut latest = self.latest.lock().await;
-        match latest.entry(topic) {
-            std::collections::hash_map::Entry::Occupied(_) => false,
-            std::collections::hash_map::Entry::Vacant(entry) => {
-                entry.insert(0);
-                true
-            }
-        }
-    }
-
-    async fn add_author(&self, topic: LogId, author: DeviceId) -> Result<(), anyhow::Error> {
-        let mut authors = self.authors.write().await;
-        authors
-            .entry(topic)
-            .or_insert_with(HashSet::new)
-            .insert(author);
-        Ok(())
     }
 }
 
@@ -142,41 +145,74 @@ mod tests {
 
     use super::*;
 
-    fn b(s: &'static str) -> Bytes {
-        Bytes::from_static(s.as_bytes())
+    #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    struct Msg(u64);
+
+    impl MailboxItem for Msg {
+        type Hash = u64;
+        type Author = ();
+
+        fn hash(&self) -> Self::Hash {
+            self.0
+        }
+
+        fn author(&self) -> Self::Author {
+            ()
+        }
+
+        fn seq_num(&self) -> u64 {
+            self.0
+        }
+    }
+
+    fn m(s: u64) -> Msg {
+        Msg(s)
     }
 
     #[tokio::test]
     async fn test_mem_mailbox() {
-        let mailbox = MemMailbox::<Bytes>::new();
+        let mailbox = MemMailbox::<Msg>::new();
         let client = mailbox.client();
 
         let tt: [LogId; 2] = [Topic::random().into(), Topic::random().into()];
 
-        assert!(client.fetch(tt[0]).await.unwrap().is_empty());
-        assert!(client.fetch(tt[1]).await.unwrap().is_empty());
+        assert!(client.fetch(tt[0], &[]).await.unwrap().ops.is_empty());
+        assert!(client.fetch(tt[1], &[]).await.unwrap().ops.is_empty());
 
-        client.publish(tt[0], b("0")).await.unwrap();
-        client.publish(tt[0], b("1")).await.unwrap();
+        client
+            .publish(tt[0], vec![m(0), m(1), m(2), m(3)])
+            .await
+            .unwrap();
 
-        client.publish(tt[1], b("2")).await.unwrap();
-        client.publish(tt[1], b("3")).await.unwrap();
+        assert_eq!(
+            client.fetch(tt[0], &[]).await.unwrap().ops,
+            vec![m(0), m(1)]
+        );
+        assert_eq!(
+            client.fetch(tt[1], &[]).await.unwrap().ops,
+            vec![m(2), m(3)]
+        );
+        assert!(client.fetch(tt[0], &[]).await.unwrap().ops.is_empty());
+        assert!(client.fetch(tt[1], &[]).await.unwrap().ops.is_empty());
 
-        assert_eq!(client.fetch(tt[0]).await.unwrap(), vec![b("0"), b("1")]);
-        assert_eq!(client.fetch(tt[1]).await.unwrap(), vec![b("2"), b("3")]);
-        assert!(client.fetch(tt[0]).await.unwrap().is_empty());
-        assert!(client.fetch(tt[1]).await.unwrap().is_empty());
+        client.publish(tt[0], vec![m(4), m(5)]).await.unwrap();
+        client.publish(tt[1], vec![m(6), m(7)]).await.unwrap();
 
-        client.publish(tt[0], b("4")).await.unwrap();
-        client.publish(tt[0], b("5")).await.unwrap();
+        assert_eq!(
+            client.fetch(tt[0], &[]).await.unwrap().ops,
+            vec![m(4), m(5)]
+        );
+        assert_eq!(
+            client.fetch(tt[1], &[]).await.unwrap().ops,
+            vec![m(6), m(7)]
+        );
+        assert!(client.fetch(tt[0], &[]).await.unwrap().ops.is_empty());
+        assert!(client.fetch(tt[1], &[]).await.unwrap().ops.is_empty());
+    }
 
-        client.publish(tt[1], b("6")).await.unwrap();
-        client.publish(tt[1], b("7")).await.unwrap();
-
-        assert_eq!(client.fetch(tt[0]).await.unwrap(), vec![b("4"), b("5")]);
-        assert_eq!(client.fetch(tt[1]).await.unwrap(), vec![b("6"), b("7")]);
-        assert!(client.fetch(tt[0]).await.unwrap().is_empty());
-        assert!(client.fetch(tt[1]).await.unwrap().is_empty());
+    #[tokio::test]
+    async fn test_mem_mailbox_gaps() {
+        todo!()
     }
 
     // #[tokio::test]

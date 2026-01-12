@@ -5,21 +5,14 @@ use std::{
 };
 
 use named_id::*;
-use p2panda_auth::Access;
-use p2panda_core::PublicKey;
-use p2panda_spaces::ActorId;
 use tokio::sync::{Mutex, mpsc::Receiver};
 
 use crate::{
-    AgentId, ChatId, DeviceGroupPayload, NodeConfig, Notification, Payload,
-    mailbox::{
-        MailboxClient, MailboxOperation,
-        mem::{MemMailbox, MemMailboxClient},
-    },
+    AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload,
+    mailbox::{MailboxClient, MailboxOperation, mem::MemMailbox},
     node::{Node, NodeLocalData},
-    testing::{behavior::Behavior, introduce},
-    topic::{LogId, Topic},
-    util::actor_to_pubkey,
+    testing::behavior::Behavior,
+    topic::LogId,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
@@ -281,7 +274,7 @@ where
     F: Future<Output = Result<(), E>>,
 {
     assert!(poll < timeout);
-    let mut start = Instant::now();
+    let start = Instant::now();
     tracing::info!("=== wait_for() up to {:?} ===", timeout);
     loop {
         let result = f().await;
