@@ -1,5 +1,4 @@
 <script lang="ts">
-	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import { m } from '$lib/paraglide/messages.js';
@@ -15,76 +14,86 @@
 		mdiPencil,
 		mdiSend,
 	} from '@mdi/js';
-	import WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
-	import WaTextarea from '@awesome.me/webawesome/dist/components/textarea/textarea.js';
 	import SelectAvatar from '../../../../../components/SelectAvatar.svelte';
-
-	const chatId = window.location.href.split('/').reverse()[2];
+	import {
+		Page,
+		Navbar,
+		NavbarBackLink,
+		Link,
+		Card,
+		ListInput,
+		List,
+		Button,
+		useTheme,
+	} from 'konsta/svelte';
+	import { page } from '$app/state';
+	let chatId = page.params.chatId!;
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.groupChats(chatId);
 	const info = useReactivePromise(store.info);
 
-	let avatar: string | undefined;
-	let name: string | undefined;
-	let description: string | undefined;
+	let avatar = $state<string | undefined>(undefined);
+	let name = $state<string>('');
+	let description = $state<string>('');
 
 	info.subscribe(i => {
 		i.then(info => {
-			if (!avatar) {
-				avatar = info?.avatar;
-			}
+			if (!avatar) avatar = info?.avatar;
+			if (!name) name = info?.name || '';
+			if (!description) description = info?.description || '';
 		});
 	});
+	const theme = $derived(useTheme());
+
 	async function save() {
 		window.location.href = `/group-chat/${chatId}/info`;
 	}
 </script>
 
-<div class="top-bar">
-	<wa-button
-		class="circle"
-		appearance="plain"
-		href={`/group-info/${chatId}/info`}
-	>
-		<wa-icon src={wrapPathInSvg(mdiClose)}> </wa-icon>
-	</wa-button>
-	<span class="title">{m.editGroup()}</span>
+<Page>
+	<Navbar title={m.editGroup()} titleClass="opacity1" transparent={true}>
+		{#snippet left()}
+			<NavbarBackLink
+				onClick={() => (window.location.href = `/group-chat/${chatId}/info`)}
+			/>
+		{/snippet}
+	</Navbar>
 
-	<div style="flex: 1"></div>
+	{#await $info then info}
+		<div class="column">
+			<div class="column center-in-desktop">
+				<div class="mt-4">
+					<SelectAvatar defaultValue={info.avatar} bind:value={avatar} size={64}
+					></SelectAvatar>
+				</div>
 
-	<wa-button appearance="plain" onclick={save}>
-		<wa-icon slot="start" src={wrapPathInSvg(mdiContentSave)}> </wa-icon>
-		{m.save()}
-	</wa-button>
-</div>
+				<List strongIos insetIos>
+					<ListInput
+						type="text"
+						outline={theme === 'material'}
+						bind:value={name}
+						label={m.name()}
+					/>
 
-{#await $info then info}
-	<wa-card class="center-in-desktop" style="margin: var(--wa-space-m)">
-		<div class="column" style="gap: var(--wa-space-m)">
-			<SelectAvatar defaultValue={info.avatar} bind:value={avatar}
-			></SelectAvatar>
-
-			<wa-input
-				defaultValue={info.name}
-				oninput={(e: InputEvent) => {
-					name = (e.target as WaInput).value!;
-				}}
-			>
-			</wa-input>
-
-			<wa-textarea
-				resize="auto"
-				rows="2"
-				defaultValue={info?.description}
-				oninput={(e: InputEvent) => {
-					description = (e.target as WaTextarea).value!;
-				}}
-			>
-			</wa-textarea>
+					<ListInput
+						type="textarea"
+						outline={theme === 'material'}
+						inputStyle={{ 'min-height': '2em' }}
+						bind:value={description}
+						label={m.description()}
+					/>
+				</List>
+			</div>
 		</div>
-	</wa-card>
-{/await}
 
-<style>
-</style>
+		<Button
+			onClick={save}
+			class="end-4 bottom-4"
+			style="position: fixed; width: auto"
+			rounded
+		>
+			{m.save()}
+		</Button>
+	{/await}
+</Page>
