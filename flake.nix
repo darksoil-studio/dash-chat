@@ -20,10 +20,12 @@
 
   nixConfig = {
     extra-substituters = [
+      "https://cache.garnix.io"
       "https://holochain-ci.cachix.org"
       "https://darksoil-studio.cachix.org"
     ];
     extra-trusted-public-keys = [
+      "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
       "holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8="
       "darksoil-studio.cachix.org-1:UEi+aujy44s41XL/pscLw37KEVpTEIn8N/kn7jO8rkc="
     ];

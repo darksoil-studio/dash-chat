@@ -19,15 +19,7 @@ jobs:
         uses: cachix/install-nix-action@v27
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          nix_path: nixpkgs=channel:nixos-24.05
-
-      - uses: cachix/cachix-action@v15
-        with:
-          name: holochain-ci
-
-      - uses: cachix/cachix-action@v15
-        with:
-          name: holochain-open-dev
+          nix_path: nixpkgs=channel:nixos-25.11
 
       - uses: cachix/cachix-action@v15
         with:
@@ -35,10 +27,10 @@ jobs:
 
       - name: Install and Build 🔧 
         run: |
-          nix develop .#ci --accept-flake-config --command bash -c "pnpm install && pnpm -F site build"
+          nix develop --accept-flake-config --command bash -c "pnpm install && pnpm -F site build"
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.3
         with:
           branch: gh-pages # The branch the action should deploy to.
-          folder: site/dist # The folder the action should deploy.
+          folder: packages/site/dist # The folder the action should deploy.

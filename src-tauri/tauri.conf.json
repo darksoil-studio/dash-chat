@@ -15,7 +15,7 @@
 				"height": 600
 			}
 		],
-		"withGlobalTauri": false,
+		"withGlobalTauri": true,
 		"security": {
 			"capabilities": [
 				"mobile-capability",
