@@ -1,10 +1,4 @@
-use anyhow::anyhow;
-use dashchat_node::{
-    spaces::{ SpacesArgs, TestConditions},
-    topic::LogId,
-    ChatId, Header, Node, Payload, Topic,
-};
-use futures::future::try_join_all;
+use dashchat_node::{DeviceId, Header, Node, Payload, Topic, topic::{DashChatTopicId, LogId}};
 use p2panda_core::{cbor::decode_cbor, Body, Hash, PublicKey};
 use p2panda_net::TopicId;
 use p2panda_spaces::{
@@ -65,77 +59,40 @@ impl From<Header> for SimplifiedHeader {
     }
 }
 
-// fn spaces_messages(payload: Payload) -> Option<Vec<SpaceControlMessage>> {
-//     match payload {
-//         Payload::Chat(dashchat_node::ChatPayload::Space(space_messages)) => Some(space_messages),
-//         _ => None,
-//     }
-// }
-
-// pub async fn simplify_spaces_operation(
-//     node: &Node,
-//     // hash: Hash,
-//     header: Header,
-//     body: Option<Body>,
-// ) -> anyhow::Result<SimplifiedSpacesOperation> {
-//     let events: Vec<Event<ChatId, TestConditions>> = match body {
-//         Some(b) => {
-//             let payload: Payload = decode_cbor(&b.to_bytes()[..])?;
-
-//             let spaces_messages = spaces_messages(payload)?;
-//             let mut all_events: Vec<Event<ChatId, TestConditions>> = vec![];
-
-//             for message in spaces_messages {
-//                 let mut events = node.manager.process(&message).await?;
-
-//                 all_events.append(&mut events);
-//             }
-//             all_events
+// pub fn decode_spaces_args(spaces_args: SpacesArgs) -> Result<Option<serde_json::Value>, String> {
+//     match spaces_args {
+//         p2panda_spaces::SpacesArgs::Application {
+//             space_id,
+//             space_dependencies,
+//             group_secret_id,
+//             nonce,
+//             ciphertext,
+//         } => {
+//             todo!()
 //         }
-//         _ => vec![],
-//     };
+//         // p2panda_spaces::SpacesArgs::Auth { control_message, auth_dependencies } => {
 
-//     let operation = SimplifiedSpacesOperation {
-//         // hash,
-//         header: SimplifiedHeader::from(header),
-//         events,
-//     };
-
-//     Ok(operation)
-// }
-// pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
-//     let bytes = body.to_bytes();
-//     let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
-//         return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
-//     };
-//     if let Some(value) = decode_spaces_args(args)? {
-//         values.push(value);
+//         // },
+//         _ => todo!(),
 //     }
+// }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(tag = "type")]
-pub enum SimplifiedEvent {
-    Application(serde_json::Value),
-    Group(GroupEvent<TestConditions>),
-    Space(SpaceEvent<ChatId>),
+pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
+    let bytes = body.to_bytes();
+    // let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
+    //     return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
+    // };
+
+    let mut values: Vec<serde_json::Value> = vec![];
+
+    // if let Some(value) = decode_spaces_args(args)? {
+    //     values.push(value);
+    // }
+
+    Ok(serde_json::Value::Array(values))
 }
 
-pub fn simplify_event(
-    event: &Event<ChatId, TestConditions>,
-) -> anyhow::Result<Option<SimplifiedEvent>> {
-    match event {
-        Event::Application { data, .. } => {
-            let value: serde_json::Value = decode_cbor(&data[..])?;
-            Ok(Some(SimplifiedEvent::Application(value)))
-        }
-        Event::Group(g) => Ok(Some(SimplifiedEvent::Group(g.clone()))),
-        Event::Space(s) => Ok(Some(SimplifiedEvent::Space(s.clone()))),
-        _ => Ok(None),
-    }
-}
-
-pub async fn simplify(
-    node: &Node,
+pub fn simplify(
     // hash: Hash,
     header: Header,
     body: Option<Body>,
@@ -166,7 +123,7 @@ pub async fn simplify(
 
             //     Some(serde_json::to_value(all_events)?)
             // } else {
-                Some(serde_json::to_value(payload)?)
+            Some(serde_json::to_value(payload)?)
             // }
         }
         _ => None,
@@ -183,8 +140,8 @@ pub async fn simplify(
 
 #[tauri::command]
 pub async fn get_log(
-    topic_id: Topic,
-    author: PublicKey,
+    topic_id: DashChatTopicId,
+    author: DeviceId,
     node: State<'_, Node>,
 ) -> Result<Vec<SimplifiedOperation>, String> {
     let log = node
@@ -192,12 +149,11 @@ pub async fn get_log(
         .await
         .map_err(|e| format!("Failed to get log: {e:?}"))?;
 
-    let simplified_log = try_join_all(
-        log.into_iter()
-            .map(|(header, body)| simplify(&node, header, body)),
-    )
-    .await
-    .map_err(|err| format!("{err:?}"))?;
+    let simplified_log = log
+        .into_iter()
+        .map(|(header, body)| simplify(header, body))
+        .collect::<anyhow::Result<Vec<SimplifiedOperation>>>()
+        .map_err(|err| format!("{err:?}"))?;
 
     Ok(simplified_log)
 }
@@ -206,7 +162,7 @@ pub async fn get_log(
 pub async fn get_authors(
     topic_id: Topic,
     node: State<'_, Node>,
-) -> Result<std::collections::HashSet<PublicKey>, String> {
+) -> Result<std::collections::HashSet<DeviceId>, String> {
     let authors = node
         .get_authors(LogId::from(topic_id))
         .await

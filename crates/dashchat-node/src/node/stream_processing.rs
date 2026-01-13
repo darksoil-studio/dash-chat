@@ -13,13 +13,11 @@ use p2panda_spaces::{
 };
 use serde::{Deserialize, Serialize};
 use tokio::task;
+use tokio_stream::wrappers::ReceiverStream;
 use tracing::Instrument;
 
-use crate::spaces::SpaceOperation;
 use crate::{
     payload::InboxPayload,
-    spaces::ArgType,
-    testing::AliasedId,
     topic::{LogId, TopicKind},
 };
 
@@ -38,78 +36,37 @@ impl Node {
     /// This must be called:
     /// - when creating a new group chat
     /// - when initializing the node, for each existing group chat
-    pub(super) async fn initialize_topic<K: TopicKind>(
+    pub(crate) async fn initialize_topic<K: TopicKind>(
         &self,
         topic: Topic<K>,
-        is_author: bool,
+        _is_author: bool,
     ) -> anyhow::Result<()> {
-        // TODO: this has a race condition
-        if self
-            .initialized_topics
-            .read()
-            .await
-            .contains_key(&topic.into())
         {
-            return Ok(());
+            let mailbox_rx = self.mailboxes.subscribe(topic.into()).await?;
+            let stream = ReceiverStream::new(mailbox_rx).filter_map(async |op| {
+                    let hash = op.hash;
+                    if hash == op.header.hash() {
+                        let header_bytes = op.header.to_bytes();
+                        Some((op.header, op.body, header_bytes))
+                    } else {
+                        tracing::error!(hash = ?hash.renamed(), "hash mismatch from mailbox server");
+                        None
+                    }
+                }).ingest(self.op_store.clone(), 128) .filter_map(|result| async {
+                    match result {
+                        Ok(operation) => Some(operation),
+                        Err(err) => {
+                            tracing::warn!(?err, "ingest operation error");
+                            None
+                        }
+                    }
+                });
+
+            self.stream_tx
+                .send(Pin::from(Box::new(stream)))
+                .await
+                .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
         }
-
-        if is_author {
-            self.author_store
-                .add_author(topic.into(), self.public_key())
-                .await;
-        }
-
-        let (network_tx, network_rx, _gossip_ready) = self.network.subscribe(topic.into()).await?;
-        tracing::info!(?topic, "SUB: subscribed to topic");
-
-        let stream = ReceiverStream::new(network_rx);
-        let stream = stream.filter_map(|event| async {
-            match event {
-                FromNetwork::GossipMessage { bytes, .. } => match decode_gossip_message(&bytes) {
-                    Ok(result) => Some(result),
-                    Err(err) => {
-                        tracing::warn!(?err, "decode gossip message error");
-                        None
-                    }
-                },
-                FromNetwork::SyncMessage {
-                    header, payload, ..
-                } => Some((header, payload)),
-            }
-        });
-
-        // Decode and ingest the p2panda operations.
-        let stream = stream
-            .decode()
-            .filter_map(|result| async {
-                match result {
-                    Ok(operation) => Some(operation),
-                    Err(err) => {
-                        tracing::warn!(?err, "decode operation error");
-                        None
-                    }
-                }
-            })
-            .ingest(self.op_store.clone(), 128)
-            .filter_map(|result| async {
-                match result {
-                    Ok(operation) => Some(operation),
-                    Err(err) => {
-                        tracing::warn!(?err, "ingest operation error");
-                        None
-                    }
-                }
-            });
-
-        self.stream_tx
-            .send(Pin::from(Box::new(stream)))
-            .await
-            .map_err(|e| anyhow::anyhow!("stream channel closed: {e}"))?;
-
-        self.initialized_topics
-            .write()
-            .await
-            .insert(topic.into(), network_tx);
 
         Ok(())
     }
@@ -119,7 +76,6 @@ impl Node {
         mut stream_rx: mpsc::Receiver<
             Pin<Box<dyn Stream<Item = Operation<Extensions>> + Send + 'static>>,
         >,
-        _author_store: AuthorStore<LogId>,
     ) {
         let node = self.clone();
 
@@ -131,13 +87,15 @@ impl Node {
                 loop {
                     tokio::select! {
                         Some(stream) = stream_rx.recv() => {
+                            tracing::info!("received new STREAM");
                             // Stream is already Pin<Box<...>> from the channel, push directly
                             streams.push(stream);
                         }
 
-                        Some(from_network) = streams.next() => {
+                        Some(op) = streams.next() => {
+                            tracing::info!(op = ?op.hash.renamed(), topic = ?op.header.extensions.log_id.renamed(), "processing stream item");
                             // Process the FromNetwork item here
-                            if let Err(err) = node.process_stream_item(from_network).await {
+                            if let Err(err) = node.process_stream_item(op).await {
                                 tracing::error!(?err, "process stream item error");
                             }
                         }
@@ -169,20 +127,16 @@ impl Node {
                 tracing::error!(?err, "next ordering error");
             })
             .unwrap_or_default();
-        // dbg!(&reordered.iter().map(|o| o.hash.alias()).collect::<Vec<_>>());
 
         // let reordered = vec![operation];
 
         for operation in reordered {
-            match self
-                .process_operation(operation, self.author_store.clone(), false, false)
-                .await
-            {
+            match self.process_operation(operation, false, false).await {
                 Ok(()) => (),
                 Err(err) => {
                     tracing::error!(
                         ?log_id,
-                        hash = hash.alias(),
+                        hash = ?hash.renamed(),
                         ?err,
                         "process operation error"
                     )
@@ -196,7 +150,6 @@ impl Node {
         &self,
         // topic: Topic<K>,
         operation: Operation<Extensions>,
-        author_store: AuthorStore<LogId>,
         is_author: bool,
         _is_repair: bool,
     ) -> anyhow::Result<()> {
@@ -205,10 +158,10 @@ impl Node {
         let log_id = header.extensions.log_id;
 
         // XXX: this eventually needs to be more selective than just adding any old author
-        author_store.add_author(log_id, header.public_key).await;
+        // author_store.add_author(log_id, header.public_key).await;
         tracing::debug!(?log_id, "adding author");
 
-        tracing::info!(?log_id, hash = hash.alias(), "PROC: processing operation");
+        tracing::info!(log_id = ?log_id.renamed(), hash = ?hash.renamed(), "PROC: processing operation");
 
         let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
 
@@ -220,7 +173,7 @@ impl Node {
             .await
         {
             tracing::error!(
-                hash = header.hash().alias(),
+                hash = ?header.hash().renamed(),
                 ?payload,
                 ?err,
                 "process operation error"
@@ -228,7 +181,7 @@ impl Node {
             return Err(err);
         }
 
-        tracing::info!(hash = hash.alias(), "processed operation");
+        tracing::info!(hash = ?hash.renamed(), "processed operation");
 
         if let Some(payload) = payload.as_ref() {
             self.notify_payload(&header, payload).await?;
@@ -240,18 +193,6 @@ impl Node {
         self.op_store.mark_op_processed(log_id, &hash);
 
         anyhow::Ok(())
-    }
-
-    pub async fn repair_spaces_and_publish(&self) -> anyhow::Result<()> {
-        let repair_required = self.manager.spaces_repair_required().await?;
-        if !repair_required.is_empty() {
-            tracing::warn!(missing = ?repair_required, "spaces repair required");
-            for space_id in repair_required {
-                let (msgs, _) = self.manager.repair_spaces(&vec![space_id]).await?;
-                self.process_authored_ingested_space_messages(msgs).await?;
-            }
-        }
-        Ok(())
     }
 
     pub async fn notify_payload(&self, header: &Header, payload: &Payload) -> anyhow::Result<()> {
@@ -267,7 +208,7 @@ impl Node {
         Ok(())
     }
 
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me=?self.public_key())))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me=?self.device_id().renamed())))]
     pub async fn process_payload(
         &self,
         // topic: Topic<K>,
@@ -278,90 +219,19 @@ impl Node {
         let log_id = header.extensions.log_id;
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match &payload {
-            Some(Payload::Space(args)) => {
-                let space_op = SpaceOperation::new(header.clone(), args.clone());
-                let opid = space_op.id();
-                let chat_id = header.extensions.topic().recast::<kind::Chat>();
-                let mut chats = self.nodestate.chats.write().await;
-                let chat = chats.entry(chat_id).or_insert(Chat::new(chat_id));
-                // Skip already processed messages
-                if self.spaces_store.message(&opid).await?.is_some() {
-                    return Ok(());
-                }
-
-                self.spaces_store.set_message(&opid, &space_op).await?;
-
-                // While authoring, all message types other than Application
-                // are already processed
-                if is_author && space_op.arg_type() != ArgType::Application {
-                    return Ok(());
-                }
-
-                tracing::info!(opid = opid.alias(), "SM: processing space msg");
-                match self.manager.process(&space_op).await {
-                    Ok(events) => {
-                        for (i, event) in events.into_iter().enumerate() {
-                            // TODO: need to get this from the space message, not the header!
-                            // because the welcome message could be passed from a differetn author
-                            self.process_chat_event(chat, event)
-                                .instrument(tracing::info_span!("chat event loop", ?i))
-                                .await?;
-                        }
-                    }
-                    Err(ManagerError::Space(SpaceError::AuthGroup(
-                        AuthGroupError::DuplicateOperation(op, _id),
-                    )))
-                    | Err(ManagerError::Group(GroupError::AuthGroup(
-                        AuthGroupError::DuplicateOperation(op, _id),
-                    ))) => {
-                        // assert_eq!(op, msg.id());
-                        tracing::error!(
-                            argtype = ?space_op.arg_type(),
-                            opid = op.alias(),
-                            "duplicate space control msg"
-                        );
-                    }
-
-                    Err(ManagerError::UnexpectedMessage(op)) => {
-                        tracing::error!(
-                            header = header.hash().alias(),
-                            op = op.alias(),
-                            "space manager unexpected operation"
-                        );
-                    }
-
-                    Err(ManagerError::MissingAuthMessage(op, auth_op)) => {
-                        tracing::error!(
-                            op = op.alias(),
-                            auth_op = auth_op.alias(),
-                            "space manager missing auth message"
-                        );
-                    }
-
-                    Err(err) => {
-                        tracing::error!(
-                            hash = header.hash().alias(),
-                            opid = opid.alias(),
-                            ?err,
-                            "space manager process error"
-                        );
-                    }
-                }
-            }
-
             Some(Payload::Chat(ChatPayload::JoinGroup(chat_id))) => {
                 // TODO: maybe close down the chat tasks if we are kicked out?
             }
 
             Some(Payload::Inbox(invitation)) => {
                 let active_topics = self.local_data.active_inbox_topics.read().await;
-                if !active_topics.iter().any(|it| *it.topic == *log_id) {
+                if !active_topics.iter().any(|it| **it.topic == *log_id) {
                     // not for me, ignore
                     return Ok(());
                 }
                 tracing::info!(
                     ?invitation,
-                    from = header.public_key.alias(),
+                    from = ?header.public_key.renamed(),
                     "received invitation message"
                 );
                 match invitation {
@@ -369,6 +239,10 @@ impl Node {
                         // Nothing to do.
                     }
                 }
+            }
+
+            Some(Payload::Chat(ChatPayload::Message(_))) => {
+                // Nothing to do.
             }
 
             Some(Payload::Announcements(_)) => {
@@ -381,30 +255,6 @@ impl Node {
 
             None => {
                 tracing::error!(?log_id, "no payload");
-            }
-        }
-        Ok(())
-    }
-
-    async fn process_chat_event(
-        &self,
-        chat: &mut Chat,
-        event: Event<ChatId, ()>,
-    ) -> anyhow::Result<()> {
-        match event {
-            Event::Space(space_event) => {
-                match space_event {
-                    p2panda_spaces::event::SpaceEvent::Ejected { .. } => {
-                        tracing::warn!(?chat.id, "removed from chat");
-                        chat.removed = true;
-                    }
-                    _ => {
-                        // Handle other space events if needed
-                    }
-                }
-            }
-            _ => {
-                // nothing to do
             }
         }
         Ok(())

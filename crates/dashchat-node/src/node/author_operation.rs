@@ -1,11 +1,8 @@
-use p2panda_core::{Hash, Operation};
-use p2panda_spaces::{OperationId, traits::AuthoredMessage};
-use p2panda_stream::operation::IngestResult;
+use bytes::Bytes;
 
-use crate::spaces::SpaceOperation;
-use crate::topic::{LogId, TopicKind};
-use crate::{AsBody, testing::AliasedId};
-use crate::{polestar as p, timestamp_now};
+use crate::mailbox::MailboxClient;
+use crate::polestar as p;
+use crate::topic::TopicKind;
 
 use super::*;
 
@@ -28,37 +25,26 @@ impl Node {
             .await?;
 
         let op = Operation {
-            hash: header.hash(),
+            hash: header.hash().with_serial(),
             header,
             body,
         };
         self.process_authored_ingested_operation(op).await
     }
 
-    // Can't do this unless we allow multiple operations to be created but not yet ingested.
-    pub(crate) async fn process_authored_ingested_space_messages(
-        &self,
-        ops: Vec<SpaceOperation>,
-    ) -> Result<(), anyhow::Error> {
-        for op in ops {
-            let op = op.into_operation()?;
-            self.process_authored_ingested_operation(op).await?;
-        }
-        Ok(())
-    }
-
     pub(crate) async fn process_authored_ingested_operation(
         &self,
-        op: Operation<Extensions>,
+        op: Operation,
     ) -> Result<Header, anyhow::Error> {
         let log_id = op.header.extensions.log_id;
-        self.process_operation(op.clone(), self.author_store.clone(), true, false)
-            .await?;
+        op.hash.with_serial();
+        self.process_operation(op.clone(), true, false).await?;
         let Operation { header, body, hash } = op;
 
         // self.notify_payload(&header, &payload).await?;
-        tracing::debug!(?log_id, hash = hash.alias(), "authored operation");
+        tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");
 
+        #[cfg(feature = "p2p")]
         match self.initialized_topics.read().await.get(&log_id) {
             Some(gossip) => {
                 gossip

@@ -1,0 +1,242 @@
+use p2panda_store::OperationStore;
+
+use crate::stores::OpStore;
+
+use super::*;
+
+#[derive(Clone, Debug)]
+pub struct MailboxesConfig {
+    pub success_interval: Duration,
+    pub error_interval: Duration,
+}
+
+impl Default for MailboxesConfig {
+    fn default() -> Self {
+        Self {
+            success_interval: Duration::from_secs(3),
+            error_interval: Duration::from_secs(15),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct Mailboxes<S>
+where
+    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions> + Send + Sync + 'static,
+{
+    mailboxes: Arc<Mutex<Vec<Arc<dyn MailboxClient>>>>,
+    topics: Arc<Mutex<HashMap<LogId, mpsc::Sender<Operation>>>>,
+    store: OpStore<S>,
+    config: MailboxesConfig,
+    // TODO: add a receiver to short circuit the polling interval
+}
+
+impl<S> Mailboxes<S>
+where
+    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions> + Send + Sync + 'static,
+{
+    fn new(store: OpStore<S>, config: MailboxesConfig) -> Self {
+        Self {
+            mailboxes: Arc::new(Mutex::new(Default::default())),
+            topics: Arc::new(Mutex::new(Default::default())),
+            store,
+            config,
+        }
+    }
+
+    pub async fn add(&self, mailbox: impl MailboxClient) {
+        self.mailboxes.lock().await.push(Arc::new(mailbox));
+    }
+
+    pub async fn clear(&self) {
+        self.mailboxes.lock().await.clear();
+    }
+
+    pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
+        self.topics.lock().await.keys().cloned().collect()
+    }
+
+    pub async fn subscribe(
+        &self,
+        topic: LogId,
+    ) -> Result<mpsc::Receiver<Operation>, anyhow::Error> {
+        tracing::info!(topic = ?topic.renamed(), "subscribing to topic");
+        let (tx, rx) = mpsc::channel(100);
+        self.topics.lock().await.insert(topic, tx);
+        Ok(rx)
+    }
+
+    pub async fn unsubscribe(&self, topic: LogId) -> Result<(), anyhow::Error> {
+        tracing::info!(topic = ?topic.renamed(), "unsubscribing from topic");
+        self.topics.lock().await.remove(&topic);
+        Ok(())
+    }
+
+    pub async fn spawn(store: OpStore<S>, config: MailboxesConfig) -> Result<Self, anyhow::Error> {
+        let manager = Self::new(store, config);
+        let r = manager.clone();
+        tokio::spawn(
+            async move {
+                let config = manager.config.clone();
+                let mut next_mailbox = 0;
+                loop {
+                    next_mailbox += 1;
+                    let mailbox = {
+                        let mm = manager.mailboxes.lock().await;
+                        if next_mailbox >= mm.len() {
+                            next_mailbox = 0;
+                        }
+
+                        match mm.get(next_mailbox) {
+                            Some(mailbox) => mailbox.clone(),
+                            None => {
+                                tracing::warn!("empty mailbox list, no mailbox to fetch from");
+                                tokio::time::sleep(config.error_interval).await;
+                                continue;
+                            }
+                        }
+                    };
+                    tracing::trace!("polling mailbox {next_mailbox}");
+
+                    let topics = manager.subscribed_topics().await;
+                    if topics.is_empty() {
+                        tracing::warn!("no topics subscribed, nothing to fetch this interval");
+                        tokio::time::sleep(config.error_interval).await;
+                        continue;
+                    }
+
+                    for topic in topics {
+                        match manager.sync_topic(topic, mailbox.clone()).await {
+                            Ok(()) => {
+                                tokio::time::sleep(config.success_interval).await;
+                            }
+                            Err(err) => {
+                                tracing::error!(?err, "fetch mailbox error");
+                                tokio::time::sleep(config.error_interval).await;
+                            }
+                        }
+                    }
+                }
+
+                tracing::warn!("poll mailboxes loop exited");
+            }
+            .instrument(tracing::info_span!("poll mailboxes")),
+        );
+
+        Ok(r)
+    }
+
+    async fn sync_topic(
+        &self,
+        topic: LogId,
+        mailbox: Arc<dyn MailboxClient>,
+    ) -> anyhow::Result<()> {
+        let Some(sender) = self.topics.lock().await.get(&topic).cloned() else {
+            tracing::warn!(topic = ?topic.renamed(), "no sender for topic");
+            return Ok(());
+        };
+
+        let heights = self.store.get_log_heights(&topic).await?;
+
+        let FetchResponse { ops, missing } = mailbox.fetch(topic, &heights).await?;
+
+        tracing::info!(
+            ops = ops.len(),
+            missing = missing.len(),
+            heights = ?heights.renamed(),
+            "fetched operations"
+        );
+
+        for op in ops {
+            sender.send(op.into()).await?;
+        }
+
+        let mut ops_to_publish = vec![];
+        for (author, seqs) in missing {
+            let Some(lowest) = seqs.iter().min() else {
+                continue;
+            };
+            let Some(log) = self
+                .store
+                .get_log(&author, &topic, Some(*lowest))
+                .await
+                .map_err(|err| anyhow::anyhow!("failed to get log for {topic:?}: {err}"))?
+            else {
+                continue;
+            };
+
+            for seq in seqs {
+                if let Some((header, body)) = log.get(seq as usize) {
+                    let op = MailboxOperation {
+                        header: header.clone(),
+                        body: body.clone(),
+                    };
+                    ops_to_publish.push(op);
+                }
+            }
+        }
+
+        mailbox.publish(topic, ops_to_publish).await?;
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+
+mod tests {
+    use std::time::Duration;
+
+    use crate::{mailbox::mem::MemMailbox, testing::*, *};
+
+    /// Very simple test which circumvents the contact adding system:
+    /// - alice sends a message to a direct chat topic
+    /// - alice and bobbi add a mailbox after the fact
+    /// - bobbi still gets the message later
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_mailbox_late_join() {
+        dashchat_node::testing::setup_tracing(
+            &"
+        dashchat=info,
+        p2panda_stream=warn,
+        p2panda_auth=warn,
+        p2panda_encryption=warn,
+        p2panda_spaces=warn,
+        named_id=warn
+        "
+            .split(',')
+            .map(|s| s.trim())
+            .collect::<Vec<_>>()
+            .join(","),
+            true,
+        );
+
+        let mb = MemMailbox::new();
+        let config = NodeConfig::testing();
+
+        // Start with no mailbox
+        let alice = TestNode::new(config.clone(), Some("alice")).await;
+        let bobbi = TestNode::new(config.clone(), Some("bobbi")).await;
+
+        let chat = alice.direct_chat_topic(bobbi.agent_id());
+        alice.initialize_topic(chat, false).await.unwrap();
+        alice.send_message(chat, "Hello".into()).await.unwrap();
+
+        println!("=== adding mailboxes ===");
+        bobbi.add_mailbox(mb.client()).await;
+        alice.add_mailbox(mb.client()).await;
+
+        bobbi.initialize_topic(chat, false).await.unwrap();
+        println!("=== added mailboxes ===");
+
+        wait_for(
+            Duration::from_millis(100),
+            Duration::from_secs(5),
+            || async {
+                (bobbi.get_messages(chat).await.unwrap().len() == 1).ok_or("message not received")
+            },
+        )
+        .await
+        .unwrap();
+    }
+}

@@ -50,7 +50,7 @@ export interface IContactsClient {
 
 export class ContactsClient implements IContactsClient {
 	myChatActorId(): Promise<ActorId> {
-		return invoke('my_chat_actor_id');
+		return invoke('my_agent_id');
 	}
 
 	async setProfile(profile: Profile): Promise<void> {

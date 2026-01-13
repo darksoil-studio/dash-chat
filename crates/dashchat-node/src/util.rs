@@ -1,5 +1,8 @@
 #![allow(unused)]
 
+use p2panda_core::PublicKey;
+use p2panda_spaces::ActorId;
+
 pub trait ResultExt<T, E> {
     fn ok_or_warn(self, message: &str) -> Option<T>;
 }
@@ -15,4 +18,9 @@ where
         })
         .ok()
     }
+}
+
+#[deprecated = "need a more certain way to know that an ActorId is actually a pubkey"]
+pub fn actor_to_pubkey(actor: ActorId) -> PublicKey {
+    PublicKey::from_bytes(actor.as_bytes()).unwrap()
 }
