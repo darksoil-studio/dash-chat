@@ -30,18 +30,38 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Extend space
-        uses: ./.github/actions/extend-space
-
-      - name: Install nix
-        uses: cachix/install-nix-action@v27
+      - name: setup node
+        uses: actions/setup-node@v1
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          nix_path: nixpkgs=channel:nixos-25.11
+          node-version: 20.12.2
 
-      - name: Install and test
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3 # docs https://pnpm.io/continuous-integration#github-actions
+        with:
+            version: 10.15.0  # Optional: specify a pnpm version
+
+      - name: Install and prepare
         run: |
-          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm i"
+          pnpm install
+
+      - name: install Rust stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: install dependencies (ubuntu only)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            javascriptcoregtk-4.1 \
+            libsoup-3.0 \
+            webkit2gtk-4.1
 
       - name: Run Claude Code
         id: claude
@@ -60,7 +80,3 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
           claude_args: '--allowed-tools Bash(gh pr:*),Bash(pnpm:*),mcp__tauri__tauri_driver_session,mcp__tauri__tauri_webview_find_element,mcp__tauri__tauri_read_logs,mcp__tauri__tauri_webview_interact,mcp__tauri__tauri_webview_screenshot,mcp__tauri__tauri_webview_keyboard,mcp__tauri__tauri_webview_wait_for,mcp__tauri__tauri_webview_get_styles,mcp__tauri__tauri_webview_execute_js,mcp__tauri__tauri_manage_window'
-          env:
-            LIBGL_ALWAYS_SOFTWARE: "1"
-            WEBKIT_DISABLE_COMPOSITING_MODE: "1"
-            WEBKIT_DISABLE_DMABUF_RENDERER: "1"
