@@ -69,6 +69,7 @@ This is a pnpm workspace with multiple packages:
 - **ui/**: Svelte 5 + TypeScript frontend (SvelteKit application)
 - **packages/stores/**: Shared TypeScript stores for state management
 - **crates/dashchat-node/**: Core p2p backend logic (Rust)
+- **crates/mailbox_server/**: HTTP server for offline message storage
 - **src-tauri/**: Tauri application wrapper and integration layer
 - **site/**: Marketing/download site
 
@@ -97,6 +98,22 @@ This is a pnpm workspace with multiple packages:
    - `push_notifications.rs`: Mobile push notification handling
    - `menu.rs`: Desktop menu configuration
    - `utils.rs`: Shared utilities
+
+3. **mailbox_server** (`crates/mailbox_server/`):
+   - Standalone HTTP server for storing/retrieving encrypted message blobs
+   - Built with Axum web framework and redb embedded database
+   - Key modules:
+     - `lib.rs`: App initialization, routing, and database setup
+     - `store_blobs.rs`: POST `/blobs/store` endpoint for storing blobs
+     - `get_blobs.rs`: POST `/blobs/get` endpoint for retrieving blobs with sync support
+     - `cleanup.rs`: Background task that deletes messages older than 7 days
+     - `blob.rs`: Base64-encoded binary data wrapper
+   - Data model:
+     - Key format: `topic_id:log_id:sequence_number:uuid_v7`
+     - Blobs organized by topic → log → sequence number hierarchy
+     - UUID v7 suffix enables time-based cleanup
+   - Features bidirectional sync: returns missing blobs to client AND requests blobs the server is missing
+   - Run with: `cargo run --bin mailbox_server -- --db-path <path> --addr <addr>`
 
 **Key Backend Patterns:**
 - Node managed as Tauri state (accessed via `app.state::<Node>()`)
@@ -201,3 +218,4 @@ Optimized builds with:
 
 Translations managed through Weblate: https://hosted.weblate.org/projects/dash-chat
 Contact team at hello@dashchat.org to become a translation reviewer.
+
