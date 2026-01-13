@@ -18,9 +18,9 @@
 		Checkbox,
 		useTheme,
 	} from 'konsta/svelte';
-	import { useReactivePromise } from '../../../../../stores/use-signal';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
-	import Avatar from '../../../../../components/Avatar.svelte';
+	import { useReactivePromise } from '$lib/stores/use-signal';
+	import { wrapPathInSvg } from '$lib/utils/icon';
+	import Avatar from '$lib/components/profiles/Avatar.svelte';
 	import { page } from '$app/state';
 	let chatId = page.params.chatId!;
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { useReactivePromise } from '../stores/use-signal';
-	import CreateProfile from '../profiles/CreateProfile.svelte';
+	import { useReactivePromise } from '$lib/stores/use-signal';
+	import CreateProfile from '$lib/components/profiles/CreateProfile.svelte';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { Preloader } from 'konsta/svelte';
 

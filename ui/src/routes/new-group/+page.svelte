@@ -5,12 +5,12 @@
 
 	import { getContext } from 'svelte';
 	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiAccountMultiplePlus } from '@mdi/js';
 
-	import { useReactivePromise } from '../../stores/use-signal';
-	import Avatar from '../../components/Avatar.svelte';
-	import SelectAvatar from '../../components/SelectAvatar.svelte';
+	import { useReactivePromise } from '$lib/stores/use-signal';
+	import Avatar from '$lib/components/profiles/Avatar.svelte';
+	import SelectAvatar from '$lib/components/profiles/SelectAvatar.svelte';
 	import {
 		Page,
 		Navbar,
@@ -26,7 +26,7 @@
 		Preloader,
 		useTheme,
 	} from 'konsta/svelte';
-	import { mdiArrowNext } from '../../utils/icon';
+	import { mdiArrowNext } from '$lib/utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	const chatsStore: ChatsStore = getContext('chats-store');

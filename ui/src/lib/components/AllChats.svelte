@@ -7,7 +7,7 @@
 	import '@awesome.me/webawesome/dist/components/format-date/format-date.js';
 	import { ChatsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
-	import { useReactivePromise } from '../stores/use-signal';
+	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Badge, List, ListItem } from 'konsta/svelte';
 
