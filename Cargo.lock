@@ -5350,7 +5350,7 @@ dependencies = [
 [[package]]
 name = "p2panda-auth"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "derive_more 1.0.0",
  "named-id",
@@ -5364,7 +5364,7 @@ dependencies = [
 [[package]]
 name = "p2panda-core"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "blake3",
  "ciborium",
@@ -5380,7 +5380,7 @@ dependencies = [
 [[package]]
 name = "p2panda-discovery"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "anyhow",
  "base32",
@@ -5400,7 +5400,7 @@ dependencies = [
 [[package]]
 name = "p2panda-encryption"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "chacha20poly1305",
  "curve25519-dalek",
@@ -5425,7 +5425,7 @@ dependencies = [
 [[package]]
 name = "p2panda-net"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5452,7 +5452,7 @@ dependencies = [
 [[package]]
 name = "p2panda-spaces"
 version = "0.1.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "named-id",
  "p2panda-auth",
@@ -5469,7 +5469,7 @@ dependencies = [
 [[package]]
 name = "p2panda-store"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "ciborium",
  "hex",
@@ -5482,11 +5482,12 @@ dependencies = [
 [[package]]
 name = "p2panda-stream"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "ciborium",
  "futures-channel",
  "futures-util",
+ "named-id",
  "p2panda-core",
  "p2panda-store",
  "pin-project",
@@ -5497,7 +5498,7 @@ dependencies = [
 [[package]]
 name = "p2panda-sync"
 version = "0.4.0"
-source = "git+https://github.com/maackle/p2panda.git?branch=named-id#8635874dc137273e2bcd878a3ac3cce500ad62bd"
+source = "git+https://github.com/maackle/p2panda.git?branch=dashchat#950c89526eef62fa55b20929660f0c3c55c7abfa"
 dependencies = [
  "async-trait",
  "futures",

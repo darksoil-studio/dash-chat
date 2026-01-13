@@ -19,21 +19,21 @@ futures = "0.3"
 # p2panda-store = "0.3.1"
 # p2panda-stream = "0.3.1"
 # p2panda-sync = { version = "0.3.1", features = ["log-sync"] }
-p2panda-auth = { git = "https://github.com/maackle/p2panda.git", branch = "named-id" }
-p2panda-core = { git = "https://github.com/maackle/p2panda.git", branch = "named-id" }
-p2panda-encryption = { git = "https://github.com/maackle/p2panda.git", branch = "named-id" }
-p2panda-discovery = { git = "https://github.com/maackle/p2panda.git", branch = "named-id", features = [
+p2panda-auth = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
+p2panda-core = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
+p2panda-encryption = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
+p2panda-discovery = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat", features = [
   "mdns",
 ] }
-p2panda-net = { git = "https://github.com/maackle/p2panda.git", branch = "named-id" }
-p2panda-store = { git = "https://github.com/maackle/p2panda.git", branch = "named-id", features = [
+p2panda-net = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
+p2panda-store = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat", features = [
   "sqlite",
 ] }
-p2panda-stream = { git = "https://github.com/maackle/p2panda.git", branch = "named-id" }
-p2panda-sync = { git = "https://github.com/maackle/p2panda.git", branch = "named-id", features = [
+p2panda-stream = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
+p2panda-sync = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat", features = [
   "log-sync",
 ] }
-p2panda-spaces = { git = "https://github.com/maackle/p2panda.git", branch = "named-id", features = [
+p2panda-spaces = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat", features = [
   "test_utils",
 ] }
 tokio = { version = "1.43.0", features = ["fs"] }
