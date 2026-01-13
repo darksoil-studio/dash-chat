@@ -1,11 +1,10 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
-	import { useReactivePromise } from '../../stores/use-signal';
+	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { getContext } from 'svelte';
 	import type { ContactRequestId, ContactsStore } from 'dash-chat-stores';
-	import Avatar from '../../components/Avatar.svelte';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import Avatar from '$lib/components/profiles/Avatar.svelte';
 	import { mdiAccountPlus } from '@mdi/js';
 	import { m, myContacts } from '$lib/paraglide/messages.js';
 	import {

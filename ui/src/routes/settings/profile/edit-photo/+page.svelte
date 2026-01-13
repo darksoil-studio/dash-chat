@@ -3,9 +3,9 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
-	import { useReactivePromise } from '../../../../stores/use-signal';
-	import SelectAvatar from '../../../../components/SelectAvatar.svelte';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { useReactivePromise } from '$lib/stores/use-signal';
+	import SelectAvatar from '$lib/components/profiles/SelectAvatar.svelte';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiClose, mdiContentSave, mdiImage } from '@mdi/js';
 	import { editProfile, m } from '$lib/paraglide/messages.js';
 	import {
@@ -20,7 +20,7 @@
 		List,
 		useTheme,
 	} from 'konsta/svelte';
-	import { resizeAndExport } from '../../../../utils/image';
+	import { resizeAndExport } from '$lib/utils/image';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let avatar = $state<string | undefined>(undefined);

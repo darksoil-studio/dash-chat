@@ -4,10 +4,10 @@
 	import '@awesome.me/webawesome/dist/components/button/button.js';
 	import { type ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
-	import { useReactivePromise } from '../stores/use-signal';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { useReactivePromise } from '$lib/stores/use-signal';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiAccountGroup, mdiSquareEditOutline } from '@mdi/js';
-	import AllChats from '../components/AllChats.svelte';
+	import AllChats from '$lib/components/AllChats.svelte';
 	import { Badge, Icon, Link, Navbar, Page, useTheme } from 'konsta/svelte';
 	import { m } from '$lib/paraglide/messages';
 	const theme = $derived(useTheme());

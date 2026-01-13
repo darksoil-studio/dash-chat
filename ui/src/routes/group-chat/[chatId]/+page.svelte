@@ -5,11 +5,11 @@
 	import '@awesome.me/webawesome/dist/components/format-date/format-date.js';
 	import { m } from '$lib/paraglide/messages.js';
 
-	import { useReactivePromise } from '../../../stores/use-signal';
-	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '../../../utils/time';
+	import { useReactivePromise } from '$lib/stores/use-signal';
+	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '$lib/utils/time';
 	import { getContext } from 'svelte';
 	import type { ChatsStore, ContactsStore } from 'dash-chat-stores';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiSend } from '@mdi/js';
 	import {
 		Page,

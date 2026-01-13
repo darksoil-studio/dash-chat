@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import type { ContactsStore } from 'dash-chat-stores';
-	import SelectAvatar from '../components/SelectAvatar.svelte';
+	import SelectAvatar from './SelectAvatar.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
 		Page,

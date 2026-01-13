@@ -3,9 +3,9 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
-	import { useReactivePromise } from '../../stores/use-signal';
+	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { mdiPencil } from '@mdi/js';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
 		Card,

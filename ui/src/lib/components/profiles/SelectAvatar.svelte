@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
-	import { resizeAndExport } from '../utils/image';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { resizeAndExport } from '$lib/utils/image';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiPlus } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Button, Fab } from 'konsta/svelte';
