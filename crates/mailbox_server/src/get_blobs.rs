@@ -14,71 +14,23 @@ pub struct GetBlobsRequest {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct GetBlobsResponse {
-    #[serde(with = "serde_blobs")]
-    pub blobs: BTreeMap<TopicId, BTreeMap<LogId, BTreeMap<SequenceNumber, Blob>>>,
+pub struct GetBlobsForTopicResponse {
+    // The blobs that the client does not have
+    pub blobs: BTreeMap<LogId, BTreeMap<SequenceNumber, Blob>>,
+    // The blobs that the server is missing from the client's request
+    pub missing: BTreeMap<LogId, Vec<SequenceNumber>>,
 }
 
-mod serde_blobs {
-    use serde::{Deserialize, Deserializer, Serializer};
-    use std::collections::BTreeMap;
-    use base64::{Engine as _, engine::general_purpose};
-
-    pub fn serialize<S>(
-        map: &BTreeMap<String, BTreeMap<String, BTreeMap<u32, Vec<u8>>>>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        use serde::ser::SerializeMap;
-        let mut topic_map = serializer.serialize_map(Some(map.len()))?;
-        for (topic_id, logs) in map {
-            let mut log_map = BTreeMap::new();
-            for (log_id, sequences) in logs {
-                let mut seq_map = BTreeMap::new();
-                for (seq_num, blob) in sequences {
-                    seq_map.insert(*seq_num, general_purpose::STANDARD.encode(blob));
-                }
-                log_map.insert(log_id.clone(), seq_map);
-            }
-            topic_map.serialize_entry(topic_id, &log_map)?;
-        }
-        topic_map.end()
-    }
-
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<BTreeMap<String, BTreeMap<String, BTreeMap<u32, Vec<u8>>>>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let map: BTreeMap<String, BTreeMap<String, BTreeMap<u32, String>>> =
-            BTreeMap::deserialize(deserializer)?;
-        let mut result = BTreeMap::new();
-        for (topic_id, logs) in map {
-            let mut log_map = BTreeMap::new();
-            for (log_id, sequences) in logs {
-                let mut seq_map = BTreeMap::new();
-                for (seq_num, encoded_blob) in sequences {
-                    let blob = general_purpose::STANDARD
-                        .decode(encoded_blob)
-                        .map_err(serde::de::Error::custom)?;
-                    seq_map.insert(seq_num, blob);
-                }
-                log_map.insert(log_id, seq_map);
-            }
-            result.insert(topic_id, log_map);
-        }
-        Ok(result)
-    }
+#[derive(Serialize, Deserialize)]
+pub struct GetBlobsResponse {
+    pub blobs_by_topic: BTreeMap<TopicId, GetBlobsForTopicResponse>,
 }
 
 pub async fn get_blobs_for_topics(
     State(state): State<AppState>,
     Json(payload): Json<GetBlobsRequest>,
 ) -> Result<Json<GetBlobsResponse>, (StatusCode, String)> {
-    let mut blobs: BTreeMap<TopicId, BTreeMap<LogId, BTreeMap<SequenceNumber, Blob>>> = BTreeMap::new();
+    let mut blobs_by_topic: BTreeMap<TopicId, GetBlobsForTopicResponse> = BTreeMap::new();
 
     let read_txn = state.db.begin_read().map_err(|e| {
         tracing::error!("Failed to begin read transaction: {}", e);
@@ -98,6 +50,7 @@ pub async fn get_blobs_for_topics(
 
     for (topic_id, requested_logs) in &payload.topics {
         let mut topic_logs: BTreeMap<LogId, BTreeMap<SequenceNumber, Blob>> = BTreeMap::new();
+        let mut max_seq_per_log: BTreeMap<LogId, SequenceNumber> = BTreeMap::new();
 
         // Iterate through ALL blobs for this topic
         let prefix = format!("{}:", topic_id);
@@ -141,6 +94,12 @@ pub async fn get_blobs_for_topics(
                 )
             })?;
 
+            // Track the maximum sequence number for each log
+            max_seq_per_log
+                .entry(log_id.clone())
+                .and_modify(|max| *max = (*max).max(seq_num))
+                .or_insert(seq_num);
+
             // Check if this log was requested with a specific sequence number filter
             let should_include = if let Some(min_seq_num) = requested_logs.get(&log_id) {
                 // Log is in the request: only include if seq_num > min_seq_num
@@ -154,13 +113,54 @@ pub async fn get_blobs_for_topics(
                 topic_logs
                     .entry(log_id)
                     .or_insert_with(BTreeMap::new)
-                    .insert(seq_num, value.value().to_vec());
+                    .insert(seq_num, Blob::from(value.value().to_vec()));
             }
         }
 
-        blobs.insert(topic_id.clone(), topic_logs);
+        // Calculate missing blobs: for each requested log, check if server has gaps
+        let mut missing: BTreeMap<LogId, Vec<SequenceNumber>> = BTreeMap::new();
+        for (log_id, client_max_seq) in requested_logs {
+            if let Some(&server_max_seq) = max_seq_per_log.get(log_id) {
+                // If server's highest sequence number is less than client's,
+                // the server is missing blobs
+                if server_max_seq < *client_max_seq {
+                    let missing_seq_nums: Vec<SequenceNumber> =
+                        ((server_max_seq + 1)..=*client_max_seq)
+                            .map(|seq| seq as SequenceNumber)
+                            .collect();
+                    tracing::debug!(
+                        "Server missing {} blobs for log {} in topic {} (sequences: {:?})",
+                        missing_seq_nums.len(),
+                        log_id,
+                        topic_id,
+                        missing_seq_nums
+                    );
+                    missing.insert(log_id.clone(), missing_seq_nums);
+                }
+            } else {
+                // Server has no blobs for this log at all - request from 0 to client_max_seq
+                let missing_seq_nums: Vec<SequenceNumber> = (0..=*client_max_seq)
+                    .map(|seq| seq as SequenceNumber)
+                    .collect();
+                tracing::debug!(
+                    "Server has no blobs for log {} in topic {} (need sequences: {:?})",
+                    log_id,
+                    topic_id,
+                    missing_seq_nums
+                );
+                missing.insert(log_id.clone(), missing_seq_nums);
+            }
+        }
+
+        blobs_by_topic.insert(
+            topic_id.clone(),
+            GetBlobsForTopicResponse {
+                blobs: topic_logs,
+                missing,
+            },
+        );
     }
 
     tracing::debug!("Retrieved blobs for {} topics", payload.topics.len());
-    Ok(Json(GetBlobsResponse { blobs }))
+    Ok(Json(GetBlobsResponse { blobs_by_topic }))
 }

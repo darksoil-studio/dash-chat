@@ -12,10 +12,12 @@ use tower_http::{
     trace::TraceLayer,
 };
 
+mod blob;
 mod store_blobs;
 mod get_blobs;
 mod cleanup;
 
+pub use blob::Blob;
 pub use store_blobs::{StoreBlobsRequest, store_blobs};
 pub use get_blobs::{GetBlobsRequest, GetBlobsResponse, get_blobs_for_topics};
 pub use cleanup::spawn_cleanup_task;
@@ -23,7 +25,6 @@ pub use cleanup::spawn_cleanup_task;
 pub type TopicId = String;
 pub type LogId = String;
 pub type SequenceNumber = u32;
-pub type Blob = Vec<u8>;
 
 // Database key format: "topic_id:log_id:sequence_number:uuid_v7"
 // The UUID v7 suffix is used for cleanup based on message age

@@ -98,8 +98,8 @@ async fn stress_test_concurrent_writes() {
 
         get_response.assert_status_ok();
         let body: GetBlobsResponse = get_response.json();
-        let topic_logs = &body.blobs[&format!("stress-topic-{}", topic_idx)];
-        let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+        let topic_logs = &body.blobs_by_topic[&format!("stress-topic-{}", topic_idx)];
+        let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
 
         assert_eq!(total_messages, num_concurrent_writes / num_topics);
     }
@@ -149,8 +149,8 @@ async fn stress_test_concurrent_reads() {
 
             response.assert_status_ok();
             let body: GetBlobsResponse = response.json();
-            let topic_logs = &body.blobs[&topic_id_clone];
-            let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+            let topic_logs = &body.blobs_by_topic[&topic_id_clone];
+            let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
             assert_eq!(total_messages, messages_per_topic);
         };
         tasks.push(task);
@@ -281,8 +281,8 @@ async fn stress_test_large_messages() {
 
         response.assert_status_ok();
         let body: GetBlobsResponse = response.json();
-        let topic_logs = &body.blobs[&topic_id];
-        let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+        let topic_logs = &body.blobs_by_topic[&topic_id];
+        let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
         assert_eq!(total_messages, num_large_messages / 5);
     }
 }
@@ -339,10 +339,10 @@ async fn stress_test_many_topics() {
 
     let retrieve_duration = start.elapsed();
 
-    assert_eq!(body.blobs.len(), 100);
+    assert_eq!(body.blobs_by_topic.len(), 100);
     for topic_id in &topic_ids {
-        let topic_logs = &body.blobs[topic_id];
-        let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+        let topic_logs = &body.blobs_by_topic[topic_id];
+        let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
         assert_eq!(total_messages, messages_per_topic);
     }
 
@@ -392,8 +392,8 @@ async fn stress_test_rapid_sequential_writes() {
 
     response.assert_status_ok();
     let body: GetBlobsResponse = response.json();
-    let topic_logs = &body.blobs[topic_id];
-    let total_messages: usize = topic_logs.values().map(|log| log.len()).sum();
+    let topic_logs = &body.blobs_by_topic[topic_id];
+    let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
     assert_eq!(total_messages, num_messages);
 }
 
