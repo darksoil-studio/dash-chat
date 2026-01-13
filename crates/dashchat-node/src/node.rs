@@ -39,6 +39,20 @@ pub struct NodeConfig {
     pub mailboxes_config: MailboxesConfig,
 }
 
+impl NodeConfig {
+    #[cfg(feature = "testing")]
+    pub fn testing() -> Self {
+        let mut mailboxes_config = MailboxesConfig::default();
+        mailboxes_config.success_interval = std::time::Duration::from_millis(1000);
+        mailboxes_config.error_interval = std::time::Duration::from_millis(1000);
+        Self {
+            resync: ResyncConfiguration::new().interval(3).poll_interval(1),
+            contact_code_expiry: Duration::days(7),
+            mailboxes_config,
+        }
+    }
+}
+
 impl Default for NodeConfig {
     fn default() -> Self {
         let resync = ResyncConfiguration::new().interval(3).poll_interval(1);
@@ -176,7 +190,6 @@ impl Node {
         author: DeviceId,
     ) -> anyhow::Result<Vec<(Header, Option<Body>)>> {
         let heights = self.op_store.get_log_heights(&log_id).await?;
-        tracing::info!(heights = ?heights.renamed(), "log HEIGHTS for {log_id:?}");
         match self.op_store.get_log(&author, &log_id, None).await? {
             Some(log) => Ok(log),
             None => {
@@ -426,7 +439,7 @@ impl Node {
         .await?;
 
         if let Some(inbox_topic) = contact.inbox_topic.clone() {
-            // self.initialize_topic(inbox_topic.topic, true).await?;
+            self.initialize_topic(inbox_topic.topic, true).await?;
             let qr = self.new_qr_code(ShareIntent::AddContact, false).await?;
             self.author_operation(
                 inbox_topic.topic,

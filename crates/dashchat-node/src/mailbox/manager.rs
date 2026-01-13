@@ -48,6 +48,10 @@ where
         self.mailboxes.lock().await.push(Arc::new(mailbox));
     }
 
+    pub async fn clear(&self) {
+        self.mailboxes.lock().await.clear();
+    }
+
     pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
         self.topics.lock().await.keys().cloned().collect()
     }
@@ -185,6 +189,10 @@ mod tests {
 
     use crate::{mailbox::mem::MemMailbox, testing::*, *};
 
+    /// Very simple test which circumvents the contact adding system:
+    /// - alice sends a message to a direct chat topic
+    /// - alice and bobbi add a mailbox after the fact
+    /// - bobbi still gets the message later
     #[tokio::test(flavor = "multi_thread")]
     async fn test_mailbox_late_join() {
         dashchat_node::testing::setup_tracing(
@@ -204,9 +212,7 @@ mod tests {
         );
 
         let mb = MemMailbox::new();
-        let mut config = NodeConfig::default();
-        config.mailboxes_config.success_interval = Duration::from_millis(1000);
-        config.mailboxes_config.error_interval = Duration::from_millis(1000);
+        let config = NodeConfig::testing();
 
         // Start with no mailbox
         let alice = TestNode::new(config.clone(), Some("alice")).await;

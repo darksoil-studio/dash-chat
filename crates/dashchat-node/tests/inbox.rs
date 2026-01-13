@@ -13,11 +13,11 @@ async fn test_inbox_2() {
     dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
 
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::default(), Some("alice"))
+    let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
         .await
         .add_mailbox(mailbox.client())
         .await;
-    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi"))
+    let bobbi = TestNode::new(NodeConfig::testing(), Some("bobbi"))
         .await
         .add_mailbox(mailbox.client())
         .await;

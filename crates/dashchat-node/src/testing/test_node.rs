@@ -44,6 +44,10 @@ impl TestNode {
         self.clone()
     }
 
+    pub async fn clear_mailboxes(&self) {
+        self.node.mailboxes.clear().await;
+    }
+
     pub fn behavior(&self) -> Behavior {
         Behavior::new(self.clone())
     }
