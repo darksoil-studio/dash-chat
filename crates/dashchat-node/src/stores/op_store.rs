@@ -86,6 +86,20 @@ where
         }
     }
 
+    pub async fn get_log_heights(
+        &self,
+        topic: &LogId,
+    ) -> Result<Vec<(DeviceId, u64)>, anyhow::Error> {
+        Ok(self
+            .store
+            .get_log_heights(&topic)
+            .await
+            .map_err(|err| anyhow::anyhow!("failed to get log heights for {topic:?}: {err}"))?
+            .into_iter()
+            .map(|(pk, height)| (DeviceId::from(pk), height))
+            .collect::<Vec<_>>())
+    }
+
     pub async fn author_operation<K: TopicKind>(
         &self,
         private_key: &PrivateKey,

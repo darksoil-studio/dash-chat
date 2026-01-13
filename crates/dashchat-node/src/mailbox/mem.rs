@@ -98,44 +98,66 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
         topic: LogId,
         min_heights: &[(Op::Author, u64)],
     ) -> anyhow::Result<FetchResponse<Op>> {
-        let ops = self.mailbox.ops.read().await;
-        if let Some(ops) = ops.get(&topic) {
-            let mut new = vec![];
-            let mut missing = HashMap::new();
-            for (author, height) in min_heights {
-                let mut gaps = vec![];
-                if let Some(slots) = ops.get(author) {
-                    let last_seq = slots.last_key_value().map(|(seq, _)| *seq).unwrap_or(0);
-                    let max = (*height).max(last_seq);
+        let mailbox_ops = self.mailbox.ops.read().await;
+        let provided_authors: HashMap<Op::Author, u64> =
+            HashMap::from_iter(min_heights.into_iter().cloned());
+
+        let _empty_map = HashMap::new();
+        let mailbox_authors = mailbox_ops.get(&topic).unwrap_or(&_empty_map);
+
+        let mut new = vec![];
+        let mut missing = HashMap::new();
+        let all_authors = mailbox_authors
+            .keys()
+            .cloned()
+            .chain(provided_authors.keys().cloned())
+            .collect::<HashSet<_>>();
+        for author in all_authors {
+            let mut gaps = vec![];
+            let mailbox_slots = mailbox_authors.get(&author).cloned();
+            let provided_height = provided_authors.get(&author).cloned();
+
+            match (mailbox_slots, provided_height) {
+                (Some(mailbox_slots), Some(provided_height)) => {
+                    let last_seq = mailbox_slots
+                        .last_key_value()
+                        .map(|(seq, _)| *seq)
+                        .unwrap_or(0);
+
+                    let max = provided_height.max(last_seq);
                     for i in 0..=max {
-                        if let Some(op) = slots.get(&i) {
-                            if i > *height {
+                        if let Some(op) = mailbox_slots.get(&i) {
+                            if i > provided_height {
                                 new.push(op.clone());
                             }
                         } else {
                             gaps.push(i);
                         }
                     }
-                    if !gaps.is_empty() {
-                        missing.insert(*author, gaps);
-                    }
+                }
+                (Some(mailbox_slots), None) => {
+                    new.extend(mailbox_slots.values().cloned());
+                }
+                (None, Some(provided_height)) => {
+                    gaps.extend(0..=provided_height);
+                }
+                (None, None) => {
+                    // empty mailbox, empty node store, return nothing...
                 }
             }
-
-            tracing::info!(
-                topic = ?topic.renamed(),
-                num = new.len(),
-                hashes = ?new.iter().map(|op: &Op| op.hash().renamed()).collect::<Vec<_>>(),
-                "fetching mailbox operations"
-            );
-
-            Ok(FetchResponse { ops: new, missing })
-        } else {
-            Ok(FetchResponse {
-                ops: vec![],
-                missing: HashMap::new(),
-            })
+            if !gaps.is_empty() {
+                missing.insert(author, gaps);
+            }
         }
+
+        tracing::info!(
+            topic = ?topic.renamed(),
+            num = new.len(),
+            hashes = ?new.iter().map(|op: &Op| op.hash().renamed()).collect::<Vec<_>>(),
+            "fetching mailbox operations"
+        );
+
+        Ok(FetchResponse { ops: new, missing })
     }
 }
 
@@ -177,6 +199,33 @@ mod tests {
 
     fn mm(author: char, r: std::ops::Range<u64>) -> Vec<Msg> {
         r.map(|i| m(author, i)).collect()
+    }
+
+    #[tokio::test]
+    async fn test_mem_initial_sync() {
+        let mailbox = MemMailbox::<Msg>::new();
+        let client = mailbox.client();
+
+        let a = 'a';
+        let t = Topic::random().into();
+
+        assert_eq!(
+            client.fetch(t, &[(a, 1)]).await.unwrap(),
+            FetchResponse {
+                ops: vec![],
+                missing: HashMap::from([(a, vec![0, 1])]),
+            }
+        );
+
+        client.publish(t, mm(a, 0..2)).await.unwrap();
+
+        assert_eq!(
+            client.fetch(t, &[]).await.unwrap(),
+            FetchResponse {
+                ops: mm(a, 0..2),
+                missing: HashMap::new(),
+            }
+        );
     }
 
     #[tokio::test]
@@ -261,11 +310,6 @@ mod tests {
                 missing: HashMap::from([(a, vec![0, 1])]),
             }
         );
-    }
-
-    #[tokio::test]
-    async fn test_mem_mailbox_gaps() {
-        todo!()
     }
 
     // #[tokio::test]

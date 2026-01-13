@@ -36,18 +36,14 @@ impl Node {
     /// This must be called:
     /// - when creating a new group chat
     /// - when initializing the node, for each existing group chat
-    pub(super) async fn initialize_topic<K: TopicKind>(
+    pub(crate) async fn initialize_topic<K: TopicKind>(
         &self,
         topic: Topic<K>,
         _is_author: bool,
     ) -> anyhow::Result<()> {
         {
-            if let Some(mailbox_rx) = self
-                .mailboxes
-                .subscribe(topic.into(), self.op_store.clone())
-                .await?
-            {
-                let stream = ReceiverStream::new(mailbox_rx).filter_map(async |op| {
+            let mailbox_rx = self.mailboxes.subscribe(topic.into()).await?;
+            let stream = ReceiverStream::new(mailbox_rx).filter_map(async |op| {
                     let hash = op.hash;
                     if hash == op.header.hash() {
                         let header_bytes = op.header.to_bytes();
@@ -66,11 +62,10 @@ impl Node {
                     }
                 });
 
-                self.stream_tx
-                    .send(Pin::from(Box::new(stream)))
-                    .await
-                    .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
-            }
+            self.stream_tx
+                .send(Pin::from(Box::new(stream)))
+                .await
+                .map_err(|_| anyhow::anyhow!("stream channel closed"))?;
         }
 
         Ok(())

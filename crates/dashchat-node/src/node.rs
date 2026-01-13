@@ -19,7 +19,7 @@ use tokio::sync::{RwLock, mpsc};
 
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
-use crate::mailbox::Mailboxes;
+use crate::mailbox::manager::{Mailboxes, MailboxesConfig};
 use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
 };
@@ -36,6 +36,7 @@ pub use stream_processing::Notification;
 pub struct NodeConfig {
     pub resync: ResyncConfiguration,
     pub contact_code_expiry: Duration,
+    pub mailboxes_config: MailboxesConfig,
 }
 
 impl Default for NodeConfig {
@@ -44,6 +45,7 @@ impl Default for NodeConfig {
         Self {
             resync,
             contact_code_expiry: Duration::days(7),
+            mailboxes_config: MailboxesConfig::default(),
         }
     }
 }
@@ -79,7 +81,7 @@ impl NodeLocalData {
 pub struct Node {
     pub op_store: OpStore<MemoryStore<LogId, Extensions>>,
 
-    pub mailboxes: Mailboxes,
+    pub mailboxes: Mailboxes<MemoryStore<LogId, Extensions>>,
 
     // groups: p2panda_auth::group::Groups,
     config: NodeConfig,
@@ -109,9 +111,11 @@ impl Node {
 
         let (stream_tx, stream_rx) = mpsc::channel(100);
 
+        let mailboxes = Mailboxes::spawn(op_store.clone(), config.mailboxes_config.clone()).await?;
+
         let node = Self {
             op_store: op_store.clone(),
-            mailboxes: Mailboxes::new(),
+            mailboxes,
             config,
             local_data,
             notification_tx,
@@ -171,14 +175,8 @@ impl Node {
         log_id: LogId,
         author: DeviceId,
     ) -> anyhow::Result<Vec<(Header, Option<Body>)>> {
-        let heights = self
-            .op_store
-            .get_log_heights(&log_id)
-            .await?
-            .into_iter()
-            .map(|(pk, height)| (pk.renamed(), height))
-            .collect::<Vec<_>>();
-        tracing::info!(?heights, "log HEIGHTS for {log_id:?}");
+        let heights = self.op_store.get_log_heights(&log_id).await?;
+        tracing::info!(heights = ?heights.renamed(), "log HEIGHTS for {log_id:?}");
         match self.op_store.get_log(&author, &log_id, None).await? {
             Some(log) => Ok(log),
             None => {
@@ -189,18 +187,15 @@ impl Node {
         }
     }
 
-    pub async fn get_authors(&self, topic_id: LogId) -> HashSet<DeviceId> {
-        todo!("get from all mailboxes")
-
-        // self.mailbox.authors(topic_id).await.unwrap_or_default()
-
-        // match self.author_store.authors(&topic_id).await {
-        //     Some(authors) => Ok(authors.into_iter().map(|a| a.into()).collect()),
-        //     None => {
-        //         tracing::warn!("No authors found for topic {topic_id:?}");
-        //         Ok(Default::default())
-        //     }
-        // }
+    pub async fn get_authors(&self, topic_id: LogId) -> anyhow::Result<HashSet<DeviceId>> {
+        let authors = self
+            .op_store
+            .get_log_heights(&topic_id)
+            .await?
+            .into_iter()
+            .map(|(pk, _)| DeviceId::from(pk))
+            .collect::<HashSet<_>>();
+        Ok(authors)
     }
 
     /// Create a new contact QR code with configured expiry time,
@@ -301,7 +296,7 @@ impl Node {
         let chat_id = topic.into();
         let mut messages = vec![];
 
-        let authors = self.get_authors(chat_id.into()).await;
+        let authors = self.get_authors(chat_id.into()).await?;
 
         for (header, payload) in self
             .get_interleaved_logs(chat_id.into(), authors.into_iter().collect())
