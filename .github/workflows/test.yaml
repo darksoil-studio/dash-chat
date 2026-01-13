@@ -21,16 +21,16 @@ jobs:
         uses: cachix/install-nix-action@v27
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          nix_path: nixpkgs=channel:nixos-24.05
+          nix_path: nixpkgs=channel:nixos-25.11
 
-      - uses: cachix/cachix-action@v15
-        with:
-          name: holochain-ci
-
-      - uses: cachix/cachix-action@v15
-        with:
-          name: darksoil-studio
-
-      - name: Install and test
+      - name: Test
         run: |
-          nix develop .#ci --no-update-lock-file --accept-flake-config --command bash -c "pnpm i && pnpm test"
+          nix develop --no-update-lock-file --accept-flake-config --command bash -c "cargo test"
+
+      - name: Install
+        run: |
+          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm install"
+
+      - name: Build UI packages
+        run: |
+          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm --recursive build"
