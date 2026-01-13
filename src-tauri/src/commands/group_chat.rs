@@ -1,17 +1,17 @@
-use dashchat_node::{ChatId, ChatMessage, ChatMessageContent, Node, ReppedGroup};
+use dashchat_node::{ChatId, ChatMessage, ChatMessageContent, Node};
 use p2panda_core::PublicKey;
 use tauri::{command, State};
 
-#[command]
-pub async fn add_member(
-    chat_id: ChatId,
-    repped_group: ReppedGroup,
-    node: State<'_, Node>,
-) -> Result<(), String> {
-    node.add_member(chat_id, repped_group)
-        .await
-        .map_err(|e| format!("Failed to add member: {e:?}"))
-}
+// #[command]
+// pub async fn add_member(
+//     chat_id: ChatId,
+//     repped_group: ReppedGroup,
+//     node: State<'_, Node>,
+// ) -> Result<(), String> {
+//     node.add_member(chat_id, repped_group)
+//         .await
+//         .map_err(|e| format!("Failed to add member: {e:?}"))
+// }
 
 #[command]
 pub async fn send_message(

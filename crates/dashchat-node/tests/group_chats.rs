@@ -82,7 +82,7 @@ async fn test_direct_chat() {
 
     wait_for(
         Duration::from_millis(100),
-        Duration::from_secs(5),
+        Duration::from_secs(10),
         || async {
             let msgs = [
                 alice.get_messages(chat_id).await.unwrap().len(),

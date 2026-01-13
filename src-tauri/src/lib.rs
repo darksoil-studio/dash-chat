@@ -21,9 +21,9 @@ pub fn run() {
             commands::contacts::create_contact_code,
             commands::contacts::add_contact,
             // commands::chats::create_group,
-            commands::group_chat::add_member,
-            commands::group_chat::send_message,
-            commands::group_chat::get_messages,
+            // commands::group_chat::add_member,
+            // commands::group_chat::send_message,
+            // commands::group_chat::get_messages,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

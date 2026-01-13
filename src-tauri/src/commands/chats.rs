@@ -1,4 +1,4 @@
-use dashchat_node::{ChatId, Node, PK};
+use dashchat_node::{ChatId, Node};
 use tauri::{command, State};
 
 // #[command]

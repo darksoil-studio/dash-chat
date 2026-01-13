@@ -9,7 +9,7 @@ use anyhow::Result;
 use chrono::{Duration, Utc};
 use futures::Stream;
 use named_id::*;
-use p2panda_core::{Body, PrivateKey};
+use p2panda_core::{Body, PrivateKey, PublicKey};
 use p2panda_net::ResyncConfiguration;
 use p2panda_spaces::ActorId;
 use p2panda_store::{LogStore, MemoryStore};
@@ -241,6 +241,10 @@ impl Node {
 
     pub fn agent_id(&self) -> AgentId {
         self.local_data.agent_id
+    }
+
+    pub fn public_key(&self) -> PublicKey {
+        self.local_data.private_key.public_key()
     }
 
     /// Get the topic for a direct chat between two public keys.

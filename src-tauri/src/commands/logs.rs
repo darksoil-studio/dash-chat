@@ -1,4 +1,4 @@
-use dashchat_node::{spaces::SpacesArgs, DashChatTopicId, Header, Node, Payload};
+use dashchat_node::{DashChatTopicId, DeviceId, Header, Node, Payload};
 use p2panda_core::{cbor::decode_cbor, Body, Hash, PublicKey};
 use serde::{Deserialize, Serialize};
 use tauri::State;
@@ -47,35 +47,35 @@ impl From<Header> for SimplifiedHeader {
     }
 }
 
-pub fn decode_spaces_args(spaces_args: SpacesArgs) -> Result<Option<serde_json::Value>, String> {
-    match spaces_args {
-        p2panda_spaces::SpacesArgs::Application {
-            space_id,
-            space_dependencies,
-            group_secret_id,
-            nonce,
-            ciphertext,
-        } => {
-            todo!()
-        }
-        // p2panda_spaces::SpacesArgs::Auth { control_message, auth_dependencies } => {
+// pub fn decode_spaces_args(spaces_args: SpacesArgs) -> Result<Option<serde_json::Value>, String> {
+//     match spaces_args {
+//         p2panda_spaces::SpacesArgs::Application {
+//             space_id,
+//             space_dependencies,
+//             group_secret_id,
+//             nonce,
+//             ciphertext,
+//         } => {
+//             todo!()
+//         }
+//         // p2panda_spaces::SpacesArgs::Auth { control_message, auth_dependencies } => {
 
-        // },
-        _ => todo!(),
-    }
-}
+//         // },
+//         _ => todo!(),
+//     }
+// }
 
 pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
     let bytes = body.to_bytes();
-    let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
-        return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
-    };
+    // let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
+    //     return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
+    // };
 
     let mut values: Vec<serde_json::Value> = vec![];
 
-    if let Some(value) = decode_spaces_args(args)? {
-        values.push(value);
-    }
+    // if let Some(value) = decode_spaces_args(args)? {
+    //     values.push(value);
+    // }
 
     Ok(serde_json::Value::Array(values))
 }
@@ -102,7 +102,7 @@ pub fn simplify(
 #[tauri::command]
 pub async fn get_log(
     topic_id: DashChatTopicId,
-    author: PublicKey,
+    author: DeviceId,
     node: State<'_, Node>,
 ) -> Result<Vec<SimplifiedOperation>, String> {
     let log = node
@@ -122,7 +122,7 @@ pub async fn get_log(
 pub async fn get_authors(
     topic_id: DashChatTopicId,
     node: State<'_, Node>,
-) -> Result<std::collections::HashSet<PublicKey>, String> {
+) -> Result<std::collections::HashSet<DeviceId>, String> {
     let authors = node
         .get_authors(topic_id)
         .await
