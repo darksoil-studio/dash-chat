@@ -17,9 +17,9 @@
 	} from 'dash-chat-stores';
 	import { App, KonstaProvider } from 'konsta/svelte';
 
-	import SplashscreenPrompt from '../splashscreen/SplashscreenPrompt.svelte';
-	import { isMobile } from '../utils/environment';
-	import { setupInsets } from '../utils/insets';
+	import SplashscreenPrompt from '$lib/components/splashscreen/SplashscreenPrompt.svelte';
+	import { isMobile } from '$lib/utils/environment';
+	import { setupInsets } from '$lib/utils/insets';
 
 	import { setLocale } from '$lib/paraglide/runtime';
 	setLocale('en');

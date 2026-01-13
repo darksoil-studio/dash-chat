@@ -3,10 +3,10 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import { m } from '$lib/paraglide/messages.js';
 
-	import { useReactivePromise } from '../../../../stores/use-signal';
+	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { getContext } from 'svelte';
 	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import {
 		mdiAccountGroup,
 		mdiClose,

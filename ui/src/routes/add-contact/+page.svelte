@@ -8,12 +8,12 @@
 		encodeContactCode,
 		type ContactsStore,
 	} from 'dash-chat-stores';
-	import { wrapPathInSvg } from '@darksoil-studio/holochain-elements';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiQrcode } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages.js';
 
-	import { isMobile } from '../../utils/environment';
-	import { scanQrcode } from '../../utils/qrcode';
+	import { isMobile } from '$lib/utils/environment';
+	import { scanQrcode } from '$lib/utils/qrcode';
 	import {
 		Page,
 		Navbar,

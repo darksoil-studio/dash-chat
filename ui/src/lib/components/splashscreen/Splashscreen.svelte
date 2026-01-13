@@ -2,7 +2,7 @@
 	import { splashscreenDismissed } from './utils';
 	import { getContext } from 'svelte';
 	import type { ContactsStore } from 'dash-chat-stores';
-	import { useReactivePromise} from '../stores/use-signal';
+	import { useReactivePromise} from '$lib/stores/use-signal';
 	import { m } from '$lib/paraglide/messages.js';
 	import { ListInput, Button, List } from 'konsta/svelte';
 

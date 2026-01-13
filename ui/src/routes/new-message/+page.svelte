@@ -5,8 +5,8 @@
 	import { mdiAccountMultiplePlus, mdiAccountPlus } from '@mdi/js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
-	import { useReactivePromise } from '../../stores/use-signal';
-	import { wrapPathInSvg } from '../../utils/icon';
+	import { useReactivePromise } from '$lib/stores/use-signal';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 	import {
 		Page,
 		Navbar,
