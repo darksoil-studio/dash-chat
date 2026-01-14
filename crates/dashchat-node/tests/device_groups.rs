@@ -4,13 +4,17 @@ use named_id::*;
 
 use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
 
-const TRACING_FILTER: &str =
-    "dashchat=debug,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
+const TRACING_FILTER: [&str; 4] = [
+    "dashchat=debug",
+    "p2panda_stream=info",
+    "p2panda_auth=warn",
+    "p2panda_spaces=info",
+];
 
 #[tokio::test(flavor = "multi_thread")]
 #[ignore = "device groups are not supported yet"]
 async fn device_group_solo() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
+    dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
     let mailbox = MemMailbox::new();
     let alice = TestNode::new(NodeConfig::testing(), Some("alice"))

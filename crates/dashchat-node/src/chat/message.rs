@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use named_id::{RenameAll, RenameNone};
 use serde::{Deserialize, Serialize};
 
-use crate::{AgentId, Cbor, DeviceId, Header};
+use crate::{Cbor, DeviceId, Header};
 
 /// A standalone chat message suitable for sending to the frontend.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]

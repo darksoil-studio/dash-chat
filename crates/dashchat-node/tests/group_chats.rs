@@ -26,18 +26,14 @@ use named_id::*;
 #[tokio::test(flavor = "multi_thread")]
 async fn test_direct_chat() {
     dashchat_node::testing::setup_tracing(
-        &"
-        dashchat=info,
-        p2panda_stream=warn,
-        p2panda_auth=warn,
-        p2panda_encryption=warn,
-        p2panda_spaces=warn,
-        named_id=warn
-        "
-        .split(',')
-        .map(|s| s.trim())
-        .collect::<Vec<_>>()
-        .join(","),
+        &[
+            "dashchat=info",
+            "p2panda_stream=warn",
+            "p2panda_auth=warn",
+            "p2panda_encryption=warn",
+            "p2panda_spaces=warn",
+            "named_id=warn",
+        ],
         true,
     );
 

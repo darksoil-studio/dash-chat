@@ -11,18 +11,14 @@ use dashchat_node::{
 #[tokio::test(flavor = "multi_thread")]
 async fn test_mailbox_late_join_mem() {
     dashchat_node::testing::setup_tracing(
-        &"
-    dashchat=info,
-    p2panda_stream=warn,
-    p2panda_auth=warn,
-    p2panda_encryption=warn,
-    p2panda_spaces=warn,
-    named_id=warn
-    "
-        .split(',')
-        .map(|s| s.trim())
-        .collect::<Vec<_>>()
-        .join(","),
+        &[
+            "dashchat=info",
+            "p2panda_stream=warn",
+            "p2panda_auth=warn",
+            "p2panda_encryption=warn",
+            "p2panda_spaces=warn",
+            "named_id=warn",
+        ],
         true,
     );
 
@@ -33,18 +29,14 @@ async fn test_mailbox_late_join_mem() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_mailbox_late_join_toy() {
     dashchat_node::testing::setup_tracing(
-        &"
-    dashchat=info,
-    p2panda_stream=warn,
-    p2panda_auth=warn,
-    p2panda_encryption=warn,
-    p2panda_spaces=warn,
-    named_id=warn
-    "
-        .split(',')
-        .map(|s| s.trim())
-        .collect::<Vec<_>>()
-        .join(","),
+        &[
+            "dashchat=info",
+            "p2panda_stream=warn",
+            "p2panda_auth=warn",
+            "p2panda_encryption=warn",
+            "p2panda_spaces=warn",
+            "named_id=warn",
+        ],
         true,
     );
 
@@ -108,18 +100,14 @@ async fn mailbox_late_join(alice_mailbox: impl MailboxClient, bobbi_mailbox: imp
 #[ignore = "this test is only really meaningful when we have groups"]
 async fn test_multiple_mailboxes_group_pivot() {
     dashchat_node::testing::setup_tracing(
-        &"
-        dashchat=info,
-        p2panda_stream=warn,
-        p2panda_auth=warn,
-        p2panda_encryption=warn,
-        p2panda_spaces=warn,
-        named_id=warn
-        "
-        .split(',')
-        .map(|s| s.trim())
-        .collect::<Vec<_>>()
-        .join(","),
+        &[
+            "dashchat=info",
+            "p2panda_stream=warn",
+            "p2panda_auth=warn",
+            "p2panda_encryption=warn",
+            "p2panda_spaces=warn",
+            "named_id=warn",
+        ],
         true,
     );
 

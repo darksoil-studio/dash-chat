@@ -6,12 +6,16 @@ use p2panda_store::LogStore;
 use dashchat_node::{testing::*, *};
 use named_id::*;
 
-const TRACING_FILTER: &str =
-    "dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
+const TRACING_FILTER: [&str; 4] = [
+    "dashchat=info",
+    "p2panda_stream=info",
+    "p2panda_auth=warn",
+    "p2panda_spaces=info",
+];
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_profiles() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
+    dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
     println!("nodes:");
     let mailbox = MemMailbox::new();

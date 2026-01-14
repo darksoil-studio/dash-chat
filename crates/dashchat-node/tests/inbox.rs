@@ -5,12 +5,17 @@ use std::time::Duration;
 use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
 use named_id::*;
 
-const TRACING_FILTER: &str =
-    "inbox=info,dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
+const TRACING_FILTER: [&str; 5] = [
+    "inbox=info",
+    "dashchat=info",
+    "p2panda_stream=info",
+    "p2panda_auth=warn",
+    "p2panda_spaces=info",
+];
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_inbox_2() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
+    dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
     let mailbox = MemMailbox::new();
     let alice = TestNode::new(NodeConfig::testing(), Some("alice"))

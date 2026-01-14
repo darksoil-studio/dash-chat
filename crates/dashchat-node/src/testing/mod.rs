@@ -6,7 +6,8 @@ pub use introduce::*;
 pub use test_node::*;
 use tracing_subscriber::EnvFilter;
 
-pub fn setup_tracing(dirs: &str, more: bool) {
+pub fn setup_tracing(dirs: &[&str], more: bool) {
+    let dirs = dirs.join(",");
     let filter = EnvFilter::try_new(dirs).unwrap();
     tracing_subscriber::fmt::fmt()
         .with_thread_names(false)
