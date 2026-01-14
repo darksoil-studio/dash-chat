@@ -1,15 +1,10 @@
 use chrono::{DateTime, Utc};
 use named_id::RenameAll;
-use p2panda_core::{
-    PublicKey,
-    cbor::{decode_cbor, encode_cbor},
-};
-use p2panda_encryption::key_bundle::LongTermKeyBundle;
-use p2panda_spaces::ActorId;
+use p2panda_core::cbor::{decode_cbor, encode_cbor};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-use crate::{AgentId, DeviceGroupId, DeviceId, Topic, topic::kind};
+use crate::{AgentId, DeviceId, Topic, topic::kind};
 
 /// The content for a QR code or deep link.
 ///
@@ -98,6 +93,9 @@ impl TryFrom<String> for QrCode {
 
 #[cfg(test)]
 mod tests {
+
+    use p2panda_core::PublicKey;
+    use p2panda_spaces::ActorId;
 
     use super::*;
 

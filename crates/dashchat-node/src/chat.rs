@@ -1,6 +1,4 @@
 mod message;
-use std::collections::BTreeSet;
-
 pub use message::*;
 
 use crate::Topic;

@@ -105,15 +105,16 @@ where
                         continue;
                     }
 
-                    for topic in topics {
-                        match manager.sync_topic(topic, mailbox.clone()).await {
-                            Ok(()) => {
-                                tokio::time::sleep(config.success_interval).await;
-                            }
-                            Err(err) => {
-                                tracing::error!(?err, "fetch mailbox error");
-                                tokio::time::sleep(config.error_interval).await;
-                            }
+                    match manager
+                        .sync_topics(topics.into_iter(), mailbox.clone())
+                        .await
+                    {
+                        Ok(()) => {
+                            tokio::time::sleep(config.success_interval).await;
+                        }
+                        Err(err) => {
+                            tracing::error!(?err, "fetch mailbox error");
+                            tokio::time::sleep(config.error_interval).await;
                         }
                     }
                 }
@@ -126,57 +127,64 @@ where
         Ok(r)
     }
 
-    async fn sync_topic(
+    async fn sync_topics(
         &self,
-        topic: LogId,
+        topics: impl Iterator<Item = LogId>,
         mailbox: Arc<dyn MailboxClient>,
     ) -> anyhow::Result<()> {
-        let Some(sender) = self.topics.lock().await.get(&topic).cloned() else {
-            tracing::warn!(topic = ?topic.renamed(), "no sender for topic");
-            return Ok(());
-        };
-
-        let heights = self.store.get_log_heights(&topic).await?;
-
-        let FetchResponse { ops, missing } = mailbox.fetch(topic, &heights).await?;
-
-        tracing::info!(
-            ops = ops.len(),
-            missing = missing.len(),
-            heights = ?heights.renamed(),
-            "fetched operations"
-        );
-
-        for op in ops {
-            sender.send(op.into()).await?;
+        let mut request = BTreeMap::new();
+        for topic in topics {
+            let heights =
+                BTreeMap::from_iter(self.store.get_log_heights(&topic).await?.into_iter());
+            request.insert(topic, heights);
         }
 
+        let FetchResponse(response) = mailbox.fetch(FetchRequest(request)).await?;
+
         let mut ops_to_publish = vec![];
-        for (author, seqs) in missing {
-            let Some(lowest) = seqs.iter().min() else {
-                continue;
-            };
-            let Some(log) = self
-                .store
-                .get_log(&author, &topic, Some(*lowest))
-                .await
-                .map_err(|err| anyhow::anyhow!("failed to get log for {topic:?}: {err}"))?
-            else {
+        for (topic, response) in response.into_iter() {
+            let FetchTopicResponse { ops, missing } = response;
+            tracing::info!(
+                ops = ops.len(),
+                missing = missing.len(),
+                "fetched operations"
+            );
+
+            let Some(sender) = self.topics.lock().await.get(&topic).cloned() else {
+                tracing::warn!(topic = ?topic.renamed(), "no sender for topic");
                 continue;
             };
 
-            for seq in seqs {
-                if let Some((header, body)) = log.get(seq as usize) {
-                    let op = MailboxOperation {
-                        header: header.clone(),
-                        body: body.clone(),
-                    };
-                    ops_to_publish.push(op);
+            for op in ops {
+                sender.send(op.into()).await?;
+            }
+
+            for (author, seqs) in missing {
+                let Some(lowest) = seqs.iter().min() else {
+                    continue;
+                };
+                let Some(log) = self
+                    .store
+                    .get_log(&author, &topic, Some(*lowest))
+                    .await
+                    .map_err(|err| anyhow::anyhow!("failed to get log for {topic:?}: {err}"))?
+                else {
+                    continue;
+                };
+
+                for seq in seqs {
+                    if let Some((header, body)) = log.get(seq as usize) {
+                        let op = MailboxOperation {
+                            header: header.clone(),
+                            body: body.clone(),
+                        };
+                        ops_to_publish.push(op);
+                    }
                 }
             }
         }
 
-        mailbox.publish(topic, ops_to_publish).await?;
+        mailbox.publish(ops_to_publish).await?;
 
         Ok(())
     }

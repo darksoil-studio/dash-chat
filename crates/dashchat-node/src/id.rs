@@ -1,5 +1,4 @@
 use derive_more::{Deref, From};
-use named_id::Rename;
 use named_id::RenameAll;
 use p2panda_core::PublicKey;
 use p2panda_spaces::ActorId;

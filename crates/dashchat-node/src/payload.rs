@@ -8,7 +8,7 @@ use crate::contact::QrCode;
 use crate::topic::LogId;
 use crate::{AsBody, Cbor, ChatMessage, ChatMessageContent, Topic};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Extensions {
     pub log_id: LogId,
 }
@@ -26,7 +26,7 @@ pub struct Profile {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
-#[serde(tag = "type", content="payload")]
+#[serde(tag = "type", content = "payload")]
 pub enum AnnouncementsPayload {
     SetProfile(Profile),
 }
@@ -60,7 +60,7 @@ pub enum DeviceGroupPayload {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
-#[serde(tag = "type", content="payload")]
+#[serde(tag = "type", content = "payload")]
 pub enum Payload {
     /// Pushing data out to my contacts.
     Announcements(AnnouncementsPayload),

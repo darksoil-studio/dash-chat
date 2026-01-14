@@ -76,12 +76,13 @@ impl<Op: MailboxItem> MemMailbox<Op> {
 
 #[async_trait::async_trait]
 impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
-    async fn publish(&self, topic: LogId, ops: Vec<Op>) -> Result<(), anyhow::Error> {
+    async fn publish(&self, ops: Vec<Op>) -> Result<(), anyhow::Error> {
         let mut store = self.mailbox.ops.write().await;
         // ops.entry(topic).or_insert_with(Vec::new).push(op.into());
         for op in ops {
             let author = op.author();
             let seq_num = op.seq_num();
+            let topic = op.topic();
             tracing::info!(topic = ?topic.renamed(), hash = ?op.hash().renamed(), "publishing mailbox operation");
             store
                 .entry(topic)
@@ -93,71 +94,71 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
         Ok(())
     }
 
-    async fn fetch(
-        &self,
-        topic: LogId,
-        min_heights: &[(Op::Author, u64)],
-    ) -> anyhow::Result<FetchResponse<Op>> {
+    async fn fetch(&self, request: FetchRequest<Op>) -> anyhow::Result<FetchResponse<Op>> {
         let mailbox_ops = self.mailbox.ops.read().await;
-        let provided_authors: HashMap<Op::Author, u64> =
-            HashMap::from_iter(min_heights.into_iter().cloned());
 
-        let _empty_map = HashMap::new();
-        let mailbox_authors = mailbox_ops.get(&topic).unwrap_or(&_empty_map);
+        let mut response = BTreeMap::new();
 
-        let mut new = vec![];
-        let mut missing = HashMap::new();
-        let all_authors = mailbox_authors
-            .keys()
-            .cloned()
-            .chain(provided_authors.keys().cloned())
-            .collect::<HashSet<_>>();
-        for author in all_authors {
-            let mut gaps = vec![];
-            let mailbox_slots = mailbox_authors.get(&author).cloned();
-            let provided_height = provided_authors.get(&author).cloned();
+        for (topic, provided_authors) in request.0.into_iter() {
+            let _empty_map = HashMap::new();
+            let mailbox_authors = mailbox_ops.get(&topic).unwrap_or(&_empty_map);
 
-            match (mailbox_slots, provided_height) {
-                (Some(mailbox_slots), Some(provided_height)) => {
-                    let last_seq = mailbox_slots
-                        .last_key_value()
-                        .map(|(seq, _)| *seq)
-                        .unwrap_or(0);
+            let mut new = vec![];
+            let mut missing = HashMap::new();
+            let all_authors = mailbox_authors
+                .keys()
+                .cloned()
+                .chain(provided_authors.keys().cloned())
+                .collect::<HashSet<_>>();
+            for author in all_authors {
+                let mut gaps = vec![];
+                let mailbox_slots = mailbox_authors.get(&author).cloned();
+                let provided_height = provided_authors.get(&author).cloned();
 
-                    let max = provided_height.max(last_seq);
-                    for i in 0..=max {
-                        if let Some(op) = mailbox_slots.get(&i) {
-                            if i > provided_height {
-                                new.push(op.clone());
+                match (mailbox_slots, provided_height) {
+                    (Some(mailbox_slots), Some(provided_height)) => {
+                        let last_seq = mailbox_slots
+                            .last_key_value()
+                            .map(|(seq, _)| *seq)
+                            .unwrap_or(0);
+
+                        let max = provided_height.max(last_seq);
+                        for i in 0..=max {
+                            if let Some(op) = mailbox_slots.get(&i) {
+                                if i > provided_height {
+                                    new.push(op.clone());
+                                }
+                            } else {
+                                gaps.push(i);
                             }
-                        } else {
-                            gaps.push(i);
                         }
                     }
+                    (Some(mailbox_slots), None) => {
+                        new.extend(mailbox_slots.values().cloned());
+                    }
+                    (None, Some(provided_height)) => {
+                        gaps.extend(0..=provided_height);
+                    }
+                    (None, None) => {
+                        // empty mailbox, empty node store, return nothing...
+                    }
                 }
-                (Some(mailbox_slots), None) => {
-                    new.extend(mailbox_slots.values().cloned());
-                }
-                (None, Some(provided_height)) => {
-                    gaps.extend(0..=provided_height);
-                }
-                (None, None) => {
-                    // empty mailbox, empty node store, return nothing...
+                if !gaps.is_empty() {
+                    missing.insert(author, gaps);
                 }
             }
-            if !gaps.is_empty() {
-                missing.insert(author, gaps);
-            }
+
+            tracing::info!(
+                topic = ?topic.renamed(),
+                num = new.len(),
+                hashes = ?new.iter().map(|op: &Op| op.hash().renamed()).collect::<Vec<_>>(),
+                "fetching mailbox operations"
+            );
+
+            response.insert(topic, FetchTopicResponse { ops: new, missing });
         }
 
-        tracing::info!(
-            topic = ?topic.renamed(),
-            num = new.len(),
-            hashes = ?new.iter().map(|op: &Op| op.hash().renamed()).collect::<Vec<_>>(),
-            "fetching mailbox operations"
-        );
-
-        Ok(FetchResponse { ops: new, missing })
+        Ok(FetchResponse(response))
     }
 }
 
@@ -172,6 +173,7 @@ mod tests {
     #[derive(Clone, PartialEq, Eq, Serialize, Deserialize, derive_more::Debug)]
     #[debug("Msg({author} {seq})")]
     struct Msg {
+        topic: LogId,
         author: char,
         seq: u64,
     }
@@ -191,14 +193,36 @@ mod tests {
         fn seq_num(&self) -> u64 {
             self.seq
         }
+
+        fn topic(&self) -> LogId {
+            self.topic
+        }
     }
 
-    fn m(author: char, seq: u64) -> Msg {
-        Msg { author, seq }
+    async fn fetch(
+        client: &MemMailboxClient<Msg>,
+        topic: LogId,
+        authors: &[(char, u64)],
+    ) -> anyhow::Result<FetchTopicResponse<Msg>> {
+        let FetchResponse(mut r) = client.fetch(r(topic, authors)).await?;
+        let rr = r.remove(&topic).unwrap();
+        assert!(r.is_empty());
+        Ok(rr)
     }
 
-    fn mm(author: char, r: std::ops::Range<u64>) -> Vec<Msg> {
-        r.map(|i| m(author, i)).collect()
+    fn r(topic: LogId, authors: &[(char, u64)]) -> FetchRequest<Msg> {
+        FetchRequest(BTreeMap::from([(
+            topic,
+            BTreeMap::from_iter(authors.into_iter().cloned()),
+        )]))
+    }
+
+    fn m(topic: LogId, author: char, seq: u64) -> Msg {
+        Msg { topic, author, seq }
+    }
+
+    fn mm(topic: LogId, author: char, r: std::ops::Range<u64>) -> Vec<Msg> {
+        r.map(|i| m(topic, author, i)).collect()
     }
 
     #[tokio::test]
@@ -210,19 +234,19 @@ mod tests {
         let t = Topic::random().into();
 
         assert_eq!(
-            client.fetch(t, &[(a, 1)]).await.unwrap(),
-            FetchResponse {
+            fetch(&client, t, &[(a, 1)]).await.unwrap(),
+            FetchTopicResponse {
                 ops: vec![],
                 missing: HashMap::from([(a, vec![0, 1])]),
             }
         );
 
-        client.publish(t, mm(a, 0..2)).await.unwrap();
+        client.publish(mm(t, a, 0..2)).await.unwrap();
 
         assert_eq!(
-            client.fetch(t, &[]).await.unwrap(),
-            FetchResponse {
-                ops: mm(a, 0..2),
+            fetch(&client, t, &[]).await.unwrap(),
+            FetchTopicResponse {
+                ops: mm(t, a, 0..2),
                 missing: HashMap::new(),
             }
         );
@@ -240,73 +264,73 @@ mod tests {
             Topic::random().into(),
         ];
 
-        let empty = FetchResponse {
+        let empty = FetchTopicResponse {
             ops: vec![],
             missing: HashMap::new(),
         };
-        assert_eq!(client.fetch(tt[0], &[]).await.unwrap(), empty);
-        assert_eq!(client.fetch(tt[1], &[]).await.unwrap(), empty);
-        assert_eq!(client.fetch(tt[2], &[]).await.unwrap(), empty);
+        assert_eq!(fetch(&client, tt[0], &[]).await.unwrap(), empty);
+        assert_eq!(fetch(&client, tt[1], &[]).await.unwrap(), empty);
+        assert_eq!(fetch(&client, tt[2], &[]).await.unwrap(), empty);
 
         // only the first half
-        client.publish(tt[0], mm(a, 0..2)).await.unwrap();
+        client.publish(mm(tt[0], a, 0..2)).await.unwrap();
         // only the last half
-        client.publish(tt[1], mm(a, 2..4)).await.unwrap();
+        client.publish(mm(tt[1], a, 2..4)).await.unwrap();
         // both halves
-        client.publish(tt[2], mm(a, 0..4)).await.unwrap();
+        client.publish(mm(tt[2], a, 0..4)).await.unwrap();
 
         assert_eq!(
-            client.fetch(tt[0], &[(a, 3)]).await.unwrap(),
-            FetchResponse {
+            fetch(&client, tt[0], &[(a, 3)]).await.unwrap(),
+            FetchTopicResponse {
                 ops: vec![],
                 missing: HashMap::from([(a, vec![2, 3])]),
             }
         );
         assert_eq!(
-            client.fetch(tt[1], &[(a, 3)]).await.unwrap(),
-            FetchResponse {
+            fetch(&client, tt[1], &[(a, 3)]).await.unwrap(),
+            FetchTopicResponse {
                 ops: vec![],
                 missing: HashMap::from([(a, vec![0, 1])]),
             }
         );
-        assert_eq!(client.fetch(tt[2], &[(a, 3)]).await.unwrap(), empty);
+        assert_eq!(fetch(&client, tt[2], &[(a, 3)]).await.unwrap(), empty);
 
         assert_eq!(
-            client.fetch(tt[0], &[(a, 4)]).await.unwrap(),
-            FetchResponse {
+            fetch(&client, tt[0], &[(a, 4)]).await.unwrap(),
+            FetchTopicResponse {
                 ops: vec![],
                 missing: HashMap::from([(a, vec![2, 3, 4])]),
             }
         );
         assert_eq!(
-            client.fetch(tt[1], &[(a, 4)]).await.unwrap(),
-            FetchResponse {
+            fetch(&client, tt[1], &[(a, 4)]).await.unwrap(),
+            FetchTopicResponse {
                 ops: vec![],
                 missing: HashMap::from([(a, vec![0, 1, 4])]),
             }
         );
         assert_eq!(
-            client.fetch(tt[2], &[(a, 4)]).await.unwrap(),
-            FetchResponse {
+            fetch(&client, tt[2], &[(a, 4)]).await.unwrap(),
+            FetchTopicResponse {
                 ops: vec![],
                 missing: HashMap::from([(a, vec![4])]),
             }
         );
 
-        client.publish(tt[0], vec![m(a, 4)]).await.unwrap();
-        client.publish(tt[1], vec![m(a, 4)]).await.unwrap();
-        client.publish(tt[2], vec![m(a, 4)]).await.unwrap();
+        client.publish(vec![m(tt[0], a, 4)]).await.unwrap();
+        client.publish(vec![m(tt[1], a, 4)]).await.unwrap();
+        client.publish(vec![m(tt[2], a, 4)]).await.unwrap();
         assert_eq!(
-            client.fetch(tt[0], &[(a, 3)]).await.unwrap(),
-            FetchResponse {
-                ops: vec![m(a, 4)],
+            fetch(&client, tt[0], &[(a, 3)]).await.unwrap(),
+            FetchTopicResponse {
+                ops: vec![m(tt[0], a, 4)],
                 missing: HashMap::from([(a, vec![2, 3])]),
             }
         );
         assert_eq!(
-            client.fetch(tt[1], &[(a, 3)]).await.unwrap(),
-            FetchResponse {
-                ops: vec![m(a, 4)],
+            fetch(&client, tt[1], &[(a, 3)]).await.unwrap(),
+            FetchTopicResponse {
+                ops: vec![m(tt[1], a, 4)],
                 missing: HashMap::from([(a, vec![0, 1])]),
             }
         );
