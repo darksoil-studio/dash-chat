@@ -122,43 +122,42 @@ fn compute_new_watermark(
     current_watermark: Option<SequenceNumber>,
     new_sequences: &BTreeSet<SequenceNumber>,
 ) -> Result<Option<SequenceNumber>, String> {
-    let mut watermark = match current_watermark {
+    // watermark = None means we need to check from seq 0
+    // watermark = Some(n) means seqs 0..=n are confirmed present
+    let mut watermark: Option<SequenceNumber> = match current_watermark {
         Some(current_watermark) => {
             // Check if new sequences or existing blobs don't extend current watermark
-            // No extension from new sequences, but check if existing blobs can extend
             if !new_sequences.contains(&(current_watermark + 1))
                 && !blob_exists(blobs_table, topic_id, log_id, current_watermark + 1)?
             {
                 return Ok(Some(current_watermark)); // No extension possible
             }
-            current_watermark
+            Some(current_watermark)
         }
         None => {
             // No watermark yet - need sequence 0 to start
             if !new_sequences.contains(&0) && !blob_exists(blobs_table, topic_id, log_id, 0)? {
                 return Ok(None); // Can't establish watermark without seq 0
             }
-            // Start from "before 0" so first iteration checks seq 0
-            // We use wrapping subtraction to get u64::MAX, then first check is for 0
-            u64::MAX
+            None // Start from None, first iteration will check seq 0
         }
     };
 
     // Extend watermark by checking consecutive sequences
     loop {
-        let next_seq = watermark.wrapping_add(1);
+        let next_seq = watermark.map_or(0, |w| w + 1);
 
         // First check new sequences (cheaper), then existing blobs
         if new_sequences.contains(&next_seq)
             || blob_exists(blobs_table, topic_id, log_id, next_seq)?
         {
-            watermark = next_seq;
+            watermark = Some(next_seq);
         } else {
             break;
         }
     }
 
-    Ok(Some(watermark))
+    Ok(watermark)
 }
 
 /// Checks if a blob exists for the given topic:log:seq
