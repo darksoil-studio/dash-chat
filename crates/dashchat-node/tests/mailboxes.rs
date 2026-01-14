@@ -2,12 +2,14 @@
 
 use std::time::Duration;
 
-use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
-
-use named_id::*;
+use dashchat_node::{
+    mailbox::{MailboxClient, mem::MemMailbox, toy::ToyMailboxClient},
+    testing::*,
+    *,
+};
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_mailbox_late_join() {
+async fn test_mailbox_late_join_mem() {
     dashchat_node::testing::setup_tracing(
         &"
     dashchat=info,
@@ -25,6 +27,33 @@ async fn test_mailbox_late_join() {
     );
 
     let mb = MemMailbox::new();
+    mailbox_late_join(mb.client(), mb.client()).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_mailbox_late_join_toy() {
+    dashchat_node::testing::setup_tracing(
+        &"
+    dashchat=info,
+    p2panda_stream=warn,
+    p2panda_auth=warn,
+    p2panda_encryption=warn,
+    p2panda_spaces=warn,
+    named_id=warn
+    "
+        .split(',')
+        .map(|s| s.trim())
+        .collect::<Vec<_>>()
+        .join(","),
+        true,
+    );
+
+    let alice_mailbox: ToyMailboxClient = todo!();
+    let bobbi_mailbox: ToyMailboxClient = todo!();
+    mailbox_late_join(alice_mailbox, bobbi_mailbox).await;
+}
+
+async fn mailbox_late_join(alice_mailbox: impl MailboxClient, bobbi_mailbox: impl MailboxClient) {
     let mut config = NodeConfig::testing();
     config.mailboxes_config.success_interval = Duration::from_millis(1000);
     config.mailboxes_config.error_interval = Duration::from_millis(1000);
@@ -39,8 +68,8 @@ async fn test_mailbox_late_join() {
         .unwrap();
     bobbi.add_contact(qr).await.unwrap();
 
-    bobbi.add_mailbox(mb.client()).await;
-    alice.add_mailbox(mb.client()).await;
+    alice.add_mailbox_client(alice_mailbox).await;
+    bobbi.add_mailbox_client(bobbi_mailbox).await;
 
     alice.behavior().accept_next_contact().await.unwrap();
 
@@ -98,19 +127,19 @@ async fn test_multiple_mailboxes_group_pivot() {
     let mb2 = MemMailbox::new();
     let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
         .await
-        .add_mailbox(mb1.client())
+        .add_mailbox_client(mb1.client())
         .await;
 
     let bobbi = TestNode::new(NodeConfig::testing(), Some("bobbi"))
         .await
-        .add_mailbox(mb1.client())
+        .add_mailbox_client(mb1.client())
         .await
-        .add_mailbox(mb2.client())
+        .add_mailbox_client(mb2.client())
         .await;
 
     let carol = TestNode::new(NodeConfig::testing(), Some("carol"))
         .await
-        .add_mailbox(mb2.client())
+        .add_mailbox_client(mb2.client())
         .await;
 
     alice

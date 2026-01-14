@@ -231,8 +231,8 @@ mod tests {
         alice.send_message(chat, "Hello".into()).await.unwrap();
 
         println!("=== adding mailboxes ===");
-        bobbi.add_mailbox(mb.client()).await;
-        alice.add_mailbox(mb.client()).await;
+        bobbi.add_mailbox_client(mb.client()).await;
+        alice.add_mailbox_client(mb.client()).await;
 
         bobbi.initialize_topic(chat, false).await.unwrap();
         println!("=== added mailboxes ===");

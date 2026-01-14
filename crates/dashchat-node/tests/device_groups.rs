@@ -15,11 +15,11 @@ async fn device_group_solo() {
     let mailbox = MemMailbox::new();
     let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
         .await
-        .add_mailbox(mailbox.client())
+        .add_mailbox_client(mailbox.client())
         .await;
     let alicia = TestNode::new(NodeConfig::testing(), Some("alicia"))
         .await
-        .add_mailbox(mailbox.client())
+        .add_mailbox_client(mailbox.client())
         .await;
 
     println!("nodes:");

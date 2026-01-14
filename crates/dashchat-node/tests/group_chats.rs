@@ -44,11 +44,11 @@ async fn test_direct_chat() {
     let mailbox = MemMailbox::new();
     let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
         .await
-        .add_mailbox(mailbox.client())
+        .add_mailbox_client(mailbox.client())
         .await;
     let bobbi = TestNode::new(NodeConfig::testing(), Some("bobbi"))
         .await
-        .add_mailbox(mailbox.client())
+        .add_mailbox_client(mailbox.client())
         .await;
 
     #[cfg(feature = "p2p")]

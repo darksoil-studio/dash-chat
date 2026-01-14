@@ -39,7 +39,7 @@ impl TestNode {
         }
     }
 
-    pub async fn add_mailbox(&self, mailbox: impl MailboxClient) -> Self {
+    pub async fn add_mailbox_client(&self, mailbox: impl MailboxClient) -> Self {
         self.node.mailboxes.add(mailbox).await;
         self.clone()
     }
@@ -115,7 +115,7 @@ impl<const N: usize> TestCluster<N> {
         .unwrap_or_else(|_| panic!("expected {} nodes", N));
 
         for n in nodes.iter() {
-            n.add_mailbox(mailbox.client()).await;
+            n.add_mailbox_client(mailbox.client()).await;
         }
 
         Self { nodes, config }

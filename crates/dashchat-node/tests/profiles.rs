@@ -17,11 +17,11 @@ async fn test_profiles() {
     let mailbox = MemMailbox::new();
     let alice = TestNode::new(NodeConfig::testing(), Some("alice--"))
         .await
-        .add_mailbox(mailbox.client())
+        .add_mailbox_client(mailbox.client())
         .await;
     let bobbi = TestNode::new(NodeConfig::testing(), Some("--bobbi"))
         .await
-        .add_mailbox(mailbox.client())
+        .add_mailbox_client(mailbox.client())
         .await;
 
     println!("alice: {:?}", alice.device_id().short());

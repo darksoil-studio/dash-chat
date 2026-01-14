@@ -1,5 +1,6 @@
 pub mod manager;
 pub mod mem;
+pub mod toy;
 
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
