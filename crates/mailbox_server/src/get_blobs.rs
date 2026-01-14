@@ -1,4 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
+use redb::Database;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -26,33 +27,31 @@ pub async fn get_blobs_for_topics(
     State(state): State<AppState>,
     Json(payload): Json<GetBlobsRequest>,
 ) -> Result<Json<GetBlobsResponse>, (StatusCode, String)> {
+    get_blobs_for_topics_inner(&state.db, &payload).map(Json).map_err(|e| {
+        tracing::error!("{}", e);
+        (StatusCode::INTERNAL_SERVER_ERROR, e)
+    })
+}
+
+fn get_blobs_for_topics_inner(
+    db: &Database,
+    request: &GetBlobsRequest,
+) -> Result<GetBlobsResponse, String> {
     let mut blobs_by_topic: BTreeMap<TopicId, GetBlobsForTopicResponse> = BTreeMap::new();
 
-    let read_txn = state.db.begin_read().map_err(|e| {
-        tracing::error!("Failed to begin read transaction: {}", e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to begin transaction: {}", e),
-        )
-    })?;
+    let read_txn = db
+        .begin_read()
+        .map_err(|e| format!("Failed to begin transaction: {}", e))?;
 
-    let blobs_table = read_txn.open_table(BLOBS_TABLE).map_err(|e| {
-        tracing::error!("Failed to open blobs table: {}", e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to open blobs table: {}", e),
-        )
-    })?;
+    let blobs_table = read_txn
+        .open_table(BLOBS_TABLE)
+        .map_err(|e| format!("Failed to open blobs table: {}", e))?;
 
-    let watermarks_table = read_txn.open_table(WATERMARKS_TABLE).map_err(|e| {
-        tracing::error!("Failed to open watermarks table: {}", e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to open watermarks table: {}", e),
-        )
-    })?;
+    let watermarks_table = read_txn
+        .open_table(WATERMARKS_TABLE)
+        .map_err(|e| format!("Failed to open watermarks table: {}", e))?;
 
-    for (topic_id, requested_logs) in &payload.topics {
+    for (topic_id, requested_logs) in &request.topics {
         let mut topic_logs: BTreeMap<LogId, BTreeMap<SequenceNumber, Blob>> = BTreeMap::new();
         // Track which sequences we have stored for each requested log
         // (used to avoid reporting as missing sequences we actually have)
@@ -65,55 +64,27 @@ pub async fn get_blobs_for_topics(
         range_end.push(char::MAX);
         let range_end_str = range_end.as_str();
 
-        for entry in blobs_table.range(range_start..range_end_str).map_err(|e| {
-            tracing::error!("Failed to create range iterator: {}", e);
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to create range iterator: {}", e),
-            )
-        })? {
-            let (key, value) = entry.map_err(|e| {
-                tracing::error!("Failed to read entry: {}", e);
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Failed to read entry: {}", e),
-                )
-            })?;
+        for entry in blobs_table
+            .range(range_start..range_end_str)
+            .map_err(|e| format!("Failed to create range iterator: {}", e))?
+        {
+            let (key, value) = entry.map_err(|e| format!("Failed to read entry: {}", e))?;
 
             let key_str: &str = key.value();
             // Key format: "topic_id:log_id:sequence_number:uuid_v7"
             let parts: Vec<&str> = key_str.split(':').collect();
             if parts.len() < 4 {
-                tracing::error!(
+                return Err(format!(
                     "Invalid database key format: {} (expected 4 parts, got {})",
                     key_str,
                     parts.len()
-                );
-                return Err((
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!(
-                        "Invalid database key format: {} (expected 4 parts, got {})",
-                        key_str,
-                        parts.len()
-                    ),
                 ));
             }
 
             let log_id = parts[1].to_string();
-            let seq_num = parts[2].parse::<SequenceNumber>().map_err(|e| {
-                tracing::error!(
-                    "Failed to parse sequence number from key {}: {}",
-                    key_str,
-                    e
-                );
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!(
-                        "Failed to parse sequence number from key {}: {}",
-                        key_str, e
-                    ),
-                )
-            })?;
+            let seq_num = parts[2]
+                .parse::<SequenceNumber>()
+                .map_err(|e| format!("Failed to parse sequence number from key {}: {}", key_str, e))?;
 
             // Track sequences we have for requested logs (for missing calculation)
             if requested_logs.contains_key(&log_id) {
@@ -148,13 +119,7 @@ pub async fn get_blobs_for_topics(
             // Get watermark for this topic:log
             let server_watermark = watermarks_table
                 .get(topic_log_key.as_str())
-                .map_err(|e| {
-                    tracing::error!("Failed to read watermark: {}", e);
-                    (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        format!("Failed to read watermark: {}", e),
-                    )
-                })?
+                .map_err(|e| format!("Failed to read watermark: {}", e))?
                 .map(|v| v.value());
 
             // Get sequences we have stored for this log
@@ -207,6 +172,6 @@ pub async fn get_blobs_for_topics(
         );
     }
 
-    tracing::debug!("Retrieved blobs for {} topics", payload.topics.len());
-    Ok(Json(GetBlobsResponse { blobs_by_topic }))
+    tracing::debug!("Retrieved blobs for {} topics", request.topics.len());
+    Ok(GetBlobsResponse { blobs_by_topic })
 }

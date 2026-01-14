@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
-use redb::ReadableTable;
+use redb::{Database, ReadableTable};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -14,47 +14,37 @@ pub async fn store_blobs(
     State(state): State<AppState>,
     Json(payload): Json<StoreBlobsRequest>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let write_txn = state.db.begin_write().map_err(|e| {
-        tracing::error!("Failed to begin write transaction: {}", e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to begin transaction: {}", e),
-        )
+    store_blobs_inner(&state.db, &payload).map_err(|e| {
+        tracing::error!("{}", e);
+        (StatusCode::INTERNAL_SERVER_ERROR, e)
     })?;
+    Ok(StatusCode::CREATED)
+}
+
+fn store_blobs_inner(db: &Database, request: &StoreBlobsRequest) -> Result<(), String> {
+    let write_txn = db
+        .begin_write()
+        .map_err(|e| format!("Failed to begin transaction: {}", e))?;
 
     let mut blob_count = 0;
 
     {
-        let mut blobs_table = write_txn.open_table(BLOBS_TABLE).map_err(|e| {
-            tracing::error!("Failed to open blobs table: {}", e);
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to open blobs table: {}", e),
-            )
-        })?;
+        let mut blobs_table = write_txn
+            .open_table(BLOBS_TABLE)
+            .map_err(|e| format!("Failed to open blobs table: {}", e))?;
 
-        let mut watermarks_table = write_txn.open_table(WATERMARKS_TABLE).map_err(|e| {
-            tracing::error!("Failed to open watermarks table: {}", e);
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to open watermarks table: {}", e),
-            )
-        })?;
+        let mut watermarks_table = write_txn
+            .open_table(WATERMARKS_TABLE)
+            .map_err(|e| format!("Failed to open watermarks table: {}", e))?;
 
-        for (topic_id, logs) in &payload.blobs {
+        for (topic_id, logs) in &request.blobs {
             for (log_id, sequences) in logs {
                 let topic_log_key = format!("{}:{}", topic_id, log_id);
 
                 // Get current watermark for this topic:log
                 let current_watermark = watermarks_table
                     .get(topic_log_key.as_str())
-                    .map_err(|e| {
-                        tracing::error!("Failed to read watermark: {}", e);
-                        (
-                            StatusCode::INTERNAL_SERVER_ERROR,
-                            format!("Failed to read watermark: {}", e),
-                        )
-                    })?
+                    .map_err(|e| format!("Failed to read watermark: {}", e))?
                     .map(|v| v.value());
 
                 // Collect sequence numbers being stored (BTreeMap is already sorted)
@@ -72,13 +62,7 @@ pub async fn store_blobs(
 
                     blobs_table
                         .insert(key.as_str(), blob.as_slice())
-                        .map_err(|e| {
-                            tracing::error!("Failed to insert blob: {}", e);
-                            (
-                                StatusCode::INTERNAL_SERVER_ERROR,
-                                format!("Failed to insert blob: {}", e),
-                            )
-                        })?;
+                        .map_err(|e| format!("Failed to insert blob: {}", e))?;
                     stored_seqs.insert(*seq_num);
                     blob_count += 1;
                 }
@@ -97,13 +81,7 @@ pub async fn store_blobs(
                     if current_watermark != Some(wm) {
                         watermarks_table
                             .insert(topic_log_key.as_str(), wm)
-                            .map_err(|e| {
-                                tracing::error!("Failed to update watermark: {}", e);
-                                (
-                                    StatusCode::INTERNAL_SERVER_ERROR,
-                                    format!("Failed to update watermark: {}", e),
-                                )
-                            })?;
+                            .map_err(|e| format!("Failed to update watermark: {}", e))?;
                         tracing::debug!(
                             "Updated watermark for {}:{} from {:?} to {}",
                             topic_id,
@@ -117,16 +95,12 @@ pub async fn store_blobs(
         }
     }
 
-    write_txn.commit().map_err(|e| {
-        tracing::error!("Failed to commit transaction: {}", e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to commit transaction: {}", e),
-        )
-    })?;
+    write_txn
+        .commit()
+        .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
     tracing::debug!("Stored {} blobs", blob_count);
-    Ok(StatusCode::CREATED)
+    Ok(())
 }
 
 /// Computes the new watermark after storing blobs.
@@ -137,7 +111,7 @@ fn compute_new_watermark(
     log_id: &str,
     current_watermark: Option<SequenceNumber>,
     new_sequences: &BTreeSet<SequenceNumber>,
-) -> Result<Option<SequenceNumber>, (StatusCode, String)> {
+) -> Result<Option<SequenceNumber>, String> {
     let mut watermark = match current_watermark {
         Some(current_watermark) => {
             // Check if new sequences or existing blobs don't extend current watermark
@@ -183,20 +157,16 @@ fn blob_exists(
     topic_id: &str,
     log_id: &str,
     seq_num: SequenceNumber,
-) -> Result<bool, (StatusCode, String)> {
+) -> Result<bool, String> {
     // Use range query with prefix "topic_id:log_id:seq_num:"
     let prefix = format!("{}:{}:{}:", topic_id, log_id, seq_num);
     let range_start = prefix.as_str();
     let mut range_end = prefix.clone();
     range_end.push(char::MAX);
 
-    let mut iter = table.range(range_start..range_end.as_str()).map_err(|e| {
-        tracing::error!("Failed to create range iterator: {}", e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to create range iterator: {}", e),
-        )
-    })?;
+    let mut iter = table
+        .range(range_start..range_end.as_str())
+        .map_err(|e| format!("Failed to create range iterator: {}", e))?;
 
     Ok(iter.next().is_some())
 }

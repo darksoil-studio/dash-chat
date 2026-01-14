@@ -30,7 +30,7 @@ async fn stress_test_concurrent_writes() {
     let (server, _temp_file) = create_test_server();
     let server = Arc::new(server);
 
-    let num_concurrent_writes = 1000;
+    let num_concurrent_writes = 10000;
     let num_topics = 10;
 
     let start = Instant::now();
