@@ -8,6 +8,13 @@ Dash Chat is an end-to-end encrypted messenger built with Svelte 5 (frontend) an
 
 **Current Status**: Pre-alpha, being rebuilt on top of p2panda.
 
+## General Coding Style
+
+Please read this coding style carefully and take it into account when planning or coding:
+
+- Try to remain as simple as possible with your implementations.
+- Try to reuse types and functions across the project rather than reimplement them.
+
 ## Development Environment
 
 ### Prerequisites

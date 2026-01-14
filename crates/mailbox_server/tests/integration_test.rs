@@ -1,28 +1,5 @@
-use axum_test::TestServer;
-use mailbox_server::GetBlobsResponse;
-use redb::Database;
+use mailbox_server::{test_utils::create_test_server, GetBlobsResponse};
 use serde_json::json;
-use tempfile::NamedTempFile;
-
-fn create_test_db() -> (Database, NamedTempFile) {
-    let temp_file = NamedTempFile::new().unwrap();
-    let db = Database::create(temp_file.path()).unwrap();
-
-    let write_txn = db.begin_write().unwrap();
-    {
-        let _table = write_txn.open_table(mailbox_server::BLOBS_TABLE).unwrap();
-    }
-    write_txn.commit().unwrap();
-
-    (db, temp_file)
-}
-
-fn create_test_server() -> (TestServer, NamedTempFile) {
-    let (db, temp_file) = create_test_db();
-    let app = mailbox_server::create_app(db);
-    let server = TestServer::new(app).unwrap();
-    (server, temp_file)
-}
 
 #[tokio::test]
 async fn test_health_check() {
@@ -121,9 +98,9 @@ async fn test_store_and_retrieve_multiple_messages_same_topic() {
     assert_eq!(log_sequences.len(), 3);
     assert!(topic_response.missing.is_empty());
 
-    assert_eq!(log_sequences[&(0 as u32)].as_ref(), b"First message");
-    assert_eq!(log_sequences[&(1 as u32)].as_ref(), b"Second message");
-    assert_eq!(log_sequences[&(2 as u32)].as_ref(), b"Third message");
+    assert_eq!(log_sequences[&0].as_ref(), b"First message");
+    assert_eq!(log_sequences[&1].as_ref(), b"Second message");
+    assert_eq!(log_sequences[&2].as_ref(), b"Third message");
 }
 
 #[tokio::test]

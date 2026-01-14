@@ -24,7 +24,17 @@ base64 = "0.22"
 uuid = { version = "1.0", features = ["v7"] }
 clap = { version = "4.5", features = ["derive"] }
 
+[features]
+test_utils = ["dep:axum-test", "dep:tempfile"]
+
+[dependencies.axum-test]
+version = "16.4"
+optional = true
+
+[dependencies.tempfile]
+version = "3.14"
+optional = true
+
 [dev-dependencies]
-axum-test = "16.4"
-tempfile = "3.14"
+mailbox_server = { path = ".", features = ["test_utils"] }
 futures = "0.3"
