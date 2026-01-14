@@ -5,6 +5,7 @@
 
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import {
@@ -94,7 +95,7 @@
 		try {
 			await groupChatStore.client.leaveGroup();
 			dialogType = null;
-			window.location.href = '/';
+			goto('/');
 		} catch (e) {
 			console.error(e);
 		}
@@ -106,7 +107,7 @@
 		try {
 			await groupChatStore.client.deleteGroup();
 			dialogType = null;
-			window.location.href = '/';
+			goto('/');
 		} catch (e) {
 			console.error(e);
 		}
@@ -118,7 +119,7 @@
 	{#await $info then info}
 		<Navbar transparent={true}>
 			{#snippet left()}
-				<NavbarBackLink onClick={() => (window.location.href = `/group-chat/${chatId}`)} />
+				<NavbarBackLink onClick={() => goto(`/group-chat/${chatId}`)} />
 			{/snippet}
 
 			{#snippet title()}

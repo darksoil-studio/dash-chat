@@ -3,6 +3,7 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ChatsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { mdiAccount } from '@mdi/js';
 	import { wrapPathInSvg } from '$lib/utils/icon';
@@ -37,7 +38,7 @@
 		<Navbar transparent={true}>
 			{#snippet left()}
 				<NavbarBackLink
-					onClick={() => (window.location.href = `/direct-messages/${chatId}`)}
+					onClick={() => goto(`/direct-messages/${chatId}`)}
 				/>
 			{/snippet}
 

@@ -3,6 +3,7 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { mdiPencil } from '@mdi/js';
 	import { wrapPathInSvg } from '$lib/utils/icon';
@@ -28,7 +29,7 @@
 <Page>
 	<Navbar title={m.settings()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => (window.location.href = '/')} />
+			<NavbarBackLink onClick={() => goto('/')} />
 		{/snippet}
 	</Navbar>
 

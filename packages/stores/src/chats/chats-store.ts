@@ -50,7 +50,7 @@ export class ChatsStore {
 			new DirectMessagesChatStore(this.logsStore,this.contactsStore, new DirectMessagesChatClient(), chatId),
 	);
 
-	allChatsIds = reactive(() => this.client.getGroupChats());
+	allChatsIds = reactive(() => []);
 
 	allChatsSummaries = reactive(async () => {
 		const chatIds = await this.allChatsIds();

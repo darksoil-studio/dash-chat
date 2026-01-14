@@ -8,6 +8,7 @@
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '$lib/utils/time';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import type { ChatsStore, ContactsStore } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiSend } from '@mdi/js';
@@ -59,7 +60,7 @@
 <Page style={theme === 'material' ? 'height: calc(100vh - 57px)' : ''}>
 	<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => (window.location.href = '/')} />
+			<NavbarBackLink onClick={() => goto('/')} />
 		{/snippet}
 		{#snippet title()}
 			{#await $info then info}

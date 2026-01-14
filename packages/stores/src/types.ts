@@ -1,6 +1,6 @@
 import { Profile } from './contacts/contacts-client';
 import {
-	ActorId,
+	AgentId,
 	Hash,
 	LongTermKeyBundle,
 	PublicKey,
@@ -11,7 +11,7 @@ export type ChatId = TopicId;
 
 export interface SpaceControlMessage {
 	hash: Hash;
-	author: ActorId;
+	author: AgentId;
 	timestamp: number;
 	// spaces_args: SpacesArgs,
 }
@@ -29,7 +29,7 @@ export interface InboxTopic {
 }
 
 export interface MemberCode {
-	actor_id: ActorId;
+	actor_id: AgentId;
 	key_bundle: LongTermKeyBundle;
 }
 
@@ -46,7 +46,7 @@ export interface ContactCode {
 	/// Topic for the device group of this node.
 	device_space_id: TopicId;
 	/// Actor ID to add to spaces
-	chat_actor_id: ActorId;
+	chat_actor_id: AgentId;
 	/// The intent of the QR code: whether to add this node as a contact or a device.
 	share_intent: ShareIntent;
 }

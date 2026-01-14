@@ -3,14 +3,14 @@ import { ReactivePromise, reactive } from 'signalium';
 import { DevicesStore } from '../devices/devices-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
-import { ActorId, PublicKey, TopicId } from '../p2panda/types';
+import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { personalTopicFor } from '../topics';
 import { AnnouncementPayload, Payload } from '../types';
 import { ContactRequestId, IContactsClient, Profile } from './contacts-client';
 
 export interface IncomingContactRequest {
 	profile: Profile;
-	actorId: ActorId;
+	actorId: AgentId;
 	contactRequestId: ContactRequestId
 }
 
@@ -21,31 +21,30 @@ export class ContactsStore {
 		public client: IContactsClient,
 	) {}
 
-	myChatActorId = reactive(async () => await this.client.myChatActorId());
+	myAgentId = reactive(async () => await this.client.myAgentId());
 
 	myProfile = reactive(async () => {
-		const myChatActorId = await this.myChatActorId();
+		const myChatActorId = await this.myAgentId();
 
 		return await this.profiles(myChatActorId);
 	});
 
 	incomingContactRequests = reactive(async () => {
 		const requests :Array<IncomingContactRequest> = [{
-			actorId: await this.myChatActorId(),
+			actorId: await this.myAgentId(),
 			profile: (await this.myProfile())!,
 			contactRequestId: '1'
 		}]
 		return requests
 	})
 
-	profiles = reactive(async (actorId: ActorId) => {
+	profiles = reactive(async (actorId: AgentId) => {
 		const topicId = personalTopicFor(actorId);
 
 		const operations = await this.logsStore.logsForAllAuthors(topicId);
 
 		const log: SimplifiedOperation<Payload>[] =
 			Object.values(operations)[0] || [];
-			console.log(log)
 
 		const setProfiles: Array<[number, Profile]> = log
 			.filter(
@@ -74,7 +73,7 @@ export class ContactsStore {
 	contactsActorIds = reactive(async () => {
 		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
 
-		const contacts: Set<ActorId> = new Set();
+		const contacts: Set<AgentId> = new Set();
 
 		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
 			for (const op of ops) {
@@ -84,8 +83,6 @@ export class ContactsStore {
 			}
 		}
 
-		const myActorId = await this.myChatActorId();
-		return [myActorId,myActorId]
 		return Array.from(contacts);
 	});
 
@@ -96,7 +93,7 @@ export class ContactsStore {
 			contacts.map(contact => this.profiles(contact)),
 		);
 
-		const profilesWithContacts: Array<[ActorId, Profile]> = profiles
+		const profilesWithContacts: Array<[AgentId, Profile]> = profiles
 			.filter(p => !!p)
 			.map((profile, i) => [contacts[i], profile]);
 

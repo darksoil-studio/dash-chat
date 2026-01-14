@@ -3,6 +3,7 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import SelectAvatar from '$lib/components/profiles/SelectAvatar.svelte';
 	import { wrapPathInSvg } from '$lib/utils/icon';
@@ -38,7 +39,7 @@
 			name: name!,
 			avatar,
 		});
-		window.location.href = '/settings/profile';
+		goto('/settings/profile');
 	}
 	const theme = $derived(useTheme());
 </script>
@@ -62,7 +63,7 @@
 		>
 			{#snippet left()}
 				<NavbarBackLink
-					onClick={() => (window.location.href = '/settings/profile')}
+					onClick={() => goto('/settings/profile')}
 				/>
 			{/snippet}
 
