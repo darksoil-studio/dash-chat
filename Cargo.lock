@@ -1606,7 +1606,7 @@ dependencies = [
  "futures",
  "hex",
  "itertools",
- "mailbox_server",
+ "mailbox-server",
  "named-id",
  "p2panda-auth",
  "p2panda-core",
@@ -4141,7 +4141,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mailbox_server"
+name = "mailbox-server"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -4149,7 +4149,7 @@ dependencies = [
  "base64 0.22.1",
  "clap",
  "futures",
- "mailbox_server",
+ "mailbox-server",
  "redb",
  "serde",
  "serde_json",

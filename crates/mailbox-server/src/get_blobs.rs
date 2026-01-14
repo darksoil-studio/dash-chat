@@ -27,10 +27,21 @@ pub async fn get_blobs_for_topics(
     State(state): State<AppState>,
     Json(payload): Json<GetBlobsRequest>,
 ) -> Result<Json<GetBlobsResponse>, (StatusCode, String)> {
-    get_blobs_for_topics_inner(&state.db, &payload).map(Json).map_err(|e| {
-        tracing::error!("{}", e);
-        (StatusCode::INTERNAL_SERVER_ERROR, e)
-    })
+    let db = state.db.clone();
+    // Use spawn_blocking because redb's begin_read() can block while waiting for
+    // concurrent write transactions. Running this directly in async context would
+    // block tokio worker threads and cause deadlocks under concurrent load.
+    tokio::task::spawn_blocking(move || get_blobs_for_topics_inner(&db, &payload))
+        .await
+        .map_err(|e| {
+            tracing::error!("Task join error: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?
+        .map(Json)
+        .map_err(|e| {
+            tracing::error!("{}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e)
+        })
 }
 
 fn get_blobs_for_topics_inner(

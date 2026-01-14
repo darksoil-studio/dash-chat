@@ -1,5 +1,5 @@
 [package]
-name = "mailbox_server"
+name = "mailbox-server"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,7 @@ edition = "2021"
 path = "src/lib.rs"
 
 [[bin]]
-name = "mailbox_server"
+name = "mailbox-server"
 path = "src/main.rs"
 
 [dependencies]
@@ -36,5 +36,5 @@ version = "3.14"
 optional = true
 
 [dev-dependencies]
-mailbox_server = { path = ".", features = ["test_utils"] }
+mailbox-server = { path = ".", features = ["test_utils"] }
 futures = "0.3"

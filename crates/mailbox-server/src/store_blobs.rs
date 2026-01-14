@@ -14,10 +14,20 @@ pub async fn store_blobs(
     State(state): State<AppState>,
     Json(payload): Json<StoreBlobsRequest>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    store_blobs_inner(&state.db, &payload).map_err(|e| {
-        tracing::error!("{}", e);
-        (StatusCode::INTERNAL_SERVER_ERROR, e)
-    })?;
+    let db = state.db.clone();
+    // Use spawn_blocking because redb's begin_write() is a blocking call that waits
+    // for exclusive write access. Running this directly in async context would block
+    // tokio worker threads and cause deadlocks under concurrent load.
+    tokio::task::spawn_blocking(move || store_blobs_inner(&db, &payload))
+        .await
+        .map_err(|e| {
+            tracing::error!("Task join error: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?
+        .map_err(|e| {
+            tracing::error!("{}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e)
+        })?;
     Ok(StatusCode::CREATED)
 }
 
