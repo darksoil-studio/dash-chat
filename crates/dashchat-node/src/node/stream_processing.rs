@@ -4,13 +4,6 @@ use futures::Stream;
 use futures::StreamExt;
 use futures::stream::SelectAll;
 use p2panda_core::Operation;
-use p2panda_spaces::{
-    group::GroupError,
-    manager::ManagerError,
-    space::SpaceError,
-    traits::{AuthoredMessage, MessageStore},
-    types::AuthGroupError,
-};
 use serde::{Deserialize, Serialize};
 use tokio::task;
 use tokio_stream::wrappers::ReceiverStream;
@@ -18,7 +11,7 @@ use tracing::Instrument;
 
 use crate::{
     payload::InboxPayload,
-    topic::{LogId, TopicKind},
+    topic::TopicKind,
 };
 
 use super::*;
@@ -214,12 +207,12 @@ impl Node {
         // topic: Topic<K>,
         header: &Header,
         payload: Option<&Payload>,
-        is_author: bool,
+        _is_author: bool,
     ) -> anyhow::Result<()> {
         let log_id = header.extensions.log_id;
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match &payload {
-            Some(Payload::Chat(ChatPayload::JoinGroup(chat_id))) => {
+            Some(Payload::Chat(ChatPayload::JoinGroup(_chat_id))) => {
                 // TODO: maybe close down the chat tasks if we are kicked out?
             }
 

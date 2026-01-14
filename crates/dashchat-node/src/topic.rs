@@ -31,13 +31,13 @@
 
 use std::marker::PhantomData;
 
-use crate::{AgentId, QrCode, chat::ChatId};
+use crate::AgentId;
 use named_id::*;
 
 use p2panda_net::TopicId;
 use p2panda_spaces::ActorId;
 use p2panda_sync::TopicQuery;
-use serde::{Deserialize, Serialize,  de::DeserializeOwned};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 pub trait TopicKind:
     Default
@@ -298,7 +298,7 @@ fn to_fixed_size_array<T>(v: Vec<T>) -> Result<[T; 32], String> {
 impl<'de, K: TopicKind> Deserialize<'de> for Topic<K> {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct Vis<K> {
-          phantom_data: PhantomData<K>  
+            phantom_data: PhantomData<K>,
         }
         impl<K: TopicKind> serde::de::Visitor<'_> for Vis<K> {
             type Value = Topic<K>;
@@ -312,12 +312,12 @@ impl<'de, K: TopicKind> Deserialize<'de> for Topic<K> {
                 let byte_array: [u8; 32] =
                     to_fixed_size_array(bytes).map_err(serde::de::Error::custom)?;
 
-                let topic_id:Topic<K> = Topic::new(byte_array);
+                let topic_id: Topic<K> = Topic::new(byte_array);
                 Ok(topic_id)
             }
         }
         deserializer.deserialize_str(Vis {
-            phantom_data: PhantomData::<K>
+            phantom_data: PhantomData::<K>,
         })
     }
 }

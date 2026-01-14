@@ -1,5 +1,4 @@
 use dashchat_node::{ChatId, ChatMessage, ChatMessageContent, Node};
-use p2panda_core::PublicKey;
 use tauri::{command, State};
 
 // #[command]

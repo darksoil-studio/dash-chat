@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::chat::ChatId;
 use crate::contact::QrCode;
 use crate::topic::LogId;
-use crate::{AsBody, Cbor, ChatMessage, ChatMessageContent, Topic};
+use crate::{AsBody, Cbor, ChatMessageContent, Topic};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Extensions {

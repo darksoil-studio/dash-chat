@@ -2,12 +2,12 @@
 //! in that they don't use the inbox.
 
 #![feature(bool_to_result)]
+#![cfg(test)]
 
 use std::time::Duration;
 
 use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
 
-use anyhow::anyhow;
 use named_id::*;
 
 // #[test]

@@ -1,7 +1,4 @@
-use bytes::Bytes;
 
-use crate::mailbox::MailboxClient;
-use crate::polestar as p;
 use crate::topic::TopicKind;
 
 use super::*;
@@ -39,7 +36,7 @@ impl Node {
         let log_id = op.header.extensions.log_id;
         op.hash.with_serial();
         self.process_operation(op.clone(), true, false).await?;
-        let Operation { header, body, hash } = op;
+        let Operation { header, body: _, hash } = op;
 
         // self.notify_payload(&header, &payload).await?;
         tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");

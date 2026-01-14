@@ -119,7 +119,10 @@ where
                     }
                 }
 
-                tracing::warn!("poll mailboxes loop exited");
+                #[allow(unused)]
+                {
+                    tracing::warn!("poll mailboxes loop exited");
+                }
             }
             .instrument(tracing::info_span!("poll mailboxes")),
         );

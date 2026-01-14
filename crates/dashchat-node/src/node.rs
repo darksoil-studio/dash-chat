@@ -24,7 +24,7 @@ use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
 };
 use crate::stores::OpStore;
-use crate::topic::{LogId, Topic, kind};
+use crate::topic::{LogId, Topic};
 use crate::{
     AgentId, AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DeviceId, DirectChatId, Header,
     Operation,
@@ -189,7 +189,7 @@ impl Node {
         log_id: LogId,
         author: DeviceId,
     ) -> anyhow::Result<Vec<(Header, Option<Body>)>> {
-        let heights = self.op_store.get_log_heights(&log_id).await?;
+        let _heights = self.op_store.get_log_heights(&log_id).await?;
         match self.op_store.get_log(&author, &log_id, None).await? {
             Some(log) => Ok(log),
             None => {
@@ -462,7 +462,7 @@ impl Node {
     }
 
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.device_id().renamed())))]
-    pub async fn remove_contact(&self, chat_actor_id: ActorId) -> anyhow::Result<()> {
+    pub async fn remove_contact(&self, _chat_actor_id: ActorId) -> anyhow::Result<()> {
         // TODO: shutdown inbox task, etc.
         todo!("add tombstone to contacts list");
     }

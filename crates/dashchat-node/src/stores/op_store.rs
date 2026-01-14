@@ -1,14 +1,12 @@
 use std::{
     collections::{HashMap, HashSet},
-    convert::Infallible,
-    error::Error,
     sync::{Arc, RwLock},
 };
 
 use p2panda_core::{Body, Hash, Operation, PublicKey, RawOperation};
 use p2panda_store::{LogStore, MemoryStore, OperationStore, SqliteStore};
 use p2panda_stream::operation::IngestResult;
-use rand::{Rng, distr::Distribution};
+use rand::distr::Distribution;
 use tokio::sync::Mutex;
 
 use crate::{
@@ -238,7 +236,7 @@ where
 }
 
 impl OpStore<SqliteStore<LogId, Extensions>> {
-    pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
+    pub fn report<'a>(&self, _log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
         tracing::warn!("report() not implemented for SqliteStore");
         format!("report() not implemented for SqliteStore")
     }

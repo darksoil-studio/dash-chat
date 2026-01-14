@@ -1,7 +1,5 @@
 #![feature(bool_to_result)]
 
-use std::time::Duration;
-
 use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
 use named_id::*;
 

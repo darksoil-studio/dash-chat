@@ -3,7 +3,7 @@ use std::time::Duration;
 use futures::future::join_all;
 use p2panda_net::{Network, NodeAddress};
 
-use crate::{testing::wait_for, topic::{LogId, Topic}};
+use crate::{testing::wait_for, topic::LogId};
 
 pub async fn introduce_and_wait(networks: impl IntoIterator<Item = &Network<LogId>>) {
     let networks = networks.into_iter().collect::<Vec<_>>();

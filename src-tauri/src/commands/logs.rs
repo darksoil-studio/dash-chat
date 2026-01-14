@@ -1,10 +1,6 @@
 use dashchat_node::{DeviceId, Header, Node, Payload, Topic, topic::{DashChatTopicId, LogId}};
 use p2panda_core::{cbor::decode_cbor, Body, Hash, PublicKey};
 use p2panda_net::TopicId;
-use p2panda_spaces::{
-    event::{GroupEvent, SpaceEvent},
-    Event,
-};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -78,12 +74,12 @@ impl From<Header> for SimplifiedHeader {
 // }
 
 pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
-    let bytes = body.to_bytes();
+    let _bytes = body.to_bytes();
     // let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
     //     return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
     // };
 
-    let mut values: Vec<serde_json::Value> = vec![];
+    let values: Vec<serde_json::Value> = vec![];
 
     // if let Some(value) = decode_spaces_args(args)? {
     //     values.push(value);

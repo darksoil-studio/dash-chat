@@ -1,8 +1,6 @@
 use dashchat_node::{
-    AgentId, topic::DashChatTopicId, Header, Node, Payload, Profile, QrCode, ShareIntent,
+    AgentId, Node, QrCode, ShareIntent,
 };
-use p2panda_core::{Body, PublicKey};
-use p2panda_net::TopicId;
 use tauri::State;
 
 #[tauri::command]

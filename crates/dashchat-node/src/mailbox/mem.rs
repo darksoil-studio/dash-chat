@@ -7,9 +7,9 @@ use std::{
 
 use named_id::Rename;
 use p2panda_core::Body;
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::RwLock;
 
-use crate::{AgentId, DeviceId, Header, topic::LogId};
+use crate::{Header, topic::LogId};
 
 impl From<Operation> for MailboxOperation {
     fn from(op: Operation) -> Self {

@@ -91,7 +91,7 @@ pub fn run() {
                             continue;
                         }
                     };
-                    let node = handle.state::<Node>();
+                    let _node = handle.state::<Node>();
                     let simplified_operation =
                         match simplify(notification.header, Some(Body::new(&body[..]))) {
                             Ok(o) => o,
