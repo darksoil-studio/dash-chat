@@ -4,10 +4,11 @@ A simple HTTP server for storing and retrieving messages organized by topics. Bu
 
 ## Features
 
-- Store messages to topics via HTTP API
-- Retrieve messages from one or more topics
+- Store blobs organized by topic → log → sequence number
+- Bidirectional sync: server returns missing blobs AND reports what it needs from the client
+- Watermark tracking for efficient sync (tracks highest contiguous sequence per log)
 - Persistent storage using redb (embedded database)
-- Messages are stored with UUID v7 keys for time-ordered retrieval
+- Automatic cleanup of blobs older than 7 days (via UUID v7 timestamps)
 - CORS enabled for cross-origin requests
 
 ## Installation
@@ -51,57 +52,98 @@ Response:
 }
 ```
 
-#### Store a Message
+#### Store Blobs
 ```bash
-POST /messages/store
+POST /blobs/store
 Content-Type: application/json
 
 {
-  "topic_id": "my-topic",
-  "message": "SGVsbG8sIFdvcmxkIQ=="  // base64-encoded message
-}
-```
-
-Response: `201 Created`
-
-#### Retrieve Messages
-```bash
-POST /messages/get
-Content-Type: application/json
-
-{
-  "topic_ids": ["my-topic", "another-topic"]
-}
-```
-
-Response:
-```json
-{
-  "messages": {
-    "my-topic": ["SGVsbG8sIFdvcmxkIQ==", "QW5vdGhlciBtZXNzYWdl"],
-    "another-topic": []
+  "blobs": {
+    "topic-id-1": {
+      "log-id-a": {
+        "0": "SGVsbG8=",           // base64-encoded blob at sequence 0
+        "1": "V29ybGQ="            // base64-encoded blob at sequence 1
+      }
+    }
   }
 }
 ```
 
+Blobs are organized by topic → log → sequence number. The server tracks watermarks (highest contiguous sequence from 0) for each topic:log pair.
+
+Response: `201 Created`
+
+#### Retrieve Blobs (Bidirectional Sync)
+```bash
+POST /blobs/get
+Content-Type: application/json
+
+{
+  "topics": {
+    "topic-id-1": {
+      "log-id-a": 5,    // Client has sequences 0-5 for this log
+      "log-id-b": 2     // Client has sequences 0-2 for this log
+    }
+  }
+}
+```
+
+The request specifies, for each topic and log, the highest sequence number the client already has. The server responds with:
+
+1. **blobs**: Blobs the client is missing (sequences > client's max)
+2. **missing**: Sequences the server needs from the client (for bidirectional sync)
+
+Response:
+```json
+{
+  "blobs_by_topic": {
+    "topic-id-1": {
+      "blobs": {
+        "log-id-a": {
+          "6": "SGVsbG8sIFdvcmxkIQ==",
+          "7": "QW5vdGhlciBtZXNzYWdl"
+        }
+      },
+      "missing": {
+        "log-id-b": [3, 4, 5]
+      }
+    }
+  }
+}
+```
+
+In this example:
+- Server returns blobs for `log-id-a` at sequences 6 and 7 (client had up to 5)
+- Server reports it's missing sequences 3, 4, 5 for `log-id-b` (client should send these)
+
 ### Example Usage with curl
 
-**Store a message:**
+**Store blobs:**
 ```bash
-curl -X POST http://localhost:3000/messages/store \
+curl -X POST http://localhost:3000/blobs/store \
   -H "Content-Type: application/json" \
   -d '{
-    "topic_id": "test-topic",
-    "message": "SGVsbG8sIFdvcmxkIQ=="
+    "blobs": {
+      "test-topic": {
+        "log-1": {
+          "0": "SGVsbG8=",
+          "1": "V29ybGQ="
+        }
+      }
+    }
   }'
 ```
 
-**Retrieve messages:**
+**Retrieve blobs (with sync):**
 ```bash
-curl -X POST http://localhost:3000/messages/get \
+curl -X POST http://localhost:3000/blobs/get \
   -H "Content-Type: application/json" \
   -d '{
-    "topic_ids": ["test-topic"]
+    "topics": {
+      "test-topic": {
+        "log-1": 0
+      }
+    }
   }'
 ```
 
@@ -139,9 +181,10 @@ RUST_LOG=mailbox_server=debug,tower_http=debug cargo run --bin mailbox_server
 
 - **Storage**: redb (embedded key-value database)
 - **Web framework**: Axum
-- **Message format**: Binary data encoded as base64 in JSON
-- **Key format**: `{topic_id}:{uuid_v7}` for time-ordered retrieval
-- **Concurrency**: Async/await with Tokio runtime
+- **Blob format**: Binary data encoded as base64 in JSON
+- **Key format**: `{topic_id}:{log_id}:{sequence_number}:{uuid_v7}`
+- **Watermarks**: Track highest contiguous sequence (0..=N) per topic:log for efficient sync
+- **Concurrency**: Async/await with Tokio runtime, spawn_blocking for database operations
 
 ## License
 

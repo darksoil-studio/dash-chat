@@ -59,7 +59,7 @@ impl MailboxClient for ToyMailboxClient {
         } else {
             let status = response.status();
             let body = response.text().await.unwrap_or_default();
-            anyhow::bail!("Failed to store blobs: {} - {}", status, body)
+            Err(anyhow::anyhow!("Failed to store blobs: {} - {}", status, body))
         }
     }
 
@@ -88,9 +88,15 @@ impl MailboxClient for ToyMailboxClient {
             .post(format!("{}/blobs/get", self.base_url))
             .json(&get_request)
             .send()
-            .await?
-            .json::<GetBlobsResponse>()
             .await?;
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let body = response.text().await.unwrap_or_default();
+            return Err(anyhow::anyhow!("Failed to fetch blobs: {} - {}", status, body));
+        }
+
+        let response = response.json::<GetBlobsResponse>().await?;
 
         // Convert GetBlobsResponse to FetchResponse
         let mut result: BTreeMap<LogId, FetchTopicResponse<MailboxOperation>> = BTreeMap::new();
