@@ -9,10 +9,7 @@ use tokio::task;
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::Instrument;
 
-use crate::{
-    payload::InboxPayload,
-    topic::TopicKind,
-};
+use crate::{payload::InboxPayload, topic::TopicKind};
 
 use super::*;
 
@@ -86,7 +83,7 @@ impl Node {
                         }
 
                         Some(op) = streams.next() => {
-                            tracing::info!(op = ?op.hash.renamed(), topic = ?op.header.extensions.log_id.renamed(), "processing stream item");
+                            tracing::info!(op = ?op.hash.renamed(), topic = ?op.header.extensions.topic.renamed(), "processing stream item");
                             // Process the FromNetwork item here
                             if let Err(err) = node.process_stream_item(op).await {
                                 tracing::error!(?err, "process stream item error");
@@ -106,7 +103,7 @@ impl Node {
 
     async fn process_stream_item(&self, operation: Operation<Extensions>) -> anyhow::Result<()> {
         let hash = operation.hash;
-        let log_id = operation.header.extensions.log_id;
+        let topic = operation.header.extensions.topic;
 
         if let Err(err) = self.op_store.process_ordering(operation).await {
             tracing::error!(?err, "process ordering error");
@@ -128,7 +125,7 @@ impl Node {
                 Ok(()) => (),
                 Err(err) => {
                     tracing::error!(
-                        ?log_id,
+                        ?topic,
                         hash = ?hash.renamed(),
                         ?err,
                         "process operation error"
@@ -148,13 +145,13 @@ impl Node {
     ) -> anyhow::Result<()> {
         let Operation { header, body, hash } = operation;
 
-        let log_id = header.extensions.log_id;
+        let topic = header.extensions.topic;
 
         // XXX: this eventually needs to be more selective than just adding any old author
-        // author_store.add_author(log_id, header.public_key).await;
-        tracing::debug!(?log_id, "adding author");
+        // author_store.add_author(topic, header.public_key).await;
+        tracing::debug!(?topic, "adding author");
 
-        tracing::info!(log_id = ?log_id.renamed(), hash = ?hash.renamed(), "PROC: processing operation");
+        tracing::info!(topic = ?topic.renamed(), hash = ?hash.renamed(), "PROC: processing operation");
 
         let payload = body.map(|body| Payload::try_from_body(&body)).transpose()?;
 
@@ -183,7 +180,7 @@ impl Node {
         // XXX: don't repair this often.
         // Box::pin(self.repair_spaces_and_publish()).await?;
 
-        self.op_store.mark_op_processed(log_id, &hash);
+        self.op_store.mark_op_processed(topic, &hash);
 
         anyhow::Ok(())
     }
@@ -209,7 +206,7 @@ impl Node {
         payload: Option<&Payload>,
         _is_author: bool,
     ) -> anyhow::Result<()> {
-        let log_id = header.extensions.log_id;
+        let topic = header.extensions.topic;
         // TODO: maybe have different loops for the different kinds of topics and the different payloads in each
         match &payload {
             Some(Payload::Chat(ChatPayload::JoinGroup(_chat_id))) => {
@@ -218,7 +215,7 @@ impl Node {
 
             Some(Payload::Inbox(invitation)) => {
                 let active_topics = self.local_data.active_inbox_topics.read().await;
-                if !active_topics.iter().any(|it| **it.topic == *log_id) {
+                if !active_topics.iter().any(|it| **it.topic == *topic) {
                     // not for me, ignore
                     return Ok(());
                 }
@@ -247,7 +244,7 @@ impl Node {
             }
 
             None => {
-                tracing::error!(?log_id, "no payload");
+                tracing::error!(?topic, "no payload");
             }
         }
         Ok(())

@@ -34,7 +34,6 @@ use std::marker::PhantomData;
 use crate::AgentId;
 use named_id::*;
 
-use p2panda_net::TopicId;
 use p2panda_spaces::ActorId;
 use p2panda_sync::TopicQuery;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
@@ -126,14 +125,14 @@ pub mod kind {
 )]
 #[display("{}", hex::encode(self.0))]
 #[debug("{}", self)]
-pub struct LogId([u8; 32]);
+pub struct TopicId([u8; 32]);
 
-impl p2panda_spaces::traits::SpaceId for LogId {}
-impl TopicQuery for LogId {}
+impl p2panda_spaces::traits::SpaceId for TopicId {}
+impl TopicQuery for TopicId {}
 
-pub type DashChatTopicId = LogId;
+pub type DashChatTopicId = TopicId;
 
-impl Nameable for LogId {
+impl Nameable for TopicId {
     fn shortener(&self) -> Option<Shortener> {
         Some(Shortener {
             length: 4,
@@ -159,7 +158,7 @@ impl Nameable for LogId {
 #[debug("{}", self)]
 pub struct Topic<K: TopicKind = kind::Untyped> {
     #[deref]
-    id: LogId,
+    id: TopicId,
 
     kind: PhantomData<K>,
 }
@@ -170,7 +169,7 @@ impl<K: TopicKind> TopicQuery for Topic<K> {}
 impl<K: TopicKind> Topic<K> {
     fn new(id: [u8; 32]) -> Self {
         Self {
-            id: LogId(id),
+            id: TopicId(id),
             kind: PhantomData::<K>,
         }
     }
@@ -224,25 +223,25 @@ impl Topic<kind::DeviceGroup> {
 impl Topic<kind::Untyped> {
     pub fn untyped(id: [u8; 32]) -> Self {
         Self {
-            id: LogId(id),
+            id: TopicId(id),
             kind: PhantomData,
         }
     }
 }
 
-impl TopicId for LogId {
+impl p2panda_net::TopicId for TopicId {
     fn id(&self) -> [u8; 32] {
         self.0
     }
 }
 
-impl<K: TopicKind> From<Topic<K>> for LogId {
+impl<K: TopicKind> From<Topic<K>> for TopicId {
     fn from(topic: Topic<K>) -> Self {
         Self(topic.id.0)
     }
 }
 
-impl<K: TopicKind> TopicId for Topic<K> {
+impl<K: TopicKind> p2panda_net::TopicId for Topic<K> {
     fn id(&self) -> [u8; 32] {
         self.id.0
     }

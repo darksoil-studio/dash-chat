@@ -1,10 +1,13 @@
 use std::collections::{BTreeMap, HashMap};
 
 use mailbox_server::{Blob, GetBlobsRequest, GetBlobsResponse, StoreBlobsRequest};
-use p2panda_core::{cbor::{decode_cbor, encode_cbor}, PublicKey};
+use p2panda_core::{
+    PublicKey,
+    cbor::{decode_cbor, encode_cbor},
+};
 
 use super::*;
-use crate::{DeviceId, Topic, topic::LogId};
+use crate::{DeviceId, Topic, topic::TopicId};
 
 /// A client for the toy mailbox server.
 #[derive(Clone)]
@@ -59,7 +62,11 @@ impl MailboxClient for ToyMailboxClient {
         } else {
             let status = response.status();
             let body = response.text().await.unwrap_or_default();
-            Err(anyhow::anyhow!("Failed to store blobs: {} - {}", status, body))
+            Err(anyhow::anyhow!(
+                "Failed to store blobs: {} - {}",
+                status,
+                body
+            ))
         }
     }
 
@@ -93,13 +100,17 @@ impl MailboxClient for ToyMailboxClient {
         if !response.status().is_success() {
             let status = response.status();
             let body = response.text().await.unwrap_or_default();
-            return Err(anyhow::anyhow!("Failed to fetch blobs: {} - {}", status, body));
+            return Err(anyhow::anyhow!(
+                "Failed to fetch blobs: {} - {}",
+                status,
+                body
+            ));
         }
 
         let response = response.json::<GetBlobsResponse>().await?;
 
         // Convert GetBlobsResponse to FetchResponse
-        let mut result: BTreeMap<LogId, FetchTopicResponse<MailboxOperation>> = BTreeMap::new();
+        let mut result: BTreeMap<TopicId, FetchTopicResponse<MailboxOperation>> = BTreeMap::new();
 
         for (topic_id_str, topic_response) in response.blobs_by_topic {
             let log_id = log_id_from_string(&topic_id_str)?;
@@ -128,7 +139,7 @@ impl MailboxClient for ToyMailboxClient {
 
 /// Helper functions
 
-fn log_id_to_topic_id(log_id: &LogId) -> String {
+fn log_id_to_topic_id(log_id: &TopicId) -> String {
     hex::encode(&**log_id)
 }
 
@@ -136,7 +147,7 @@ fn device_id_to_log_id(device_id: &DeviceId) -> String {
     hex::encode(device_id.as_bytes())
 }
 
-fn log_id_from_string(s: &str) -> Result<LogId, anyhow::Error> {
+fn log_id_from_string(s: &str) -> Result<TopicId, anyhow::Error> {
     let topic: Topic = s.parse()?;
     Ok(topic.into())
 }

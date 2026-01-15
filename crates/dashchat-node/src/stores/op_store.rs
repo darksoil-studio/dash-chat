@@ -12,32 +12,32 @@ use tokio::sync::Mutex;
 use crate::{
     node::Orderer,
     payload::{Extensions, Payload},
-    topic::{LogId, Topic, TopicKind},
+    topic::{Topic, TopicId, TopicKind},
     *,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::DerefMut)]
 pub struct OpStore<S>
 where
-    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions>,
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions>,
     S: Send + Sync,
 {
     #[deref]
     #[deref_mut]
     pub(crate) store: S,
     pub orderer: Arc<tokio::sync::RwLock<Orderer<S>>>,
-    pub processed_ops: Arc<RwLock<HashMap<LogId, HashSet<Hash>>>>,
+    pub processed_ops: Arc<RwLock<HashMap<TopicId, HashSet<Hash>>>>,
     write_mutex: Arc<Mutex<()>>,
 }
 
-impl OpStore<MemoryStore<LogId, Extensions>> {
+impl OpStore<MemoryStore<TopicId, Extensions>> {
     pub fn new_memory() -> Self {
         let store = MemoryStore::new();
         Self::new(store)
     }
 }
 
-impl OpStore<SqliteStore<LogId, Extensions>> {
+impl OpStore<SqliteStore<TopicId, Extensions>> {
     pub async fn new_sqlite() -> anyhow::Result<Self> {
         let rand = rand::distr::Alphanumeric
             .sample_iter(&mut rand::rng())
@@ -67,7 +67,7 @@ impl OpStore<SqliteStore<LogId, Extensions>> {
 
 impl<S> OpStore<S>
 where
-    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions>,
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions>,
     S: Send + Sync,
 {
     pub fn new(store: S) -> Self {
@@ -86,7 +86,7 @@ where
 
     pub async fn get_log_heights(
         &self,
-        topic: &LogId,
+        topic: &TopicId,
     ) -> Result<Vec<(DeviceId, u64)>, anyhow::Error> {
         Ok(self
             .store
@@ -107,17 +107,17 @@ where
         alias: Option<&str>,
     ) -> Result<(Header, Option<Body>), anyhow::Error> {
         let device_id = DeviceId::from(private_key.public_key());
-        let log_id = topic.clone();
+        let topic = topic.clone();
 
         let body = Some(payload.try_into_body()?);
 
         let extensions = Extensions {
-            log_id: log_id.clone().into(),
+            topic: topic.clone().into(),
         };
 
         let lock = self.write_mutex.lock().await;
         let latest_operation = self
-            .latest_operation(&device_id, &log_id.into())
+            .latest_operation(&device_id, &topic.into())
             .await
             .unwrap();
 
@@ -143,7 +143,7 @@ where
 
         header.sign(private_key);
 
-        let log_id = header.extensions.log_id;
+        let topic = header.extensions.topic;
         let hash = header.hash();
 
         if let Some(alias) = alias {
@@ -153,7 +153,7 @@ where
         }
 
         tracing::info!(
-            log_id = ?log_id.renamed(),
+            topic = ?topic.renamed(),
             hash = ?hash.renamed(),
             seq_num = header.seq_num,
             "PUB: authoring operation"
@@ -164,7 +164,7 @@ where
             header.clone(),
             body.clone(),
             header.to_bytes(),
-            &log_id.into(),
+            &topic.into(),
             false,
         )
         .await?;
@@ -180,7 +180,7 @@ where
             IngestResult::Retry(h, _, _, missing) => {
                 let backlink = h.backlink.as_ref().map(|h| h.renamed());
                 tracing::error!(
-                    ?log_id,
+                    ?topic,
                     hash = ?hash.renamed(),
                     ?backlink,
                     ?missing,
@@ -216,41 +216,41 @@ where
         Ok(next)
     }
 
-    pub fn mark_op_processed(&self, log_id: LogId, hash: &Hash) {
+    pub fn mark_op_processed(&self, topic: TopicId, hash: &Hash) {
         self.processed_ops
             .write()
             .unwrap()
-            .entry(log_id)
+            .entry(topic)
             .or_default()
             .insert(hash.clone());
     }
 
-    pub fn is_op_processed(&self, log_id: &LogId, hash: &Hash) -> bool {
+    pub fn is_op_processed(&self, topic: &TopicId, hash: &Hash) -> bool {
         self.processed_ops
             .read()
             .unwrap()
-            .get(log_id)
+            .get(topic)
             .map(|s| s.contains(hash))
             .unwrap_or(false)
     }
 }
 
-impl OpStore<SqliteStore<LogId, Extensions>> {
-    pub fn report<'a>(&self, _log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
+impl OpStore<SqliteStore<TopicId, Extensions>> {
+    pub fn report<'a>(&self, _topics: impl IntoIterator<Item = &'a TopicId>) -> String {
         tracing::warn!("report() not implemented for SqliteStore");
         format!("report() not implemented for SqliteStore")
     }
 }
 
-impl OpStore<MemoryStore<LogId, Extensions>> {
-    pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
-        let log_ids = log_ids.into_iter().collect::<Vec<_>>();
+impl OpStore<MemoryStore<TopicId, Extensions>> {
+    pub fn report<'a>(&self, topics: impl IntoIterator<Item = &'a TopicId>) -> String {
+        let topics = topics.into_iter().collect::<Vec<_>>();
         let s = self.store.read_store();
         let mut ops = s
             .operations
             .iter()
             .filter(|(_, (l, _, _, _))| {
-                log_ids.is_empty() || log_ids.iter().find(|log_id| **log_id == l).is_some()
+                topics.is_empty() || topics.iter().find(|topic| **topic == l).is_some()
             })
             .collect::<Vec<_>>();
         ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.renamed(), header.seq_num));
@@ -267,7 +267,7 @@ impl OpStore<MemoryStore<LogId, Extensions>> {
                     Some(p) => format!("{p:?}"),
                     None => "_".to_string(),
                 };
-                if log_ids.len() == 1 {
+                if topics.len() == 1 {
                     format!(
                         "• {} {:2} {} : {}",
                         header.public_key.renamed(),
@@ -292,12 +292,12 @@ impl OpStore<MemoryStore<LogId, Extensions>> {
     }
 }
 
-impl<S> OperationStore<LogId, Extensions> for OpStore<S>
+impl<S> OperationStore<TopicId, Extensions> for OpStore<S>
 where
-    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions> + Send + Sync,
-    <S as OperationStore<LogId, Extensions>>::Error: std::error::Error + Send + Sync,
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions> + Send + Sync,
+    <S as OperationStore<TopicId, Extensions>>::Error: std::error::Error + Send + Sync,
 {
-    type Error = <S as OperationStore<LogId, Extensions>>::Error;
+    type Error = <S as OperationStore<TopicId, Extensions>>::Error;
 
     async fn insert_operation(
         &mut self,
@@ -305,10 +305,10 @@ where
         header: &Header,
         body: Option<&Body>,
         header_bytes: &[u8],
-        log_id: &LogId,
+        topic: &TopicId,
     ) -> Result<bool, Self::Error> {
         self.store
-            .insert_operation(hash, header, body, header_bytes, log_id)
+            .insert_operation(hash, header, body, header_bytes, topic)
             .await
     }
 
@@ -336,83 +336,83 @@ where
     }
 }
 
-impl<S> LogStore<LogId, Extensions> for OpStore<S>
+impl<S> LogStore<TopicId, Extensions> for OpStore<S>
 where
-    S: LogStore<LogId, Extensions>,
-    S: OperationStore<LogId, Extensions>,
+    S: LogStore<TopicId, Extensions>,
+    S: OperationStore<TopicId, Extensions>,
     S: Send + Sync,
-    <S as LogStore<LogId, Extensions>>::Error: std::error::Error + Send + Sync,
+    <S as LogStore<TopicId, Extensions>>::Error: std::error::Error + Send + Sync,
 {
-    type Error = <S as LogStore<LogId, Extensions>>::Error;
+    type Error = <S as LogStore<TopicId, Extensions>>::Error;
 
     async fn get_log(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: Option<u64>,
     ) -> Result<Option<Vec<(Header, Option<Body>)>>, Self::Error> {
-        self.store.get_log(public_key, log_id, from).await
+        self.store.get_log(public_key, topic, from).await
     }
 
     async fn get_raw_log(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: Option<u64>,
     ) -> Result<Option<Vec<RawOperation>>, Self::Error> {
-        self.store.get_raw_log(public_key, log_id, from).await
+        self.store.get_raw_log(public_key, topic, from).await
     }
 
     async fn latest_operation(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
     ) -> Result<Option<(Header, Option<Body>)>, Self::Error> {
-        self.store.latest_operation(public_key, log_id).await
+        self.store.latest_operation(public_key, topic).await
     }
 
-    async fn get_log_heights(&self, log_id: &LogId) -> Result<Vec<(PublicKey, u64)>, Self::Error> {
-        self.store.get_log_heights(log_id).await
+    async fn get_log_heights(&self, topic: &TopicId) -> Result<Vec<(PublicKey, u64)>, Self::Error> {
+        self.store.get_log_heights(topic).await
     }
 
     async fn delete_operations(
         &mut self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         before: u64,
     ) -> Result<bool, Self::Error> {
         self.store
-            .delete_operations(public_key, log_id, before)
+            .delete_operations(public_key, topic, before)
             .await
     }
 
     async fn delete_payloads(
         &mut self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: u64,
         to: u64,
     ) -> Result<bool, Self::Error> {
         self.store
-            .delete_payloads(public_key, log_id, from, to)
+            .delete_payloads(public_key, topic, from, to)
             .await
     }
 
     async fn get_log_size(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: Option<u64>,
     ) -> Result<Option<u64>, Self::Error> {
-        self.store.get_log_size(public_key, log_id, from).await
+        self.store.get_log_size(public_key, topic, from).await
     }
 
     async fn get_log_hashes(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: Option<u64>,
     ) -> Result<Option<Vec<Hash>>, Self::Error> {
-        self.store.get_log_hashes(public_key, log_id, from).await
+        self.store.get_log_hashes(public_key, topic, from).await
     }
 }

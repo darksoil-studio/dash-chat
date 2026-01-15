@@ -9,7 +9,7 @@ use named_id::Rename;
 use p2panda_core::Body;
 use tokio::sync::RwLock;
 
-use crate::{Header, topic::LogId};
+use crate::{Header, topic::TopicId};
 
 impl From<Operation> for MailboxOperation {
     fn from(op: Operation) -> Self {
@@ -42,17 +42,17 @@ impl From<(Header, Option<Body>)> for MailboxOperation {
 #[derive(Clone)]
 pub struct MemMailboxClient<Op: MailboxItem = MailboxOperation> {
     mailbox: MemMailbox<Op>,
-    subscribed_topics: Arc<RwLock<BTreeSet<LogId>>>,
+    subscribed_topics: Arc<RwLock<BTreeSet<TopicId>>>,
 }
 
 impl<Op: MailboxItem> MemMailboxClient<Op> {
-    pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
+    pub async fn subscribed_topics(&self) -> BTreeSet<TopicId> {
         self.subscribed_topics.read().await.clone()
     }
 }
 
 pub type MemMailboxLogs<Op> =
-    HashMap<LogId, HashMap<<Op as MailboxItem>::Author, BTreeMap<u64, Op>>>;
+    HashMap<TopicId, HashMap<<Op as MailboxItem>::Author, BTreeMap<u64, Op>>>;
 
 #[derive(Clone)]
 pub struct MemMailbox<Op: MailboxItem = MailboxOperation> {
@@ -173,7 +173,7 @@ mod tests {
     #[derive(Clone, PartialEq, Eq, Serialize, Deserialize, derive_more::Debug)]
     #[debug("Msg({author} {seq})")]
     struct Msg {
-        topic: LogId,
+        topic: TopicId,
         author: char,
         seq: u64,
     }
@@ -194,14 +194,14 @@ mod tests {
             self.seq
         }
 
-        fn topic(&self) -> LogId {
+        fn topic(&self) -> TopicId {
             self.topic
         }
     }
 
     async fn fetch(
         client: &MemMailboxClient<Msg>,
-        topic: LogId,
+        topic: TopicId,
         authors: &[(char, u64)],
     ) -> anyhow::Result<FetchTopicResponse<Msg>> {
         let FetchResponse(mut r) = client.fetch(r(topic, authors)).await?;
@@ -210,18 +210,18 @@ mod tests {
         Ok(rr)
     }
 
-    fn r(topic: LogId, authors: &[(char, u64)]) -> FetchRequest<Msg> {
+    fn r(topic: TopicId, authors: &[(char, u64)]) -> FetchRequest<Msg> {
         FetchRequest(BTreeMap::from([(
             topic,
             BTreeMap::from_iter(authors.into_iter().cloned()),
         )]))
     }
 
-    fn m(topic: LogId, author: char, seq: u64) -> Msg {
+    fn m(topic: TopicId, author: char, seq: u64) -> Msg {
         Msg { topic, author, seq }
     }
 
-    fn mm(topic: LogId, author: char, r: std::ops::Range<u64>) -> Vec<Msg> {
+    fn mm(topic: TopicId, author: char, r: std::ops::Range<u64>) -> Vec<Msg> {
         r.map(|i| m(topic, author, i)).collect()
     }
 
@@ -258,7 +258,7 @@ mod tests {
         let client = mailbox.client();
 
         let a = '.';
-        let tt: [LogId; 3] = [
+        let tt: [TopicId; 3] = [
             Topic::random().into(),
             Topic::random().into(),
             Topic::random().into(),

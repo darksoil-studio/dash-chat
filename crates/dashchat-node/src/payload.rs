@@ -5,17 +5,17 @@ use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
 use crate::contact::QrCode;
-use crate::topic::LogId;
+use crate::topic::TopicId;
 use crate::{AsBody, Cbor, ChatMessageContent, Topic};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Extensions {
-    pub log_id: LogId,
+    pub topic: TopicId,
 }
 
 impl Extensions {
     pub fn topic(&self) -> Topic<crate::topic::kind::Untyped> {
-        Topic::untyped(*self.log_id)
+        Topic::untyped(*self.topic)
     }
 }
 
@@ -82,9 +82,9 @@ impl AsBody for Payload {}
 pub type Header = p2panda_core::Header<Extensions>;
 pub type Operation = p2panda_core::Operation<Extensions>;
 
-impl Extension<LogId> for Extensions {
-    fn extract(header: &Header) -> Option<LogId> {
-        Some(header.extensions.log_id.clone())
+impl Extension<TopicId> for Extensions {
+    fn extract(header: &Header) -> Option<TopicId> {
+        Some(header.extensions.topic.clone())
     }
 }
 
