@@ -11,5 +11,7 @@ procs:
   stores: pnpm -F ./packages/stores dev
   android:
     shell: pnpm tauri android dev
+    autostart: false
   logcat:
     shell: adb logcat | grep -F "`adb shell ps | grep studio.darksoil.dashchat | tr -s [:space:] ' ' | cut -d' ' -f2`"
+    autostart: false
