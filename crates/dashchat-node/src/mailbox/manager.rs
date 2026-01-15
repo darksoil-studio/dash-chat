@@ -13,7 +13,7 @@ pub struct MailboxesConfig {
 impl Default for MailboxesConfig {
     fn default() -> Self {
         Self {
-            success_interval: Duration::from_secs(3),
+            success_interval: Duration::from_secs(5),
             error_interval: Duration::from_secs(15),
         }
     }
@@ -28,6 +28,7 @@ where
     topics: Arc<Mutex<HashMap<LogId, mpsc::Sender<Operation>>>>,
     store: OpStore<S>,
     config: MailboxesConfig,
+    trigger: mpsc::Sender<()>,
     // TODO: add a receiver to short circuit the polling interval
 }
 
@@ -35,12 +36,13 @@ impl<S> Mailboxes<S>
 where
     S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions> + Send + Sync + 'static,
 {
-    fn new(store: OpStore<S>, config: MailboxesConfig) -> Self {
+    fn new(store: OpStore<S>, config: MailboxesConfig, trigger: mpsc::Sender<()>) -> Self {
         Self {
             mailboxes: Arc::new(Mutex::new(Default::default())),
             topics: Arc::new(Mutex::new(Default::default())),
             store,
             config,
+            trigger,
         }
     }
 
@@ -54,6 +56,12 @@ where
 
     pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
         self.topics.lock().await.keys().cloned().collect()
+    }
+
+    pub async fn trigger_sync(&self) {
+        if let Err(e) = self.trigger.send(()).await {
+            tracing::error!(?e, "failed to send early trigger to mailbox manager");
+        }
     }
 
     pub async fn subscribe(
@@ -73,50 +81,20 @@ where
     }
 
     pub async fn spawn(store: OpStore<S>, config: MailboxesConfig) -> Result<Self, anyhow::Error> {
-        let manager = Self::new(store, config);
+        let (trigger_tx, mut trigger_rx) = mpsc::channel(1);
+        let manager = Self::new(store, config, trigger_tx);
         let r = manager.clone();
         tokio::spawn(
             async move {
-                let config = manager.config.clone();
                 let mut next_mailbox = 0;
-                loop {
-                    next_mailbox += 1;
-                    let mailbox = {
-                        let mm = manager.mailboxes.lock().await;
-                        if next_mailbox >= mm.len() {
-                            next_mailbox = 0;
-                        }
-
-                        match mm.get(next_mailbox) {
-                            Some(mailbox) => mailbox.clone(),
-                            None => {
-                                tracing::warn!("empty mailbox list, no mailbox to fetch from");
-                                tokio::time::sleep(config.error_interval).await;
-                                continue;
-                            }
-                        }
-                    };
-                    tracing::trace!("polling mailbox {next_mailbox}");
-
-                    let topics = manager.subscribed_topics().await;
-                    if topics.is_empty() {
-                        tracing::warn!("no topics subscribed, nothing to fetch this interval");
-                        tokio::time::sleep(config.error_interval).await;
-                        continue;
-                    }
-
-                    match manager
-                        .sync_topics(topics.into_iter(), mailbox.clone())
-                        .await
-                    {
-                        Ok(()) => {
-                            tokio::time::sleep(config.success_interval).await;
-                        }
-                        Err(err) => {
-                            tracing::error!(?err, "fetch mailbox error");
-                            tokio::time::sleep(config.error_interval).await;
-                        }
-                    }
+                let mut interval = tokio::time::Duration::ZERO;
+                // The two match conditions are:
+                // - Ok(Some(())): a trigger was received
+                // - Err(_): the timeout elapsed
+                while let Ok(Some(())) | Err(_) =
+                    tokio::time::timeout(interval, trigger_rx.recv()).await
+                {
+                    (interval, next_mailbox) = manager.one_iteration(next_mailbox).await;
                 }
 
                 #[allow(unused)]
@@ -130,7 +108,45 @@ where
         Ok(r)
     }
 
-    async fn sync_topics(
+    async fn one_iteration(&self, mut mailbox_index: usize) -> (tokio::time::Duration, usize) {
+        mailbox_index += 1;
+        let mailbox = {
+            let mm = self.mailboxes.lock().await;
+            if mailbox_index >= mm.len() {
+                mailbox_index = 0;
+            }
+
+            match mm.get(mailbox_index) {
+                Some(mailbox) => mailbox.clone(),
+                None => {
+                    tracing::warn!("empty mailbox list, no mailbox to fetch from");
+                    return (self.config.error_interval, mailbox_index);
+                }
+            }
+        };
+        tracing::trace!("polling mailbox {mailbox_index}");
+
+        let topics = self.subscribed_topics().await;
+        if topics.is_empty() {
+            tracing::warn!("no topics subscribed, nothing to fetch this interval");
+            return (self.config.error_interval, mailbox_index);
+        }
+
+        match self.sync_topics(topics.into_iter(), mailbox.clone()).await {
+            Ok(()) => {
+                return (self.config.success_interval, mailbox_index);
+            }
+            Err(err) => {
+                tracing::error!(?err, "fetch mailbox error");
+                return (self.config.error_interval, mailbox_index);
+            }
+        }
+    }
+
+    /// Immediately sync the given topics with the given mailbox:
+    /// - Ensure all ops held by the mailbox are fetched
+    /// - Publish any ops that the mailbox is missing to the mailbox
+    pub async fn sync_topics(
         &self,
         topics: impl Iterator<Item = LogId>,
         mailbox: Arc<dyn MailboxClient>,
