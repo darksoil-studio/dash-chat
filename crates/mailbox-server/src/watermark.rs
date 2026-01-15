@@ -23,7 +23,9 @@ pub fn compute_initial_watermarks(db: &Database) -> Result<(), Box<dyn std::erro
         // Note: redb's iter() returns (key, value) pairs. We only access the key.
         // The value's AccessGuard is dropped without deserialization.
         for entry in table.iter()? {
-            let (key, _value) = entry?;
+            let (key, value) = entry?;
+            drop(value);
+
             let key_str: &str = key.value();
 
             // Key format: "topic_id:log_id:sequence_number:uuid_v7"

@@ -3,11 +3,11 @@ use redb::{Database, ReadableTable};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::{AppState, Blob, LogId, SequenceNumber, TopicId, BLOBS_TABLE, WATERMARKS_TABLE};
+use crate::{AppState, Author, Blob, SequenceNumber, TopicId, BLOBS_TABLE, WATERMARKS_TABLE};
 
 #[derive(Serialize, Deserialize)]
 pub struct StoreBlobsRequest {
-    pub blobs: BTreeMap<TopicId, BTreeMap<LogId, BTreeMap<SequenceNumber, Blob>>>,
+    pub blobs: BTreeMap<TopicId, BTreeMap<Author, BTreeMap<SequenceNumber, Blob>>>,
 }
 
 pub async fn store_blobs(
@@ -47,13 +47,13 @@ fn store_blobs_inner(db: &Database, request: &StoreBlobsRequest) -> Result<(), S
             .open_table(WATERMARKS_TABLE)
             .map_err(|e| format!("Failed to open watermarks table: {}", e))?;
 
-        for (topic_id, logs) in &request.blobs {
-            for (log_id, sequences) in logs {
-                let topic_log_key = format!("{}:{}", topic_id, log_id);
+        for (topic_id, authors) in &request.blobs {
+            for (author, sequences) in authors {
+                let topic_author_key = format!("{}:{}", topic_id, author);
 
-                // Get current watermark for this topic:log
+                // Get current watermark for this topic:author
                 let current_watermark = watermarks_table
-                    .get(topic_log_key.as_str())
+                    .get(topic_author_key.as_str())
                     .map_err(|e| format!("Failed to read watermark: {}", e))?
                     .map(|v| v.value());
 
@@ -61,11 +61,11 @@ fn store_blobs_inner(db: &Database, request: &StoreBlobsRequest) -> Result<(), S
                 let mut stored_seqs: BTreeSet<SequenceNumber> = BTreeSet::new();
 
                 for (seq_num, blob) in sequences {
-                    // Key format: "topic_id:log_id:sequence_number:uuid_v7"
+                    // Key format: "topic_id:author:sequence_number:uuid_v7"
                     let key = format!(
                         "{}:{}:{}:{}",
                         topic_id,
-                        log_id,
+                        author,
                         seq_num,
                         uuid::Uuid::now_v7()
                     );
@@ -77,11 +77,11 @@ fn store_blobs_inner(db: &Database, request: &StoreBlobsRequest) -> Result<(), S
                     blob_count += 1;
                 }
 
-                // Update watermark for this topic:log
+                // Update watermark for this topic:author
                 let new_watermark = compute_new_watermark(
                     &blobs_table,
                     topic_id,
-                    log_id,
+                    author,
                     current_watermark,
                     &stored_seqs,
                 )?;
@@ -90,12 +90,12 @@ fn store_blobs_inner(db: &Database, request: &StoreBlobsRequest) -> Result<(), S
                     // Only update if watermark changed or was newly established
                     if current_watermark != Some(wm) {
                         watermarks_table
-                            .insert(topic_log_key.as_str(), wm)
+                            .insert(topic_author_key.as_str(), wm)
                             .map_err(|e| format!("Failed to update watermark: {}", e))?;
                         tracing::debug!(
                             "Updated watermark for {}:{} from {:?} to {}",
                             topic_id,
-                            log_id,
+                            author,
                             current_watermark,
                             wm
                         );
@@ -118,7 +118,7 @@ fn store_blobs_inner(db: &Database, request: &StoreBlobsRequest) -> Result<(), S
 fn compute_new_watermark(
     blobs_table: &redb::Table<&str, &[u8]>,
     topic_id: &str,
-    log_id: &str,
+    author: &str,
     current_watermark: Option<SequenceNumber>,
     new_sequences: &BTreeSet<SequenceNumber>,
 ) -> Result<Option<SequenceNumber>, String> {
@@ -128,7 +128,7 @@ fn compute_new_watermark(
         Some(current_watermark) => {
             // Check if new sequences or existing blobs don't extend current watermark
             if !new_sequences.contains(&(current_watermark + 1))
-                && !blob_exists(blobs_table, topic_id, log_id, current_watermark + 1)?
+                && !blob_exists(blobs_table, topic_id, author, current_watermark + 1)?
             {
                 return Ok(Some(current_watermark)); // No extension possible
             }
@@ -136,7 +136,7 @@ fn compute_new_watermark(
         }
         None => {
             // No watermark yet - need sequence 0 to start
-            if !new_sequences.contains(&0) && !blob_exists(blobs_table, topic_id, log_id, 0)? {
+            if !new_sequences.contains(&0) && !blob_exists(blobs_table, topic_id, author, 0)? {
                 return Ok(None); // Can't establish watermark without seq 0
             }
             None // Start from None, first iteration will check seq 0
@@ -149,7 +149,7 @@ fn compute_new_watermark(
 
         // First check new sequences (cheaper), then existing blobs
         if new_sequences.contains(&next_seq)
-            || blob_exists(blobs_table, topic_id, log_id, next_seq)?
+            || blob_exists(blobs_table, topic_id, author, next_seq)?
         {
             watermark = Some(next_seq);
         } else {
@@ -160,15 +160,15 @@ fn compute_new_watermark(
     Ok(watermark)
 }
 
-/// Checks if a blob exists for the given topic:log:seq
+/// Checks if a blob exists for the given topic:author:seq
 fn blob_exists(
     table: &redb::Table<&str, &[u8]>,
     topic_id: &str,
-    log_id: &str,
+    author: &str,
     seq_num: SequenceNumber,
 ) -> Result<bool, String> {
-    // Use range query with prefix "topic_id:log_id:seq_num:"
-    let prefix = format!("{}:{}:{}:", topic_id, log_id, seq_num);
+    // Use range query with prefix "topic_id:author:seq_num:"
+    let prefix = format!("{}:{}:{}:", topic_id, author, seq_num);
     let range_start = prefix.as_str();
     let mut range_end = prefix.clone();
     range_end.push(char::MAX);

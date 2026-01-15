@@ -1,4 +1,4 @@
-use dashchat_node::{DeviceId, Header, Node, Payload, Topic, topic::{DashChatTopicId, LogId}};
+use dashchat_node::{topic::LogId, DeviceId, Header, Node, Payload, Topic};
 use p2panda_core::{cbor::decode_cbor, Body, Hash, PublicKey};
 use p2panda_net::TopicId;
 use serde::{Deserialize, Serialize};
@@ -73,20 +73,20 @@ impl From<Header> for SimplifiedHeader {
 //     }
 // }
 
-pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
-    let _bytes = body.to_bytes();
-    // let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
-    //     return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
-    // };
+// pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
+//     let _bytes = body.to_bytes();
+//     // let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
+//     //     return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
+//     // };
 
-    let values: Vec<serde_json::Value> = vec![];
+//     let values: Vec<serde_json::Value> = vec![];
 
-    // if let Some(value) = decode_spaces_args(args)? {
-    //     values.push(value);
-    // }
+//     // if let Some(value) = decode_spaces_args(args)? {
+//     //     values.push(value);
+//     // }
 
-    Ok(serde_json::Value::Array(values))
-}
+//     Ok(serde_json::Value::Array(values))
+// }
 
 pub fn simplify(
     // hash: Hash,
