@@ -175,8 +175,11 @@ where
                     continue;
                 };
 
-                for seq in seqs {
-                    if let Some((header, body)) = log.get(seq as usize) {
+                for seq in &seqs {
+                    // The operations in the 0..lowest range are not included in the log vector:
+                    // Compute the vector index by substracting it from the sequence number
+                    let index = seq - lowest;
+                    if let Some((header, body)) = log.get(index as usize) {
                         let op = MailboxOperation {
                             header: header.clone(),
                             body: body.clone(),

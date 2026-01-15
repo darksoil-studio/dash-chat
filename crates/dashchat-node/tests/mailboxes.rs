@@ -79,6 +79,11 @@ async fn mailbox_late_join(alice_mailbox: impl MailboxClient, bobbi_mailbox: imp
     let chat = alice.direct_chat_topic(bobbi.agent_id());
     alice.send_message(chat, "Hello".into()).await.unwrap();
 
+    // Introduce delay to let the first message be stored and force missing synchronization with the second one
+    std::thread::sleep(Duration::from_secs(2));
+    
+    alice.send_message(chat, "Hello2".into()).await.unwrap();
+
     println!("=== adding mailboxes ===");
 
     println!("=== added mailboxes ===");
@@ -87,8 +92,8 @@ async fn mailbox_late_join(alice_mailbox: impl MailboxClient, bobbi_mailbox: imp
         Duration::from_millis(100),
         Duration::from_secs(5),
         || async {
-            (alice.get_messages(chat).await.unwrap().len() == 1
-                && bobbi.get_messages(chat).await.unwrap().len() == 1)
+            (alice.get_messages(chat).await.unwrap().len() == 2
+                && bobbi.get_messages(chat).await.unwrap().len() == 2)
                 .ok_or("message not received")
         },
     )
