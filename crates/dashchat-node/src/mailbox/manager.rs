@@ -31,7 +31,6 @@ where
     store: OpStore<S>,
     config: MailboxesConfig,
     trigger: mpsc::Sender<()>,
-    // TODO: add a receiver to short circuit the polling interval
 }
 
 impl<S> Mailboxes<S>
