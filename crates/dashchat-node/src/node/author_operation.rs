@@ -20,7 +20,7 @@ impl Node {
             )
             .await?;
 
-        self.mailboxes.trigger_sync().await;
+        self.mailboxes.trigger_sync();
 
         let op = Operation {
             hash: header.hash().with_serial(),
