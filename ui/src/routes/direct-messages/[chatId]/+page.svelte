@@ -30,7 +30,7 @@
 	let chatId = page.params.chatId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	const myActorId = useReactivePromise(contactsStore.myChatActorId);
+	const myActorId = useReactivePromise(contactsStore.myAgentId);
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.directMessagesChats(chatId);

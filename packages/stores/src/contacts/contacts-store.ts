@@ -11,7 +11,7 @@ import { ContactRequestId, IContactsClient, Profile } from './contacts-client';
 export interface IncomingContactRequest {
 	profile: Profile;
 	actorId: AgentId;
-	contactRequestId: ContactRequestId
+	contactRequestId: ContactRequestId;
 }
 
 export class ContactsStore {
@@ -24,22 +24,24 @@ export class ContactsStore {
 	myAgentId = reactive(async () => await this.client.myAgentId());
 
 	myProfile = reactive(async () => {
-		const myChatActorId = await this.myAgentId();
+		const myAgentId = await this.myAgentId();
 
-		return await this.profiles(myChatActorId);
+		return await this.profiles(myAgentId);
 	});
 
 	incomingContactRequests = reactive(async () => {
-		const requests :Array<IncomingContactRequest> = [{
-			actorId: await this.myAgentId(),
-			profile: (await this.myProfile())!,
-			contactRequestId: '1'
-		}]
-		return requests
-	})
+		const requests: Array<IncomingContactRequest> = [
+			{
+				actorId: await this.myAgentId(),
+				profile: (await this.myProfile())!,
+				contactRequestId: '1',
+			},
+		];
+		return requests;
+	});
 
-	profiles = reactive(async (actorId: AgentId) => {
-		const topicId = personalTopicFor(actorId);
+	profiles = reactive(async (agentId: AgentId) => {
+		const topicId = personalTopicFor(agentId);
 
 		const operations = await this.logsStore.logsForAllAuthors(topicId);
 
@@ -78,7 +80,7 @@ export class ContactsStore {
 		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
 			for (const op of ops) {
 				if (op.body?.payload?.type === 'AddContact') {
-					contacts.add(op.body.payload.payload.chat_actor_id);
+					contacts.add(op.body.payload.payload.agent_id);
 				}
 			}
 		}

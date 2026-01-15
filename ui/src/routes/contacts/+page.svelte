@@ -19,6 +19,7 @@
 		NavbarBackLink,
 		Preloader,
 	} from 'konsta/svelte';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
