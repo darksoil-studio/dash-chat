@@ -24,10 +24,10 @@ impl Default for MailboxesConfig {
 #[derive(Clone)]
 pub struct Mailboxes<S>
 where
-    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions> + Send + Sync + 'static,
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions> + Send + Sync + 'static,
 {
     mailboxes: Arc<Mutex<Vec<Arc<dyn MailboxClient>>>>,
-    topics: Arc<Mutex<HashMap<LogId, mpsc::Sender<Operation>>>>,
+    topics: Arc<Mutex<HashMap<TopicId, mpsc::Sender<Operation>>>>,
     store: OpStore<S>,
     config: MailboxesConfig,
     trigger: mpsc::Sender<()>,
@@ -36,7 +36,7 @@ where
 
 impl<S> Mailboxes<S>
 where
-    S: OperationStore<LogId, Extensions> + LogStore<LogId, Extensions> + Send + Sync + 'static,
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions> + Send + Sync + 'static,
 {
     fn new(store: OpStore<S>, config: MailboxesConfig, trigger: mpsc::Sender<()>) -> Self {
         Self {
@@ -56,7 +56,7 @@ where
         self.mailboxes.lock().await.clear();
     }
 
-    pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
+    pub async fn subscribed_topics(&self) -> BTreeSet<TopicId> {
         self.topics.lock().await.keys().cloned().collect()
     }
 
@@ -66,7 +66,7 @@ where
 
     pub async fn subscribe(
         &self,
-        topic: LogId,
+        topic: TopicId,
     ) -> Result<mpsc::Receiver<Operation>, anyhow::Error> {
         tracing::info!(topic = ?topic.renamed(), "subscribing to topic");
         let (tx, rx) = mpsc::channel(100);
@@ -74,7 +74,7 @@ where
         Ok(rx)
     }
 
-    pub async fn unsubscribe(&self, topic: LogId) -> Result<(), anyhow::Error> {
+    pub async fn unsubscribe(&self, topic: TopicId) -> Result<(), anyhow::Error> {
         tracing::info!(topic = ?topic.renamed(), "unsubscribing from topic");
         self.topics.lock().await.remove(&topic);
         Ok(())
@@ -159,7 +159,7 @@ where
     /// - Publish any ops that the mailbox is missing to the mailbox
     pub async fn sync_topics(
         &self,
-        topics: impl Iterator<Item = LogId>,
+        topics: impl Iterator<Item = TopicId>,
         mailbox: Arc<dyn MailboxClient>,
     ) -> anyhow::Result<()> {
         let mut request = BTreeMap::new();
