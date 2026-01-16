@@ -4,8 +4,8 @@
   perSystem = { inputs', pkgs, lib, self', system, ... }:
     let
       tauriConfig =
-        builtins.fromJSON (builtins.readFile ./src-tauri/tauri.conf.json);
-      cargoToml = builtins.fromTOML (builtins.readFile ./src-tauri/Cargo.toml);
+        builtins.fromJSON (builtins.readFile ../src-tauri/tauri.conf.json);
+      cargoToml = builtins.fromTOML (builtins.readFile ../src-tauri/Cargo.toml);
       pname = cargoToml.package.name;
       version = tauriConfig.version;
       overlays = [ (import inputs.rust-overlay) ];
@@ -13,20 +13,20 @@
       rust = craneLibPkgs.rust-bin.fromRustupToolchainFile "${self}/rust-toolchain.toml";
       craneLib = (inputs.crane.mkLib craneLibPkgs).overrideToolchain rust;
       src =
-        inputs.p2p-shipyard.inputs.holochain-utils.inputs.tauri-plugin-holochain.outputs.lib.cleanTauriSource {
+        inputs.tauri-plugin-holochain.outputs.lib.cleanTauriSource {
           inherit lib;
-        } (craneLib.path ./.);
+        } (craneLib.path self.outPath);
 
       ui = pkgs.stdenv.mkDerivation (finalAttrs: {
         inherit version;
         pname = "${pname}-ui";
-        src = ./.;
+        src = self.outPath;
 
         nativeBuildInputs = with pkgs; [ nodejs pnpm.configHook git ];
         pnpmDeps = pkgs.pnpm.fetchDeps {
           inherit (finalAttrs) version pname src;
 
-          hash = "sha256-LJX2Nj415sw4db3kjmZq6OatmOQi6HacIJjouRv5D/I=";
+          hash = "sha256-g59GWvOrK7MaTkVDNcbKC9r0OH+1s7XxXc0e4KTaEKE=";
           buildInputs = [ pkgs.git ];
         };
         buildPhase = ''
@@ -49,10 +49,10 @@
         cargoExtraArgs = "";
 
         buildInputs =
-          inputs.p2p-shipyard.inputs.holochain-utils.inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.buildInputs;
+          inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.buildInputs;
 
         nativeBuildInputs =
-          inputs.p2p-shipyard.inputs.holochain-utils.inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.nativeBuildInputs;
+          inputs.tauri-plugin-holochain.outputs.dependencies.${system}.tauriHapp.nativeBuildInputs;
 
         postPatch = ''
           mkdir -p "$TMPDIR/nix-vendor"
@@ -71,14 +71,8 @@
         cargoBuildCommand = ''
           if [ -f "src-tauri/tauri.conf.json" ]; then
             substituteInPlace src-tauri/tauri.conf.json \
-              --replace-fail '"frontendDist": "../ui/dist"' '"frontendDist": "${ui}/dist"' \
+              --replace-fail '"frontendDist": "../ui/build"' '"frontendDist": "${ui}/build"' \
               --replace-fail '"beforeBuildCommand": "pnpm -F ui build",' '"beforeBuildCommand": "",'
-            cp ${
-              self.outputs.packages."x86_64-linux".dash_chat_happ
-            } workdir/dash-chat.happ
-            cp ${
-              self.outputs.packages."x86_64-linux".dash_chat_happ.dna_hashes
-            } workdir/dash-chat-dna_hashes
           fi
           ${commonArgs.cargoBuildCommand}'';
       });

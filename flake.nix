@@ -9,10 +9,7 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     flake-parts.url = "github:hercules-ci/flake-parts";
 
-    crane = {
-      url = "github:ipetkov/crane";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    crane.url = "github:ipetkov/crane";
 
     garnix-lib = {
       url = "github:garnix-io/garnix-lib";
@@ -40,9 +37,8 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         ./nix/servers.nix
-        ./crates/mailbox-server/default.nix
         ./nix/tauri-app.nix
-        ./nix/raspberry-pi.nix
+        ./crates/mailbox-server/default.nix
       ];
 
       systems =
