@@ -1,35 +1,76 @@
 use std::{
     collections::{HashMap, HashSet},
-    convert::Infallible,
     sync::{Arc, RwLock},
 };
 
 use p2panda_core::{Body, Hash, Operation, PublicKey, RawOperation};
-use p2panda_store::{LogStore, MemoryStore, OperationStore};
+use p2panda_store::{LogStore, MemoryStore, OperationStore, SqliteStore};
 use p2panda_stream::operation::IngestResult;
+use rand::distr::Distribution;
 use tokio::sync::Mutex;
 
 use crate::{
     node::Orderer,
     payload::{Extensions, Payload},
-    spaces::SpaceOperation,
-    testing::AliasedId,
-    topic::{LogId, Topic, TopicKind},
+    topic::{Topic, TopicId, TopicKind},
     *,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::DerefMut)]
-pub struct OpStore {
+pub struct OpStore<S>
+where
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions>,
+    S: Send + Sync,
+{
     #[deref]
     #[deref_mut]
-    store: MemoryStore<LogId, Extensions>,
-    pub orderer: Arc<tokio::sync::RwLock<Orderer>>,
-    pub processed_ops: Arc<RwLock<HashMap<LogId, HashSet<Hash>>>>,
+    pub(crate) store: S,
+    pub orderer: Arc<tokio::sync::RwLock<Orderer<S>>>,
+    pub processed_ops: Arc<RwLock<HashMap<TopicId, HashSet<Hash>>>>,
     write_mutex: Arc<Mutex<()>>,
 }
 
-impl OpStore {
-    pub fn new(store: MemoryStore<LogId, Extensions>) -> Self {
+impl OpStore<MemoryStore<TopicId, Extensions>> {
+    pub fn new_memory() -> Self {
+        let store = MemoryStore::new();
+        Self::new(store)
+    }
+}
+
+impl OpStore<SqliteStore<TopicId, Extensions>> {
+    pub async fn new_sqlite() -> anyhow::Result<Self> {
+        let rand = rand::distr::Alphanumeric
+            .sample_iter(&mut rand::rng())
+            .take(10)
+            .map(char::from)
+            .collect::<String>();
+        let filename = format!("/tmp/dashchat-{rand}.db");
+        let url = format!("sqlite://{filename}");
+        p2panda_store::sqlite::store::create_database(&url).await?;
+
+        let pool = sqlx::SqlitePool::connect(&url)
+            .await
+            .map_err(|e| anyhow::anyhow!("failed to connect to sqlite at '{filename}': {e}"))?;
+
+        if p2panda_store::sqlite::store::run_pending_migrations(&pool)
+            .await
+            .is_err()
+        {
+            pool.close().await;
+            panic!("Database migration failed");
+        }
+        let store = SqliteStore::new(pool);
+
+        Ok(Self::new(store))
+    }
+}
+
+impl<S> OpStore<S>
+where
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions>,
+    S: Send + Sync,
+{
+    pub fn new(store: S) -> Self {
         let orderer = Arc::new(tokio::sync::RwLock::new(Orderer::new(
             store.clone(),
             Default::default(),
@@ -43,6 +84,20 @@ impl OpStore {
         }
     }
 
+    pub async fn get_log_heights(
+        &self,
+        topic: &TopicId,
+    ) -> Result<Vec<(DeviceId, u64)>, anyhow::Error> {
+        Ok(self
+            .store
+            .get_log_heights(&topic)
+            .await
+            .map_err(|err| anyhow::anyhow!("failed to get log heights for {topic:?}: {err}"))?
+            .into_iter()
+            .map(|(pk, height)| (DeviceId::from(pk), height))
+            .collect::<Vec<_>>())
+    }
+
     pub async fn author_operation<K: TopicKind>(
         &self,
         private_key: &PrivateKey,
@@ -51,29 +106,31 @@ impl OpStore {
         deps: Vec<p2panda_core::Hash>,
         alias: Option<&str>,
     ) -> Result<(Header, Option<Body>), anyhow::Error> {
-        let public_key = private_key.public_key();
-        let log_id = topic.clone();
+        let device_id = DeviceId::from(private_key.public_key());
+        let topic = topic.clone();
 
         let body = Some(payload.try_into_body()?);
 
         let extensions = Extensions {
-            log_id: log_id.clone().into(),
+            topic: topic.clone().into(),
         };
 
         let lock = self.write_mutex.lock().await;
-        let latest_operation = self.latest_operation(&public_key, &log_id.into()).await?;
+        let latest_operation = self
+            .latest_operation(&device_id, &topic.into())
+            .await
+            .unwrap();
 
         let (seq_num, backlink) = match latest_operation {
             Some((header, _)) => (header.seq_num + 1, Some(header.hash())),
             None => (0, None),
         };
-        tracing::info!(?seq_num, "seq_num read");
 
         let timestamp = timestamp_now();
 
         let mut header = Header {
             version: 1,
-            public_key,
+            public_key: *device_id,
             signature: None,
             payload_size: body.as_ref().map_or(0, |body| body.size()),
             payload_hash: body.as_ref().map(|body| body.hash()),
@@ -86,16 +143,18 @@ impl OpStore {
 
         header.sign(private_key);
 
-        let log_id = header.extensions.log_id;
+        let topic = header.extensions.topic;
         let hash = header.hash();
 
         if let Some(alias) = alias {
-            header.hash().aliased(alias);
+            header.hash().with_name(alias);
+        } else {
+            header.hash().with_serial();
         }
 
         tracing::info!(
-            ?log_id,
-            hash = hash.alias(),
+            topic = ?topic.renamed(),
+            hash = ?hash.renamed(),
             seq_num = header.seq_num,
             "PUB: authoring operation"
         );
@@ -105,13 +164,10 @@ impl OpStore {
             header.clone(),
             body.clone(),
             header.to_bytes(),
-            &log_id.into(),
+            &topic.into(),
             false,
         )
         .await?;
-
-        // Let the next op be authored as soon as this one's ingested
-        drop(lock);
 
         match result {
             IngestResult::Complete(op @ Operation { hash: hash2, .. }) => {
@@ -122,17 +178,25 @@ impl OpStore {
             }
 
             IngestResult::Retry(h, _, _, missing) => {
-                let backlink = h.backlink.as_ref().map(|h| h.alias());
+                let backlink = h.backlink.as_ref().map(|h| h.renamed());
                 tracing::error!(
-                    ?log_id,
-                    hash = hash.alias(),
+                    ?topic,
+                    hash = ?hash.renamed(),
                     ?backlink,
                     ?missing,
                     "operation could not be ingested"
                 );
                 panic!("operation could not be ingested, check your sequence numbers!");
             }
+
+            IngestResult::Outdated(op) => {
+                tracing::error!(?op, "operation is outdated");
+                panic!("operation is outdated");
+            }
         }
+
+        // Let the next op be authored as soon as this one's ingested
+        drop(lock);
 
         Ok((header, body))
     }
@@ -152,36 +216,63 @@ impl OpStore {
         Ok(next)
     }
 
-    pub fn report<'a>(&self, log_ids: impl IntoIterator<Item = &'a LogId>) -> String {
-        let log_ids = log_ids.into_iter().collect::<Vec<_>>();
+    pub fn mark_op_processed(&self, topic: TopicId, hash: &Hash) {
+        self.processed_ops
+            .write()
+            .unwrap()
+            .entry(topic)
+            .or_default()
+            .insert(hash.clone());
+    }
+
+    pub fn is_op_processed(&self, topic: &TopicId, hash: &Hash) -> bool {
+        self.processed_ops
+            .read()
+            .unwrap()
+            .get(topic)
+            .map(|s| s.contains(hash))
+            .unwrap_or(false)
+    }
+}
+
+impl OpStore<SqliteStore<TopicId, Extensions>> {
+    pub fn report<'a>(&self, _topics: impl IntoIterator<Item = &'a TopicId>) -> String {
+        tracing::warn!("report() not implemented for SqliteStore");
+        format!("report() not implemented for SqliteStore")
+    }
+}
+
+impl OpStore<MemoryStore<TopicId, Extensions>> {
+    pub fn report<'a>(&self, topics: impl IntoIterator<Item = &'a TopicId>) -> String {
+        let topics = topics.into_iter().collect::<Vec<_>>();
         let s = self.store.read_store();
         let mut ops = s
             .operations
             .iter()
             .filter(|(_, (l, _, _, _))| {
-                log_ids.is_empty() || log_ids.iter().find(|log_id| **log_id == l).is_some()
+                topics.is_empty() || topics.iter().find(|topic| **topic == l).is_some()
             })
             .collect::<Vec<_>>();
-        ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.alias(), header.seq_num));
+        ops.sort_by_key(|(_, (t, header, _, _))| (t, header.public_key.renamed(), header.seq_num));
         ops.into_iter()
             .map(|(h, (t, header, body, _))| {
                 let desc = match body
                     .clone()
                     .map(|body| Payload::try_from_body(&body).unwrap())
                 {
-                    Some(Payload::Space(args)) => {
-                        let space_op = SpaceOperation::new(header.clone(), args);
-                        format!("{:?}", space_op.arg_type())
-                    }
+                    // Some(Payload::Space(args)) => {
+                    //     let space_op = GroupOp::new(header.clone(), args);
+                    //     format!("{:?}", space_op.arg_type())
+                    // }
                     Some(p) => format!("{p:?}"),
                     None => "_".to_string(),
                 };
-                if log_ids.len() == 1 {
+                if topics.len() == 1 {
                     format!(
                         "• {} {:2} {} : {}",
-                        header.public_key.alias(),
+                        header.public_key.renamed(),
                         header.seq_num,
-                        h.alias(),
+                        h.renamed(),
                         desc
                     )
                 } else {
@@ -189,9 +280,9 @@ impl OpStore {
                     format!(
                         "• {:>24} {} {:2} {} : {}",
                         t,
-                        header.public_key.alias(),
+                        header.public_key.renamed(),
                         header.seq_num,
-                        h.alias(),
+                        h.renamed(),
                         desc
                     )
                 }
@@ -199,28 +290,14 @@ impl OpStore {
             .collect::<Vec<_>>()
             .join("\n")
     }
-
-    pub fn mark_op_processed(&self, log_id: LogId, hash: &Hash) {
-        self.processed_ops
-            .write()
-            .unwrap()
-            .entry(log_id)
-            .or_default()
-            .insert(hash.clone());
-    }
-
-    pub fn is_op_processed(&self, log_id: &LogId, hash: &Hash) -> bool {
-        self.processed_ops
-            .read()
-            .unwrap()
-            .get(log_id)
-            .map(|s| s.contains(hash))
-            .unwrap_or(false)
-    }
 }
 
-impl OperationStore<LogId, Extensions> for OpStore {
-    type Error = Infallible;
+impl<S> OperationStore<TopicId, Extensions> for OpStore<S>
+where
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions> + Send + Sync,
+    <S as OperationStore<TopicId, Extensions>>::Error: std::error::Error + Send + Sync,
+{
+    type Error = <S as OperationStore<TopicId, Extensions>>::Error;
 
     async fn insert_operation(
         &mut self,
@@ -228,10 +305,10 @@ impl OperationStore<LogId, Extensions> for OpStore {
         header: &Header,
         body: Option<&Body>,
         header_bytes: &[u8],
-        log_id: &LogId,
+        topic: &TopicId,
     ) -> Result<bool, Self::Error> {
         self.store
-            .insert_operation(hash, header, body, header_bytes, log_id)
+            .insert_operation(hash, header, body, header_bytes, topic)
             .await
     }
 
@@ -259,77 +336,83 @@ impl OperationStore<LogId, Extensions> for OpStore {
     }
 }
 
-impl LogStore<LogId, Extensions> for OpStore {
-    type Error = Infallible;
+impl<S> LogStore<TopicId, Extensions> for OpStore<S>
+where
+    S: LogStore<TopicId, Extensions>,
+    S: OperationStore<TopicId, Extensions>,
+    S: Send + Sync,
+    <S as LogStore<TopicId, Extensions>>::Error: std::error::Error + Send + Sync,
+{
+    type Error = <S as LogStore<TopicId, Extensions>>::Error;
 
     async fn get_log(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: Option<u64>,
     ) -> Result<Option<Vec<(Header, Option<Body>)>>, Self::Error> {
-        self.store.get_log(public_key, log_id, from).await
+        self.store.get_log(public_key, topic, from).await
     }
 
     async fn get_raw_log(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: Option<u64>,
     ) -> Result<Option<Vec<RawOperation>>, Self::Error> {
-        self.store.get_raw_log(public_key, log_id, from).await
+        self.store.get_raw_log(public_key, topic, from).await
     }
 
     async fn latest_operation(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
     ) -> Result<Option<(Header, Option<Body>)>, Self::Error> {
-        self.store.latest_operation(public_key, log_id).await
+        self.store.latest_operation(public_key, topic).await
     }
 
-    async fn get_log_heights(&self, log_id: &LogId) -> Result<Vec<(PublicKey, u64)>, Self::Error> {
-        self.store.get_log_heights(log_id).await
+    async fn get_log_heights(&self, topic: &TopicId) -> Result<Vec<(PublicKey, u64)>, Self::Error> {
+        self.store.get_log_heights(topic).await
     }
 
     async fn delete_operations(
         &mut self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         before: u64,
     ) -> Result<bool, Self::Error> {
         self.store
-            .delete_operations(public_key, log_id, before)
+            .delete_operations(public_key, topic, before)
             .await
     }
 
     async fn delete_payloads(
         &mut self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: u64,
         to: u64,
     ) -> Result<bool, Self::Error> {
         self.store
-            .delete_payloads(public_key, log_id, from, to)
+            .delete_payloads(public_key, topic, from, to)
             .await
     }
 
     async fn get_log_size(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: Option<u64>,
     ) -> Result<Option<u64>, Self::Error> {
-        self.store.get_log_size(public_key, log_id, from).await
+        self.store.get_log_size(public_key, topic, from).await
     }
 
     async fn get_log_hashes(
         &self,
         public_key: &PublicKey,
-        log_id: &LogId,
+        topic: &TopicId,
         from: Option<u64>,
     ) -> Result<Option<Vec<Hash>>, Self::Error> {
-        self.store.get_log_hashes(public_key, log_id, from).await
+        self.store.get_log_hashes(public_key, topic, from).await
     }
 }

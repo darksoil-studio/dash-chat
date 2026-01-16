@@ -4,6 +4,7 @@
 	import { m, members } from '$lib/paraglide/messages.js';
 
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiAccountMultiplePlus } from '@mdi/js';
@@ -42,7 +43,7 @@
 	async function createGroupChat() {
 		const contacts = Array.from(selectedContacts);
 		const groupStore = await chatsStore.createGroup(contacts);
-		window.location.href = `/group-chat/${groupStore.chatId}`;
+		goto(`/group-chat/${groupStore.chatId}`);
 	}
 </script>
 

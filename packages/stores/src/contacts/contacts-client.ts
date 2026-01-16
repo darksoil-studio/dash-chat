@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import { ActorId, type PublicKey, type TopicId } from '../p2panda/types';
+import { AgentId, type PublicKey, type TopicId } from '../p2panda/types';
 import { ContactCode } from '../types';
 
 export interface Profile {
@@ -15,7 +15,7 @@ export type ContactRequestId = string;
 export interface IContactsClient {
 	/// Profiles
 
-	myChatActorId(): Promise<ActorId>;
+	myAgentId(): Promise<AgentId>;
 
 	// Sets the profile for this user
 	setProfile(profile: Profile): Promise<void>;
@@ -49,8 +49,8 @@ export interface IContactsClient {
 }
 
 export class ContactsClient implements IContactsClient {
-	myChatActorId(): Promise<ActorId> {
-		return invoke('my_chat_actor_id');
+	myAgentId(): Promise<AgentId> {
+		return invoke('my_agent_id');
 	}
 
 	async setProfile(profile: Profile): Promise<void> {

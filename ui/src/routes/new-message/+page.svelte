@@ -5,6 +5,7 @@
 	import { mdiAccountMultiplePlus, mdiAccountPlus } from '@mdi/js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import {
@@ -29,7 +30,7 @@
 <Page>
 	<Navbar title={m.newMessage()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => (window.location.href = '/')} />
+			<NavbarBackLink onClick={() => goto('/')} />
 		{/snippet}
 	</Navbar>
 

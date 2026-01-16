@@ -31,12 +31,12 @@
 
 use std::marker::PhantomData;
 
-use crate::testing::{AliasedId, ShortId};
+use crate::AgentId;
+use named_id::*;
 
-use p2panda_net::TopicId;
 use p2panda_spaces::ActorId;
 use p2panda_sync::TopicQuery;
-use serde::{Deserialize, Serialize,  de::DeserializeOwned};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 pub trait TopicKind:
     Default
@@ -53,13 +53,14 @@ pub trait TopicKind:
     + Ord
     + std::fmt::Display
     + std::fmt::Debug
+    + Rename
+    + 'static
 {
 }
 // pub trait ChatTopicKind: TopicKind {}
 
 pub type DeviceGroupTopic = ActorId;
 
-pub type GlobalTopic = Topic<kind::Global>;
 pub type UntypedTopic = Topic<kind::Untyped>;
 
 pub mod kind {
@@ -77,6 +78,7 @@ pub mod kind {
                 Hash,
                 Serialize,
                 Deserialize,
+                RenameNone,
                 derive_more::Display,
                 derive_more::Debug,
             )]
@@ -92,11 +94,12 @@ pub mod kind {
         };
     }
 
+    topic_kind!(Announcements);
+    topic_kind!(Inbox);
+    topic_kind!(DeviceGroup);
+
     // Either direct or group chat
     topic_kind!(Chat);
-    // Global topic!
-    // TODO: alpha: this needs to be refined
-    topic_kind!(Global);
 
     topic_kind!(Untyped);
 
@@ -121,25 +124,20 @@ pub mod kind {
     derive_more::Debug,
 )]
 #[display("{}", hex::encode(self.0))]
-#[debug("{}", self.alias())]
-pub struct LogId([u8; 32]);
+#[debug("{}", self)]
+pub struct TopicId([u8; 32]);
 
-impl p2panda_spaces::traits::SpaceId for LogId {}
-impl TopicQuery for LogId {}
+impl p2panda_spaces::traits::SpaceId for TopicId {}
+impl TopicQuery for TopicId {}
 
-impl ShortId for LogId {
-    const PREFIX: &'static str = "L";
+pub type DashChatTopicId = TopicId;
 
-    fn to_short_string(&self) -> String {
-        hex::encode(self.0)
-    }
-}
-
-impl AliasedId for LogId {
-    const SHOW_SHORT_ID: bool = true;
-
-    fn as_bytes(&self) -> &[u8] {
-        self.0.as_ref()
+impl Nameable for TopicId {
+    fn shortener(&self) -> Option<Shortener> {
+        Some(Shortener {
+            length: 4,
+            prefix: "L",
+        })
     }
 }
 
@@ -151,15 +149,16 @@ impl AliasedId for LogId {
     PartialEq,
     PartialOrd,
     Ord,
+    named_id::RenameAll,
     derive_more::Deref,
     derive_more::Display,
     derive_more::Debug,
 )]
-#[display("{}", hex::encode(self.id))]
-#[debug("{}", self.alias())]
+#[display("{}", hex::encode(self.id.0))]
+#[debug("{}", self)]
 pub struct Topic<K: TopicKind = kind::Untyped> {
     #[deref]
-    id: [u8; 32],
+    id: TopicId,
 
     kind: PhantomData<K>,
 }
@@ -170,20 +169,25 @@ impl<K: TopicKind> TopicQuery for Topic<K> {}
 impl<K: TopicKind> Topic<K> {
     fn new(id: [u8; 32]) -> Self {
         Self {
-            id,
+            id: TopicId(id),
             kind: PhantomData::<K>,
         }
     }
 
+    pub fn with_name(self, name: &str) -> Self {
+        self.id.with_name(name);
+        self
+    }
+
     #[deprecated(note = "refactor so this is impossible")]
     pub fn recast<K2: TopicKind>(self) -> Topic<K2> {
-        Topic::new(self.id)
+        Topic::new(self.id.0)
     }
 }
 
-impl Topic<kind::Global> {
-    pub fn global() -> Self {
-        Self::new([255; 32]).aliased("GLOBAL")
+impl Topic<kind::Announcements> {
+    pub fn announcements(agent_id: AgentId) -> Self {
+        Self::new(*agent_id.as_bytes())
     }
 }
 
@@ -192,7 +196,7 @@ impl Topic<kind::Chat> {
         Self::new(rand::random())
     }
 
-    pub fn direct_chat(mut pks: [ActorId; 2]) -> Self {
+    pub fn direct_chat(mut pks: [AgentId; 2]) -> Self {
         pks.sort();
         let mut hasher = blake3::Hasher::new();
         hasher.update(pks[0].as_bytes());
@@ -201,46 +205,45 @@ impl Topic<kind::Chat> {
     }
 }
 
+impl Topic<kind::Inbox> {
+    pub fn inbox() -> Self {
+        Self::new(rand::random())
+    }
+}
+
+impl Topic<kind::DeviceGroup> {
+    // TODO: use a random topic stored in NodeLocalData instead
+    pub fn device_group(agent_id: AgentId) -> Self {
+        let mut hasher = blake3::Hasher::new();
+        hasher.update(agent_id.as_bytes());
+        Self::new(hasher.finalize().into())
+    }
+}
+
 impl Topic<kind::Untyped> {
     pub fn untyped(id: [u8; 32]) -> Self {
         Self {
-            id,
+            id: TopicId(id),
             kind: PhantomData,
         }
     }
 }
 
-impl TopicId for LogId {
+impl p2panda_net::TopicId for TopicId {
     fn id(&self) -> [u8; 32] {
         self.0
     }
 }
 
-impl<K: TopicKind> From<Topic<K>> for LogId {
+impl<K: TopicKind> From<Topic<K>> for TopicId {
     fn from(topic: Topic<K>) -> Self {
-        Self(topic.id)
+        Self(topic.id.0)
     }
 }
 
-impl<K: TopicKind> TopicId for Topic<K> {
+impl<K: TopicKind> p2panda_net::TopicId for Topic<K> {
     fn id(&self) -> [u8; 32] {
-        self.id
-    }
-}
-
-impl<K: TopicKind> ShortId for Topic<K> {
-    const PREFIX: &'static str = "T";
-
-    fn prefix() -> String {
-        format!("{}:{}", Self::PREFIX, K::default())
-    }
-}
-
-impl<K: TopicKind> AliasedId for Topic<K> {
-    const SHOW_SHORT_ID: bool = true;
-
-    fn as_bytes(&self) -> &[u8] {
-        self.id.as_ref()
+        self.id.0
     }
 }
 
@@ -272,7 +275,7 @@ impl std::str::FromStr for Topic {
 
 impl<K: TopicKind> Serialize for Topic<K> {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.collect_str(&hex::encode(&self.id))
+        serializer.collect_str(&hex::encode(&self.id.0))
     }
 }
 
@@ -294,7 +297,7 @@ fn to_fixed_size_array<T>(v: Vec<T>) -> Result<[T; 32], String> {
 impl<'de, K: TopicKind> Deserialize<'de> for Topic<K> {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct Vis<K> {
-          phantom_data: PhantomData<K>  
+            phantom_data: PhantomData<K>,
         }
         impl<K: TopicKind> serde::de::Visitor<'_> for Vis<K> {
             type Value = Topic<K>;
@@ -308,12 +311,12 @@ impl<'de, K: TopicKind> Deserialize<'de> for Topic<K> {
                 let byte_array: [u8; 32] =
                     to_fixed_size_array(bytes).map_err(serde::de::Error::custom)?;
 
-                let topic_id:Topic<K> = Topic::new(byte_array);
+                let topic_id: Topic<K> = Topic::new(byte_array);
                 Ok(topic_id)
             }
         }
         deserializer.deserialize_str(Vis {
-            phantom_data: PhantomData::<K>
+            phantom_data: PhantomData::<K>,
         })
     }
 }

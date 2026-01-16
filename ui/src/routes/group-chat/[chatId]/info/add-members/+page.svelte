@@ -5,6 +5,7 @@
 	import { mdiAccountMultiplePlus, mdiAccountPlus } from '@mdi/js';
 	import type { ContactsStore, PublicKey } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import {
 		Page,
 		Navbar,
@@ -31,7 +32,7 @@
 	const theme = $derived(useTheme());
 
 	async function addMembers() {
-		window.location.href = `/group-chat/${chatId}/info`;
+		goto(`/group-chat/${chatId}/info`);
 	}
 </script>
 
@@ -46,7 +47,7 @@
 	>
 		{#snippet left()}
 			<NavbarBackLink
-				onClick={() => (window.location.href = `/group-chat/${chatId}/info`)}
+				onClick={() => goto(`/group-chat/${chatId}/info`)}
 			/>
 		{/snippet}
 		{#snippet right()}

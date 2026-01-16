@@ -1,22 +1,37 @@
 use std::time::Duration;
 
+use dashchat_node::mailbox::mem::MemMailbox;
 use p2panda_store::LogStore;
 
 use dashchat_node::{testing::*, *};
+use named_id::*;
 
-const TRACING_FILTER: &str =
-    "dashchat=info,p2panda_stream=info,p2panda_auth=warn,p2panda_spaces=info";
+const TRACING_FILTER: [&str; 4] = [
+    "dashchat=info",
+    "p2panda_stream=info",
+    "p2panda_auth=warn",
+    "p2panda_spaces=info",
+];
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_profiles() {
-    dashchat_node::testing::setup_tracing(TRACING_FILTER, true);
+    dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
     println!("nodes:");
-    let alice = TestNode::new(NodeConfig::default(), Some("alice")).await;
-    let bobbi = TestNode::new(NodeConfig::default(), Some("bobbi")).await;
-    println!("alice: {:?}", alice.public_key().short());
-    println!("bobbi: {:?}", bobbi.public_key().short());
+    let mailbox = MemMailbox::new();
+    let alice = TestNode::new(NodeConfig::testing(), Some("alice--"))
+        .await
+        .add_mailbox_client(mailbox.client())
+        .await;
+    let bobbi = TestNode::new(NodeConfig::testing(), Some("--bobbi"))
+        .await
+        .add_mailbox_client(mailbox.client())
+        .await;
 
+    println!("alice: {:?}", alice.device_id().short());
+    println!("bobbi: {:?}", bobbi.device_id().short());
+
+    #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
     alice
@@ -45,18 +60,18 @@ async fn test_profiles() {
             bobbi
                 .op_store
                 .get_log(
-                    &alice.public_key(),
-                    &Topic::global().into(),
-                    // &Topic::announcements(alice.chat_actor_id()).into(),
+                    &alice.device_id(),
+                    &Topic::announcements(alice.agent_id()).into(),
                     None,
                 )
                 .await
                 .map_err(|_| "failed to get log")?
                 .ok_or("no log found")?
-                .first()
-                .filter(|(_, body)| {
+                .iter()
+                .find(|(_, body)| {
+                    let p = Payload::try_from_body(body.as_ref().unwrap()).unwrap();
                     matches!(
-                        Payload::try_from_body(body.as_ref().unwrap()).unwrap(),
+                        p,
                         Payload::Announcements(AnnouncementsPayload::SetProfile(p)) if p == profile
                     )
                 })
