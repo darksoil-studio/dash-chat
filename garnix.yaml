@@ -1,9 +1,5 @@
 servers:
-  - configuration: aon1
+  - configuration: mailbox-server
     deployment:
       type: on-branch
-      branch: production-v0-5-0
-  - configuration: aon2
-    deployment:
-      type: on-branch
-      branch: production-v0-5-0
+      branch: production

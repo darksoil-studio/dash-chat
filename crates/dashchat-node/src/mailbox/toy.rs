@@ -36,7 +36,7 @@ impl MailboxClient for ToyMailboxClient {
         let mut blobs: BTreeMap<String, BTreeMap<String, BTreeMap<u64, Blob>>> = BTreeMap::new();
 
         for op in ops {
-            let topic_id = log_id_to_topic_id(&op.topic());
+            let topic_id = encode_topic_id(&op.topic());
             let log_id = device_id_to_log_id(&op.author());
             let seq_num = op.seq_num();
             let blob = serialize_operation(&op)?;
@@ -78,7 +78,7 @@ impl MailboxClient for ToyMailboxClient {
         let mut topics: BTreeMap<String, BTreeMap<String, u64>> = BTreeMap::new();
 
         for (log_id, authors) in request.0.iter() {
-            let topic_id = log_id_to_topic_id(log_id);
+            let topic_id = encode_topic_id(log_id);
             let mut log_map: BTreeMap<String, u64> = BTreeMap::new();
 
             for (device_id, height) in authors.iter() {
@@ -139,8 +139,8 @@ impl MailboxClient for ToyMailboxClient {
 
 /// Helper functions
 
-fn log_id_to_topic_id(log_id: &TopicId) -> String {
-    hex::encode(&**log_id)
+fn encode_topic_id(topic_id: &TopicId) -> String {
+    hex::encode(&**topic_id)
 }
 
 fn device_id_to_log_id(device_id: &DeviceId) -> String {
