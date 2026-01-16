@@ -114,9 +114,6 @@ importers:
       '@awesome.me/webawesome':
         specifier: 3.0.0-beta.6
         version: 3.0.0-beta.6(@floating-ui/utils@0.2.10)(@types/react@18.3.15)
-      '@darksoil-studio/holochain-elements':
-        specifier: ^0.500.0
-        version: 0.500.0(@floating-ui/utils@0.2.10)(@types/react@18.3.15)
       '@mdi/js':
         specifier: ^7.4.47
         version: 7.4.47
@@ -138,18 +135,9 @@ importers:
       dash-chat-stores:
         specifier: workspace:^0.0.0
         version: link:../packages/stores
-      emittery:
-        specifier: ^1.2.0
-        version: 1.2.0
       konsta:
         specifier: ^5.0.6
         version: 5.0.6
-      signal-polyfill:
-        specifier: ^0.2.0
-        version: 0.2.2
-      signal-utils:
-        specifier: ^0.21.1
-        version: 0.21.1(signal-polyfill@0.2.2)
       signalium:
         specifier: ^2.0.7
         version: 2.0.7
@@ -2369,14 +2357,6 @@ packages:
 
   signal-polyfill@0.1.2:
     resolution: {integrity: sha512-HT9d+L9NMiTzMxb/tU2Baym6129ROyRETSjvchvSkQa7wN0+SrG/IUlsaBLqKn2c+4mlze6CgQBEvgBjxOpiaQ==}
-
-  signal-polyfill@0.2.2:
-    resolution: {integrity: sha512-p63Y4Er5/eMQ9RHg0M0Y64NlsQKpiu6MDdhBXpyywRuWiPywhJTpKJ1iB5K2hJEbFZ0BnDS7ZkJ+0AfTuL37Rg==}
-
-  signal-utils@0.21.1:
-    resolution: {integrity: sha512-i9cdLSvVH4j8ql8mz2lyrA93xL499P8wEbIev3ldSriXeUwqh+wM4Q5VPhIZ19gPtIS4BOopJuKB8l1+wH9LCg==}
-    peerDependencies:
-      signal-polyfill: ^0.2.0
 
   signalium@2.0.7:
     resolution: {integrity: sha512-3puBZ49JrJjbjO2fk92L3PAjh6G4rsoL6ht3wqbKIDbYrmkHuOFOs1s48VLVbCFWlehUDSQxYOMeD5i/hfZ5cg==}
@@ -4804,12 +4784,6 @@ snapshots:
   signal-exit@4.1.0: {}
 
   signal-polyfill@0.1.2: {}
-
-  signal-polyfill@0.2.2: {}
-
-  signal-utils@0.21.1(signal-polyfill@0.2.2):
-    dependencies:
-      signal-polyfill: 0.2.2
 
   signalium@2.0.7: {}
 
