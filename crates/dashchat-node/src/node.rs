@@ -24,7 +24,7 @@ use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
 };
 use crate::stores::OpStore;
-use crate::topic::{LogId, Topic};
+use crate::topic::{Topic, TopicId};
 use crate::{
     AgentId, AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DeviceId, DirectChatId, Header,
     Operation,
@@ -65,7 +65,7 @@ impl Default for NodeConfig {
 }
 
 pub type Orderer<S> =
-    PartialOrder<LogId, Extensions, S, p2panda_stream::partial::MemoryStore<p2panda_core::Hash>>;
+    PartialOrder<TopicId, Extensions, S, p2panda_stream::partial::MemoryStore<p2panda_core::Hash>>;
 
 // TODO: persist
 #[derive(Clone)]
@@ -93,9 +93,9 @@ impl NodeLocalData {
 
 #[derive(Clone)]
 pub struct Node {
-    pub op_store: OpStore<MemoryStore<LogId, Extensions>>,
+    pub op_store: OpStore<MemoryStore<TopicId, Extensions>>,
 
-    pub mailboxes: Mailboxes<MemoryStore<LogId, Extensions>>,
+    pub mailboxes: Mailboxes<MemoryStore<TopicId, Extensions>>,
 
     // groups: p2panda_auth::group::Groups,
     config: NodeConfig,
@@ -163,7 +163,7 @@ impl Node {
 
     pub async fn get_interleaved_logs(
         &self,
-        topic_id: LogId,
+        topic_id: TopicId,
         authors: Vec<DeviceId>,
     ) -> anyhow::Result<Vec<(Header, Option<Payload>)>> {
         let mut logs = Vec::new();
@@ -186,21 +186,21 @@ impl Node {
 
     pub async fn get_log(
         &self,
-        log_id: LogId,
+        topic: TopicId,
         author: DeviceId,
     ) -> anyhow::Result<Vec<(Header, Option<Body>)>> {
-        let _heights = self.op_store.get_log_heights(&log_id).await?;
-        match self.op_store.get_log(&author, &log_id, None).await? {
+        let _heights = self.op_store.get_log_heights(&topic).await?;
+        match self.op_store.get_log(&author, &topic, None).await? {
             Some(log) => Ok(log),
             None => {
                 let author = *author;
-                tracing::warn!("No log found for topic {log_id:?} and author {author:?}");
+                tracing::warn!("No log found for topic {topic:?} and author {author:?}");
                 Ok(vec![])
             }
         }
     }
 
-    pub async fn get_authors(&self, topic_id: LogId) -> anyhow::Result<HashSet<DeviceId>> {
+    pub async fn get_authors(&self, topic_id: TopicId) -> anyhow::Result<HashSet<DeviceId>> {
         let authors = self
             .op_store
             .get_log_heights(&topic_id)

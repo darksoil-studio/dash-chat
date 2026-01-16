@@ -30,7 +30,7 @@
 	let chatId = page.params.chatId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	const myActorId = useReactivePromise(contactsStore.myChatActorId);
+	const myAgentId = useReactivePromise(contactsStore.myAgentId);
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.groupChats(chatId);
@@ -85,7 +85,7 @@
 		{#await $allMembers then members}
 			<div class="center-in-desktop" style="flex:1">
 				<div class="column m-2 gap-2">
-					{#await $myActorId then myActorId}
+					{#await $myAgentId then myActorId}
 						{#await $messages then messages}
 							{#each messages as message}
 								{#if myActorId == message.author}

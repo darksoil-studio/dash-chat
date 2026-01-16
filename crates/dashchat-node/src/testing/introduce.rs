@@ -3,9 +3,9 @@ use std::time::Duration;
 use futures::future::join_all;
 use p2panda_net::{Network, NodeAddress};
 
-use crate::{testing::wait_for, topic::LogId};
+use crate::{testing::wait_for, topic::TopicId};
 
-pub async fn introduce_and_wait(networks: impl IntoIterator<Item = &Network<LogId>>) {
+pub async fn introduce_and_wait(networks: impl IntoIterator<Item = &Network<TopicId>>) {
     let networks = networks.into_iter().collect::<Vec<_>>();
     let expected_peers = networks.len() - 1;
     introduce(networks.clone()).await;
@@ -29,7 +29,7 @@ pub async fn introduce_and_wait(networks: impl IntoIterator<Item = &Network<LogI
     .unwrap();
 }
 
-pub async fn introduce(networks: impl IntoIterator<Item = &Network<LogId>>) {
+pub async fn introduce(networks: impl IntoIterator<Item = &Network<TopicId>>) {
     let networks = networks.into_iter().collect::<Vec<_>>();
     for m in networks.iter() {
         for n in networks.iter() {

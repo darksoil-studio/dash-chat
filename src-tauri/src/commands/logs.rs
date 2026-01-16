@@ -1,6 +1,5 @@
-use dashchat_node::{topic::LogId, DeviceId, Header, Node, Payload, Topic};
+use dashchat_node::{topic::TopicId, DeviceId, Header, Node, Payload, Topic};
 use p2panda_core::{cbor::decode_cbor, Body, Hash, PublicKey};
-use p2panda_net::TopicId;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -50,7 +49,7 @@ impl From<Header> for SimplifiedHeader {
             seq_num: header.seq_num,
             backlink: header.backlink,
             previous: header.previous,
-            topic_id: Topic::untyped(header.extensions.log_id.id()),
+            topic_id: Topic::untyped(*header.extensions.topic),
         }
     }
 }
@@ -141,7 +140,7 @@ pub async fn get_log(
     node: State<'_, Node>,
 ) -> Result<Vec<SimplifiedOperation>, String> {
     let log = node
-        .get_log(LogId::from(topic_id), author)
+        .get_log(TopicId::from(topic_id), author)
         .await
         .map_err(|e| format!("Failed to get log: {e:?}"))?;
 
@@ -160,7 +159,7 @@ pub async fn get_authors(
     node: State<'_, Node>,
 ) -> Result<std::collections::HashSet<DeviceId>, String> {
     let authors = node
-        .get_authors(LogId::from(topic_id))
+        .get_authors(TopicId::from(topic_id))
         .await
         .map_err(|e| format!("Failed to get log: {e:?}"))?;
     Ok(authors)
