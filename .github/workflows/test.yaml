@@ -14,7 +14,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Extend space
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: ./.github/actions/extend-space
 
       - name: Install nix
