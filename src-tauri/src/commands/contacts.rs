@@ -1,11 +1,10 @@
-use dashchat_node::{
-    AgentId, Node, QrCode, ShareIntent,
-};
+use dashchat_node::{topic::kind::Inbox, AgentId, Node, QrCode, ShareIntent, Topic};
+use std::collections::BTreeSet;
 use tauri::State;
 
 #[tauri::command]
 pub async fn create_contact_code(node: State<'_, Node>) -> Result<QrCode, String> {
-    node.new_qr_code(ShareIntent::AddContact, false)
+    node.new_qr_code(ShareIntent::AddContact, true)
         .await
         .map_err(|e| format!("Failed to create contact code: {e:?}"))
 }
@@ -22,6 +21,14 @@ pub async fn add_contact(contact_code: QrCode, node: State<'_, Node>) -> Result<
         .map_err(|e| format!("Failed to add contact: {e:?}"))?;
 
     Ok(())
+}
+
+#[tauri::command]
+pub async fn active_inbox_topics(node: State<'_, Node>) -> Result<BTreeSet<Topic<Inbox>>, String> {
+    let topics = node.local_data.active_inbox_topics.read().await;
+    let topics_ids = topics.clone().into_iter().map(|t| t.topic).collect();
+
+    Ok(topics_ids)
 }
 
 // #[tauri::command]

@@ -104,7 +104,7 @@ pub struct Node {
     /// Add new subscription streams
     stream_tx: mpsc::Sender<Pin<Box<dyn Stream<Item = Operation> + Send + 'static>>>,
 
-    local_data: NodeLocalData,
+    pub local_data: NodeLocalData,
 }
 
 impl Node {

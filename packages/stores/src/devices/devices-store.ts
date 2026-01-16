@@ -8,7 +8,7 @@ import { IDevicesClient } from './devices-client';
 
 export class DevicesStore {
 	constructor(
-		protected logsStore: LogsStore<TopicId, Payload>,
+		protected logsStore: LogsStore<Payload>,
 		public client: IDevicesClient,
 	) {}
 

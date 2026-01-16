@@ -20,10 +20,6 @@ export interface SpaceControlMessage {
 export type AnnouncementPayload = { type: 'SetProfile'; payload: Profile };
 export type ChatPayload = Array<SpaceControlMessage>;
 
-export type InboxPayload =
-	| { type: 'JoinGroup'; payload: ChatId }
-	| { type: 'Contact' };
-
 export interface InboxTopic {
 	expires_at: number;
 	topic: TopicId;
@@ -46,11 +42,16 @@ export type DeviceGroupPayload = {
 	payload: ContactCode;
 };
 
+export type InboxPayload = {
+	type: 'Contact';
+	payload: ContactCode;
+};
+
 export type Payload =
 	| { type: 'Announcements'; payload: AnnouncementPayload }
 	| { type: 'Chat'; payload: ChatPayload }
 	| { type: 'DeviceGroupPayload'; payload: DeviceGroupPayload }
-	| { type: 'Inbox' };
+	| { type: 'Inbox' ; payload: InboxPayload };
 
 export type MessageId = string;
 

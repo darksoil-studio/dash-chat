@@ -25,6 +25,7 @@ pub fn run() {
             commands::contacts::my_agent_id,
             commands::contacts::create_contact_code,
             commands::contacts::add_contact,
+            commands::contacts::active_inbox_topics,
             // commands::chats::create_group,
             // commands::group_chat::add_member,
             // commands::group_chat::send_message,

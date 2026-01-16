@@ -25,6 +25,8 @@ export interface IContactsClient {
 	// Creates a new contact code to be shared
 	createContactCode(): Promise<ContactCode>;
 
+	activeInboxTopics(): Promise<TopicId[]>
+
 	// getContacts(): Promise<Array<PublicKey>>;
 
 	// Remove contact
@@ -61,6 +63,10 @@ export class ContactsClient implements IContactsClient {
 
 	createContactCode(): Promise<ContactCode> {
 		return invoke('create_contact_code');
+	}
+
+	activeInboxTopics(): Promise<TopicId[]> {
+		return invoke('active_inbox_topics');
 	}
 
 	addContact(contactCode: ContactCode): Promise<void> {

@@ -1,22 +1,23 @@
-import { ReactivePromise, reactive } from 'signalium';
+import { ReactivePromise, reactive, relay } from 'signalium';
 
 import { DevicesStore } from '../devices/devices-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { personalTopicFor } from '../topics';
-import { AnnouncementPayload, Payload } from '../types';
+import { AnnouncementPayload, ContactCode, Payload } from '../types';
 import { ContactRequestId, IContactsClient, Profile } from './contacts-client';
 
 export interface IncomingContactRequest {
 	profile: Profile;
-	actorId: AgentId;
-	contactRequestId: ContactRequestId;
+	contactCode: ContactCode;
+	// agentId: AgentId;
+	// contactRequestId: ContactRequestId;
 }
 
 export class ContactsStore {
 	constructor(
-		protected logsStore: LogsStore<TopicId, Payload>,
+		protected logsStore: LogsStore<Payload>,
 		protected devicesStore: DevicesStore,
 		public client: IContactsClient,
 	) {}
@@ -29,15 +30,59 @@ export class ContactsStore {
 		return await this.profiles(myAgentId);
 	});
 
+	private activeInboxTopics = reactive(() =>
+		relay<TopicId[]>(state => {
+			state.setPromise(this.client.activeInboxTopics());
+
+			const interval = setInterval(() => {
+				this.client.activeInboxTopics().then(topics => {
+					if (topics.find(topic => !(state.value || []).includes(topic))) {
+						state.value = topics;
+					}
+				});
+			}, 1_000);
+
+			return {
+				deactivate() {
+					clearInterval(interval);
+				},
+			};
+		}),
+	);
+
 	incomingContactRequests = reactive(async () => {
-		const requests: Array<IncomingContactRequest> = [
-			{
-				actorId: await this.myAgentId(),
-				profile: (await this.myProfile())!,
-				contactRequestId: '1',
-			},
-		];
-		return requests;
+		const activeInboxTopics = await this.activeInboxTopics();
+
+		const allLogs = await ReactivePromise.all(
+			activeInboxTopics.map(topicId =>
+				this.logsStore.logsForAllAuthors(topicId),
+			),
+		);
+
+		const incomingContactCodes: ContactCode[] = [];
+
+		for (const log of allLogs) {
+			for (const operations of Object.values(log)) {
+				for (const operation of operations) {
+					if (operation.body?.type !== 'Inbox') continue;
+					incomingContactCodes.push(operation.body.payload.payload);
+				}
+			}
+		}
+
+		const profiles = await ReactivePromise.all(
+			incomingContactCodes.map(code => this.profiles(code.agent_id)),
+		);
+		console.log(profiles);
+
+		const contactRequests: IncomingContactRequest[] = incomingContactCodes
+			.map((contactCode, i) => ({
+				contactCode,
+				profile: profiles[i]!,
+			}))
+			.filter(c => !!c.profile);
+
+		return contactRequests;
 	});
 
 	profiles = reactive(async (agentId: AgentId) => {

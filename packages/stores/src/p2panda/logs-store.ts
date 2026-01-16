@@ -4,12 +4,12 @@ import type { LogsClient } from './logs-client';
 import type { SimplifiedOperation } from './simplified-types';
 import type { PublicKey, TopicId } from './types';
 
-export class LogsStore<TOPIC_ID, PAYLOAD> {
-	constructor(protected logsClient: LogsClient<TOPIC_ID, PAYLOAD>) {}
+export class LogsStore<PAYLOAD> {
+	constructor(protected logsClient: LogsClient<TopicId, PAYLOAD>) {}
 
 	// myPubKey = reactive(() => this.logsClient.myPubKey());
 
-	authorsForTopic = reactive((topicId: TOPIC_ID) =>
+	authorsForTopic = reactive((topicId: TopicId) =>
 		relay<PublicKey[]>(state => {
 			const fetchAuthors = async () => {
 				const authors = await this.logsClient.getAuthorsForTopic(topicId);
@@ -31,7 +31,7 @@ export class LogsStore<TOPIC_ID, PAYLOAD> {
 		}),
 	);
 
-	logs = reactive((topicId: TOPIC_ID, author: PublicKey) =>
+	logs = reactive((topicId: TopicId, author: PublicKey) =>
 		relay<SimplifiedOperation<PAYLOAD>[]>(state => {
 			const fetchLog = async () => {
 				const log = await this.logsClient.getLog(topicId, author);
@@ -51,7 +51,7 @@ export class LogsStore<TOPIC_ID, PAYLOAD> {
 		}),
 	);
 
-	logsForAllAuthors = reactive(async (topicId: TOPIC_ID) => {
+	logsForAllAuthors = reactive(async (topicId: TopicId) => {
 		const authorsForTopic = await this.authorsForTopic(topicId);
 
 		const logs = await ReactivePromise.all(
