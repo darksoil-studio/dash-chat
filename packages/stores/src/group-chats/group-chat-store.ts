@@ -24,7 +24,7 @@ export interface GroupMember {
 
 export class GroupChatStore {
 	constructor(
-		protected logsStore: LogsStore<TopicId, Payload>,
+		protected logsStore: LogsStore<Payload>,
 		protected contactsStore: ContactsStore,
 		public client: GroupChatClient,
 		public chatId: ChatId,

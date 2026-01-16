@@ -10,7 +10,7 @@ import { DirectMessagesChatClient } from './direct-messages-chat-client';
 // Store tied to a specific direct messages chat
 export class DirectMessagesChatStore {
 	constructor(
-		protected logsStore: LogsStore<TopicId, Payload>,
+		protected logsStore: LogsStore<Payload>,
 		protected contactsStore: ContactsStore,
 		public client: DirectMessagesChatClient,
 		public chatId: ChatId,

@@ -73,7 +73,6 @@ export class ContactsStore {
 		const profiles = await ReactivePromise.all(
 			incomingContactCodes.map(code => this.profiles(code.agent_id)),
 		);
-		console.log(profiles);
 
 		const contactRequests: IncomingContactRequest[] = incomingContactCodes
 			.map((contactCode, i) => ({

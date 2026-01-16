@@ -21,7 +21,7 @@ function random_hexadecimal(length: number) {
 
 export class ChatsStore {
 	constructor(
-		protected logsStore: LogsStore<TopicId, Payload>,
+		protected logsStore: LogsStore<Payload>,
 		protected contactsStore: ContactsStore,
 		public client: ChatsClient,
 	) {}
