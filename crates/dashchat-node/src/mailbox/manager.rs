@@ -8,6 +8,7 @@ use super::*;
 pub struct MailboxesConfig {
     pub success_interval: Duration,
     pub error_interval: Duration,
+    pub min_interval: Duration,
 }
 
 impl Default for MailboxesConfig {
@@ -15,6 +16,7 @@ impl Default for MailboxesConfig {
         Self {
             success_interval: Duration::from_secs(5),
             error_interval: Duration::from_secs(15),
+            min_interval: Duration::from_secs(1),
         }
     }
 }
@@ -58,10 +60,8 @@ where
         self.topics.lock().await.keys().cloned().collect()
     }
 
-    pub async fn trigger_sync(&self) {
-        if let Err(e) = self.trigger.send(()).await {
-            tracing::error!(?e, "failed to send early trigger to mailbox manager");
-        }
+    pub fn trigger_sync(&self) {
+        _ = self.trigger.try_send(());
     }
 
     pub async fn subscribe(
@@ -87,14 +87,25 @@ where
         tokio::spawn(
             async move {
                 let mut next_mailbox = 0;
-                let mut interval = tokio::time::Duration::ZERO;
-                // The two match conditions are:
-                // - Ok(Some(())): a trigger was received
-                // - Err(_): the timeout elapsed
-                while let Ok(Some(())) | Err(_) =
-                    tokio::time::timeout(interval, trigger_rx.recv()).await
-                {
-                    (interval, next_mailbox) = manager.one_iteration(next_mailbox).await;
+                let mut next_interval;
+                let mut last_iteration: tokio::time::Instant = tokio::time::Instant::now();
+                loop {
+                    (next_interval, next_mailbox) = manager.one_iteration(next_mailbox).await;
+
+                    // The two match conditions are:
+                    // - Ok(Some(())): a trigger was received
+                    // - Err(_): the timeout elapsed
+                    if let Ok(None) = tokio::time::timeout(next_interval, trigger_rx.recv()).await {
+                        break;
+                    }
+
+                    // Ensure a minimum polling interval so we don't poll too often
+                    let elapsed = last_iteration.elapsed();
+                    if elapsed < manager.config.min_interval {
+                        tokio::time::sleep(manager.config.min_interval - elapsed).await;
+                    }
+
+                    last_iteration = tokio::time::Instant::now();
                 }
 
                 #[allow(unused)]
