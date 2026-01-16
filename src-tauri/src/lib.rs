@@ -1,3 +1,4 @@
+use dashchat_node::mailbox::toy::ToyMailboxClient;
 use dashchat_node::Node;
 use p2panda_core::{cbor::encode_cbor, Body};
 use tauri::{Emitter, Manager};
@@ -20,7 +21,7 @@ pub fn run() {
             commands::logs::get_log,
             commands::logs::get_authors,
             commands::profile::set_profile,
-            // commands::devices::my_device_group_topic,
+            commands::devices::my_device_group_topic,
             commands::contacts::my_agent_id,
             commands::contacts::create_contact_code,
             commands::contacts::add_contact,
@@ -32,6 +33,7 @@ pub fn run() {
         .plugin(
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
+                .level_for("dashchat_node", log::LevelFilter::Debug)
                 .level_for("dash-chat", log::LevelFilter::Debug)
                 .build(),
         )
@@ -76,6 +78,14 @@ pub fn run() {
             let node = dashchat_node::Node::new(local_data, config, Some(notification_tx))
                 .await
                 .expect("Failed to create node");
+
+            #[cfg(debug_assertions)]
+            let mailbox_url = "http://localhost:3000";
+            #[cfg(not(debug_assertions))]
+            let mailbox_url = "https://mailbox.example.com";
+
+            let mailbox_client = ToyMailboxClient::new(mailbox_url);
+            node.mailboxes.add(mailbox_client).await;
 
             handle.manage(node);
 

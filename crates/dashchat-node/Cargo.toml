@@ -9,6 +9,8 @@ edition = "2024"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+mailbox-server = { path = "../mailbox-server" }
+
 anyhow = "1.0.95"
 async-trait = "0.1.85"
 derive_more = { version = "1.0.0", features = ["full"] }
@@ -37,6 +39,7 @@ p2panda-spaces = { git = "https://github.com/maackle/p2panda.git", branch = "das
   "test_utils",
 ] }
 tokio = { version = "1.43.0", features = ["fs"] }
+reqwest = { version = "0.12", features = ["json"] }
 
 named-id = { git = "https://github.com/maackle/named-id.git" }
 base64 = "0.22"
@@ -52,6 +55,7 @@ sqlx = "0.8.6"
 
 [dev-dependencies]
 dashchat-node = { path = ".", features = ["testing"] }
+mailbox-server = { path = "../mailbox-server", features = ["test_utils"] }
 itertools = "0.14.0"
 pretty_assertions = "1.4.1"
 

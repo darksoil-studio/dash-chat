@@ -57,7 +57,8 @@ export interface Lifetime {
 	not_after: number;
 }
 
-export type ActorId = PublicKey;
+export type DeviceId = PublicKey;
+export type AgentId = PublicKey;
 
 export type PreKey = [PublicKey, Lifetime];
 

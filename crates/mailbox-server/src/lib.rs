@@ -16,19 +16,29 @@ mod blob;
 mod store_blobs;
 mod get_blobs;
 mod cleanup;
+mod watermark;
+
+#[cfg(feature = "test_utils")]
+pub mod test_utils;
 
 pub use blob::Blob;
 pub use store_blobs::{StoreBlobsRequest, store_blobs};
 pub use get_blobs::{GetBlobsRequest, GetBlobsResponse, get_blobs_for_topics};
-pub use cleanup::spawn_cleanup_task;
+pub use cleanup::{cleanup_old_messages, spawn_cleanup_task};
+pub use watermark::compute_initial_watermarks;
 
 pub type TopicId = String;
-pub type LogId = String;
-pub type SequenceNumber = u32;
+pub type Author = String;
+pub type SequenceNumber = u64;
 
-// Database key format: "topic_id:log_id:sequence_number:uuid_v7"
+// Database key format: "topic_id:author:sequence_number:uuid_v7"
 // The UUID v7 suffix is used for cleanup based on message age
 pub const BLOBS_TABLE: TableDefinition<&str, &[u8]> = TableDefinition::new("blobs");
+
+// Watermarks table: tracks highest contiguous sequence number per topic:author
+// Key format: "topic_id:author"
+// Value: highest contiguous sequence number (0..=watermark are all present)
+pub const WATERMARKS_TABLE: TableDefinition<&str, u64> = TableDefinition::new("watermarks");
 
 #[derive(Clone)]
 pub struct AppState {
@@ -53,9 +63,13 @@ pub fn init_db(db_path: PathBuf) -> Result<Database, Box<dyn std::error::Error>>
 
     let write_txn = db.begin_write()?;
     {
-        let _table = write_txn.open_table(BLOBS_TABLE)?;
+        let _blobs_table = write_txn.open_table(BLOBS_TABLE)?;
+        let _watermarks_table = write_txn.open_table(WATERMARKS_TABLE)?;
     }
     write_txn.commit()?;
+
+    // Compute initial watermarks from existing blobs
+    compute_initial_watermarks(&db)?;
 
     tracing::info!("Database initialized successfully");
 

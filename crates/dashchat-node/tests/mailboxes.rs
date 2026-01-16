@@ -40,8 +40,15 @@ async fn test_mailbox_late_join_toy() {
         true,
     );
 
-    let alice_mailbox: ToyMailboxClient = todo!();
-    let bobbi_mailbox: ToyMailboxClient = todo!();
+    // Start a test mailbox server
+    let (server, _temp_file) = mailbox_server::test_utils::create_test_server();
+    let url = server.server_address().unwrap().to_string();
+    let url = url.trim_end_matches('/').to_string();
+
+    // Create clients pointing to the same server
+    let alice_mailbox = ToyMailboxClient::new(&url);
+    let bobbi_mailbox = ToyMailboxClient::new(&url);
+
     mailbox_late_join(alice_mailbox, bobbi_mailbox).await;
 }
 

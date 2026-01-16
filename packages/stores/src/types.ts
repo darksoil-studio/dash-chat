@@ -1,6 +1,7 @@
 import { Profile } from './contacts/contacts-client';
 import {
-	ActorId,
+	AgentId,
+	DeviceId,
 	Hash,
 	LongTermKeyBundle,
 	PublicKey,
@@ -11,7 +12,7 @@ export type ChatId = TopicId;
 
 export interface SpaceControlMessage {
 	hash: Hash;
-	author: ActorId;
+	author: AgentId;
 	timestamp: number;
 	// spaces_args: SpacesArgs,
 }
@@ -28,25 +29,14 @@ export interface InboxTopic {
 	topic: TopicId;
 }
 
-export interface MemberCode {
-	actor_id: ActorId;
-	key_bundle: LongTermKeyBundle;
-}
-
 export type ShareIntent = 'AddDevice' | 'AddContact';
 
 export interface ContactCode {
-	/// Pubkey and key bundle of this node: allows adding this node to encrypted spaces.
-	member_code: MemberCode;
-	/// Topic for receiving messages from this node during the lifetime of the QR code.
-	/// The initiator will specify an InboxTopic, and the recipient will send back a QR
-	/// code without an associated inbox, because after this exchange the two nodes
-	/// can communicate directly.
+	/// Pubkey of this node: allows adding this node to groups.
+	device_pubkey: DeviceId;
+	/// Agent ID to add to spaces
+	agent_id: AgentId;
 	inbox_topic: InboxTopic | undefined;
-	/// Topic for the device group of this node.
-	device_space_id: TopicId;
-	/// Actor ID to add to spaces
-	chat_actor_id: ActorId;
 	/// The intent of the QR code: whether to add this node as a contact or a device.
 	share_intent: ShareIntent;
 }

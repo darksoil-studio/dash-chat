@@ -12,7 +12,7 @@ use crate::{
     mailbox::{MailboxClient, MailboxOperation, mem::MemMailbox},
     node::{Node, NodeLocalData},
     testing::behavior::Behavior,
-    topic::LogId,
+    topic::TopicId,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
@@ -66,7 +66,7 @@ impl TestNode {
         Ok(ids)
     }
 
-    pub async fn subscribed_topics(&self) -> BTreeSet<LogId> {
+    pub async fn subscribed_topics(&self) -> BTreeSet<TopicId> {
         let mailbox_topics = self.mailboxes.subscribed_topics().await;
         mailbox_topics
 
@@ -140,18 +140,18 @@ impl<const N: usize> TestCluster<N> {
 
     pub async fn consistency(
         &self,
-        log_ids: impl IntoIterator<Item = &LogId>,
+        topics: impl IntoIterator<Item = &TopicId>,
     ) -> anyhow::Result<()> {
-        consistency(self.nodes().await.iter(), log_ids, &self.config).await
+        consistency(self.nodes().await.iter(), topics, &self.config).await
     }
 }
 
 pub async fn consistency(
     nodes: impl IntoIterator<Item = &TestNode>,
-    log_ids: impl IntoIterator<Item = &LogId>,
+    topics: impl IntoIterator<Item = &TopicId>,
     config: &ClusterConfig,
 ) -> anyhow::Result<()> {
-    let log_ids = log_ids.into_iter().collect::<HashSet<_>>();
+    let topics = topics.into_iter().collect::<HashSet<_>>();
     let nodes = nodes.into_iter().collect::<Vec<_>>();
     wait_for_resetting(config.poll_interval, config.poll_timeout, || async {
         // TODO: Fix this when we have a proper way to access operations
@@ -161,10 +161,10 @@ pub async fn consistency(
             .map(|node| {
                 let ops = node.op_store.processed_ops.read().unwrap();
 
-                log_ids
+                topics
                     .iter()
-                    .flat_map(|log_id| {
-                        ops.get(log_id)
+                    .flat_map(|topic| {
+                        ops.get(topic)
                             .cloned()
                             .unwrap_or_default()
                             .into_iter()
@@ -196,7 +196,7 @@ pub async fn consistency(
             println!(
                 ">>> {:?}\n{}\n",
                 n.device_id(),
-                n.op_store.report(log_ids.clone())
+                n.op_store.report(topics.clone())
             );
         }
         println!("consistency report: {:#?}", diffs);

@@ -24,67 +24,67 @@ export class DirectMessagesChatStore {
 		const messages: Array<Message> = [
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 		];

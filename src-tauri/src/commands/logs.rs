@@ -1,6 +1,5 @@
-use dashchat_node::{DeviceId, Header, Node, Payload, Topic, topic::{DashChatTopicId, LogId}};
+use dashchat_node::{topic::TopicId, DeviceId, Header, Node, Payload, Topic};
 use p2panda_core::{cbor::decode_cbor, Body, Hash, PublicKey};
-use p2panda_net::TopicId;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -50,7 +49,7 @@ impl From<Header> for SimplifiedHeader {
             seq_num: header.seq_num,
             backlink: header.backlink,
             previous: header.previous,
-            topic_id: Topic::untyped(header.extensions.log_id.id()),
+            topic_id: Topic::untyped(*header.extensions.topic),
         }
     }
 }
@@ -73,20 +72,20 @@ impl From<Header> for SimplifiedHeader {
 //     }
 // }
 
-pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
-    let _bytes = body.to_bytes();
-    // let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
-    //     return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
-    // };
+// pub fn decode_body(body: Body) -> Result<serde_json::Value, String> {
+//     let _bytes = body.to_bytes();
+//     // let Ok(Payload::Space(args)) = decode_cbor(&bytes[..]) else {
+//     //     return Ok(decode_cbor(&bytes[..]).map_err(|err| format!("{err:?}"))?);
+//     // };
 
-    let values: Vec<serde_json::Value> = vec![];
+//     let values: Vec<serde_json::Value> = vec![];
 
-    // if let Some(value) = decode_spaces_args(args)? {
-    //     values.push(value);
-    // }
+//     // if let Some(value) = decode_spaces_args(args)? {
+//     //     values.push(value);
+//     // }
 
-    Ok(serde_json::Value::Array(values))
-}
+//     Ok(serde_json::Value::Array(values))
+// }
 
 pub fn simplify(
     // hash: Hash,
@@ -136,12 +135,12 @@ pub fn simplify(
 
 #[tauri::command]
 pub async fn get_log(
-    topic_id: DashChatTopicId,
+    topic_id: Topic,
     author: DeviceId,
     node: State<'_, Node>,
 ) -> Result<Vec<SimplifiedOperation>, String> {
     let log = node
-        .get_log(LogId::from(topic_id), author)
+        .get_log(TopicId::from(topic_id), author)
         .await
         .map_err(|e| format!("Failed to get log: {e:?}"))?;
 
@@ -160,7 +159,7 @@ pub async fn get_authors(
     node: State<'_, Node>,
 ) -> Result<std::collections::HashSet<DeviceId>, String> {
     let authors = node
-        .get_authors(LogId::from(topic_id))
+        .get_authors(TopicId::from(topic_id))
         .await
         .map_err(|e| format!("Failed to get log: {e:?}"))?;
     Ok(authors)

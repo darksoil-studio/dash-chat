@@ -6,7 +6,7 @@ import { ContactsStore } from '../contacts/contacts-store';
 import { DevicesStore } from '../devices/devices-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
-import { ActorId, PublicKey, TopicId } from '../p2panda/types';
+import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 import { GroupChatClient, Message, MessageContent } from './group-chat-client';
 
@@ -17,7 +17,7 @@ export interface GroupInfo {
 }
 
 export interface GroupMember {
-	actorId: ActorId;
+	actorId: AgentId;
 	profile: Profile | undefined;
 	admin: boolean;
 }
@@ -53,117 +53,117 @@ export class GroupChatStore {
 		const messages: Array<Message> = [
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 			{
 				content: 'heeey',
-				author: await this.contactsStore.myChatActorId(),
+				author: await this.contactsStore.myAgentId(),
 				timestamp: Date.now(),
 			},
 		];
@@ -172,12 +172,12 @@ export class GroupChatStore {
 	});
 
 	membersIds = reactive(async () => {
-		const myActorId = await this.contactsStore.myChatActorId();
+		const myActorId = await this.contactsStore.myAgentId();
 		return [myActorId];
 	});
 
 	me = reactive(async () => {
-		const actorId = await this.contactsStore.myChatActorId();
+		const actorId = await this.contactsStore.myAgentId();
 		return await this.members(actorId);
 	});
 
@@ -188,7 +188,7 @@ export class GroupChatStore {
 			membersIds.map(memberId => this.members(memberId)),
 		);
 
-		const allMembers: Record<ActorId, GroupMember> = {};
+		const allMembers: Record<AgentId, GroupMember> = {};
 
 		for (let i = 0; i < membersIds.length; i++) {
 			allMembers[membersIds[i]] = members[i];
@@ -197,7 +197,7 @@ export class GroupChatStore {
 		return allMembers;
 	});
 
-	members = reactive(async (actorId: ActorId) => {
+	members = reactive(async (actorId: AgentId) => {
 		const profile = await this.contactsStore.profiles(actorId);
 
 		const member: GroupMember = {

@@ -3,6 +3,7 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { mdiAccount, mdiPencil } from '@mdi/js';
 	import { wrapPathInSvg } from '$lib/utils/icon';
@@ -27,7 +28,7 @@
 <Page>
 	<Navbar title={m.profile()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => (window.location.href = '/settings')} />
+			<NavbarBackLink onClick={() => goto('/settings')} />
 		{/snippet}
 	</Navbar>
 
@@ -49,7 +50,7 @@
 					>
 					</wa-avatar>
 
-					<Button tonal style="width: auto" rounded onClick={()=>window.location.href='/settings/profile/edit-photo'}>{m.editPhoto()}</Button>
+					<Button tonal style="width: auto" rounded onClick={()=>goto('/settings/profile/edit-photo')}>{m.editPhoto()}</Button>
 				</div>
 
 				<List nested strongIos insetIos>

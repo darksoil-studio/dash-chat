@@ -1,4 +1,3 @@
-
 use crate::topic::TopicKind;
 
 use super::*;
@@ -21,6 +20,8 @@ impl Node {
             )
             .await?;
 
+        self.mailboxes.trigger_sync().await;
+
         let op = Operation {
             hash: header.hash().with_serial(),
             header,
@@ -33,16 +34,20 @@ impl Node {
         &self,
         op: Operation,
     ) -> Result<Header, anyhow::Error> {
-        let log_id = op.header.extensions.log_id;
+        let topic = op.header.extensions.topic;
         op.hash.with_serial();
         self.process_operation(op.clone(), true, false).await?;
-        let Operation { header, body: _, hash } = op;
+        let Operation {
+            header,
+            body: _,
+            hash,
+        } = op;
 
         // self.notify_payload(&header, &payload).await?;
-        tracing::debug!(?log_id, hash = ?hash.renamed(), "authored operation");
+        tracing::debug!(?topic, hash = ?hash.renamed(), "authored operation");
 
         #[cfg(feature = "p2p")]
-        match self.initialized_topics.read().await.get(&log_id) {
+        match self.initialized_topics.read().await.get(&topic) {
             Some(gossip) => {
                 gossip
                     .send(ToNetwork::Message {
@@ -51,7 +56,7 @@ impl Node {
                     .await?;
             }
             None => {
-                tracing::error!(?log_id, "no gossip channel found for log id");
+                tracing::error!(?topic, "no gossip channel found for topic");
             }
         }
 

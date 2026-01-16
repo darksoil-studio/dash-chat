@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use crate::topic::LogId;
+use crate::topic::TopicId;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Action {
     Space(SpaceAction),
     AuthorOp {
-        log_id: LogId,
+        topic: TopicId,
         hash: p2panda_core::Hash,
     },
     ProcessOp,

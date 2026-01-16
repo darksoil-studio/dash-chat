@@ -1,28 +1,5 @@
-use axum_test::TestServer;
-use mailbox_server::GetBlobsResponse;
-use redb::Database;
+use mailbox_server::{test_utils::create_test_server, GetBlobsResponse};
 use serde_json::json;
-use tempfile::NamedTempFile;
-
-fn create_test_db() -> (Database, NamedTempFile) {
-    let temp_file = NamedTempFile::new().unwrap();
-    let db = Database::create(temp_file.path()).unwrap();
-
-    let write_txn = db.begin_write().unwrap();
-    {
-        let _table = write_txn.open_table(mailbox_server::BLOBS_TABLE).unwrap();
-    }
-    write_txn.commit().unwrap();
-
-    (db, temp_file)
-}
-
-fn create_test_server() -> (TestServer, NamedTempFile) {
-    let (db, temp_file) = create_test_db();
-    let app = mailbox_server::create_app(db);
-    let server = TestServer::new(app).unwrap();
-    (server, temp_file)
-}
 
 #[tokio::test]
 async fn test_health_check() {
@@ -48,7 +25,7 @@ async fn test_store_and_retrieve_single_message() {
         .json(&json!({
             "blobs": {
                 "test-topic-1": {
-                    "log-a": {
+                    "author-a": {
                         "0": message_b64
                     }
                 }
@@ -73,13 +50,13 @@ async fn test_store_and_retrieve_single_message() {
     assert!(body.blobs_by_topic.contains_key("test-topic-1"));
 
     let topic_response = &body.blobs_by_topic["test-topic-1"];
-    assert!(topic_response.blobs.contains_key("log-a"));
+    assert!(topic_response.blobs.contains_key("author-a"));
     assert!(topic_response.missing.is_empty());
 
-    let log_sequences = &topic_response.blobs["log-a"];
-    assert!(log_sequences.contains_key(&0));
+    let author_sequences = &topic_response.blobs["author-a"];
+    assert!(author_sequences.contains_key(&0));
 
-    let retrieved_message = &log_sequences[&0];
+    let retrieved_message = &author_sequences[&0];
     assert_eq!(retrieved_message.as_ref(), message_data);
 }
 
@@ -92,7 +69,7 @@ async fn test_store_and_retrieve_multiple_messages_same_topic() {
         .json(&json!({
             "blobs": {
                 "test-topic-multi": {
-                    "log-1": {
+                    "author-1": {
                         "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"First message".to_vec()),
                         "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Second message".to_vec()),
                         "2": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Third message".to_vec()),
@@ -116,14 +93,14 @@ async fn test_store_and_retrieve_multiple_messages_same_topic() {
 
     let body: GetBlobsResponse = get_response.json();
     let topic_response = &body.blobs_by_topic["test-topic-multi"];
-    let log_sequences = &topic_response.blobs["log-1"];
+    let author_sequences = &topic_response.blobs["author-1"];
 
-    assert_eq!(log_sequences.len(), 3);
+    assert_eq!(author_sequences.len(), 3);
     assert!(topic_response.missing.is_empty());
 
-    assert_eq!(log_sequences[&(0 as u32)].as_ref(), b"First message");
-    assert_eq!(log_sequences[&(1 as u32)].as_ref(), b"Second message");
-    assert_eq!(log_sequences[&(2 as u32)].as_ref(), b"Third message");
+    assert_eq!(author_sequences[&0].as_ref(), b"First message");
+    assert_eq!(author_sequences[&1].as_ref(), b"Second message");
+    assert_eq!(author_sequences[&2].as_ref(), b"Third message");
 }
 
 #[tokio::test]
@@ -138,12 +115,12 @@ async fn test_retrieve_messages_from_multiple_topics() {
         .json(&json!({
             "blobs": {
                 "topic-a": {
-                    "log-1": {
+                    "author-1": {
                         "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, topic1_msg)
                     }
                 },
                 "topic-b": {
-                    "log-1": {
+                    "author-1": {
                         "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, topic2_msg)
                     }
                 }
@@ -173,13 +150,13 @@ async fn test_retrieve_messages_from_multiple_topics() {
     let topic_a_response = &blobs_for_topics["topic-a"];
     let topic_b_response = &blobs_for_topics["topic-b"];
 
-    assert_eq!(topic_a_response.blobs["log-1"].len(), 1);
-    assert_eq!(topic_b_response.blobs["log-1"].len(), 1);
+    assert_eq!(topic_a_response.blobs["author-1"].len(), 1);
+    assert_eq!(topic_b_response.blobs["author-1"].len(), 1);
     assert!(topic_a_response.missing.is_empty());
     assert!(topic_b_response.missing.is_empty());
 
-    let retrieved_a = &topic_a_response.blobs["log-1"][&0];
-    let retrieved_b = &topic_b_response.blobs["log-1"][&0];
+    let retrieved_a = &topic_a_response.blobs["author-1"][&0];
+    let retrieved_b = &topic_b_response.blobs["author-1"][&0];
 
     assert_eq!(retrieved_a.as_ref(), topic1_msg);
     assert_eq!(retrieved_b.as_ref(), topic2_msg);
@@ -218,12 +195,12 @@ async fn test_topic_isolation() {
         .json(&json!({
             "blobs": {
                 "isolated-topic-1": {
-                    "log-1": {
+                    "author-1": {
                         "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 1")
                     }
                 },
                 "isolated-topic-2": {
-                    "log-1": {
+                    "author-1": {
                         "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 2")
                     }
                 }
@@ -245,7 +222,7 @@ async fn test_topic_isolation() {
     let blobs_for_topics = &body.blobs_by_topic;
 
     let topic_1_response = &blobs_for_topics["isolated-topic-1"];
-    assert_eq!(topic_1_response.blobs["log-1"].len(), 1);
+    assert_eq!(topic_1_response.blobs["author-1"].len(), 1);
     assert!(topic_1_response.missing.is_empty());
     assert!(!blobs_for_topics.contains_key("isolated-topic-2"));
 }
@@ -260,7 +237,7 @@ async fn test_sequence_number_filtering() {
         .json(&json!({
             "blobs": {
                 "test-topic": {
-                    "log-x": {
+                    "author-x": {
                         "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 0"),
                         "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 1"),
                         "2": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 2"),
@@ -279,7 +256,7 @@ async fn test_sequence_number_filtering() {
         .json(&json!({
             "topics": {
                 "test-topic": {
-                    "log-x": 2
+                    "author-x": 2
                 }
             }
         }))
@@ -289,47 +266,47 @@ async fn test_sequence_number_filtering() {
 
     let body: GetBlobsResponse = get_response.json();
     let topic_response = &body.blobs_by_topic["test-topic"];
-    let log_sequences = &topic_response.blobs["log-x"];
+    let author_sequences = &topic_response.blobs["author-x"];
 
     // Should only get messages 3 and 4
-    assert_eq!(log_sequences.len(), 2);
-    assert!(log_sequences.contains_key(&3));
-    assert!(log_sequences.contains_key(&4));
-    assert!(!log_sequences.contains_key(&2));
-    assert!(!log_sequences.contains_key(&1));
-    assert!(!log_sequences.contains_key(&0));
+    assert_eq!(author_sequences.len(), 2);
+    assert!(author_sequences.contains_key(&3));
+    assert!(author_sequences.contains_key(&4));
+    assert!(!author_sequences.contains_key(&2));
+    assert!(!author_sequences.contains_key(&1));
+    assert!(!author_sequences.contains_key(&0));
 
     // Server has all messages up to 4, client asked for > 2, so no missing
     assert!(topic_response.missing.is_empty());
 
-    let msg3 = &log_sequences[&3];
-    let msg4 = &log_sequences[&4];
+    let msg3 = &author_sequences[&3];
+    let msg4 = &author_sequences[&4];
 
     assert_eq!(msg3.as_ref(), b"Message 3");
     assert_eq!(msg4.as_ref(), b"Message 4");
 }
 
 #[tokio::test]
-async fn test_get_returns_all_logs_for_topic() {
+async fn test_get_returns_all_authors_for_topic() {
     let (server, _temp_file) = create_test_server();
 
-    // Store messages in multiple logs for the same topic
+    // Store messages in multiple authors for the same topic
     server
         .post("/blobs/store")
         .json(&json!({
             "blobs": {
                 "test-topic": {
-                    "log-a": {
-                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Log A - Message 0"),
-                        "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Log A - Message 1"),
-                        "2": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Log A - Message 2")
+                    "author-a": {
+                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"author A - Message 0"),
+                        "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"author A - Message 1"),
+                        "2": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"author A - Message 2")
                     },
-                    "log-b": {
-                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Log B - Message 0"),
-                        "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Log B - Message 1")
+                    "author-b": {
+                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"author B - Message 0"),
+                        "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"author B - Message 1")
                     },
-                    "log-c": {
-                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Log C - Message 0")
+                    "author-c": {
+                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"author C - Message 0")
                     }
                 }
             }
@@ -337,13 +314,13 @@ async fn test_get_returns_all_logs_for_topic() {
         .await
         .assert_status(axum::http::StatusCode::CREATED);
 
-    // Request only log-a with sequence > 0, but should also get all of log-b and log-c
+    // Request only author-a with sequence > 0, but should also get all of author-b and author-c
     let get_response = server
         .post("/blobs/get")
         .json(&json!({
             "topics": {
                 "test-topic": {
-                    "log-a": 0
+                    "author-a": 0
                 }
             }
         }))
@@ -353,41 +330,41 @@ async fn test_get_returns_all_logs_for_topic() {
 
     let body: GetBlobsResponse = get_response.json();
     let topic_response = &body.blobs_by_topic["test-topic"];
-    let topic_logs = &topic_response.blobs;
+    let topic_authors = &topic_response.blobs;
 
-    // Should have all three logs
-    assert_eq!(topic_logs.len(), 3);
-    assert!(topic_logs.contains_key("log-a"));
-    assert!(topic_logs.contains_key("log-b"));
-    assert!(topic_logs.contains_key("log-c"));
+    // Should have all three authors
+    assert_eq!(topic_authors.len(), 3);
+    assert!(topic_authors.contains_key("author-a"));
+    assert!(topic_authors.contains_key("author-b"));
+    assert!(topic_authors.contains_key("author-c"));
 
-    // log-a should only have messages with seq > 0 (messages 1 and 2)
-    let log_a = &topic_logs["log-a"];
-    assert_eq!(log_a.len(), 2);
-    assert!(log_a.contains_key(&1));
-    assert!(log_a.contains_key(&2));
-    assert!(!log_a.contains_key(&0));
+    // author-a should only have messages with seq > 0 (messages 1 and 2)
+    let author_a = &topic_authors["author-a"];
+    assert_eq!(author_a.len(), 2);
+    assert!(author_a.contains_key(&1));
+    assert!(author_a.contains_key(&2));
+    assert!(!author_a.contains_key(&0));
 
-    // log-b should have ALL messages (was not in request)
-    let log_b = &topic_logs["log-b"];
-    assert_eq!(log_b.len(), 2);
-    assert!(log_b.contains_key(&0));
-    assert!(log_b.contains_key(&1));
+    // author-b should have ALL messages (was not in request)
+    let author_b = &topic_authors["author-b"];
+    assert_eq!(author_b.len(), 2);
+    assert!(author_b.contains_key(&0));
+    assert!(author_b.contains_key(&1));
 
-    // log-c should have ALL messages (was not in request)
-    let log_c = &topic_logs["log-c"];
-    assert_eq!(log_c.len(), 1);
-    assert!(log_c.contains_key(&0));
+    // author-c should have ALL messages (was not in request)
+    let author_c = &topic_authors["author-c"];
+    assert_eq!(author_c.len(), 1);
+    assert!(author_c.contains_key(&0));
 
     // No missing since server has all messages
     assert!(topic_response.missing.is_empty());
 
     // Verify content
-    let msg_a1 = &log_a[&1];
-    assert_eq!(msg_a1.as_ref(), b"Log A - Message 1");
+    let msg_a1 = &author_a[&1];
+    assert_eq!(msg_a1.as_ref(), b"author A - Message 1");
 
-    let msg_b0 = &log_b[&0];
-    assert_eq!(msg_b0.as_ref(), b"Log B - Message 0");
+    let msg_b0 = &author_b[&0];
+    assert_eq!(msg_b0.as_ref(), b"author B - Message 0");
 }
 
 #[tokio::test]
@@ -400,7 +377,7 @@ async fn test_missing_blobs_server_behind() {
         .json(&json!({
             "blobs": {
                 "test-topic": {
-                    "log-x": {
+                    "author-x": {
                         "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 0"),
                         "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 1"),
                         "2": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 2")
@@ -417,7 +394,7 @@ async fn test_missing_blobs_server_behind() {
         .json(&json!({
             "topics": {
                 "test-topic": {
-                    "log-x": 5
+                    "author-x": 5
                 }
             }
         }))
@@ -429,12 +406,12 @@ async fn test_missing_blobs_server_behind() {
     let topic_response = &body.blobs_by_topic["test-topic"];
 
     // Server should return empty blobs (nothing new for client)
-    // The log might not even exist in blobs if all were filtered out
-    assert!(topic_response.blobs.get("log-x").map_or(true, |log| log.is_empty()));
+    // The author might not even exist in blobs if all were filtered out
+    assert!(topic_response.blobs.get("author-x").map_or(true, |author| author.is_empty()));
 
     // Server should report missing sequences 3, 4, 5
-    assert!(topic_response.missing.contains_key("log-x"));
-    let missing_seqs = &topic_response.missing["log-x"];
+    assert!(topic_response.missing.contains_key("author-x"));
+    let missing_seqs = &topic_response.missing["author-x"];
     assert_eq!(missing_seqs.len(), 3);
     assert_eq!(missing_seqs, &vec![3, 4, 5]);
 }
@@ -451,7 +428,7 @@ async fn test_missing_blobs_server_has_nothing() {
         .json(&json!({
             "topics": {
                 "test-topic": {
-                    "log-x": 3
+                    "author-x": 3
                 }
             }
         }))
@@ -466,25 +443,25 @@ async fn test_missing_blobs_server_has_nothing() {
     assert!(topic_response.blobs.is_empty());
 
     // Server should report missing all sequences 0-3
-    assert!(topic_response.missing.contains_key("log-x"));
-    let missing_seqs = &topic_response.missing["log-x"];
+    assert!(topic_response.missing.contains_key("author-x"));
+    let missing_seqs = &topic_response.missing["author-x"];
     assert_eq!(missing_seqs.len(), 4);
     assert_eq!(missing_seqs, &vec![0, 1, 2, 3]);
 }
 
 #[tokio::test]
-async fn test_missing_blobs_multiple_logs() {
+async fn test_missing_blobs_multiple_authors() {
     let (server, _temp_file) = create_test_server();
 
-    // Store blobs for log-a (0-1) but nothing for log-b
+    // Store blobs for author-a (0-1) but nothing for author-b
     server
         .post("/blobs/store")
         .json(&json!({
             "blobs": {
                 "test-topic": {
-                    "log-a": {
-                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Log A - 0"),
-                        "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Log A - 1")
+                    "author-a": {
+                        "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"author A - 0"),
+                        "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"author A - 1")
                     }
                 }
             }
@@ -492,14 +469,14 @@ async fn test_missing_blobs_multiple_logs() {
         .await
         .assert_status(axum::http::StatusCode::CREATED);
 
-    // Client says it has log-a up to 4 and log-b up to 2
+    // Client says it has author-a up to 4 and author-b up to 2
     let get_response = server
         .post("/blobs/get")
         .json(&json!({
             "topics": {
                 "test-topic": {
-                    "log-a": 4,
-                    "log-b": 2
+                    "author-a": 4,
+                    "author-b": 2
                 }
             }
         }))
@@ -510,16 +487,16 @@ async fn test_missing_blobs_multiple_logs() {
     let body: GetBlobsResponse = get_response.json();
     let topic_response = &body.blobs_by_topic["test-topic"];
 
-    // Should have missing for both logs
+    // Should have missing for both authors
     assert_eq!(topic_response.missing.len(), 2);
 
-    // log-a: server has 0-1, client has 0-4, missing 2-4
-    let missing_log_a = &topic_response.missing["log-a"];
-    assert_eq!(missing_log_a, &vec![2, 3, 4]);
+    // author-a: server has 0-1, client has 0-4, missing 2-4
+    let missing_author_a = &topic_response.missing["author-a"];
+    assert_eq!(missing_author_a, &vec![2, 3, 4]);
 
-    // log-b: server has nothing, client has 0-2, missing all
-    let missing_log_b = &topic_response.missing["log-b"];
-    assert_eq!(missing_log_b, &vec![0, 1, 2]);
+    // author-b: server has nothing, client has 0-2, missing all
+    let missing_author_b = &topic_response.missing["author-b"];
+    assert_eq!(missing_author_b, &vec![0, 1, 2]);
 }
 
 #[tokio::test]
@@ -532,7 +509,7 @@ async fn test_no_missing_when_server_is_ahead() {
         .json(&json!({
             "blobs": {
                 "test-topic": {
-                    "log-x": {
+                    "author-x": {
                         "0": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 0"),
                         "1": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 1"),
                         "2": base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b"Message 2"),
@@ -552,7 +529,7 @@ async fn test_no_missing_when_server_is_ahead() {
         .json(&json!({
             "topics": {
                 "test-topic": {
-                    "log-x": 2
+                    "author-x": 2
                 }
             }
         }))
@@ -564,11 +541,11 @@ async fn test_no_missing_when_server_is_ahead() {
     let topic_response = &body.blobs_by_topic["test-topic"];
 
     // Server should return messages 3, 4, 5
-    let log_seqs = &topic_response.blobs["log-x"];
-    assert_eq!(log_seqs.len(), 3);
-    assert!(log_seqs.contains_key(&3));
-    assert!(log_seqs.contains_key(&4));
-    assert!(log_seqs.contains_key(&5));
+    let author_seqs = &topic_response.blobs["author-x"];
+    assert_eq!(author_seqs.len(), 3);
+    assert!(author_seqs.contains_key(&3));
+    assert!(author_seqs.contains_key(&4));
+    assert!(author_seqs.contains_key(&5));
 
     // No missing since server is ahead
     assert!(topic_response.missing.is_empty());

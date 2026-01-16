@@ -14,7 +14,7 @@ use p2panda_store::LogStore;
 use tokio::sync::{Mutex, mpsc};
 use tracing::Instrument;
 
-use crate::{DeviceId, Extensions, Header, Operation, topic::LogId};
+use crate::{DeviceId, Extensions, Header, Operation, topic::TopicId};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 #[async_trait::async_trait]
@@ -36,14 +36,14 @@ pub trait MailboxClient<Op: MailboxItem = MailboxOperation>: Send + Sync + 'stat
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(bound(deserialize = "Op: DeserializeOwned"))]
-pub struct FetchRequest<Op: MailboxItem>(pub BTreeMap<LogId, FetchTopicRequest<Op>>);
+pub struct FetchRequest<Op: MailboxItem>(pub BTreeMap<TopicId, FetchTopicRequest<Op>>);
 
 pub type FetchTopicRequest<Op> = BTreeMap<<Op as MailboxItem>::Author, u64>;
 
 /// Returned by the `fetch` method.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(bound(deserialize = "Op: DeserializeOwned"))]
-pub struct FetchResponse<Op: MailboxItem>(pub BTreeMap<LogId, FetchTopicResponse<Op>>);
+pub struct FetchResponse<Op: MailboxItem>(pub BTreeMap<TopicId, FetchTopicResponse<Op>>);
 
 /// Returned by the `fetch` method.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -79,7 +79,7 @@ pub trait MailboxItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'sta
     fn hash(&self) -> Self::Hash;
     fn author(&self) -> Self::Author;
     fn seq_num(&self) -> u64;
-    fn topic(&self) -> LogId;
+    fn topic(&self) -> TopicId;
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -104,7 +104,7 @@ impl MailboxItem for MailboxOperation {
         self.header.seq_num
     }
 
-    fn topic(&self) -> LogId {
-        self.header.extensions.log_id
+    fn topic(&self) -> TopicId {
+        self.header.extensions.topic
     }
 }

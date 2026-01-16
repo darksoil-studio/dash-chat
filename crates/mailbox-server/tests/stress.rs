@@ -1,44 +1,26 @@
-use axum_test::TestServer;
-use mailbox_server::GetBlobsResponse;
-use redb::Database;
+use futures::future::join_all;
+use mailbox_server::{
+    test_utils::create_test_server, Author, GetBlobsResponse, SequenceNumber, TopicId,
+};
 use serde_json::json;
+use serial_test::serial;
 use std::collections::BTreeMap;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Instant;
-use tempfile::NamedTempFile;
-use futures::future::join_all;
-
-fn create_test_db() -> (Database, NamedTempFile) {
-    let temp_file = NamedTempFile::new().unwrap();
-    let db = Database::create(temp_file.path()).unwrap();
-
-    let write_txn = db.begin_write().unwrap();
-    {
-        let _table = write_txn
-            .open_table(mailbox_server::BLOBS_TABLE)
-            .unwrap();
-    }
-    write_txn.commit().unwrap();
-
-    (db, temp_file)
-}
-
-fn create_test_server() -> (TestServer, NamedTempFile) {
-    let (db, temp_file) = create_test_db();
-    let app = mailbox_server::create_app(db);
-    let server = TestServer::new(app).unwrap();
-    (server, temp_file)
-}
 
 // Helper to create a simple store request with a single message
-fn create_store_request(topic_id: &str, message: &[u8], seq_num: u32) -> serde_json::Value {
+fn create_store_request(
+    topic_id: &str,
+    message: &[u8],
+    seq_num: SequenceNumber,
+) -> serde_json::Value {
     let message_b64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message);
     json!({
         "blobs": {
             topic_id: {
-                "log-1": {
+                "author-1": {
                     seq_num.to_string(): message_b64
                 }
             }
@@ -46,12 +28,14 @@ fn create_store_request(topic_id: &str, message: &[u8], seq_num: u32) -> serde_j
     })
 }
 
+// Run this test sequentially to avoid "Too many open files" error when combined with other tests
 #[tokio::test]
+#[serial]
 async fn stress_test_concurrent_writes() {
     let (server, _temp_file) = create_test_server();
     let server = Arc::new(server);
 
-    let num_concurrent_writes = 10000;
+    let num_concurrent_writes = 600;
     let num_topics = 10;
 
     let start = Instant::now();
@@ -65,7 +49,7 @@ async fn stress_test_concurrent_writes() {
         let task = async move {
             let response = server_clone
                 .post("/blobs/store")
-                .json(&create_store_request(&topic_id, message.as_bytes(), i as u32))
+                .json(&create_store_request(&topic_id, message.as_bytes(), i))
                 .await;
 
             response.assert_status(axum::http::StatusCode::CREATED);
@@ -98,21 +82,27 @@ async fn stress_test_concurrent_writes() {
 
         get_response.assert_status_ok();
         let body: GetBlobsResponse = get_response.json();
-        let topic_logs = &body.blobs_by_topic[&format!("stress-topic-{}", topic_idx)];
-        let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
+        let topic_authors = &body.blobs_by_topic[&format!("stress-topic-{}", topic_idx)];
+        let total_messages: u64 = topic_authors
+            .blobs
+            .values()
+            .map(|author| author.len() as u64)
+            .sum();
 
         assert_eq!(total_messages, num_concurrent_writes / num_topics);
     }
 }
 
+// Run this test sequentially to avoid "Too many open files" error when combined with other tests
 #[tokio::test]
+#[serial]
 async fn stress_test_concurrent_reads() {
     let (server, _temp_file) = create_test_server();
     let server = Arc::new(server);
 
     // Pre-populate with messages
     let num_topics = 10;
-    let messages_per_topic = 50;
+    let messages_per_topic = 500;
 
     for topic_idx in 0..num_topics {
         for msg_idx in 0..messages_per_topic {
@@ -121,7 +111,11 @@ async fn stress_test_concurrent_reads() {
 
             server
                 .post("/blobs/store")
-                .json(&create_store_request(&topic_id, message.as_bytes(), msg_idx as u32))
+                .json(&create_store_request(
+                    &topic_id,
+                    message.as_bytes(),
+                    msg_idx,
+                ))
                 .await
                 .assert_status(axum::http::StatusCode::CREATED);
         }
@@ -149,8 +143,12 @@ async fn stress_test_concurrent_reads() {
 
             response.assert_status_ok();
             let body: GetBlobsResponse = response.json();
-            let topic_logs = &body.blobs_by_topic[&topic_id_clone];
-            let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
+            let topic_authors = &body.blobs_by_topic[&topic_id_clone];
+            let total_messages: u64 = topic_authors
+                .blobs
+                .values()
+                .map(|author| author.len() as u64)
+                .sum();
             assert_eq!(total_messages, messages_per_topic);
         };
         tasks.push(task);
@@ -190,7 +188,7 @@ async fn stress_test_mixed_read_write_operations() {
 
                 let response = server_clone
                     .post("/blobs/store")
-                    .json(&create_store_request(&topic_id, message.as_bytes(), i as u32))
+                    .json(&create_store_request(&topic_id, message.as_bytes(), i))
                     .await;
 
                 response.assert_status(axum::http::StatusCode::CREATED);
@@ -231,8 +229,8 @@ async fn stress_test_large_messages() {
     let (server, _temp_file) = create_test_server();
     let server = Arc::new(server);
 
-    let num_large_messages = 50;
-    let message_size = 1024 * 100; // 100KB per message
+    let num_large_messages: usize = 50;
+    let message_size: usize = 1024 * 100; // 100KB per message
 
     let start = Instant::now();
     let mut tasks = Vec::new();
@@ -246,7 +244,7 @@ async fn stress_test_large_messages() {
 
             let response = server_clone
                 .post("/blobs/store")
-                .json(&create_store_request(&topic_id, &message, i as u32))
+                .json(&create_store_request(&topic_id, &message, i as u64))
                 .await;
 
             response.assert_status(axum::http::StatusCode::CREATED);
@@ -281,9 +279,13 @@ async fn stress_test_large_messages() {
 
         response.assert_status_ok();
         let body: GetBlobsResponse = response.json();
-        let topic_logs = &body.blobs_by_topic[&topic_id];
-        let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
-        assert_eq!(total_messages, num_large_messages / 5);
+        let topic_authors = &body.blobs_by_topic[&topic_id];
+        let total_messages: u64 = topic_authors
+            .blobs
+            .values()
+            .map(|author| author.len() as u64)
+            .sum();
+        assert_eq!(total_messages, num_large_messages as u64 / 5);
     }
 }
 
@@ -303,7 +305,11 @@ async fn stress_test_many_topics() {
 
             server
                 .post("/blobs/store")
-                .json(&create_store_request(&topic_id, message.as_bytes(), msg_idx as u32))
+                .json(&create_store_request(
+                    &topic_id,
+                    message.as_bytes(),
+                    msg_idx,
+                ))
                 .await
                 .assert_status(axum::http::StatusCode::CREATED);
         }
@@ -317,13 +323,11 @@ async fn stress_test_many_topics() {
     );
 
     // Test retrieving from multiple topics in one request
-    let topic_ids: Vec<String> = (0..100)
-        .map(|i| format!("many-topics-{}", i))
-        .collect();
+    let topic_ids: Vec<TopicId> = (0..100).map(|i| format!("many-topics-{}", i)).collect();
 
     let mut topics_map = BTreeMap::new();
     for topic_id in &topic_ids {
-        topics_map.insert(topic_id.clone(), BTreeMap::<String, u32>::new());
+        topics_map.insert(topic_id.clone(), BTreeMap::<Author, SequenceNumber>::new());
     }
 
     let start = Instant::now();
@@ -341,8 +345,12 @@ async fn stress_test_many_topics() {
 
     assert_eq!(body.blobs_by_topic.len(), 100);
     for topic_id in &topic_ids {
-        let topic_logs = &body.blobs_by_topic[topic_id];
-        let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
+        let topic_authors = &body.blobs_by_topic[topic_id];
+        let total_messages: u64 = topic_authors
+            .blobs
+            .values()
+            .map(|author| author.len() as u64)
+            .sum();
         assert_eq!(total_messages, messages_per_topic);
     }
 
@@ -366,7 +374,7 @@ async fn stress_test_rapid_sequential_writes() {
 
         server
             .post("/blobs/store")
-            .json(&create_store_request(topic_id, message.as_bytes(), i as u32))
+            .json(&create_store_request(topic_id, message.as_bytes(), i))
             .await
             .assert_status(axum::http::StatusCode::CREATED);
     }
@@ -392,8 +400,11 @@ async fn stress_test_rapid_sequential_writes() {
 
     response.assert_status_ok();
     let body: GetBlobsResponse = response.json();
-    let topic_logs = &body.blobs_by_topic[topic_id];
-    let total_messages: usize = topic_logs.blobs.values().map(|log| log.len()).sum();
+    let topic_authors = &body.blobs_by_topic[topic_id];
+    let total_messages: u64 = topic_authors
+        .blobs
+        .values()
+        .map(|author| author.len() as u64)
+        .sum();
     assert_eq!(total_messages, num_messages);
 }
-

@@ -23,7 +23,7 @@ pub fn spawn_cleanup_task(db: Arc<Database>) {
 }
 
 /// Deletes all messages older than MESSAGE_MAX_AGE
-async fn cleanup_old_messages(db: &Database) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn cleanup_old_messages(db: &Database) -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("Starting cleanup of old messages");
 
     let cutoff_time = std::time::SystemTime::now() - MESSAGE_MAX_AGE;
