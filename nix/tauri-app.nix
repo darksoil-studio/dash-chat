@@ -8,8 +8,10 @@
       cargoToml = builtins.fromTOML (builtins.readFile ./src-tauri/Cargo.toml);
       pname = cargoToml.package.name;
       version = tauriConfig.version;
-      craneLib = (inputs.p2p-shipyard.inputs.crane.mkLib pkgs).overrideToolchain
-        inputs.p2p-shipyard.inputs.holochain-utils.inputs.holonix.packages.${system}.rust;
+      overlays = [ (import inputs.rust-overlay) ];
+      craneLibPkgs = import inputs.nixpkgs { inherit system overlays; };
+      rust = craneLibPkgs.rust-bin.fromRustupToolchainFile "${self}/rust-toolchain.toml";
+      craneLib = (inputs.crane.mkLib craneLibPkgs).overrideToolchain rust;
       src =
         inputs.p2p-shipyard.inputs.holochain-utils.inputs.tauri-plugin-holochain.outputs.lib.cleanTauriSource {
           inherit lib;

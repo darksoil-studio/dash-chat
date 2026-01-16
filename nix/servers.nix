@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ self, inputs, ... }:
 let
 
   sshPubKeys = {
@@ -15,55 +15,38 @@ let
     services.openssh.settings.PermitRootLogin = "without-password";
   };
 
-  bootstrapUrl =
-    "https://bootstrap.kitsune-v0-1.kitsune.darksoil-studio.garnix.me";
-
-  always_online_module = {
-    systemd.services.dash_chat_aon = let
-      aon =
-        inputs.p2p-shipyard.inputs.always-online-nodes.outputs.builders."x86_64-linux".aon-for-happs {
-          happs = [ inputs.self.outputs.packages."x86_64-linux".dash_chat_happ ];
+  mailbox_server_module = {
+    systemd.services.mailbox =
+      let mailbox = self.outputs.packages."x86_64-linux".mailbox-server;
+      in {
+        enable = true;
+        path = [ mailbox ];
+        wantedBy = [ "multi-user.target" ];
+        after = [ "network-online.target" ];
+        wants = [ "network-online.target" ];
+        serviceConfig = {
+          ExecStart = "${mailbox}/bin/mailbox-server --addr 0.0.0.0:80";
+          # RuntimeMaxSec = "3600"; # Restart every hour
+          Restart = "always";
         };
-    in {
-      enable = true;
-      path = [ aon ];
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      serviceConfig = {
-        ExecStart =
-          "${aon}/bin/always-online-node --data-dir /root/aon --bootstrap-url ${bootstrapUrl}";
-        RuntimeMaxSec = "3600"; # Restart every hour
-        Restart = "always";
       };
+    networking.firewall = {
+      enable = true;
+      allowedTCPPorts = [ 80 ];
     };
   };
 
 in {
   flake = {
     nixosConfigurations = {
-      aon1 = inputs.nixpkgs.lib.nixosSystem {
+      mailbox-server = inputs.nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           inputs.garnix-lib.nixosModules.garnix
           sshModule
-          always_online_module
+          mailbox_server_module
           {
-            garnix.server.persistence.name = "dash-chat-aon-v0-5-0-1";
-            system.stateVersion = "25.05";
-            garnix.server.enable = true;
-            garnix.server.persistence.enable = true;
-          }
-        ];
-      };
-      aon2 = inputs.nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          inputs.garnix-lib.nixosModules.garnix
-          sshModule
-          always_online_module
-          {
-            garnix.server.persistence.name = "dash-chat-aon-v0-5-0-2";
+            garnix.server.persistence.name = "dash-chat-mailbox";
             system.stateVersion = "25.05";
             garnix.server.enable = true;
             garnix.server.persistence.enable = true;
