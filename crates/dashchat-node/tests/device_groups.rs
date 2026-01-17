@@ -2,7 +2,8 @@
 
 use named_id::*;
 
-use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
+use dashchat_node::{testing::*, *};
+use mailbox_client::mem::MemMailbox;
 
 const TRACING_FILTER: [&str; 4] = [
     "dashchat=debug",

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use dashchat_node::mailbox::mem::MemMailbox;
+use mailbox_client::mem::MemMailbox;
 use p2panda_store::LogStore;
 
 use dashchat_node::{testing::*, *};

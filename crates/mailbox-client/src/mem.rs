@@ -5,68 +5,41 @@ use std::{
     sync::Arc,
 };
 
-use named_id::Rename;
-use p2panda_core::Body;
 use tokio::sync::RwLock;
-
-use crate::{Header, topic::TopicId};
-
-impl From<Operation> for MailboxOperation {
-    fn from(op: Operation) -> Self {
-        Self {
-            header: op.header,
-            body: op.body,
-        }
-    }
-}
-
-impl From<MailboxOperation> for Operation {
-    fn from(op: MailboxOperation) -> Self {
-        Self {
-            hash: op.header.hash(),
-            header: op.header,
-            body: op.body,
-        }
-    }
-}
-
-impl From<(Header, Option<Body>)> for MailboxOperation {
-    fn from((header, body): (Header, Option<Body>)) -> Self {
-        Self { header, body }
-    }
-}
 
 /// A client for the in-memory mailbox server.
 /// This client is stateful, so all requests for a node should go through a single client
 /// instance. State is shared between all cloned copies of this.
 #[derive(Clone)]
-pub struct MemMailboxClient<Op: MailboxItem = MailboxOperation> {
-    mailbox: MemMailbox<Op>,
-    subscribed_topics: Arc<RwLock<BTreeSet<TopicId>>>,
+pub struct MemMailboxClient<Item: MailboxItem> {
+    mailbox: MemMailbox<Item>,
+    subscribed_topics: Arc<RwLock<BTreeSet<Item::Topic>>>,
 }
 
-impl<Op: MailboxItem> MemMailboxClient<Op> {
-    pub async fn subscribed_topics(&self) -> BTreeSet<TopicId> {
+impl<Item: MailboxItem> MemMailboxClient<Item> {
+    pub async fn subscribed_topics(&self) -> BTreeSet<Item::Topic> {
         self.subscribed_topics.read().await.clone()
     }
 }
 
-pub type MemMailboxLogs<Op> =
-    HashMap<TopicId, HashMap<<Op as MailboxItem>::Author, BTreeMap<u64, Op>>>;
+pub type MemMailboxLogs<Item> = HashMap<
+    <Item as MailboxItem>::Topic,
+    HashMap<<Item as MailboxItem>::Author, BTreeMap<u64, Item>>,
+>;
 
 #[derive(Clone)]
-pub struct MemMailbox<Op: MailboxItem = MailboxOperation> {
-    ops: Arc<RwLock<MemMailboxLogs<Op>>>,
+pub struct MemMailbox<Item: MailboxItem> {
+    ops: Arc<RwLock<MemMailboxLogs<Item>>>,
 }
 
-impl<Op: MailboxItem> MemMailbox<Op> {
+impl<Item: MailboxItem> MemMailbox<Item> {
     pub fn new() -> Self {
         Self {
             ops: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    pub fn client(&self) -> MemMailboxClient<Op> {
+    pub fn client(&self) -> MemMailboxClient<Item> {
         MemMailboxClient {
             mailbox: self.clone(),
             subscribed_topics: Arc::new(RwLock::new(BTreeSet::new())),
@@ -75,8 +48,8 @@ impl<Op: MailboxItem> MemMailbox<Op> {
 }
 
 #[async_trait::async_trait]
-impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
-    async fn publish(&self, ops: Vec<Op>) -> Result<(), anyhow::Error> {
+impl<Item: MailboxItem> MailboxClient<Item> for MemMailboxClient<Item> {
+    async fn publish(&self, ops: Vec<Item>) -> Result<(), anyhow::Error> {
         let mut store = self.mailbox.ops.write().await;
         // ops.entry(topic).or_insert_with(Vec::new).push(op.into());
         for op in ops {
@@ -94,7 +67,7 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
         Ok(())
     }
 
-    async fn fetch(&self, request: FetchRequest<Op>) -> anyhow::Result<FetchResponse<Op>> {
+    async fn fetch(&self, request: FetchRequest<Item>) -> anyhow::Result<FetchResponse<Item>> {
         let mailbox_ops = self.mailbox.ops.read().await;
 
         let mut response = BTreeMap::new();
@@ -151,11 +124,17 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
             tracing::info!(
                 topic = ?topic.renamed(),
                 num = new.len(),
-                hashes = ?new.iter().map(|op: &Op| op.hash().renamed()).collect::<Vec<_>>(),
+                hashes = ?new.iter().map(|op: &Item| op.hash().renamed()).collect::<Vec<_>>(),
                 "fetching mailbox operations"
             );
 
-            response.insert(topic, FetchTopicResponse { ops: new, missing });
+            response.insert(
+                topic,
+                FetchTopicResponse {
+                    items: new,
+                    missing,
+                },
+            );
         }
 
         Ok(FetchResponse(response))
@@ -166,21 +145,22 @@ impl<Op: MailboxItem> MailboxClient<Op> for MemMailboxClient<Op> {
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use crate::Topic;
-
     use super::*;
 
     #[derive(Clone, PartialEq, Eq, Serialize, Deserialize, derive_more::Debug)]
     #[debug("Msg({author} {seq})")]
     struct Msg {
-        topic: TopicId,
+        topic: MsgTopic,
         author: char,
         seq: u64,
     }
 
+    pub type MsgTopic = u8;
+
     impl MailboxItem for Msg {
         type Author = char;
         type Hash = (Self::Author, u64);
+        type Topic = MsgTopic;
 
         fn hash(&self) -> Self::Hash {
             (self.author, self.seq)
@@ -194,14 +174,14 @@ mod tests {
             self.seq
         }
 
-        fn topic(&self) -> TopicId {
+        fn topic(&self) -> Self::Topic {
             self.topic
         }
     }
 
     async fn fetch(
         client: &MemMailboxClient<Msg>,
-        topic: TopicId,
+        topic: MsgTopic,
         authors: &[(char, u64)],
     ) -> anyhow::Result<FetchTopicResponse<Msg>> {
         let FetchResponse(mut r) = client.fetch(r(topic, authors)).await?;
@@ -210,18 +190,18 @@ mod tests {
         Ok(rr)
     }
 
-    fn r(topic: TopicId, authors: &[(char, u64)]) -> FetchRequest<Msg> {
+    fn r(topic: MsgTopic, authors: &[(char, u64)]) -> FetchRequest<Msg> {
         FetchRequest(BTreeMap::from([(
             topic,
             BTreeMap::from_iter(authors.into_iter().cloned()),
         )]))
     }
 
-    fn m(topic: TopicId, author: char, seq: u64) -> Msg {
+    fn m(topic: MsgTopic, author: char, seq: u64) -> Msg {
         Msg { topic, author, seq }
     }
 
-    fn mm(topic: TopicId, author: char, r: std::ops::Range<u64>) -> Vec<Msg> {
+    fn mm(topic: MsgTopic, author: char, r: std::ops::Range<u64>) -> Vec<Msg> {
         r.map(|i| m(topic, author, i)).collect()
     }
 
@@ -231,12 +211,12 @@ mod tests {
         let client = mailbox.client();
 
         let a = 'a';
-        let t = Topic::random().into();
+        let t = 11;
 
         assert_eq!(
             fetch(&client, t, &[(a, 1)]).await.unwrap(),
             FetchTopicResponse {
-                ops: vec![],
+                items: vec![],
                 missing: HashMap::from([(a, vec![0, 1])]),
             }
         );
@@ -246,7 +226,7 @@ mod tests {
         assert_eq!(
             fetch(&client, t, &[]).await.unwrap(),
             FetchTopicResponse {
-                ops: mm(t, a, 0..2),
+                items: mm(t, a, 0..2),
                 missing: HashMap::new(),
             }
         );
@@ -258,14 +238,10 @@ mod tests {
         let client = mailbox.client();
 
         let a = '.';
-        let tt: [TopicId; 3] = [
-            Topic::random().into(),
-            Topic::random().into(),
-            Topic::random().into(),
-        ];
+        let tt: [MsgTopic; 3] = [11, 22, 33];
 
         let empty = FetchTopicResponse {
-            ops: vec![],
+            items: vec![],
             missing: HashMap::new(),
         };
         assert_eq!(fetch(&client, tt[0], &[]).await.unwrap(), empty);
@@ -282,14 +258,14 @@ mod tests {
         assert_eq!(
             fetch(&client, tt[0], &[(a, 3)]).await.unwrap(),
             FetchTopicResponse {
-                ops: vec![],
+                items: vec![],
                 missing: HashMap::from([(a, vec![2, 3])]),
             }
         );
         assert_eq!(
             fetch(&client, tt[1], &[(a, 3)]).await.unwrap(),
             FetchTopicResponse {
-                ops: vec![],
+                items: vec![],
                 missing: HashMap::from([(a, vec![0, 1])]),
             }
         );
@@ -298,21 +274,21 @@ mod tests {
         assert_eq!(
             fetch(&client, tt[0], &[(a, 4)]).await.unwrap(),
             FetchTopicResponse {
-                ops: vec![],
+                items: vec![],
                 missing: HashMap::from([(a, vec![2, 3, 4])]),
             }
         );
         assert_eq!(
             fetch(&client, tt[1], &[(a, 4)]).await.unwrap(),
             FetchTopicResponse {
-                ops: vec![],
+                items: vec![],
                 missing: HashMap::from([(a, vec![0, 1, 4])]),
             }
         );
         assert_eq!(
             fetch(&client, tt[2], &[(a, 4)]).await.unwrap(),
             FetchTopicResponse {
-                ops: vec![],
+                items: vec![],
                 missing: HashMap::from([(a, vec![4])]),
             }
         );
@@ -323,44 +299,16 @@ mod tests {
         assert_eq!(
             fetch(&client, tt[0], &[(a, 3)]).await.unwrap(),
             FetchTopicResponse {
-                ops: vec![m(tt[0], a, 4)],
+                items: vec![m(tt[0], a, 4)],
                 missing: HashMap::from([(a, vec![2, 3])]),
             }
         );
         assert_eq!(
             fetch(&client, tt[1], &[(a, 3)]).await.unwrap(),
             FetchTopicResponse {
-                ops: vec![m(tt[1], a, 4)],
+                items: vec![m(tt[1], a, 4)],
                 missing: HashMap::from([(a, vec![0, 1])]),
             }
         );
     }
-
-    // #[tokio::test]
-    // async fn test_mem_mailbox_clients() {
-    //     let mailbox = MemRelay::new();
-
-    //     let cc = [mailbox.client(), mailbox.client()];
-
-    //     let tt = [Topic::random(), Topic::random(), Topic::random()];
-
-    //     let oo = (0u8..128)
-    //         .map(|i| Bytes::from_static(&[i]))
-    //         .collect::<Vec<_>>();
-    //     // let o1 = (0..64).map(|i| [i; 4]).collect::<Vec<_>>();
-    //     // let o2 = (64..128).map(|i| [i; 4]).collect::<Vec<_>>();
-    //     // let o3 = (128..192).map(|i| [i; 4]).collect::<Vec<_>>();
-
-    //     for (i, o) in oo.iter().enumerate() {
-    //         let c = cc[i % cc.len()].clone();
-    //         let t = tt[i % tt.len()].clone();
-    //         c.publish(t.into(), o.clone()).await.unwrap();
-    //     }
-
-    //     let op = Bytes::from_static(b"test");
-    //     mailbox.publish(t1.into(), op).await.unwrap();
-    //     let ops = mailbox.fetch(topic, 0).await.unwrap();
-    //     assert_eq!(ops.len(), 1);
-    //     assert_eq!(ops[0], op);
-    // }
 }

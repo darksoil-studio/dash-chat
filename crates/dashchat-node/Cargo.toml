@@ -15,6 +15,7 @@ anyhow = "1.0.95"
 async-trait = "0.1.85"
 derive_more = { version = "1.0.0", features = ["full"] }
 futures = "0.3"
+mailbox-client = { path = "../mailbox-client" }
 # p2panda-core = "0.3.1"
 # p2panda-discovery = { version = "0.3.1", features = ["mdns"] }
 # p2panda-net = "0.3.1"
@@ -39,7 +40,6 @@ p2panda-spaces = { git = "https://github.com/maackle/p2panda.git", branch = "das
   "test_utils",
 ] }
 tokio = { version = "1.43.0", features = ["fs"] }
-reqwest = { version = "0.12", features = ["json"] }
 
 named-id = { git = "https://github.com/maackle/named-id.git" }
 base64 = "0.22"

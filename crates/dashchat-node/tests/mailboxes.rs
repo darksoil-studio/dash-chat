@@ -2,11 +2,8 @@
 
 use std::time::Duration;
 
-use dashchat_node::{
-    mailbox::{MailboxClient, mem::MemMailbox, toy::ToyMailboxClient},
-    testing::*,
-    *,
-};
+use dashchat_node::{mailbox::MailboxOperation, testing::*, *};
+use mailbox_client::{MailboxClient, mem::MemMailbox, toy::ToyMailboxClient};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_mailbox_late_join_mem() {
@@ -46,13 +43,16 @@ async fn test_mailbox_late_join_toy() {
     let url = url.trim_end_matches('/').to_string();
 
     // Create clients pointing to the same server
-    let alice_mailbox = ToyMailboxClient::new(&url);
-    let bobbi_mailbox = ToyMailboxClient::new(&url);
+    let alice_mailbox = ToyMailboxClient::<MailboxOperation>::new(&url);
+    let bobbi_mailbox = ToyMailboxClient::<MailboxOperation>::new(&url);
 
     mailbox_late_join(alice_mailbox, bobbi_mailbox).await;
 }
 
-async fn mailbox_late_join(alice_mailbox: impl MailboxClient, bobbi_mailbox: impl MailboxClient) {
+async fn mailbox_late_join(
+    alice_mailbox: impl MailboxClient<MailboxOperation>,
+    bobbi_mailbox: impl MailboxClient<MailboxOperation>,
+) {
     let mut config = NodeConfig::testing();
     config.mailboxes_config.success_interval = Duration::from_millis(1000);
     config.mailboxes_config.error_interval = Duration::from_millis(1000);
@@ -88,7 +88,7 @@ async fn mailbox_late_join(alice_mailbox: impl MailboxClient, bobbi_mailbox: imp
 
     // Introduce delay to let the first message be stored and force missing synchronization with the second one
     std::thread::sleep(Duration::from_secs(2));
-    
+
     alice.send_message(chat, "Hello2".into()).await.unwrap();
 
     println!("=== adding mailboxes ===");

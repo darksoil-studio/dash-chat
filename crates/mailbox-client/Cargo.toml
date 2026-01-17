@@ -1,0 +1,27 @@
+[package]
+name = "mailbox-client"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
+async-trait = "0.1.85"
+derive_more = { version = "1.0.0", features = ["full"] }
+hex = "0.4.3"
+named-id = { git = "https://github.com/maackle/named-id.git" }
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1.43.0", features = ["full"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+bytes = "1.11.0"
+
+# TODO: pull out the toy mailbox request/response types so they can be
+#       independently depended upon
+mailbox-server = { path = "../mailbox-server" }
+
+# NOTE: only used for cbor encoding/decoding
+p2panda-core = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"

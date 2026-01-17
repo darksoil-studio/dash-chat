@@ -122,6 +122,7 @@ pub mod kind {
     derive_more::Deref,
     derive_more::Display,
     derive_more::Debug,
+    derive_more::From,
 )]
 #[display("{}", hex::encode(self.0))]
 #[debug("{}", self)]
