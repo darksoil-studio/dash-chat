@@ -32,7 +32,6 @@ impl<Item: MailboxItem> MailboxClient<Item> for ToyMailboxClient<Item>
 where
     Item::Topic: ToyItemTraits,
     Item::Author: ToyItemTraits,
-    // Item::Hash: ToyItemTraits,
 {
     async fn publish(&self, ops: Vec<Item>) -> Result<(), anyhow::Error> {
         if ops.is_empty() {
@@ -148,7 +147,6 @@ impl<Item: MailboxItem> ToyMailboxClient<Item>
 where
     Item::Topic: ToyItemTraits,
     Item::Author: ToyItemTraits,
-    // Item::Hash: ToyItemTraits,
 {
     /// Helper functions
 

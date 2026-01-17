@@ -54,7 +54,7 @@ impl mailbox_client::toy::ToyItemTraits for DeviceId {
     fn from_str(s: &str) -> Result<Self, anyhow::Error> {
         let bytes: [u8; 32] = hex::decode(s)?
             .try_into()
-            .map_err(|e| anyhow::anyhow!("Invalid TopicId: {e:?}"))?;
+            .map_err(|e| anyhow::anyhow!("Invalid DeviceId: {e:?}"))?;
 
         Ok(DeviceId::from(PublicKey::from_bytes(&bytes)?))
     }
