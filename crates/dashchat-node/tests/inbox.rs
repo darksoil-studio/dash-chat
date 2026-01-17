@@ -1,6 +1,7 @@
 #![feature(bool_to_result)]
 
-use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
+use dashchat_node::{testing::*, *};
+use mailbox_client::mem::MemMailbox;
 use named_id::*;
 
 const TRACING_FILTER: [&str; 5] = [

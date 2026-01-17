@@ -1,86 +1,8 @@
-pub mod manager;
-pub mod mem;
-pub mod toy;
+use serde::{Deserialize, Serialize};
 
-use std::{
-    collections::{BTreeMap, BTreeSet, HashMap},
-    sync::Arc,
-    time::Duration,
-};
-
-use named_id::Rename;
-use p2panda_core::Body;
-use p2panda_store::LogStore;
-use tokio::sync::{Mutex, mpsc};
-use tracing::Instrument;
-
-use crate::{DeviceId, Extensions, Header, Operation, topic::TopicId};
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
-
-#[async_trait::async_trait]
-pub trait MailboxClient<Op: MailboxItem = MailboxOperation>: Send + Sync + 'static {
-    /// Publish an operation to the mailbox for the given topic.
-    async fn publish(&self, ops: Vec<Op>) -> Result<(), anyhow::Error>;
-
-    /// Fetch operations from the mailbox for the given topics.
-    ///
-    /// The inner map associated each author with the height of their locally stored log.
-    /// The height represents the highest sequence number stored for that author, meaning that the mailbox
-    /// should only return operations with a higher sequence for that author.
-    /// NOTE that this is a subtractive, not additive, filter, meaning that any authors not included
-    /// in the `min_heights` list will have their *entire* log returned, including if `min_heights` is empty.
-    /// This is so that the mailbox is used for author discovery as well.
-    /// The intention is that all data is encrypted and only decipherable by valid recipients.
-    async fn fetch(&self, request: FetchRequest<Op>) -> Result<FetchResponse<Op>, anyhow::Error>;
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(bound(deserialize = "Op: DeserializeOwned"))]
-pub struct FetchRequest<Op: MailboxItem>(pub BTreeMap<TopicId, FetchTopicRequest<Op>>);
-
-pub type FetchTopicRequest<Op> = BTreeMap<<Op as MailboxItem>::Author, u64>;
-
-/// Returned by the `fetch` method.
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(bound(deserialize = "Op: DeserializeOwned"))]
-pub struct FetchResponse<Op: MailboxItem>(pub BTreeMap<TopicId, FetchTopicResponse<Op>>);
-
-/// Returned by the `fetch` method.
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(bound(deserialize = "Op: DeserializeOwned"))]
-pub struct FetchTopicResponse<Op: MailboxItem> {
-    /// The operations not held locally that were fetched.
-    pub ops: Vec<Op>,
-    /// The operations held locally that are missing from the mailbox,
-    /// and which this node should now publish.
-    pub missing: HashMap<<Op as MailboxItem>::Author, Vec<u64>>,
-}
-
-pub trait MailboxItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'static {
-    type Hash: Copy
-        + Eq
-        + Ord
-        + std::hash::Hash
-        + Rename
-        + Serialize
-        + DeserializeOwned
-        + Send
-        + Sync;
-    type Author: Copy
-        + Eq
-        + Ord
-        + std::hash::Hash
-        + Rename
-        + Serialize
-        + DeserializeOwned
-        + Send
-        + Sync;
-
-    fn hash(&self) -> Self::Hash;
-    fn author(&self) -> Self::Author;
-    fn seq_num(&self) -> u64;
-    fn topic(&self) -> TopicId;
-}
+use crate::{DeviceId, Header, Operation, topic::TopicId};
+use mailbox_client::MailboxItem;
+use p2panda_core::{Body, PublicKey};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MailboxOperation {
@@ -91,6 +13,7 @@ pub struct MailboxOperation {
 impl MailboxItem for MailboxOperation {
     type Hash = p2panda_core::Hash;
     type Author = DeviceId;
+    type Topic = TopicId;
 
     fn hash(&self) -> p2panda_core::Hash {
         self.header.hash()
@@ -106,5 +29,114 @@ impl MailboxItem for MailboxOperation {
 
     fn topic(&self) -> TopicId {
         self.header.extensions.topic
+    }
+}
+
+impl mailbox_client::toy::ToyItemTraits for TopicId {
+    fn as_bytes(&self) -> &[u8] {
+        &**self
+    }
+
+    fn from_str(s: &str) -> Result<Self, anyhow::Error> {
+        let bytes: [u8; 32] = hex::decode(s)?
+            .try_into()
+            .map_err(|e| anyhow::anyhow!("Invalid TopicId: {e:?}"))?;
+
+        Ok(TopicId::from(bytes))
+    }
+}
+
+impl mailbox_client::toy::ToyItemTraits for DeviceId {
+    fn as_bytes(&self) -> &[u8] {
+        PublicKey::as_bytes(&*self)
+    }
+
+    fn from_str(s: &str) -> Result<Self, anyhow::Error> {
+        let bytes: [u8; 32] = hex::decode(s)?
+            .try_into()
+            .map_err(|e| anyhow::anyhow!("Invalid TopicId: {e:?}"))?;
+
+        Ok(DeviceId::from(PublicKey::from_bytes(&bytes)?))
+    }
+}
+
+impl From<Operation> for MailboxOperation {
+    fn from(op: Operation) -> Self {
+        Self {
+            header: op.header,
+            body: op.body,
+        }
+    }
+}
+
+impl From<MailboxOperation> for Operation {
+    fn from(op: MailboxOperation) -> Self {
+        Self {
+            hash: op.header.hash(),
+            header: op.header,
+            body: op.body,
+        }
+    }
+}
+
+impl From<(Header, Option<Body>)> for MailboxOperation {
+    fn from((header, body): (Header, Option<Body>)) -> Self {
+        Self { header, body }
+    }
+}
+
+#[cfg(test)]
+
+mod tests {
+    use std::time::Duration;
+
+    use crate::{testing::*, *};
+    use mailbox_client::mem::MemMailbox;
+
+    /// Very simple test which circumvents the contact adding system:
+    /// - alice sends a message to a direct chat topic
+    /// - alice and bobbi add a mailbox after the fact
+    /// - bobbi still gets the message later
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_mailbox_late_join() {
+        dashchat_node::testing::setup_tracing(
+            &[
+                "dashchat=info",
+                "p2panda_stream=warn",
+                "p2panda_auth=warn",
+                "p2panda_encryption=warn",
+                "p2panda_spaces=warn",
+                "named_id=warn",
+            ],
+            true,
+        );
+
+        let mb = MemMailbox::new();
+        let config = NodeConfig::testing();
+
+        // Start with no mailbox
+        let alice = TestNode::new(config.clone(), Some("alice")).await;
+        let bobbi = TestNode::new(config.clone(), Some("bobbi")).await;
+
+        let chat = alice.direct_chat_topic(bobbi.agent_id());
+        alice.initialize_topic(chat, false).await.unwrap();
+        alice.send_message(chat, "Hello".into()).await.unwrap();
+
+        println!("=== adding mailboxes ===");
+        bobbi.add_mailbox_client(mb.client()).await;
+        alice.add_mailbox_client(mb.client()).await;
+
+        bobbi.initialize_topic(chat, false).await.unwrap();
+        println!("=== added mailboxes ===");
+
+        wait_for(
+            Duration::from_millis(100),
+            Duration::from_secs(5),
+            || async {
+                (bobbi.get_messages(chat).await.unwrap().len() == 1).ok_or("message not received")
+            },
+        )
+        .await
+        .unwrap();
     }
 }

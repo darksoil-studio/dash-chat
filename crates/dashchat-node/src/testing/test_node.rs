@@ -7,9 +7,11 @@ use std::{
 use named_id::*;
 use tokio::sync::{Mutex, mpsc::Receiver};
 
+use mailbox_client::{MailboxClient, mem::MemMailbox};
+
 use crate::{
     AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload,
-    mailbox::{MailboxClient, MailboxOperation, mem::MemMailbox},
+    mailbox::MailboxOperation,
     node::{Node, NodeLocalData},
     testing::behavior::Behavior,
     topic::TopicId,
@@ -39,7 +41,7 @@ impl TestNode {
         }
     }
 
-    pub async fn add_mailbox_client(&self, mailbox: impl MailboxClient) -> Self {
+    pub async fn add_mailbox_client(&self, mailbox: impl MailboxClient<MailboxOperation>) -> Self {
         self.node.mailboxes.add(mailbox).await;
         self.clone()
     }
