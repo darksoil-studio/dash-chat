@@ -1,16 +1,26 @@
 use std::cmp::Ordering;
 
-use p2panda_spaces::ActorId;
+use named_id::{RenameAll, RenameNone};
 use serde::{Deserialize, Serialize};
 
-use crate::Cbor;
+use crate::{Cbor, DeviceId, Header};
 
 /// A standalone chat message suitable for sending to the frontend.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
 pub struct ChatMessage {
     pub content: ChatMessageContent,
-    pub author: ActorId,
+    pub author: DeviceId,
     pub timestamp: u64,
+}
+
+impl ChatMessage {
+    pub fn new(content: ChatMessageContent, header: &Header) -> Self {
+        Self {
+            content,
+            author: header.public_key.into(),
+            timestamp: header.timestamp,
+        }
+    }
 }
 
 impl Cbor for ChatMessage {}
@@ -36,7 +46,15 @@ impl Ord for ChatMessage {
 }
 
 #[derive(
-    Clone, Debug, PartialEq, Eq, Serialize, Deserialize, derive_more::From, derive_more::Deref,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    derive_more::From,
+    derive_more::Deref,
+    RenameNone,
 )]
 pub struct ChatMessageContent(String);
 

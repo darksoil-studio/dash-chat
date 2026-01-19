@@ -3,6 +3,7 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import type { ContactRequestId, ContactsStore } from 'dash-chat-stores';
 	import Avatar from '$lib/components/profiles/Avatar.svelte';
 	import { mdiAccountPlus } from '@mdi/js';
@@ -18,6 +19,7 @@
 		NavbarBackLink,
 		Preloader,
 	} from 'konsta/svelte';
+	import { wrapPathInSvg } from '$lib/utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -44,7 +46,7 @@
 <Page>
 	<Navbar title={m.myContacts()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => (window.location.href = '/')} />
+			<NavbarBackLink onClick={() => goto('/')} />
 		{/snippet}
 
 		{#snippet right()}

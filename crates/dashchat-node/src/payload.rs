@@ -1,44 +1,44 @@
+use named_id::{RenameAll, RenameNone};
 use p2panda_core::cbor::{DecodeError, EncodeError, decode_cbor, encode_cbor};
 use p2panda_core::{Body, Extension, PruneFlag};
 use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
 use crate::contact::QrCode;
-use crate::spaces::{SpaceOperation, SpacesArgs};
-use crate::topic::LogId;
-use crate::{AsBody, Cbor, Topic};
+use crate::topic::TopicId;
+use crate::{AsBody, Cbor, ChatMessageContent, Topic};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Extensions {
-    pub log_id: LogId,
+    pub topic: TopicId,
 }
 
 impl Extensions {
     pub fn topic(&self) -> Topic<crate::topic::kind::Untyped> {
-        Topic::untyped(*self.log_id)
+        Topic::untyped(*self.topic)
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameNone)]
 pub struct Profile {
     pub name: String,
     pub avatar: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type", content="payload")]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
+#[serde(tag = "type", content = "payload")]
 pub enum AnnouncementsPayload {
     SetProfile(Profile),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
 pub enum InboxPayload {
     /// Invites the recipient to add the sender as a contact.
     Contact(QrCode),
 }
 
 // TODO: consolidate into something else
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
 pub enum ChatPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
     /// This is only sent in direct chat messages.
@@ -49,16 +49,18 @@ pub enum ChatPayload {
     /// is that it can only be sent to contacts, and we want it to be
     /// long-lasting, so using an Inbox is not an option.
     JoinGroup(ChatId),
+
+    Message(ChatMessageContent),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
 #[serde(tag = "type", content = "payload")]
 pub enum DeviceGroupPayload {
     AddContact(QrCode),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(tag = "type", content="payload")]
+#[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
+#[serde(tag = "type", content = "payload")]
 pub enum Payload {
     /// Pushing data out to my contacts.
     Announcements(AnnouncementsPayload),
@@ -69,9 +71,6 @@ pub enum Payload {
     /// Group chat data, including direct 1:1 chats
     Chat(ChatPayload),
 
-    /// Space control message
-    Space(SpacesArgs),
-
     /// Data only seen within your private device group.
     /// No other person sees these.
     DeviceGroup(DeviceGroupPayload),
@@ -81,10 +80,11 @@ impl Cbor for Payload {}
 impl AsBody for Payload {}
 
 pub type Header = p2panda_core::Header<Extensions>;
+pub type Operation = p2panda_core::Operation<Extensions>;
 
-impl Extension<LogId> for Extensions {
-    fn extract(header: &Header) -> Option<LogId> {
-        Some(header.extensions.log_id.clone())
+impl Extension<TopicId> for Extensions {
+    fn extract(header: &Header) -> Option<TopicId> {
+        Some(header.extensions.topic.clone())
     }
 }
 

@@ -1,4 +1,6 @@
-use dashchat_node::{ActorId, Node, QrCode, ShareIntent};
+use dashchat_node::{
+    AgentId, Node, QrCode, ShareIntent,
+};
 use tauri::State;
 
 #[tauri::command]
@@ -9,8 +11,8 @@ pub async fn create_contact_code(node: State<'_, Node>) -> Result<QrCode, String
 }
 
 #[tauri::command]
-pub fn my_chat_actor_id(node: State<'_, Node>) -> ActorId {
-    node.chat_actor_id()
+pub fn my_agent_id(node: State<'_, Node>) -> AgentId {
+    node.agent_id()
 }
 
 #[tauri::command]

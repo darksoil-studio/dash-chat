@@ -5,6 +5,7 @@
 
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import type { ContactsStore, ChatsStore, PublicKey } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import {
@@ -47,7 +48,7 @@
 	const theme = $derived(useTheme());
 
 	async function save() {
-		window.location.href = `/group-chat/${chatId}/info`;
+		goto(`/group-chat/${chatId}/info`);
 	}
 </script>
 
@@ -55,7 +56,7 @@
 	<Navbar title={m.editGroup()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink
-				onClick={() => (window.location.href = `/group-chat/${chatId}/info`)}
+				onClick={() => goto(`/group-chat/${chatId}/info`)}
 			/>
 		{/snippet}
 	</Navbar>

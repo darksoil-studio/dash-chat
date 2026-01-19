@@ -4,20 +4,21 @@ use std::{
     time::{Duration, Instant},
 };
 
-use p2panda_auth::Access;
-use p2panda_spaces::ActorId;
+use named_id::*;
 use tokio::sync::{Mutex, mpsc::Receiver};
 
+use mailbox_client::{MailboxClient, mem::MemMailbox};
+
 use crate::{
-    ChatId, DeviceGroupPayload, NodeConfig, Notification, PK, Payload,
+    AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload,
+    mailbox::MailboxOperation,
     node::{Node, NodeLocalData},
-    spaces::DashGroup,
-    testing::{AliasedId, ShortId, behavior::Behavior, introduce},
-    topic::{LogId, Topic},
+    testing::behavior::Behavior,
+    topic::TopicId,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
-#[debug("TestNode({})", self.node.public_key().alias())]
+#[debug("TestNode({})", self.node.device_id().renamed())]
 pub struct TestNode {
     #[deref]
     node: Node,
@@ -25,11 +26,12 @@ pub struct TestNode {
 }
 
 impl TestNode {
-    pub async fn new(config: NodeConfig, alias: Option<&str>) -> Self {
+    pub async fn new(config: NodeConfig, name: Option<&str>) -> Self {
         let local_data = NodeLocalData::new_random();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
-        if let Some(alias) = alias {
-            local_data.private_key.public_key().aliased(alias);
+        if let Some(alias) = name {
+            local_data.device_id().with_name(alias);
+            local_data.agent_id.with_name(alias);
         }
         Self {
             node: Node::new(local_data, config, Some(notification_tx))
@@ -39,57 +41,45 @@ impl TestNode {
         }
     }
 
+    pub async fn add_mailbox_client(&self, mailbox: impl MailboxClient<MailboxOperation>) -> Self {
+        self.node.mailboxes.add(mailbox).await;
+        self.clone()
+    }
+
+    pub async fn clear_mailboxes(&self) {
+        self.node.mailboxes.clear().await;
+    }
+
     pub fn behavior(&self) -> Behavior {
         Behavior::new(self.clone())
     }
 
-    pub async fn get_groups(&self) -> anyhow::Result<Vec<ChatId>> {
-        let groups = self.nodestate.chats.read().await.keys().cloned().collect();
-        Ok(groups)
-    }
-
-    pub async fn get_members(
-        &self,
-        chat_id: ChatId,
-    ) -> anyhow::Result<Vec<(p2panda_spaces::ActorId, Access)>> {
-        Ok(self.space(chat_id).await?.members().await?)
-    }
-
-    pub async fn get_contacts(&self) -> anyhow::Result<Vec<ActorId>> {
-        let group: DashGroup = self
-            .manager
-            .group(self.repped_group().group)
-            .await?
-            .ok_or_else(|| anyhow::anyhow!("device group not found"))?;
-        let members = group
-            .members()
-            .await?
-            .into_iter()
-            .map(|(id, _)| PK::from(id).0)
-            .collect::<Vec<_>>();
-
+    pub async fn get_contacts(&self) -> anyhow::Result<Vec<AgentId>> {
+        // FIXME: use all local device IDs
         let ids = self
-            .get_interleaved_logs(self.device_group_topic().into(), members)
+            .get_interleaved_logs(self.device_group_topic().into(), vec![self.device_id()])
             .await?
             .into_iter()
             .filter_map(|(_, payload)| match payload {
-                Some(Payload::DeviceGroup(DeviceGroupPayload::AddContact(qr))) => {
-                    Some(qr.chat_actor_id)
-                }
+                Some(Payload::DeviceGroup(DeviceGroupPayload::AddContact(qr))) => Some(qr.agent_id),
                 _ => None,
             })
             .collect();
         Ok(ids)
     }
 
-    pub async fn initialized_topics(&self) -> BTreeSet<LogId> {
-        self.node
-            .initialized_topics
-            .read()
-            .await
-            .keys()
-            .cloned()
-            .collect::<BTreeSet<_>>()
+    pub async fn subscribed_topics(&self) -> BTreeSet<TopicId> {
+        let mailbox_topics = self.mailboxes.subscribed_topics().await;
+        mailbox_topics
+
+        // self.node
+        //     .initialized_topics
+        //     .read()
+        //     .await
+        //     .keys()
+        //     .cloned()
+        //     .chain(mailbox_topics)
+        //     .collect::<BTreeSet<_>>()
     }
 }
 
@@ -116,19 +106,29 @@ pub struct TestCluster<const N: usize> {
 }
 
 impl<const N: usize> TestCluster<N> {
+    // TODO: maybe don't always add a memory mailbox
     pub async fn new(node_config: NodeConfig, config: ClusterConfig, aliases: [&str; N]) -> Self {
-        let nodes = futures::future::join_all(
+        let mailbox = MemMailbox::<MailboxOperation>::new();
+        let nodes: [TestNode; N] = futures::future::join_all(
             (0..N).map(|i| TestNode::new(node_config.clone(), Some(aliases[i]))),
         )
         .await
         .try_into()
         .unwrap_or_else(|_| panic!("expected {} nodes", N));
+
+        for n in nodes.iter() {
+            n.add_mailbox_client(mailbox.client()).await;
+        }
+
         Self { nodes, config }
     }
 
     pub async fn introduce_all(&self) {
-        let nodes = self.iter().map(|node| &node.network).collect::<Vec<_>>();
-        introduce(nodes).await;
+        #[cfg(feature = "p2p")]
+        {
+            let nodes = self.iter().map(|node| &node.network).collect::<Vec<_>>();
+            introduce(nodes).await;
+        }
     }
 
     pub async fn nodes(&self) -> [TestNode; N] {
@@ -142,18 +142,18 @@ impl<const N: usize> TestCluster<N> {
 
     pub async fn consistency(
         &self,
-        log_ids: impl IntoIterator<Item = &LogId>,
+        topics: impl IntoIterator<Item = &TopicId>,
     ) -> anyhow::Result<()> {
-        consistency(self.nodes().await.iter(), log_ids, &self.config).await
+        consistency(self.nodes().await.iter(), topics, &self.config).await
     }
 }
 
 pub async fn consistency(
     nodes: impl IntoIterator<Item = &TestNode>,
-    log_ids: impl IntoIterator<Item = &LogId>,
+    topics: impl IntoIterator<Item = &TopicId>,
     config: &ClusterConfig,
 ) -> anyhow::Result<()> {
-    let log_ids = log_ids.into_iter().collect::<HashSet<_>>();
+    let topics = topics.into_iter().collect::<HashSet<_>>();
     let nodes = nodes.into_iter().collect::<Vec<_>>();
     wait_for_resetting(config.poll_interval, config.poll_timeout, || async {
         // TODO: Fix this when we have a proper way to access operations
@@ -163,14 +163,14 @@ pub async fn consistency(
             .map(|node| {
                 let ops = node.op_store.processed_ops.read().unwrap();
 
-                log_ids
+                topics
                     .iter()
-                    .flat_map(|log_id| {
-                        ops.get(log_id)
+                    .flat_map(|topic| {
+                        ops.get(topic)
                             .cloned()
                             .unwrap_or_default()
                             .into_iter()
-                            .map(|h| format!("{} {}", h.short(), h.alias()))
+                            .map(|h| format!("{} {}", h.short(), h.renamed()))
                     })
                     .collect::<BTreeSet<_>>()
             })
@@ -197,8 +197,8 @@ pub async fn consistency(
         for n in nodes {
             println!(
                 ">>> {:?}\n{}\n",
-                n.public_key(),
-                n.op_store.report(log_ids.clone())
+                n.device_id(),
+                n.op_store.report(topics.clone())
             );
         }
         println!("consistency report: {:#?}", diffs);
@@ -280,7 +280,7 @@ where
     F: Future<Output = Result<(), E>>,
 {
     assert!(poll < timeout);
-    let mut start = Instant::now();
+    let start = Instant::now();
     tracing::info!("=== wait_for() up to {:?} ===", timeout);
     loop {
         let result = f().await;
