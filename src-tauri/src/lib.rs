@@ -1,5 +1,5 @@
-use dashchat_node::mailbox::toy::ToyMailboxClient;
 use dashchat_node::Node;
+use mailbox_client::toy::ToyMailboxClient;
 use p2panda_core::{cbor::encode_cbor, Body};
 use tauri::{Emitter, Manager};
 
@@ -82,7 +82,8 @@ pub fn run() {
             #[cfg(debug_assertions)]
             let mailbox_url = "http://localhost:3000";
             #[cfg(not(debug_assertions))]
-            let mailbox_url = "https://mailbox-server.production.dash-chat.darksoil-studio.garnix.me";
+            let mailbox_url =
+                "https://mailbox-server.production.dash-chat.darksoil-studio.garnix.me";
 
             let mailbox_client = ToyMailboxClient::new(mailbox_url);
             node.mailboxes.add(mailbox_client).await;

@@ -10,6 +10,7 @@ use rand::distr::Distribution;
 use tokio::sync::Mutex;
 
 use crate::{
+    mailbox::MailboxOperation,
     node::Orderer,
     payload::{Extensions, Payload},
     topic::{Topic, TopicId, TopicKind},
@@ -414,5 +415,34 @@ where
         from: Option<u64>,
     ) -> Result<Option<Vec<Hash>>, Self::Error> {
         self.store.get_log_hashes(public_key, topic, from).await
+    }
+}
+
+#[async_trait::async_trait]
+impl<S> mailbox_client::store::MailboxStore<MailboxOperation> for OpStore<S>
+where
+    S: OperationStore<TopicId, Extensions> + LogStore<TopicId, Extensions>,
+    S: Send + Sync + 'static,
+{
+    async fn get_log(
+        &self,
+        author: &DeviceId,
+        topic: &TopicId,
+        from: Option<u64>,
+    ) -> Result<Option<Vec<MailboxOperation>>, anyhow::Error> {
+        let log = self
+            .store
+            .get_log(author, topic, from)
+            .await
+            .map_err(|err| anyhow::anyhow!("failed to get log for {author:?}: {topic:?}: {err}"))?;
+        Ok(log.map(|log| {
+            log.into_iter()
+                .map(|(header, body)| MailboxOperation { header, body })
+                .collect()
+        }))
+    }
+
+    async fn get_log_heights(&self, topic: &TopicId) -> anyhow::Result<Vec<(DeviceId, u64)>> {
+        OpStore::get_log_heights(self, topic).await
     }
 }

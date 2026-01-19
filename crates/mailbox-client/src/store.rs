@@ -1,0 +1,16 @@
+use crate::MailboxItem;
+
+#[async_trait::async_trait]
+pub trait MailboxStore<Item: MailboxItem>: Clone + Send + Sync + 'static {
+    async fn get_log(
+        &self,
+        author: &Item::Author,
+        topic: &Item::Topic,
+        from: Option<u64>,
+    ) -> Result<Option<Vec<Item>>, anyhow::Error>;
+
+    async fn get_log_heights(
+        &self,
+        topic: &Item::Topic,
+    ) -> Result<Vec<(Item::Author, u64)>, anyhow::Error>;
+}
