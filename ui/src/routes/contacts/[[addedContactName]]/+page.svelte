@@ -25,6 +25,8 @@
 		Toast,
 	} from 'konsta/svelte';
 	import { wrapPathInSvg } from '$lib/utils/icon';
+	import { page } from '$app/state';
+	import { TOAST_TTL_MS } from '$lib/utils/toasts';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -38,8 +40,12 @@
 		}
 	}
 
-	let contactAddedToastName = $state<string | undefined>(undefined);
-	let t: NodeJS.Timeout | undefined;
+	let addedContact = page.params.addedContactName;
+	let contactAddedToastName = $state<string | undefined>(addedContact);
+	let t = setTimeout(() => {
+		if (t) clearTimeout(t);
+		contactAddedToastName = undefined;
+	}, TOAST_TTL_MS);
 	async function acceptContactRequest(contactRequest: ContactRequest) {
 		try {
 			// Actual acceptance logic here
@@ -48,7 +54,7 @@
 			t = setTimeout(() => {
 				if (t) clearTimeout(t);
 				contactAddedToastName = undefined;
-			}, 5000);
+			}, TOAST_TTL_MS);
 		} catch (e) {
 		} finally {
 		}
@@ -108,13 +114,11 @@
 				{/if}
 			{/await}
 
-			{#if contactAddedToastName !== undefined}
-				<Toast position="center" opened={true}
-					>{m.contactAdded({
-						name: contactAddedToastName!,
-					})}
-				</Toast>
-			{/if}
+			<Toast position="center" opened={contactAddedToastName !== undefined}
+				>{m.contactAdded({
+					name: contactAddedToastName || '',
+				})}
+			</Toast>
 
 			{#await $contacts}
 				<div

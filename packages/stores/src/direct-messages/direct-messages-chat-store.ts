@@ -6,6 +6,7 @@ import { LogsStore } from '../p2panda/logs-store';
 import { AgentId, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 import { DirectMessagesChatClient } from './direct-messages-chat-client';
+import { toPromise } from '../utils/to-promise';
 
 // Store tied to a specific direct messages chat
 export class DirectMessagesChatStore {
@@ -96,7 +97,8 @@ export class DirectMessagesChatStore {
 		return messages;
 	});
 
-	sendMessage(content: MessageContent) {
-		return this.client.sendMessage(this.chatId, content);
+	async sendMessage(content: MessageContent) {
+		const chatId = await toPromise(this.chatId)
+		return this.client.sendMessage(chatId, content);
 	}
 }

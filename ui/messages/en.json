@@ -25,6 +25,7 @@
 	"myContacts": "My contacts",
 	"reject": "Reject",
 	"accept": "Accept",
+	"contactAlreadyExists": "Contact already exists.",
 	"contactAdded": "{{name}} was added to your contacts.",
 	"noContactsYet": "You don't have any contacts yet.",
 	"chats": "Chats",

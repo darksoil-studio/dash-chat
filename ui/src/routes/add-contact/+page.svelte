@@ -4,9 +4,11 @@
 	import '@awesome.me/webawesome/dist/components/copy-button/copy-button.js';
 	import { getContext, onMount } from 'svelte';
 	import {
+		toPromise,
 		decodeContactCode,
 		encodeContactCode,
 		type ContactsStore,
+		type Profile,
 	} from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiQrcode } from '@mdi/js';
@@ -23,22 +25,54 @@
 		ListInput,
 		List,
 		Preloader,
+		Toast,
 	} from 'konsta/svelte';
+	import { goto } from '$app/navigation';
+	import { sleep } from '$lib/utils/time';
+	import { TOAST_TTL_MS } from '$lib/utils/toasts';
+	import { useReactivePromise } from '$lib/stores/use-signal';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
 	let code = contactsStore.client.createContactCode().then(encodeContactCode);
+	const contacts = useReactivePromise(contactsStore.contactsAgentIds);
 
+	let contactAlreadyExistsToastOpen = $state(false);
+	let t: NodeJS.Timeout | undefined;
 	async function receiveCode(code: string) {
-		const contactCode = decodeContactCode(code);
-		await contactsStore.client.addContact(contactCode);
+		try {
+			const contactCode = decodeContactCode(code);
 
-		// window.history.back();
+			const contacts = await toPromise(contactsStore.contactsAgentIds);
+
+			if (contacts.includes(contactCode.agent_id)) {
+				contactAlreadyExistsToastOpen = true;
+				t = setTimeout(() => {
+					if (t) clearTimeout(t);
+					contactAlreadyExistsToastOpen = false;
+				}, TOAST_TTL_MS);
+				return;
+			}
+
+			await contactsStore.client.addContact(contactCode);
+
+			let profile: Profile | undefined;
+			let tries = 0;
+			while (!profile && tries < 5) {
+				profile = await toPromise(contactsStore.profiles,contactCode.agent_id);
+				tries++;
+				await sleep(1000);
+			}
+
+			goto(`/contacts/${profile?.name}`);
+		} catch (e) {
+			console.error(e);
+		}
 	}
 </script>
 
 <Page>
-	<Navbar title={m.addContact()}  titleClass="opacity1" transparent={true}>
+	<Navbar title={m.addContact()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
 			<NavbarBackLink
 				onClick={() => {
@@ -100,4 +134,5 @@
 			</div>
 		</div>
 	{/await}
+	<Toast position="center" opened={contactAlreadyExistsToastOpen}>{m.contactAlreadyExists()}</Toast>
 </Page>

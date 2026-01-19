@@ -27,7 +27,7 @@
 	let { children } = $props();
 
 	const logsClient = new TauriLogsClient<TopicId, Payload>();
-	const logsStore = new LogsStore<TopicId, Payload>(logsClient);
+	const logsStore = new LogsStore<Payload>(logsClient);
 
 	const devicesClient = new DevicesClient();
 	const devicesStore = new DevicesStore(logsStore, devicesClient);
