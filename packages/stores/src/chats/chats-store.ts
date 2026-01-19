@@ -3,7 +3,7 @@ import { ReactivePromise, reactive } from 'signalium';
 import { GroupChatClient } from '../group-chats/group-chat-client';
 import { GroupChatStore } from '../group-chats/group-chat-store';
 import { LogsStore } from '../p2panda/logs-store';
-import { PublicKey, TopicId } from '../p2panda/types';
+import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 import { ChatsClient } from './chats-client';
 import { ContactsStore } from '../contacts/contacts-store';
@@ -46,8 +46,8 @@ export class ChatsStore {
 	);
 
 	directMessagesChats = reactive(
-		(chatId: ChatId) =>
-			new DirectMessagesChatStore(this.logsStore,this.contactsStore, new DirectMessagesChatClient(), chatId),
+		(peer: AgentId) =>
+			new DirectMessagesChatStore(this.logsStore,this.contactsStore, new DirectMessagesChatClient(), peer),
 	);
 
 	allChatsIds = reactive(() => []);

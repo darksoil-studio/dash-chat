@@ -44,7 +44,7 @@
 					</Button>
 				</Link>
 
-				<Link href="/new-group">
+				<Link href="/new-group" style="display: none">
 					<Button tonal large class="w-full gap-2">
 						<wa-icon src={wrapPathInSvg(mdiAccountMultiplePlus)}> </wa-icon>
 						{m.newGroup()}

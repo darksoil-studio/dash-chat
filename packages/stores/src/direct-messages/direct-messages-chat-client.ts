@@ -1,7 +1,9 @@
+import { invoke } from '@tauri-apps/api/core';
+
 import { ContactsStore } from '../contacts/contacts-store';
 import { MessageContent } from '../group-chats/group-chat-client';
 import { LogsStore } from '../p2panda/logs-store';
-import { TopicId } from '../p2panda/types';
+import { AgentId, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 
 export interface IDirectMessagesChatClient {
@@ -9,8 +11,11 @@ export interface IDirectMessagesChatClient {
 }
 
 export class DirectMessagesChatClient implements IDirectMessagesChatClient {
-	async sendMessage(
-		chatId: ChatId,
-		content: MessageContent,
-	): Promise<void> {}
+	chatId(peer: AgentId): Promise<ChatId> {
+		return invoke('direct_messages_chat_id', {
+			peer,
+		});
+	}
+
+	async sendMessage(chatId: ChatId, content: MessageContent): Promise<void> {}
 }

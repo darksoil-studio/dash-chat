@@ -22,14 +22,13 @@
 		Navbar,
 		NavbarBackLink,
 		Preloader,
+		Toast,
 	} from 'konsta/svelte';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
-	const contactRequests = useReactivePromise(
-		contactsStore.contactRequests,
-	);
+	const contactRequests = useReactivePromise(contactsStore.contactRequests);
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
 
 	async function rejectContactRequest(contactRequest: ContactRequest) {
@@ -39,12 +38,20 @@
 		}
 	}
 
+	let contactAddedToastName = $state<string | undefined>(undefined);
+	let t: NodeJS.Timeout | undefined;
 	async function acceptContactRequest(contactRequest: ContactRequest) {
-		await contactsStore.client.addContact(contactRequest.code);
-		// try {
-		// 	// Actual acceptance logic here
-		// } finally {
-		// }
+		try {
+			// Actual acceptance logic here
+			await contactsStore.client.addContact(contactRequest.code);
+			contactAddedToastName = contactRequest.profile.name;
+			t = setTimeout(() => {
+				if (t) clearTimeout(t);
+				contactAddedToastName = undefined;
+			}, 5000);
+		} catch (e) {
+		} finally {
+		}
 	}
 </script>
 
@@ -70,30 +77,28 @@
 				>
 					<Preloader />
 				</div>
-			{:then incomingContactRequests}
-				{#if incomingContactRequests.length > 0}
+			{:then contactRequests}
+				{#if contactRequests.length > 0}
 					<BlockTitle>{m.contactRequests()}</BlockTitle>
 					<List strongIos insetIos>
-						{#each incomingContactRequests as incomingContactRequest}
-							<ListItem title={incomingContactRequest.profile.name}>
+						{#each contactRequests as contactRequest}
+							<ListItem title={contactRequest.profile.name}>
 								{#snippet media()}
 									<wa-avatar
-										image={incomingContactRequest.profile.avatar}
-										initials={incomingContactRequest.profile.name.slice(0, 2)}
+										image={contactRequest.profile.avatar}
+										initials={contactRequest.profile.name.slice(0, 2)}
 									>
 									</wa-avatar>
 								{/snippet}
 								{#snippet after()}
 									<Button
 										class="k-color-brand-red"
-										onClick={() => rejectContactRequest(incomingContactRequest)}
+										onClick={() => rejectContactRequest(contactRequest)}
 									>
 										{m.reject()}
 									</Button>
 
-									<Button
-										onClick={() => acceptContactRequest(incomingContactRequest)}
-									>
+									<Button onClick={() => acceptContactRequest(contactRequest)}>
 										{m.accept()}
 									</Button>
 								{/snippet}
@@ -102,6 +107,14 @@
 					</List>
 				{/if}
 			{/await}
+
+			{#if contactAddedToastName !== undefined}
+				<Toast position="center" opened={true}
+					>{m.contactAdded({
+						name: contactAddedToastName!,
+					})}
+				</Toast>
+			{/if}
 
 			{#await $contacts}
 				<div

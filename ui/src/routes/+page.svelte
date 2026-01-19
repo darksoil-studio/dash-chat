@@ -35,11 +35,11 @@
 		{/snippet}
 
 		{#snippet right()}
-			{#await $contactRequests then incomingContactRequests}
+			{#await $contactRequests then contactRequests}
 				<Link iconOnly href="/contacts" style="position: relative;"
 					><Icon
-						badge={incomingContactRequests.length > 0
-							? incomingContactRequests.length.toString()
+						badge={contactRequests.length > 0
+							? contactRequests.length.toString()
 							: ''}
 					>
 						<wa-icon src={wrapPathInSvg(mdiAccountGroup)}> </wa-icon></Icon

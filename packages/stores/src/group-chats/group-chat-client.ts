@@ -36,8 +36,8 @@ export class GroupChatClient implements IGroupChatClient {
 	}
 	async removeMember(chatId: ChatId, member: PublicKey): Promise<void> {}
 
-	sendMessage(chatId: ChatId, content: MessageContent): Promise<void> {
-		return invoke('send_message', { chatId, content });
+	sendMessage(topic: ChatId, content: MessageContent): Promise<void> {
+		return invoke('send_message', { topic, content });
 	}
 	async promoteToAdministrator(
 		chatId: ChatId,
