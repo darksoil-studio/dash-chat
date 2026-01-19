@@ -5,7 +5,7 @@ use std::collections::{BTreeSet, HashSet};
 use std::pin::Pin;
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use chrono::{Duration, Utc};
 use futures::Stream;
 use named_id::*;
@@ -308,6 +308,31 @@ impl Node {
         Ok(())
     }
 
+    pub async fn my_profile(&self) -> anyhow::Result<Option<Profile>> {
+        let topic_id: TopicId = Topic::announcements(self.agent_id()).into();
+        let authors = self.get_authors(topic_id.clone()).await?;
+        let ops = self
+            .get_interleaved_logs(topic_id, authors.into_iter().collect())
+            .await?;
+
+        let mut set_profile_ops: Vec<(u64, Profile)> = ops
+            .into_iter()
+            .filter_map(|(header, payload)| match payload {
+                Some(Payload::Announcements(AnnouncementsPayload::SetProfile(profile))) => {
+                    Some((header.timestamp, profile))
+                }
+                _ => None,
+            })
+            .collect();
+
+        set_profile_ops.sort_by_key(|(timestamp, _)| *timestamp);
+
+        let Some((_, profile)) = set_profile_ops.last() else {
+            return Ok(None);
+        };
+        Ok(Some(profile.clone()))
+    }
+
     /// Get all messages for a chat from the logs.
     // TODO: Store state instead of regenerating from the logs.
     //       This will be necessary when we switch to double ratchet message encryption.
@@ -448,10 +473,15 @@ impl Node {
 
         if let Some(inbox_topic) = contact.inbox_topic.clone() {
             self.initialize_topic(inbox_topic.topic, true).await?;
-            let qr = self.new_qr_code(ShareIntent::AddContact, false).await?;
+            let code = self.new_qr_code(ShareIntent::AddContact, false).await?;
+            let Some(profile) = self.my_profile().await? else {
+                return Err(anyhow!(
+                    "User profile must be created before adding contacts."
+                ));
+            };
             self.author_operation(
                 inbox_topic.topic,
-                Payload::Inbox(InboxPayload::Contact(qr)),
+                Payload::Inbox(InboxPayload::Contact { code, profile }),
                 Some(&format!("add_contact/invitation({})", agent.renamed())),
             )
             .await?;

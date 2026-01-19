@@ -4,7 +4,11 @@
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
-	import type { ContactRequestId, ContactsStore } from 'dash-chat-stores';
+	import type {
+		ContactRequestId,
+		ContactsStore,
+		ContactRequest,
+	} from 'dash-chat-stores';
 	import Avatar from '$lib/components/profiles/Avatar.svelte';
 	import { mdiAccountPlus } from '@mdi/js';
 	import { m, myContacts } from '$lib/paraglide/messages.js';
@@ -23,23 +27,24 @@
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
-	const incomingContactRequests = useReactivePromise(
-		contactsStore.incomingContactRequests,
+	const contactRequests = useReactivePromise(
+		contactsStore.contactRequests,
 	);
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
 
-	async function rejectContactRequest(contactRequestId: ContactRequestId) {
+	async function rejectContactRequest(contactRequest: ContactRequest) {
 		try {
 			// Actual rejection logic here
 		} finally {
 		}
 	}
 
-	async function acceptContactRequest(contactRequestId: ContactRequestId) {
-		try {
-			// Actual acceptance logic here
-		} finally {
-		}
+	async function acceptContactRequest(contactRequest: ContactRequest) {
+		await contactsStore.client.addContact(contactRequest.code);
+		// try {
+		// 	// Actual acceptance logic here
+		// } finally {
+		// }
 	}
 </script>
 
@@ -58,7 +63,7 @@
 
 	<div class="column" style="flex: 1">
 		<div class="center-in-desktop">
-			{#await $incomingContactRequests}
+			{#await $contactRequests}
 				<div
 					class="column"
 					style="height: 100%; align-items: center; justify-content: center"
@@ -81,19 +86,13 @@
 								{#snippet after()}
 									<Button
 										class="k-color-brand-red"
-										onClick={() =>
-											rejectContactRequest(
-												incomingContactRequest.contactRequestId,
-											)}
+										onClick={() => rejectContactRequest(incomingContactRequest)}
 									>
 										{m.reject()}
 									</Button>
 
 									<Button
-										onClick={() =>
-											acceptContactRequest(
-												incomingContactRequest.contactRequestId,
-											)}
+										onClick={() => acceptContactRequest(incomingContactRequest)}
 									>
 										{m.accept()}
 									</Button>
@@ -135,6 +134,4 @@
 			{/await}
 		</div>
 	</div>
-
-</Page
->
+</Page>

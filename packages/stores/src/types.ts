@@ -44,14 +44,17 @@ export type DeviceGroupPayload = {
 
 export type InboxPayload = {
 	type: 'Contact';
-	payload: ContactCode;
+	payload: {
+		code: ContactCode;
+		profile: Profile;
+	};
 };
 
 export type Payload =
 	| { type: 'Announcements'; payload: AnnouncementPayload }
 	| { type: 'Chat'; payload: ChatPayload }
 	| { type: 'DeviceGroupPayload'; payload: DeviceGroupPayload }
-	| { type: 'Inbox' ; payload: InboxPayload };
+	| { type: 'Inbox'; payload: InboxPayload };
 
 export type MessageId = string;
 

@@ -1,12 +1,9 @@
-import { invoke } from '@tauri-apps/api/core';
 import { ReactivePromise, reactive } from 'signalium';
 
 import { Profile } from '../contacts/contacts-client';
 import { ContactsStore } from '../contacts/contacts-store';
-import { DevicesStore } from '../devices/devices-store';
 import { LogsStore } from '../p2panda/logs-store';
-import { SimplifiedOperation } from '../p2panda/simplified-types';
-import { AgentId, PublicKey, TopicId } from '../p2panda/types';
+import { AgentId, PublicKey } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 import { GroupChatClient, Message, MessageContent } from './group-chat-client';
 
@@ -17,7 +14,7 @@ export interface GroupInfo {
 }
 
 export interface GroupMember {
-	actorId: AgentId;
+	agentId: AgentId;
 	profile: Profile | undefined;
 	admin: boolean;
 }
@@ -172,13 +169,13 @@ export class GroupChatStore {
 	});
 
 	membersIds = reactive(async () => {
-		const myActorId = await this.contactsStore.myAgentId();
-		return [myActorId];
+		const myAgentId = await this.contactsStore.myAgentId();
+		return [myAgentId];
 	});
 
 	me = reactive(async () => {
-		const actorId = await this.contactsStore.myAgentId();
-		return await this.members(actorId);
+		const agentId = await this.contactsStore.myAgentId();
+		return await this.members(agentId);
 	});
 
 	allMembers = reactive(async () => {
@@ -197,11 +194,11 @@ export class GroupChatStore {
 		return allMembers;
 	});
 
-	members = reactive(async (actorId: AgentId) => {
-		const profile = await this.contactsStore.profiles(actorId);
+	members = reactive(async (agentId: AgentId) => {
+		const profile = await this.contactsStore.profiles(agentId);
 
 		const member: GroupMember = {
-			actorId,
+			agentId: agentId,
 			profile,
 			admin: true,
 		};

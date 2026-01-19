@@ -14,8 +14,8 @@
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	const myProfile = useReactivePromise(contactsStore.myProfile);
-	const incomingContactRequests = useReactivePromise(
-		contactsStore.incomingContactRequests,
+	const contactRequests = useReactivePromise(
+		contactsStore.contactRequests,
 	);
 </script>
 
@@ -35,7 +35,7 @@
 		{/snippet}
 
 		{#snippet right()}
-			{#await $incomingContactRequests then incomingContactRequests}
+			{#await $contactRequests then incomingContactRequests}
 				<Link iconOnly href="/contacts" style="position: relative;"
 					><Icon
 						badge={incomingContactRequests.length > 0

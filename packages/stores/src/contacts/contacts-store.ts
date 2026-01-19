@@ -8,9 +8,9 @@ import { personalTopicFor } from '../topics';
 import { AnnouncementPayload, ContactCode, Payload } from '../types';
 import { ContactRequestId, IContactsClient, Profile } from './contacts-client';
 
-export interface IncomingContactRequest {
+export interface ContactRequest {
 	profile: Profile;
-	contactCode: ContactCode;
+	code: ContactCode;
 	// agentId: AgentId;
 	// contactRequestId: ContactRequestId;
 }
@@ -50,7 +50,7 @@ export class ContactsStore {
 		}),
 	);
 
-	incomingContactRequests = reactive(async () => {
+	contactRequests = reactive(async () => {
 		const activeInboxTopics = await this.activeInboxTopics();
 
 		const allLogs = await ReactivePromise.all(
@@ -58,28 +58,20 @@ export class ContactsStore {
 				this.logsStore.logsForAllAuthors(topicId),
 			),
 		);
+		const contacts = await this.contactsAgentIds();
 
-		const incomingContactCodes: ContactCode[] = [];
+		const contactRequests: ContactRequest[] = [];
 
 		for (const log of allLogs) {
 			for (const operations of Object.values(log)) {
 				for (const operation of operations) {
 					if (operation.body?.type !== 'Inbox') continue;
-					incomingContactCodes.push(operation.body.payload.payload);
+					// We have already accepted this contact request
+					if (contacts.includes(operation.body.payload.payload.code.agent_id)) continue
+					contactRequests.push(operation.body.payload.payload);
 				}
 			}
 		}
-
-		const profiles = await ReactivePromise.all(
-			incomingContactCodes.map(code => this.profiles(code.agent_id)),
-		);
-
-		const contactRequests: IncomingContactRequest[] = incomingContactCodes
-			.map((contactCode, i) => ({
-				contactCode,
-				profile: profiles[i]!,
-			}))
-			.filter(c => !!c.profile);
 
 		return contactRequests;
 	});
@@ -116,7 +108,7 @@ export class ContactsStore {
 		return profile;
 	});
 
-	contactsActorIds = reactive(async () => {
+	contactsAgentIds = reactive(async () => {
 		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
 
 		const contacts: Set<AgentId> = new Set();
@@ -133,7 +125,7 @@ export class ContactsStore {
 	});
 
 	profilesForAllContacts = reactive(async () => {
-		const contacts = await this.contactsActorIds();
+		const contacts = await this.contactsAgentIds();
 
 		const profiles = await ReactivePromise.all(
 			contacts.map(contact => this.profiles(contact)),

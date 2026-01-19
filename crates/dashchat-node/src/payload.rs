@@ -35,7 +35,10 @@ pub enum AnnouncementsPayload {
 #[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
     /// Invites the recipient to add the sender as a contact.
-    Contact(QrCode),
+    Contact {
+        code: QrCode,
+        profile: Profile
+    },
 }
 
 // TODO: consolidate into something else
