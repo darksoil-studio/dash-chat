@@ -17,9 +17,11 @@ use p2panda_stream::IngestExt;
 use p2panda_stream::partial::operations::PartialOrder;
 use tokio::sync::{RwLock, mpsc};
 
+use mailbox_client::manager::{Mailboxes, MailboxesConfig};
+
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
-use crate::mailbox::manager::{Mailboxes, MailboxesConfig};
+use crate::mailbox::MailboxOperation;
 use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
 };
@@ -91,11 +93,13 @@ impl NodeLocalData {
     }
 }
 
+pub type NodeOpStore = OpStore<MemoryStore<TopicId, Extensions>>;
+
 #[derive(Clone)]
 pub struct Node {
-    pub op_store: OpStore<MemoryStore<TopicId, Extensions>>,
+    pub op_store: NodeOpStore,
 
-    pub mailboxes: Mailboxes<MemoryStore<TopicId, Extensions>>,
+    pub mailboxes: Mailboxes<MailboxOperation, NodeOpStore>,
 
     // groups: p2panda_auth::group::Groups,
     config: NodeConfig,

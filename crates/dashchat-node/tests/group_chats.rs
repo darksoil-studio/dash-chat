@@ -6,7 +6,8 @@
 
 use std::time::Duration;
 
-use dashchat_node::{mailbox::mem::MemMailbox, testing::*, *};
+use dashchat_node::{testing::*, *};
+use mailbox_client::mem::MemMailbox;
 
 use named_id::*;
 

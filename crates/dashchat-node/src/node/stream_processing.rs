@@ -3,6 +3,7 @@ use std::pin::Pin;
 use futures::Stream;
 use futures::StreamExt;
 use futures::stream::SelectAll;
+use mailbox_client::MailboxItem;
 use p2panda_core::Operation;
 use serde::{Deserialize, Serialize};
 use tokio::task;
@@ -34,7 +35,7 @@ impl Node {
         {
             let mailbox_rx = self.mailboxes.subscribe(topic.into()).await?;
             let stream = ReceiverStream::new(mailbox_rx).filter_map(async |op| {
-                    let hash = op.hash;
+                    let hash = op.hash();
                     if hash == op.header.hash() {
                         let header_bytes = op.header.to_bytes();
                         Some((op.header, op.body, header_bytes))

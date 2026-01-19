@@ -23,6 +23,7 @@ tauri = { version = "2.8", features = ["devtools"] }
 
 anyhow = "1.0.95"
 async-trait = "0.1.85"
+mailbox-client = { path = "../crates/mailbox-client" }
 p2panda-auth = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
 p2panda-core = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
 p2panda-encryption = { git = "https://github.com/maackle/p2panda.git", branch = "dashchat" }
