@@ -75,7 +75,13 @@ export class ChatsStore {
 
 		const pendingRequests = await this.contactsStore.contactRequests();
 
-		const pendingRequestsSummaries: ChatSummary[] = pendingRequests.map(
+		// Deduplicate by agent_id
+		const uniquePendingRequests = pendingRequests.filter(
+			(request, index, self) =>
+				self.findIndex(r => r.code.agent_id === request.code.agent_id) === index,
+		);
+
+		const pendingRequestsSummaries: ChatSummary[] = uniquePendingRequests.map(
 			pendingRequest => ({
 				type: 'ContactRequest',
 				chatId: pendingRequest.code.agent_id,
@@ -104,7 +110,7 @@ export class ChatsStore {
 			name: profile?.name,
 			avatar: profile?.avatar,
 			lastEvent: {
-				summary: '',
+				summary: 'contact_added',
 				timestamp: Date.now(),
 			},
 			unreadMessages: 0,

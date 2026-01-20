@@ -81,7 +81,7 @@
 				{/snippet}
 				{#snippet subtitle()}
 					<div class="row" style="align-items: center">
-						<span style="flex: 1">{summary.lastEvent.summary}</span>
+						<span style="flex: 1">{summary.type === 'ContactRequest' ? m.contactRequest() : summary.lastEvent.summary === 'contact_added' ? m.contactAccepted(): summary.lastEvent.summary}</span>
 						{#if summary.unreadMessages !== 0}
 							<Badge>{summary.unreadMessages}</Badge>
 						{/if}
