@@ -64,7 +64,7 @@
 				await sleep(1000);
 			}
 
-			goto(`/contacts/${profile?.name}`);
+			goto(`/direct-messages/${contactCode.agent_id}`);
 		} catch (e) {
 			console.error(e);
 		}

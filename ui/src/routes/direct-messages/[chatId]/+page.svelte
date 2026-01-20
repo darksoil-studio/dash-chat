@@ -9,7 +9,12 @@
 	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '$lib/utils/time';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
-	import type { ChatsStore, ContactsStore } from 'dash-chat-stores';
+	import type {
+		ChatsStore,
+		ContactCode,
+		ContactRequest,
+		ContactsStore,
+	} from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiSend } from '@mdi/js';
 	import {
@@ -25,8 +30,10 @@
 		ToolbarPane,
 		Icon,
 		useTheme,
+		Toast,
 	} from 'konsta/svelte';
 	import { page } from '$app/state';
+	import { TOAST_TTL_MS } from '$lib/utils/toasts';
 	let chatId = page.params.chatId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
@@ -37,6 +44,17 @@
 
 	const messages = useReactivePromise(store.messages);
 	const peerProfile = useReactivePromise(store.peerProfile);
+	const contactRequest = useReactivePromise(store.getContactRequest);
+
+	let acceptedToastOpen = $state(false);
+	async function acceptContactRequest(contactRequest: ContactRequest) {
+		await contactsStore.client.addContact(contactRequest.code);
+		acceptedToastOpen = true;
+		setTimeout(() => {
+			acceptedToastOpen = false;
+		}, TOAST_TTL_MS);
+	}
+
 	let messageText = $state('');
 	let isClickable = $state(false);
 	let inputOpacity = $state(0.3);
@@ -80,7 +98,23 @@
 		{/snippet}
 	</Navbar>
 
-	<div class={`column ${theme === 'ios'? 'pb-16':''}`}>
+	{#await $contactRequest then contactRequest}
+		{#if contactRequest}
+			<div
+				class="p-4 flex items-center justify-between"
+				style="background-color: var(--k-color-primary-container);"
+			>
+				<span
+					>{m.contactRequestBanner({ name: contactRequest.profile.name })}</span
+				>
+				<Button onClick={() => acceptContactRequest(contactRequest)}
+					>{m.accept()}</Button
+				>
+			</div>
+		{/if}
+	{/await}
+
+	<div class={`column ${theme === 'ios' ? 'pb-16' : ''}`}>
 		<div class="center-in-desktop" style="flex:1">
 			<div class="column m-2 gap-2">
 				{#await $myActorId then myActorId}
@@ -169,4 +203,8 @@
 			{/snippet}
 		</Messagebar>
 	</div>
+
+	<Toast position="center" opened={acceptedToastOpen}>
+		{m.contactAccepted()}
+	</Toast>
 </Page>

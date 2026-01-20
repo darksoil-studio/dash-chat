@@ -27,6 +27,8 @@
 	"accept": "Accept",
 	"contactAlreadyExists": "Contact already exists.",
 	"contactAdded": "{{name}} was added to your contacts.",
+	"contactAccepted": "Contact added.",
+	"contactRequestBanner": "{{name}} wants to add you as a contact.",
 	"noContactsYet": "You don't have any contacts yet.",
 	"chats": "Chats",
 	"noChatsYet": "You don't have any chats yet.",

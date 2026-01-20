@@ -1,14 +1,14 @@
 import { ReactivePromise, reactive } from 'signalium';
 
+import { ContactsStore } from '../contacts/contacts-store';
+import { DirectMessagesChatClient } from '../direct-messages/direct-messages-chat-client';
+import { DirectMessagesChatStore } from '../direct-messages/direct-messages-chat-store';
 import { GroupChatClient } from '../group-chats/group-chat-client';
 import { GroupChatStore } from '../group-chats/group-chat-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
 import { ChatsClient } from './chats-client';
-import { ContactsStore } from '../contacts/contacts-store';
-import { DirectMessagesChatStore } from '../direct-messages/direct-messages-chat-store';
-import { DirectMessagesChatClient } from '../direct-messages/direct-messages-chat-client';
 
 function random_hexadecimal(length: number) {
 	var result = '';
@@ -42,44 +42,78 @@ export class ChatsStore {
 
 	groupChats = reactive(
 		(chatId: ChatId) =>
-			new GroupChatStore(this.logsStore,this.contactsStore, new GroupChatClient(), chatId),
+			new GroupChatStore(
+				this.logsStore,
+				this.contactsStore,
+				new GroupChatClient(),
+				chatId,
+			),
 	);
 
 	directMessagesChats = reactive(
 		(peer: AgentId) =>
-			new DirectMessagesChatStore(this.logsStore,this.contactsStore, new DirectMessagesChatClient(), peer),
+			new DirectMessagesChatStore(
+				this.logsStore,
+				this.contactsStore,
+				new DirectMessagesChatClient(),
+				peer,
+			),
 	);
 
-	allChatsIds = reactive(() => []);
+	allChatsIds = reactive(async () => {
+		const contacts = await this.contactsStore.contactsAgentIds();
+		// Combine and deduplicate
+		return contacts;
+	});
 
 	allChatsSummaries = reactive(async () => {
 		const chatIds = await this.allChatsIds();
 
-		const summaries = await ReactivePromise.all(
+		let summaries = await ReactivePromise.all(
 			chatIds.map(chatId => this.chatSummary(chatId)),
 		);
+
+		const pendingRequests = await this.contactsStore.contactRequests();
+
+		const pendingRequestsSummaries: ChatSummary[] = pendingRequests.map(
+			pendingRequest => ({
+				type: 'ContactRequest',
+				chatId: pendingRequest.code.agent_id,
+				name: pendingRequest.profile.name,
+				avatar: pendingRequest.profile.avatar,
+				lastEvent: {
+					summary: '',
+					timestamp: Date.now(),
+				},
+				unreadMessages: 1,
+			}),
+		);
+
+		summaries = [...summaries, ...pendingRequestsSummaries];
+		summaries.sort((a, b) => b.lastEvent.timestamp - a.lastEvent.timestamp);
+
 		return summaries;
 	});
 
-	chatSummary = reactive((chatId: ChatId) => {
-		const groupChatStore = this.groupChats(chatId);
+	chatSummary = reactive(async (chatId: ChatId) => {
+		const profile = await this.contactsStore.profiles(chatId);
 
 		return {
-			type: 'GroupChat',
-			name: 'mygroup',
+			type: 'DirectMessagesChat',
 			chatId,
-			avatar: undefined,
+			name: profile?.name,
+			avatar: profile?.avatar,
 			lastEvent: {
-				summary: 'aaa',
+				summary: '',
 				timestamp: Date.now(),
 			},
-			unreadMessages: 1,
+			unreadMessages: 0,
 		} as ChatSummary;
 	});
 }
 
 export interface ChatSummary {
-	type: 'GroupChat' | 'DirectMessagesChat';
+	type: 'GroupChat' | 'DirectMessagesChat' | 'ContactRequest';
 	chatId: TopicId;
 	unreadMessages: number;
 	name: string;

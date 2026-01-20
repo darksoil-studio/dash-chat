@@ -43,7 +43,9 @@
 			<ListItem
 				title={summary.name}
 				link
-				linkProps={{ href: `/group-chat/${summary.chatId}` }}
+				linkProps={{ href: summary.type === 'GroupChat'
+					? `/group-chat/${summary.chatId}`
+					: `/direct-messages/${summary.chatId}` }}
 				chevron={false}
 			>
 				{#snippet media()}

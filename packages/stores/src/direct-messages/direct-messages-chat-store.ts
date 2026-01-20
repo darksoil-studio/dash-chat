@@ -22,7 +22,14 @@ export class DirectMessagesChatStore {
 	});
 
 	peerProfile = reactive(async () => {
-		return await this.contactsStore.myProfile();
+		const request = await this.getContactRequest();
+		if (request) return request.profile
+		return await this.contactsStore.profiles(this.peer);
+	});
+
+	getContactRequest = reactive(async () => {
+		const contactRequests = await this.contactsStore.contactRequests();
+		return contactRequests.find(cr => cr.code.agent_id === this.peer);
 	});
 
 	messages = reactive(async () => {
