@@ -12,7 +12,7 @@ export function toPromise<T, Args extends unknown[]>(
 			() => {
 				const value = promise(...args);
 				if (value.isResolved) resolve(value.value!);
-				if (value.isRejected) reject(value.value!);
+				if (value.isRejected) reject(value.error);
 				if (!value.isPending && l) l();
 			},
 			{

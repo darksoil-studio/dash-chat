@@ -44,7 +44,7 @@ export type DeviceGroupPayload =
 	| { type: 'RejectContactRequest'; payload: AgentId };
 
 export type InboxPayload = {
-	type: 'Contact';
+	type: 'ContactRequest';
 	payload: {
 		code: ContactCode;
 		profile: Profile;
