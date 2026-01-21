@@ -28,14 +28,11 @@
 		Toast,
 	} from 'konsta/svelte';
 	import { goto } from '$app/navigation';
-	import { sleep } from '$lib/utils/time';
 	import { TOAST_TTL_MS } from '$lib/utils/toasts';
-	import { useReactivePromise } from '$lib/stores/use-signal';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
 	let code = contactsStore.client.createContactCode().then(encodeContactCode);
-	const contacts = useReactivePromise(contactsStore.contactsAgentIds);
 
 	let contactAlreadyExistsToastOpen = $state(false);
 	let t: NodeJS.Timeout | undefined;
@@ -55,14 +52,6 @@
 			}
 
 			await contactsStore.client.addContact(contactCode);
-
-			let profile: Profile | undefined;
-			let tries = 0;
-			while (!profile && tries < 5) {
-				profile = await toPromise(contactsStore.profiles,contactCode.agent_id);
-				tries++;
-				await sleep(1000);
-			}
 
 			goto(`/direct-messages/${contactCode.agent_id}`);
 		} catch (e) {
@@ -124,9 +113,12 @@
 						<ListInput
 							type="text"
 							outline
-							onInput={(e: Event) => {
+							onInput={async (e: Event) => {
 								const target = e.target as HTMLInputElement;
-								if (target.value) receiveCode(target.value);
+								if (target.value) {
+								  await receiveCode(target.value);
+								  target.value = ''
+								}
 							}}
 						/>
 					</List>
