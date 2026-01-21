@@ -66,7 +66,7 @@
 
 	async function sendMessage() {
 		const message = messageText;
-	
+
 		if (!message || message.trim() === '') return;
 
 		await store.sendMessage(message);
@@ -75,7 +75,7 @@
 	const theme = $derived(useTheme());
 </script>
 
-<Page style={theme === 'material' ? 'height: calc(100vh - 57px)' : ''}>
+<Page>
 	<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
 		{#snippet left()}
 			<NavbarBackLink onClick={() => goto('/')} />
@@ -98,22 +98,6 @@
 			{/await}
 		{/snippet}
 	</Navbar>
-
-	{#await $contactRequest then contactRequest}
-		{#if contactRequest}
-			<div
-				class="p-4 flex items-center justify-between"
-				style="background-color: var(--k-color-primary-container);"
-			>
-				<span
-					>{m.contactRequestBanner({ name: contactRequest.profile.name })}</span
-				>
-				<Button onClick={() => acceptContactRequest(contactRequest)}
-					>{m.accept()}</Button
-				>
-			</div>
-		{/if}
-	{/await}
 
 	<div class={`column ${theme === 'ios' ? 'pb-16' : ''}`}>
 		<div class="center-in-desktop" style="flex:1">
@@ -182,27 +166,48 @@
 			</div>
 		</div>
 
-		<Messagebar
-			placeholder={m.typeMessage()}
-			onInput={onMessageTextChange}
-			value={messageText}
-		>
-			{#snippet right()}
-				<ToolbarPane class="ios:h-10">
-					<Link
-						iconOnly
-						onClick={() => (isClickable ? sendMessage() : undefined)}
-						style="opacity: {inputOpacity}; cursor: {isClickable
-							? 'pointer'
-							: 'default'}"
-					>
-						<Icon>
-							<wa-icon src={wrapPathInSvg(mdiSend)}> </wa-icon>
-						</Icon>
-					</Link>
-				</ToolbarPane>
-			{/snippet}
-		</Messagebar>
+		{#await $contactRequest then contactRequest}
+			{#if contactRequest}
+				<Card class="center-in-desktop p-2 fixed bottom-2">
+					<div class="flex flex-row items-center justify-center">
+						<span style="flex: 1"
+							>{m.contactRequestBanner({
+								name: contactRequest.profile.name,
+							})}</span
+						>
+						<div>
+							<Button
+								rounded
+								onClick={() => acceptContactRequest(contactRequest)}
+								>{m.accept()}</Button
+							>
+						</div>
+					</div>
+				</Card>
+			{:else}
+				<Messagebar
+					placeholder={m.typeMessage()}
+					onInput={onMessageTextChange}
+					value={messageText}
+				>
+					{#snippet right()}
+						<ToolbarPane class="ios:h-10">
+							<Link
+								iconOnly
+								onClick={() => (isClickable ? sendMessage() : undefined)}
+								style="opacity: {inputOpacity}; cursor: {isClickable
+									? 'pointer'
+									: 'default'}"
+							>
+								<Icon>
+									<wa-icon src={wrapPathInSvg(mdiSend)}> </wa-icon>
+								</Icon>
+							</Link>
+						</ToolbarPane>
+					{/snippet}
+				</Messagebar>
+			{/if}
+		{/await}
 	</div>
 
 	<Toast position="center" opened={acceptedToastOpen}>
