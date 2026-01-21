@@ -147,5 +147,5 @@
 	<Toast position="center" opened={contactAlreadyExistsToastOpen}
 		>{m.contactAlreadyExists()}</Toast
 	>
-	<Toast position="center" opened={errorMessage !== undefined}>{errorMessage}</Toast>
+	<Toast position="center" class="k-color-brand-red" opened={errorMessage !== undefined}>{errorMessage}</Toast>
 </Page>

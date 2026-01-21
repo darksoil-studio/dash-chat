@@ -147,5 +147,5 @@
 			</Button>
 		{/if}
 	{/await}
-	<Toast position="center" opened={errorMessage !== undefined}>{errorMessage}</Toast>
+	<Toast position="center" class="k-color-brand-red" opened={errorMessage !== undefined}>{errorMessage}</Toast>
 </Page>
