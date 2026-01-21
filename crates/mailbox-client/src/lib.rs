@@ -60,12 +60,20 @@ pub struct FetchTopicResponse<Item: MailboxItem> {
 pub type SeqNum = u64;
 
 pub trait ItemTraits:
-    Copy + Eq + Ord + std::hash::Hash + Rename + Serialize + DeserializeOwned + Send + Sync
+    Copy + Eq + Ord + std::hash::Hash + std::fmt::Debug + Serialize + DeserializeOwned + Send + Sync
 {
 }
 
 impl<T> ItemTraits for T where
-    T: Copy + Eq + Ord + std::hash::Hash + Rename + Serialize + DeserializeOwned + Send + Sync
+    T: Copy
+        + Eq
+        + Ord
+        + std::hash::Hash
+        + std::fmt::Debug
+        + Serialize
+        + DeserializeOwned
+        + Send
+        + Sync
 {
 }
 
