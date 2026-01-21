@@ -3,3 +3,4 @@ servers:
     deployment:
       type: on-branch
       branch: production
+
