@@ -9,7 +9,6 @@
 	import {
 		lessThanAMinuteAgo,
 		moreThanAnHourAgo,
-		sleep,
 	} from '$lib/utils/time';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';

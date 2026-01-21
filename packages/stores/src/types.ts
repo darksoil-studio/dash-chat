@@ -17,10 +17,9 @@ export interface SpaceControlMessage {
 	// spaces_args: SpacesArgs,
 }
 
-
 export type MessageContent = string;
 export type AnnouncementPayload = { type: 'SetProfile'; payload: Profile };
-export type ChatPayload = {type: 'Message',payload: MessageContent};
+export type ChatPayload = { type: 'Message'; payload: MessageContent };
 
 export interface InboxTopic {
 	expires_at: number;

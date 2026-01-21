@@ -75,8 +75,8 @@
 				default:
 					errorMessage = m.errorUnexpected();
 			}
+			clearTimeout(t);
 			t = setTimeout(() => {
-				clearTimeout(t);
 				errorMessage = undefined;
 			}, TOAST_TTL_MS);
 		}

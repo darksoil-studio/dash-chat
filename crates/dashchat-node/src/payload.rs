@@ -35,10 +35,7 @@ pub enum AnnouncementsPayload {
 #[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
     /// Invites the recipient to add the sender as a contact.
-    ContactRequest {
-        code: QrCode,
-        profile: Profile
-    },
+    ContactRequest { code: QrCode, profile: Profile },
 }
 
 // TODO: consolidate into something else
@@ -62,7 +59,7 @@ pub enum ChatPayload {
 #[serde(tag = "type", content = "payload")]
 pub enum DeviceGroupPayload {
     AddContact(QrCode),
-    RejectContactRequest(AgentId)
+    RejectContactRequest(AgentId),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]

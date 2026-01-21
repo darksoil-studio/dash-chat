@@ -24,4 +24,4 @@ export * from './group-chats/group-chat-client.js';
 export * from './chats/chats-store.js';
 export * from './chats/chats-client.js';
 
-export * from './utils/to-promise.js'
+export * from './utils/to-promise.js';
