@@ -6,13 +6,11 @@ import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { personalTopicFor } from '../topics';
 import { AnnouncementPayload, ContactCode, Payload } from '../types';
-import { ContactRequestId, IContactsClient, Profile } from './contacts-client';
+import { IContactsClient, Profile } from './contacts-client';
 
 export interface ContactRequest {
 	profile: Profile;
 	code: ContactCode;
-	// agentId: AgentId;
-	// contactRequestId: ContactRequestId;
 }
 
 export class ContactsStore {

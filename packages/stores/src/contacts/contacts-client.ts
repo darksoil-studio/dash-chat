@@ -1,16 +1,12 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import { AgentId, type PublicKey, type TopicId } from '../p2panda/types';
+import { AgentId, type TopicId } from '../p2panda/types';
 import { ContactCode } from '../types';
 
 export interface Profile {
 	name: string;
 	avatar: string | undefined;
 }
-
-export type ContactRequestId = string;
-
-
 
 export interface IContactsClient {
 	/// Profiles

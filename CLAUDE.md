@@ -14,7 +14,7 @@ Please read this coding style carefully and take it into account when planning o
 
 - Try to remain as simple as possible with your implementations.
 - Try to reuse types and functions across the project rather than reimplement them.
-- Don't use `any` or `unknown` typescript types. Rather, try to understand the actual typescript types and use them to infer the appropriate data structures and algorithms to use.
+- Don't use `any` or `unknown` typescript types. Instead, try to understand the actual typescript types and use them to infer the appropriate data structures and algorithms to use.
 
 ## Development Environment
 
