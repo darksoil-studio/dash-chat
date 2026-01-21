@@ -1,4 +1,4 @@
-use redb::{Database, ReadableTable};
+use redb::{Database, ReadableDatabase, ReadableTable};
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::{SequenceNumber, BLOBS_TABLE, WATERMARKS_TABLE};

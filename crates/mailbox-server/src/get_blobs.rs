@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
-use redb::Database;
+use redb::{Database, ReadableDatabase};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -66,7 +66,8 @@ fn get_blobs_for_topics_inner(
         let mut topic_authors: BTreeMap<Author, BTreeMap<SequenceNumber, Blob>> = BTreeMap::new();
         // Track which sequences we have stored for each requested author
         // (used to avoid reporting as missing sequences we actually have)
-        let mut stored_seqs_per_author: BTreeMap<Author, BTreeSet<SequenceNumber>> = BTreeMap::new();
+        let mut stored_seqs_per_author: BTreeMap<Author, BTreeSet<SequenceNumber>> =
+            BTreeMap::new();
 
         // Iterate through ALL blobs for this topic
         let prefix = format!("{topic_id}:");
@@ -93,9 +94,12 @@ fn get_blobs_for_topics_inner(
             }
 
             let author = parts[1].to_string();
-            let seq_num = parts[2]
-                .parse::<SequenceNumber>()
-                .map_err(|e| format!("Failed to parse sequence number from key {}: {}", key_str, e))?;
+            let seq_num = parts[2].parse::<SequenceNumber>().map_err(|e| {
+                format!(
+                    "Failed to parse sequence number from key {}: {}",
+                    key_str, e
+                )
+            })?;
 
             // Track sequences we have for requested authors (for missing calculation)
             if requested_authors.contains_key(&author) {
@@ -113,7 +117,7 @@ fn get_blobs_for_topics_inner(
                 // Author is NOT in the request: include all blobs for this author
                 // TODO: implement pagination or asynchronous data streaming
                 // (https://www.ruststepbystep.com/how-to-stream-data-asynchronously-in-rust-with-axum/)
-                // to handle huge amounts of blobs being returned 
+                // to handle huge amounts of blobs being returned
                 true
             };
 
