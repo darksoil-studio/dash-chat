@@ -31,6 +31,11 @@ pub async fn active_inbox_topics(node: State<'_, Node>) -> Result<BTreeSet<Topic
     Ok(topics_ids)
 }
 
+#[tauri::command]
+pub async fn reject_contact_request(agent_id: AgentId, node: State<'_, Node>) -> Result<(), Error> {
+    node.reject_contact_request(agent_id).await
+}
+
 // #[tauri::command]
 // pub async fn remove_contact(
 //     contact_id: PublicKey,

@@ -35,6 +35,22 @@ async fn test_inbox_2() {
 
     println!("peers see each other");
 
+    // Set profiles before adding contacts
+    alice
+        .set_profile(Profile {
+            name: "Alice".to_string(),
+            avatar: None,
+        })
+        .await
+        .unwrap();
+    bobbi
+        .set_profile(Profile {
+            name: "Bobbi".to_string(),
+            avatar: None,
+        })
+        .await
+        .unwrap();
+
     alice
         .behavior()
         .initiate_and_establish_contact(&bobbi, ShareIntent::AddContact)

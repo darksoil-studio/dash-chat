@@ -25,8 +25,11 @@ export interface IContactsClient {
 
 	// getContacts(): Promise<Array<PublicKey>>;
 
-	// Remove contact
+	// Add contact
 	addContact(code: ContactCode): Promise<void>;
+
+	// Reject contact request
+	rejectContactRequest(agentId: AgentId): Promise<void>;
 
 	// Remove contact
 	// removeContact(contact: ContactId): Promise<void>;
@@ -68,6 +71,12 @@ export class ContactsClient implements IContactsClient {
 	addContact(contactCode: ContactCode): Promise<void> {
 		return invoke('add_contact', {
 			contactCode,
+		});
+	}
+
+	rejectContactRequest(agentId: AgentId): Promise<void> {
+		return invoke('reject_contact_request', {
+			agentId,
 		});
 	}
 

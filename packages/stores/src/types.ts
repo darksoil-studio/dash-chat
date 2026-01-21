@@ -39,10 +39,9 @@ export interface ContactCode {
 	share_intent: ShareIntent;
 }
 
-export type DeviceGroupPayload = {
-	type: 'AddContact';
-	payload: ContactCode;
-};
+export type DeviceGroupPayload =
+	| { type: 'AddContact'; payload: ContactCode }
+	| { type: 'RejectContactRequest'; payload: AgentId };
 
 export type InboxPayload = {
 	type: 'Contact';

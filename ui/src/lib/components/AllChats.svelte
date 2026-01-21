@@ -57,7 +57,7 @@
 						<wa-format-date
 							weekday="short"
 							date={new Date(summary.lastEvent.timestamp)}
-						></wa-format-date>`;
+						></wa-format-date>
 					{:else if inYesterday(summary.lastEvent.timestamp)}
 						{m.yesterday()}
 					{:else if lessThanAMinuteAgo(summary.lastEvent.timestamp)}

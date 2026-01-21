@@ -41,16 +41,21 @@
 		try {
 			const contactCode = decodeContactCode(code);
 
-			const contacts = await toPromise(contactsStore.contactsAgentIds);
-
-			if (contacts.includes(contactCode.agent_id)) {
-				contactAlreadyExistsToastOpen = true;
-				t = setTimeout(() => {
-					if (t) clearTimeout(t);
-					contactAlreadyExistsToastOpen = false;
-				}, TOAST_TTL_MS);
-				return;
-			}
+			// Don't send a contact request if they're already in your contacts
+			// 
+			// Uncommenting this would mean that if the contact rejected your contact request
+			// there is no way to resend the contact request
+			//
+			// const contacts = await toPromise(contactsStore.contactsAgentIds);
+			// 
+			// if (contacts.includes(contactCode.agent_id)) {
+			// 	contactAlreadyExistsToastOpen = true;
+			// 	t = setTimeout(() => {
+			// 		clearTimeout(t);
+			// 		contactAlreadyExistsToastOpen = false;
+			// 	}, TOAST_TTL_MS);
+			// 	return;
+			// }
 
 			await contactsStore.client.addContact(contactCode);
 
@@ -71,7 +76,7 @@
 					errorMessage = m.errorUnexpected();
 			}
 			t = setTimeout(() => {
-				if (t) clearTimeout(t);
+				clearTimeout(t);
 				errorMessage = undefined;
 			}, TOAST_TTL_MS);
 		}
@@ -147,5 +152,9 @@
 	<Toast position="center" opened={contactAlreadyExistsToastOpen}
 		>{m.contactAlreadyExists()}</Toast
 	>
-	<Toast position="center" class="k-color-brand-red" opened={errorMessage !== undefined}>{errorMessage}</Toast>
+	<Toast
+		position="center"
+		class="k-color-brand-red"
+		opened={errorMessage !== undefined}>{errorMessage}</Toast
+	>
 </Page>

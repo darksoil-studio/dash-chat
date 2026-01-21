@@ -11,6 +11,7 @@ import { IContactsClient, Profile } from './contacts-client';
 export interface ContactRequest {
 	profile: Profile;
 	code: ContactCode;
+	timestamp: number;
 }
 
 export class ContactsStore {
@@ -57,6 +58,7 @@ export class ContactsStore {
 			),
 		);
 		const contacts = await this.contactsAgentIds();
+		const rejectedMap = await this.rejectedContactRequests();
 
 		const contactRequests: ContactRequest[] = [];
 
@@ -64,14 +66,49 @@ export class ContactsStore {
 			for (const operations of Object.values(log)) {
 				for (const operation of operations) {
 					if (operation.body?.type !== 'Inbox') continue;
+					const agentId = operation.body.payload.payload.code.agent_id;
 					// We have already accepted this contact request
-					if (contacts.includes(operation.body.payload.payload.code.agent_id)) continue
-					contactRequests.push(operation.body.payload.payload);
+					if (contacts.includes(agentId)) continue;
+					// Time-based rejection: only filter if request was made BEFORE rejection
+					const rejectionTimestamp = rejectedMap[agentId];
+					if (
+						rejectionTimestamp &&
+						operation.header.timestamp * 1000 < rejectionTimestamp
+					)
+						continue;
+					contactRequests.push({
+						...operation.body.payload.payload,
+						timestamp: operation.header.timestamp * 1000,
+					});
 				}
 			}
 		}
 
 		return contactRequests;
+	});
+
+	rejectedContactRequests = reactive(async () => {
+		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
+
+		const rejected: Record<AgentId, number> = {};
+
+		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+			for (const op of ops) {
+				if (op.body?.payload?.type !== 'RejectContactRequest') continue;
+				const agentId = op.body.payload.payload as AgentId;
+
+				const existingTimestamp = rejected[agentId];
+				// Keep the latest rejection timestamp
+				if (
+					!existingTimestamp ||
+					op.header.timestamp * 1000 > existingTimestamp
+				) {
+					rejected[agentId] = op.header.timestamp * 1000;
+				}
+			}
+		}
+
+		return rejected;
 	});
 
 	profiles = reactive(async (agentId: AgentId) => {
@@ -90,7 +127,7 @@ export class ContactsStore {
 			)
 			.map(l => [
 				l.header.timestamp,
-				((l.body! as any).payload as AnnouncementPayload).payload,
+				(l.body!.payload as AnnouncementPayload).payload,
 			]);
 
 		const descendantSortedOperations = setProfiles.sort(

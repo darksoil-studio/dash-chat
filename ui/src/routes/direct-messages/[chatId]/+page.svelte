@@ -6,7 +6,11 @@
 	import { m } from '$lib/paraglide/messages.js';
 
 	import { useReactivePromise } from '$lib/stores/use-signal';
-	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '$lib/utils/time';
+	import {
+		lessThanAMinuteAgo,
+		moreThanAnHourAgo,
+		sleep,
+	} from '$lib/utils/time';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type {
@@ -78,6 +82,22 @@
 		}
 	}
 
+	async function rejectContactRequest(contactRequest: ContactRequest) {
+		try {
+			await contactsStore.client.rejectContactRequest(
+				contactRequest.code.agent_id,
+			);
+			// Without set timeout, the route is navigated to before the notification is
+			// processed, showing the contact request still active
+			setTimeout(()=>goto('/'))
+		} catch (e) {
+			errorMessage = m.errorUnexpected();
+			setTimeout(() => {
+				errorMessage = undefined;
+			}, TOAST_TTL_MS);
+		}
+	}
+
 	let messageText = $state('');
 	let isClickable = $state(false);
 	let inputOpacity = $state(0.3);
@@ -105,19 +125,21 @@
 		{/snippet}
 		{#snippet title()}
 			{#await $peerProfile then profile}
-				<Link
-					class="gap-2"
-					style="display: flex; justify-content: start; align-items: center;"
-					href={`/direct-messages/${chatId}/profile`}
-				>
-					<wa-avatar
-						image={profile!.avatar}
-						initials={profile!.name.slice(0, 2)}
-						style="--size: 2.5rem"
+				{#if profile}
+					<Link
+						class="gap-2"
+						style="display: flex; justify-content: start; align-items: center;"
+						href={`/direct-messages/${chatId}/profile`}
 					>
-					</wa-avatar>
-					<span>{profile!.name}</span>
-				</Link>
+						<wa-avatar
+							image={profile!.avatar}
+							initials={profile!.name.slice(0, 2)}
+							style="--size: 2.5rem"
+						>
+						</wa-avatar>
+						<span>{profile!.name}</span>
+					</Link>
+				{/if}
 			{/await}
 		{/snippet}
 	</Navbar>
@@ -198,7 +220,13 @@
 								name: contactRequest.profile.name,
 							})}</span
 						>
-						<div>
+						<div class="flex gap-2">
+							<Button
+								rounded
+								clear
+								onClick={() => rejectContactRequest(contactRequest)}
+								>{m.reject()}</Button
+							>
 							<Button
 								rounded
 								onClick={() => acceptContactRequest(contactRequest)}
@@ -236,5 +264,9 @@
 	<Toast position="center" opened={acceptedToastOpen}>
 		{m.contactAccepted()}
 	</Toast>
-	<Toast position="center" class="k-color-brand-red" opened={errorMessage !== undefined}>{errorMessage}</Toast>
+	<Toast
+		position="center"
+		class="k-color-brand-red"
+		opened={errorMessage !== undefined}>{errorMessage}</Toast
+	>
 </Page>

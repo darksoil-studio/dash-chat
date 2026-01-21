@@ -89,7 +89,7 @@ export class ChatsStore {
 				avatar: pendingRequest.profile.avatar,
 				lastEvent: {
 					summary: '',
-					timestamp: Date.now(),
+					timestamp: pendingRequest.timestamp,
 				},
 				unreadMessages: 1,
 			}),

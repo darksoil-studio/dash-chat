@@ -34,6 +34,20 @@ async fn test_profiles() {
     #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
+    // Set initial profiles before adding contacts
+    let profile = Profile {
+        name: "Alice".to_string(),
+        avatar: Some("this is a picture of alice".to_string()),
+    };
+    alice.set_profile(profile.clone()).await.unwrap();
+    bobbi
+        .set_profile(Profile {
+            name: "Bobbi".to_string(),
+            avatar: None,
+        })
+        .await
+        .unwrap();
+
     alice
         .add_contact(
             bobbi
@@ -45,12 +59,6 @@ async fn test_profiles() {
         .unwrap();
 
     bobbi.behavior().accept_next_contact().await.unwrap();
-
-    let profile = Profile {
-        name: "Alice".to_string(),
-        avatar: Some("this is a picture of alice".to_string()),
-    };
-    alice.set_profile(profile.clone()).await.unwrap();
 
     // Bob has joined the group via his inbox topic
     wait_for(

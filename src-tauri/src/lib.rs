@@ -26,6 +26,7 @@ pub fn run() {
             commands::contacts::create_contact_code,
             commands::contacts::add_contact,
             commands::contacts::active_inbox_topics,
+            commands::contacts::reject_contact_request,
             commands::direct_messages::direct_message_chat_id,
             commands::direct_messages::direct_messages_send_message,
             // commands::chats::create_group,

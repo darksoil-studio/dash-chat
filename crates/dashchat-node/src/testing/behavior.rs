@@ -43,7 +43,7 @@ impl Behavior {
                     hash = ?n.header.hash().renamed(),
                     "checking for contact invitation"
                 );
-                let Payload::Inbox(InboxPayload::Contact { code, .. }) = &n.payload else {
+                let Payload::Inbox(InboxPayload::ContactRequest { code, .. }) = &n.payload else {
                     return None;
                 };
                 Some(code.clone())

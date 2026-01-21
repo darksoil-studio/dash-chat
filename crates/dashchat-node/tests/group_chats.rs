@@ -55,6 +55,22 @@ async fn test_direct_chat() {
     println!("alice: {:?}", alice.device_id().short());
     println!("bobbi: {:?}", bobbi.device_id().short());
 
+    // Set profiles before adding contacts
+    alice
+        .set_profile(Profile {
+            name: "Alice".to_string(),
+            avatar: None,
+        })
+        .await
+        .unwrap();
+    bobbi
+        .set_profile(Profile {
+            name: "Bobbi".to_string(),
+            avatar: None,
+        })
+        .await
+        .unwrap();
+
     alice
         .behavior()
         .initiate_and_establish_contact(&bobbi, ShareIntent::AddContact)

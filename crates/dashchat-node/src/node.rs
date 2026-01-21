@@ -497,7 +497,7 @@ impl Node {
             };
             self.author_operation(
                 inbox_topic.topic,
-                Payload::Inbox(InboxPayload::Contact { code, profile }),
+                Payload::Inbox(InboxPayload::ContactRequest { code, profile }),
                 Some(&format!("add_contact/invitation({})", agent.renamed())),
             )
             .await
@@ -512,6 +512,24 @@ impl Node {
         }
 
         Ok(agent)
+    }
+
+    /// Reject a contact request from the given agent.
+    /// This creates a RejectContactRequest operation in the device group topic.
+    /// Contact requests made before this rejection will be filtered out.
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.device_id().renamed())))]
+    pub async fn reject_contact_request(&self, agent_id: AgentId) -> Result<(), Error> {
+        tracing::debug!("rejecting contact request from: {:?}", agent_id);
+
+        self.author_operation(
+            self.device_group_topic(),
+            Payload::DeviceGroup(DeviceGroupPayload::RejectContactRequest(agent_id)),
+            Some(&format!("reject_contact_request({})", agent_id.renamed())),
+        )
+        .await
+        .map_err(|e| Error::AuthorOperation(e.to_string()))?;
+
+        Ok(())
     }
 
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.device_id().renamed())))]

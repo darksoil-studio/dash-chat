@@ -61,6 +61,22 @@ async fn mailbox_late_join(
     let alice = TestNode::new(config.clone(), Some("alice")).await;
     let bobbi = TestNode::new(config.clone(), Some("bobbi")).await;
 
+    // Set profiles before adding contacts
+    alice
+        .set_profile(Profile {
+            name: "Alice".to_string(),
+            avatar: None,
+        })
+        .await
+        .unwrap();
+    bobbi
+        .set_profile(Profile {
+            name: "Bobbi".to_string(),
+            avatar: None,
+        })
+        .await
+        .unwrap();
+
     let qr = alice
         .new_qr_code(ShareIntent::AddContact, true)
         .await
