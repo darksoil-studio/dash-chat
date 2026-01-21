@@ -68,6 +68,21 @@ impl TestNode {
         Ok(ids)
     }
 
+    pub async fn get_rejected_contact_requests(&self) -> anyhow::Result<Vec<AgentId>> {
+        let ids = self
+            .get_interleaved_logs(self.device_group_topic().into(), vec![self.device_id()])
+            .await?
+            .into_iter()
+            .filter_map(|(_, payload)| match payload {
+                Some(Payload::DeviceGroup(DeviceGroupPayload::RejectContactRequest(agent_id))) => {
+                    Some(agent_id)
+                }
+                _ => None,
+            })
+            .collect();
+        Ok(ids)
+    }
+
     pub async fn subscribed_topics(&self) -> BTreeSet<TopicId> {
         let mailbox_topics = self.mailboxes.subscribed_topics().await;
         mailbox_topics
