@@ -66,6 +66,7 @@
 
 	async function sendMessage() {
 		const message = messageText;
+	
 		if (!message || message.trim() === '') return;
 
 		await store.sendMessage(message);

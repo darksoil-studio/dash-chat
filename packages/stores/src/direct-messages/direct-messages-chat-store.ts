@@ -5,8 +5,8 @@ import { Message, MessageContent } from '../group-chats/group-chat-client';
 import { LogsStore } from '../p2panda/logs-store';
 import { AgentId, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
-import { DirectMessagesChatClient } from './direct-messages-chat-client';
 import { toPromise } from '../utils/to-promise';
+import { DirectMessagesChatClient } from './direct-messages-chat-client';
 
 // Store tied to a specific direct messages chat
 export class DirectMessagesChatStore {
@@ -23,7 +23,7 @@ export class DirectMessagesChatStore {
 
 	peerProfile = reactive(async () => {
 		const request = await this.getContactRequest();
-		if (request) return request.profile
+		if (request) return request.profile;
 		return await this.contactsStore.profiles(this.peer);
 	});
 
@@ -33,79 +33,32 @@ export class DirectMessagesChatStore {
 	});
 
 	messages = reactive(async () => {
-		const messages: Array<Message> = [
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-			{
-				content: 'heeey',
-				author: await this.contactsStore.myAgentId(),
-				timestamp: Date.now(),
-			},
-		];
+		const chatId = await this.chatId();
+		const logs = await this.logsStore.logsForAllAuthors(chatId);
+
+		const messages: Array<Message> = [];
+
+		for (const [author, operations] of Object.entries(logs)) {
+			for (const operation of operations) {
+				const body = operation.body;
+				if (body?.type === 'Chat' && body.payload.type === 'Message') {
+					messages.push({
+						content: body.payload.payload,
+						author,
+						timestamp: operation.header.timestamp,
+					});
+				}
+			}
+		}
+
+		// Sort messages by timestamp (ascending order)
+		messages.sort((a, b) => a.timestamp - b.timestamp);
 
 		return messages;
 	});
 
 	async sendMessage(content: MessageContent) {
-		const chatId = await toPromise(this.chatId)
+		const chatId = await toPromise(this.chatId);
 		return this.client.sendMessage(chatId, content);
 	}
 }

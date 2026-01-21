@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import type { ContactsStore } from 'dash-chat-stores';
 	import { mdiAccountPlus } from '@mdi/js';
-	import { m, myContacts } from '$lib/paraglide/messages.js';
+	import { m } from '$lib/paraglide/messages.js';
 	import {
 		Page,
 		BlockTitle,
@@ -16,7 +16,6 @@
 		Navbar,
 		NavbarBackLink,
 		Preloader,
-		Toast,
 	} from 'konsta/svelte';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 

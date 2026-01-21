@@ -1,9 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
-import { ChatId, Payload } from '../types';
-
-export type MessageContent = string;
+import { ChatId, MessageContent, Payload } from '../types';
 
 export interface Message {
 	content: MessageContent;

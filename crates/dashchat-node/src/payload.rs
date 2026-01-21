@@ -43,6 +43,7 @@ pub enum InboxPayload {
 
 // TODO: consolidate into something else
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
+#[serde(tag = "type", content = "payload")]
 pub enum ChatPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
     /// This is only sent in direct chat messages.

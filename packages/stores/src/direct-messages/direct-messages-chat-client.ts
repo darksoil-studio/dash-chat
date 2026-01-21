@@ -12,10 +12,14 @@ export interface IDirectMessagesChatClient {
 
 export class DirectMessagesChatClient implements IDirectMessagesChatClient {
 	chatId(peer: AgentId): Promise<ChatId> {
-		return invoke('direct_messages_chat_id', {
+		return invoke('direct_message_chat_id', {
 			peer,
 		});
 	}
 
-	async sendMessage(chatId: ChatId, content: MessageContent): Promise<void> {}
+	async sendMessage(chatId: ChatId, content: MessageContent): Promise<void> {
+		return invoke('direct_messages_send_message', {
+			chatId, content
+		})
+	}
 }
