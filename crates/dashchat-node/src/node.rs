@@ -5,7 +5,9 @@ use std::collections::{BTreeSet, HashSet};
 use std::pin::Pin;
 use std::sync::Arc;
 
-use anyhow::{Result, anyhow};
+use anyhow::Result;
+
+use crate::error::{AddContactError, Error};
 use chrono::{Duration, Utc};
 use futures::Stream;
 use named_id::*;
@@ -221,14 +223,16 @@ impl Node {
         &self,
         share_intent: ShareIntent,
         inbox: bool,
-    ) -> anyhow::Result<QrCode> {
+    ) -> Result<QrCode, crate::Error> {
         let mut topics = self.local_data.active_inbox_topics.write().await;
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
                 topic: Topic::inbox().with_name(&format!("inbox({})", self.device_id().renamed())),
                 expires_at: Utc::now() + self.config.contact_code_expiry,
             };
-            self.initialize_topic(inbox_topic.topic, false).await?;
+            self.initialize_topic(inbox_topic.topic, false)
+                .await
+                .map_err(|e| Error::InitializeTopic(e.to_string()))?;
             topics.insert(inbox_topic.clone());
             Some(inbox_topic)
         } else {
@@ -297,13 +301,14 @@ impl Node {
         self.initialize_topic(chat_id, true).await
     }
 
-    pub async fn set_profile(&self, profile: Profile) -> anyhow::Result<()> {
+    pub async fn set_profile(&self, profile: Profile) -> Result<(), crate::Error> {
         self.author_operation(
             Topic::announcements(self.agent_id()),
             Payload::Announcements(AnnouncementsPayload::SetProfile(profile)),
             Some(&format!("set_profile({})", self.device_id().renamed())),
         )
-        .await?;
+        .await
+        .map_err(|e| Error::AuthorOperation(e.to_string()))?;
 
         Ok(())
     }
@@ -405,7 +410,7 @@ impl Node {
     /// - store them in the contacts map
     /// - send an invitation to them to do the same
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.device_id().renamed())))]
-    pub async fn add_contact(&self, contact: QrCode) -> anyhow::Result<AgentId> {
+    pub async fn add_contact(&self, contact: QrCode) -> Result<AgentId, AddContactError> {
         tracing::debug!("adding contact: {:?}", contact);
 
         // SPACES: Register the member in the spaces manager
@@ -414,7 +419,8 @@ impl Node {
         // group control messages.
         // TODO: is this idempotent? If not we must make sure to do this only once.
         self.initialize_topic(Topic::announcements(contact.agent_id), false)
-            .await?;
+            .await
+            .map_err(|e| Error::InitializeTopic(e.to_string()))?;
 
         // TODO: use all of this commented out stuff when spaces are possible again
         // // XXX: there should be a better way to wait for the device group to be created,
@@ -462,34 +468,47 @@ impl Node {
 
         let agent = contact.agent_id;
         let direct_topic = self.direct_chat_topic(agent);
-        self.initialize_topic(direct_topic, true).await?;
+        self.initialize_topic(direct_topic, true)
+            .await
+            .map_err(|e| Error::InitializeTopic(e.to_string()))?;
 
         self.author_operation(
             self.device_group_topic(),
             Payload::DeviceGroup(DeviceGroupPayload::AddContact(contact.clone())),
             Some(&format!("add_contact/invitation({})", agent.renamed())),
         )
-        .await?;
+        .await
+        .map_err(|e| Error::AuthorOperation(e.to_string()))?;
 
         if let Some(inbox_topic) = contact.inbox_topic.clone() {
-            self.initialize_topic(inbox_topic.topic, true).await?;
-            let code = self.new_qr_code(ShareIntent::AddContact, false).await?;
-            let Some(profile) = self.my_profile().await? else {
-                return Err(anyhow!(
-                    "User profile must be created before adding contacts."
-                ));
+            self.initialize_topic(inbox_topic.topic, true)
+                .await
+                .map_err(|e| Error::InitializeTopic(e.to_string()))?;
+            let code = self
+                .new_qr_code(ShareIntent::AddContact, false)
+                .await
+                .map_err(|e| AddContactError::CreateQrCode(e.to_string()))?;
+            let Some(profile) = self
+                .my_profile()
+                .await
+                .map_err(|e| Error::AuthorOperation(e.to_string()))?
+            else {
+                return Err(AddContactError::ProfileNotCreated);
             };
             self.author_operation(
                 inbox_topic.topic,
                 Payload::Inbox(InboxPayload::Contact { code, profile }),
                 Some(&format!("add_contact/invitation({})", agent.renamed())),
             )
-            .await?;
+            .await
+            .map_err(|e| Error::AuthorOperation(e.to_string()))?;
         }
 
         // Only the initiator of contactship should create the direct chat space
         if contact.share_intent == ShareIntent::AddContact && contact.inbox_topic.is_none() {
-            self.create_direct_chat_space(agent).await?;
+            self.create_direct_chat_space(agent)
+                .await
+                .map_err(|e| AddContactError::CreateDirectChat(e.to_string()))?;
         }
 
         Ok(agent)

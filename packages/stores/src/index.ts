@@ -10,6 +10,7 @@ export * from './types.js';
 export * from './contacts/contacts-store.js';
 export * from './contacts/contacts-client.js';
 export * from './contacts/contact-code.js';
+export * from './contacts/errors.js';
 
 export * from './devices/devices-store.js';
 export * from './devices/devices-client.js';

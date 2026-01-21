@@ -15,6 +15,7 @@
 		ContactRequest,
 		ContactsStore,
 	} from 'dash-chat-stores';
+	import type { AddContactError } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiSend } from '@mdi/js';
 	import {
@@ -47,12 +48,34 @@
 	const contactRequest = useReactivePromise(store.getContactRequest);
 
 	let acceptedToastOpen = $state(false);
+	let errorMessage = $state<string | undefined>(undefined);
+
 	async function acceptContactRequest(contactRequest: ContactRequest) {
-		await contactsStore.client.addContact(contactRequest.code);
-		acceptedToastOpen = true;
-		setTimeout(() => {
-			acceptedToastOpen = false;
-		}, TOAST_TTL_MS);
+		try {
+			await contactsStore.client.addContact(contactRequest.code);
+			acceptedToastOpen = true;
+			setTimeout(() => {
+				acceptedToastOpen = false;
+			}, TOAST_TTL_MS);
+		} catch (e) {
+			const error = e as AddContactError;
+			switch (error.kind) {
+				case 'ProfileNotCreated':
+					errorMessage = m.errorAddContactProfileRequired();
+					break;
+				case 'InitializeTopic':
+				case 'AuthorOperation':
+				case 'CreateQrCode':
+				case 'CreateDirectChat':
+					errorMessage = m.errorAddContact();
+					break;
+				default:
+					errorMessage = m.errorUnexpected();
+			}
+			setTimeout(() => {
+				errorMessage = undefined;
+			}, TOAST_TTL_MS);
+		}
 	}
 
 	let messageText = $state('');
@@ -213,4 +236,5 @@
 	<Toast position="center" opened={acceptedToastOpen}>
 		{m.contactAccepted()}
 	</Toast>
+	<Toast position="center" opened={errorMessage !== undefined}>{errorMessage}</Toast>
 </Page>

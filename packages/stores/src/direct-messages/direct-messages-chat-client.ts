@@ -1,10 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 
 import { ContactsStore } from '../contacts/contacts-store';
-import { MessageContent } from '../group-chats/group-chat-client';
 import { LogsStore } from '../p2panda/logs-store';
 import { AgentId, TopicId } from '../p2panda/types';
-import { ChatId, Payload } from '../types';
+import { ChatId, MessageContent, Payload } from '../types';
 
 export interface IDirectMessagesChatClient {
 	sendMessage(chatId: ChatId, content: MessageContent): Promise<void>;

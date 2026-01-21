@@ -2,6 +2,7 @@
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
+	import type { Error } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
@@ -19,13 +20,16 @@
 		Preloader,
 		ListInput,
 		List,
+		Toast,
 		useTheme,
 	} from 'konsta/svelte';
 	import { resizeAndExport } from '$lib/utils/image';
+	import { TOAST_TTL_MS } from '$lib/utils/toasts';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let avatar = $state<string | undefined>(undefined);
 	let name = $state<string>('');
+	let errorMessage = $state<string | undefined>(undefined);
 
 	const myProfile = useReactivePromise(contactsStore.myProfile);
 	myProfile.subscribe(m => {
@@ -36,11 +40,25 @@
 	});
 
 	async function save() {
-		await contactsStore.client.setProfile({
-			name: name!,
-			avatar,
-		});
-		goto('/settings/profile');
+		try {
+			await contactsStore.client.setProfile({
+				name: name!,
+				avatar,
+			});
+			goto('/settings/profile');
+		} catch (e) {
+			const error = e as Error;
+			switch (error.kind) {
+				case 'AuthorOperation':
+					errorMessage = m.errorSetProfile();
+					break;
+				default:
+					errorMessage = m.errorUnexpected();
+			}
+			setTimeout(() => {
+				errorMessage = undefined;
+			}, TOAST_TTL_MS);
+		}
 	}
 	const theme = $derived(useTheme());
 
@@ -129,4 +147,5 @@
 			</Button>
 		{/if}
 	{/await}
+	<Toast position="center" opened={errorMessage !== undefined}>{errorMessage}</Toast>
 </Page>

@@ -64,5 +64,11 @@
 	"areYouSureDeleteGroup":"Are you sure you want to delete this group?",
 	"editGroup":"Edit group",
 
-	"settings":"Settings"
+	"settings":"Settings",
+
+	"errorCreateContactCode": "Failed to create contact code. Please try again.",
+	"errorAddContact": "Failed to add contact. Please try again.",
+	"errorAddContactProfileRequired": "Please create your profile before adding contacts.",
+	"errorSetProfile": "Failed to save profile. Please try again.",
+	"errorUnexpected": "An unexpected error occurred."
 }

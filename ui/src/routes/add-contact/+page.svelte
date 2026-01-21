@@ -2,14 +2,14 @@
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/qr-code/qr-code.js';
 	import '@awesome.me/webawesome/dist/components/copy-button/copy-button.js';
-	import { getContext, onMount } from 'svelte';
+	import { getContext } from 'svelte';
 	import {
 		toPromise,
 		decodeContactCode,
 		encodeContactCode,
 		type ContactsStore,
-		type Profile,
 	} from 'dash-chat-stores';
+	import type { AddContactError } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiQrcode } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages.js';
@@ -20,7 +20,6 @@
 		Page,
 		Navbar,
 		NavbarBackLink,
-		Button,
 		Link,
 		ListInput,
 		List,
@@ -35,7 +34,9 @@
 	let code = contactsStore.client.createContactCode().then(encodeContactCode);
 
 	let contactAlreadyExistsToastOpen = $state(false);
+	let errorMessage = $state<string | undefined>(undefined);
 	let t: NodeJS.Timeout | undefined;
+
 	async function receiveCode(code: string) {
 		try {
 			const contactCode = decodeContactCode(code);
@@ -55,7 +56,24 @@
 
 			goto(`/direct-messages/${contactCode.agent_id}`);
 		} catch (e) {
-			console.error(e);
+			const error = e as AddContactError;
+			switch (error.kind) {
+				case 'ProfileNotCreated':
+					errorMessage = m.errorAddContactProfileRequired();
+					break;
+				case 'InitializeTopic':
+				case 'AuthorOperation':
+				case 'CreateQrCode':
+				case 'CreateDirectChat':
+					errorMessage = m.errorAddContact();
+					break;
+				default:
+					errorMessage = m.errorUnexpected();
+			}
+			t = setTimeout(() => {
+				if (t) clearTimeout(t);
+				errorMessage = undefined;
+			}, TOAST_TTL_MS);
 		}
 	}
 </script>
@@ -116,8 +134,8 @@
 							onInput={async (e: Event) => {
 								const target = e.target as HTMLInputElement;
 								if (target.value) {
-								  await receiveCode(target.value);
-								  target.value = ''
+									await receiveCode(target.value);
+									target.value = '';
 								}
 							}}
 						/>
@@ -126,5 +144,8 @@
 			</div>
 		</div>
 	{/await}
-	<Toast position="center" opened={contactAlreadyExistsToastOpen}>{m.contactAlreadyExists()}</Toast>
+	<Toast position="center" opened={contactAlreadyExistsToastOpen}
+		>{m.contactAlreadyExists()}</Toast
+	>
+	<Toast position="center" opened={errorMessage !== undefined}>{errorMessage}</Toast>
 </Page>

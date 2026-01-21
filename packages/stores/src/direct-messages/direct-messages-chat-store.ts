@@ -1,10 +1,10 @@
 import { reactive } from 'signalium';
 
 import { ContactsStore } from '../contacts/contacts-store';
-import { Message, MessageContent } from '../group-chats/group-chat-client';
+import { Message } from '../group-chats/group-chat-client';
 import { LogsStore } from '../p2panda/logs-store';
 import { AgentId, TopicId } from '../p2panda/types';
-import { ChatId, Payload } from '../types';
+import { ChatId, MessageContent, Payload } from '../types';
 import { toPromise } from '../utils/to-promise';
 import { DirectMessagesChatClient } from './direct-messages-chat-client';
 

@@ -1,2 +1,1 @@
-
-export const TOAST_TTL_MS =3000
+export const TOAST_TTL_MS = 3000;
