@@ -43,6 +43,8 @@ jobs:
       - name: Install and prepare
         run: |
           pnpm install
+          pnpm -F ./packages/stores build
+          npx @inlang/paraglide-js compile --project ./ui/project.inlang
 
       - name: install Rust stable
         uses: actions-rust-lang/setup-rust-toolchain@v1
