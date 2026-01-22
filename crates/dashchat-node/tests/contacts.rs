@@ -53,7 +53,10 @@ async fn test_reject_contact_request() {
         .unwrap();
 
     // Alice generates a QR code with inbox
-    let qr = alice.new_qr_code(ShareIntent::AddContact, true).await.unwrap();
+    let qr = alice
+        .new_qr_code(ShareIntent::AddContact, true)
+        .await
+        .unwrap();
 
     // Bobbi scans the QR code and sends a contact request to Alice's inbox
     bobbi.add_contact(qr).await.unwrap();
@@ -129,8 +132,14 @@ async fn test_reject_multiple_contact_requests() {
         .unwrap();
 
     // Alice generates QR codes for both Bobbi and Carol
-    let qr_for_bobbi = alice.new_qr_code(ShareIntent::AddContact, true).await.unwrap();
-    let qr_for_carol = alice.new_qr_code(ShareIntent::AddContact, true).await.unwrap();
+    let qr_for_bobbi = alice
+        .new_qr_code(ShareIntent::AddContact, true)
+        .await
+        .unwrap();
+    let qr_for_carol = alice
+        .new_qr_code(ShareIntent::AddContact, true)
+        .await
+        .unwrap();
 
     // Both send contact requests
     bobbi.add_contact(qr_for_bobbi).await.unwrap();
@@ -165,11 +174,7 @@ async fn test_reject_multiple_contact_requests() {
         .unwrap();
 
     // Accept Carol's request by adding her as a contact
-    alice
-        .behavior()
-        .accept_next_contact()
-        .await
-        .ok(); // This might fail if Carol's request was processed first, that's ok
+    alice.behavior().accept_next_contact().await.ok(); // This might fail if Carol's request was processed first, that's ok
 
     // Verify Bobbi was rejected
     let rejected = alice.get_rejected_contact_requests().await.unwrap();

@@ -20,7 +20,7 @@ use named_id::*;
 
 pub use chat::*;
 pub use contact::{QrCode, ShareIntent};
-pub use error::{AddContactError, Error };
+pub use error::{AddContactError, Error};
 pub use id::*;
 pub use node::{Node, NodeConfig, NodeLocalData, Notification};
 pub use p2panda_core::PrivateKey;

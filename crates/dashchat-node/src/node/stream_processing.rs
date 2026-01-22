@@ -226,7 +226,7 @@ impl Node {
                     "received invitation message"
                 );
                 match invitation {
-                    InboxPayload::ContactRequest {..} => {
+                    InboxPayload::ContactRequest { .. } => {
                         // Nothing to do.
                     }
                 }
