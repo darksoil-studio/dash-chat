@@ -82,8 +82,7 @@ pub fn run() {
             #[cfg(debug_assertions)]
             let mailbox_url = "http://localhost:3000";
             #[cfg(not(debug_assertions))]
-            let mailbox_url =
-                "https://mailbox-server.production.dash-chat.dash-chat.garnix.me";
+            let mailbox_url = "https://mailbox-server.production.dash-chat.dash-chat.garnix.me";
 
             let mailbox_client = ToyMailboxClient::new(mailbox_url);
             node.mailboxes.add(mailbox_client).await;

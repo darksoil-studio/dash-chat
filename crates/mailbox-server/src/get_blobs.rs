@@ -69,7 +69,8 @@ fn get_blobs_for_topics_inner(
         let mut topic_authors: BTreeMap<Author, BTreeMap<SequenceNumber, Blob>> = BTreeMap::new();
         // Track which sequences we have stored for each requested author
         // (used to avoid reporting as missing sequences we actually have)
-        let mut stored_seqs_per_author: BTreeMap<Author, BTreeSet<SequenceNumber>> = BTreeMap::new();
+        let mut stored_seqs_per_author: BTreeMap<Author, BTreeSet<SequenceNumber>> =
+            BTreeMap::new();
 
         // Use prefix-based range query to only iterate over blobs for this topic
         let prefix = BlobsKeyPrefix::Topic(topic_id.clone());

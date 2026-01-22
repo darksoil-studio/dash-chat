@@ -1,16 +1,12 @@
-use std::path::PathBuf;
 use axum::{
     routing::{get, post},
-    Router,
-    Json,
+    Json, Router,
 };
 use redb::Database;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::sync::Arc;
-use tower_http::{
-    cors::CorsLayer,
-    trace::TraceLayer,
-};
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 mod blob;
 mod blobs_table;
