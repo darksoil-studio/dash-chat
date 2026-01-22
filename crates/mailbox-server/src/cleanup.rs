@@ -98,8 +98,7 @@ mod tests {
                 .as_secs(),
             0,
         ));
-        let old_key =
-            BlobsKey::new("test-topic".into(), "log-1".into(), 0, old_uuid).unwrap();
+        let old_key = BlobsKey::new("test-topic".into(), "log-1".into(), 0, old_uuid).unwrap();
 
         // Insert a recent message (1 day ago)
         let recent_uuid = uuid::Uuid::now_v7();

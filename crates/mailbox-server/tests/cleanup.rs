@@ -38,8 +38,7 @@ async fn test_cleanup_preserves_watermark_and_missing_response() {
 
             // Insert old blobs (seq 0, 1, 2)
             for seq in 0..=2 {
-                let key =
-                    BlobsKey::new(topic.into(), author.into(), seq, old_uuid).unwrap();
+                let key = BlobsKey::new(topic.into(), author.into(), seq, old_uuid).unwrap();
                 blobs
                     .insert(&key, format!("old message {}", seq).as_bytes())
                     .unwrap();
@@ -48,8 +47,7 @@ async fn test_cleanup_preserves_watermark_and_missing_response() {
             // Insert new blobs (seq 3, 4, 5) with current UUID
             let new_uuid = uuid::Uuid::now_v7();
             for seq in 3..=5 {
-                let key =
-                    BlobsKey::new(topic.into(), author.into(), seq, new_uuid).unwrap();
+                let key = BlobsKey::new(topic.into(), author.into(), seq, new_uuid).unwrap();
                 blobs
                     .insert(&key, format!("new message {}", seq).as_bytes())
                     .unwrap();

@@ -8,7 +8,6 @@ use crate::{
     BLOBS_TABLE, WATERMARKS_TABLE,
 };
 
-
 #[derive(Serialize, Deserialize)]
 pub struct StoreBlobsRequest {
     pub blobs: BTreeMap<TopicId, BTreeMap<Author, BTreeMap<SequenceNumber, Blob>>>,

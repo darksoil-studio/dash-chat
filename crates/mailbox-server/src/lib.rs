@@ -22,8 +22,8 @@ pub mod test_utils;
 pub use blob::Blob;
 pub use blobs_table::{BlobsKey, BlobsKeyError, BlobsKeyPrefix, BLOBS_TABLE};
 pub use cleanup::{cleanup_old_messages, spawn_cleanup_task};
-pub use get_blobs::{GetBlobsRequest, GetBlobsResponse, get_blobs_for_topics};
-pub use store_blobs::{StoreBlobsRequest, store_blobs};
+pub use get_blobs::{get_blobs_for_topics, GetBlobsRequest, GetBlobsResponse};
+pub use store_blobs::{store_blobs, StoreBlobsRequest};
 pub use watermark::compute_initial_watermarks;
 pub use watermarks_table::{WatermarksKey, WatermarksKeyError, WATERMARKS_TABLE};
 

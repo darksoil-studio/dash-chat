@@ -116,8 +116,8 @@ fn get_blobs_for_topics_inner(
         // Calculate missing blobs using watermarks and stored sequences
         let mut missing: BTreeMap<Author, Vec<SequenceNumber>> = BTreeMap::new();
         for (author, client_max_seq) in requested_authors {
-            let watermarks_key = WatermarksKey::new(topic_id.clone(), author.clone())
-                .map_err(|e| e.to_string())?;
+            let watermarks_key =
+                WatermarksKey::new(topic_id.clone(), author.clone()).map_err(|e| e.to_string())?;
 
             // Get watermark for this topic:author
             let server_watermark = watermarks_table
