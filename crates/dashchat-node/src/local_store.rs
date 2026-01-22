@@ -5,7 +5,6 @@ use redb::*;
 
 use crate::{contact::InboxTopic, *};
 
-mod binary_wrapper;
 mod impls;
 
 const IDENTITY_TABLE: TableDefinition<&'static str, [u8; 32]> = TableDefinition::new("identity");
