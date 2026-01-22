@@ -22,6 +22,10 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
           nix_path: nixpkgs=channel:nixos-25.11
 
+      - name: Check Rust formatting
+        run: |
+          nix develop --no-update-lock-file --accept-flake-config --command bash -c "cargo fmt --check"
+
       - name: Test
         run: |
           nix develop --no-update-lock-file --accept-flake-config --command bash -c "cargo test"
