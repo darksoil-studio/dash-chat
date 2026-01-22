@@ -3,10 +3,11 @@ use mailbox_client::toy::ToyMailboxClient;
 use p2panda_core::{cbor::encode_cbor, Body};
 use tauri::{Emitter, Manager};
 
-use crate::commands::logs::simplify;
+use crate::{commands::logs::simplify, local_store::local_store_path};
 
 mod commands;
 mod utils;
+mod local_store;
 
 #[cfg(not(mobile))]
 mod menu;
@@ -71,7 +72,7 @@ pub fn run() {
         }
         let handle = app.handle().clone();
 
-        let local_store_path: std::path::PathBuf = todo!("guillem, hook me up!");
+        let local_store_path: std::path::PathBuf = local_store_path(&handle)?;
 
         tauri::async_runtime::block_on(async move {
             let local_store = dashchat_node::LocalStore::new(local_store_path).unwrap();
