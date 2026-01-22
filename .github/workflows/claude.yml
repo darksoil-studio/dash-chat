@@ -43,6 +43,8 @@ jobs:
       - name: Install and prepare
         run: |
           pnpm install
+          pnpm -F ./packages/stores build
+          npx @inlang/paraglide-js compile --project ./ui/project.inlang
 
       - name: install Rust stable
         uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -76,4 +78,4 @@ jobs:
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
-          claude_args: '--model claude-opus-4-5-20251101 --allowed-tools Bash(gh pr:*),Bash(pnpm:*),mcp__tauri__tauri_driver_session,mcp__tauri__tauri_webview_find_element,mcp__tauri__tauri_read_logs,mcp__tauri__tauri_webview_interact,mcp__tauri__tauri_webview_screenshot,mcp__tauri__tauri_webview_keyboard,mcp__tauri__tauri_webview_wait_for,mcp__tauri__tauri_webview_get_styles,mcp__tauri__tauri_webview_execute_js,mcp__tauri__tauri_manage_window'
+          claude_args: '--model claude-opus-4-5-20251101 --allowed-tools Bash(gh pr:*),Bash(pnpm:*),mcp__tauri__driver_session,mcp__tauri__webview_find_element,mcp__tauri__read_logs,mcp__tauri__webview_interact,mcp__tauri__webview_screenshot,mcp__tauri__webview_keyboard,mcp__tauri__webview_wait_for,mcp__tauri__webview_get_styles,mcp__tauri__webview_execute_js,mcp__tauri__manage_window'
