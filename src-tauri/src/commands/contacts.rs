@@ -1,6 +1,4 @@
-use dashchat_node::{
-    AgentId, Node, QrCode, ShareIntent,
-};
+use dashchat_node::{AgentId, Node, QrCode, ShareIntent};
 use tauri::State;
 
 #[tauri::command]
