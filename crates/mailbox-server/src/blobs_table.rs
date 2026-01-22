@@ -18,8 +18,9 @@ pub enum BlobsKeyError {
 
 /// Key for BLOBS_TABLE: "topic_id:author:sequence_number:uuid_v7"
 /// Sequence number is zero-padded to 20 digits for correct lexicographic ordering.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BlobsKey {
+    // NOTE: order of these fields matters!
     pub topic_id: String,
     pub author: String,
     pub sequence_number: u64,
@@ -60,7 +61,7 @@ impl BlobsKey {
     /// Parses a BlobsKey from its string representation
     pub fn parse(s: &str) -> Result<Self, BlobsKeyError> {
         let parts: Vec<&str> = s.split(':').collect();
-        if parts.len() < 4 {
+        if parts.len() != 4 {
             return Err(BlobsKeyError::ParseError(format!(
                 "Expected 4 parts, got {}",
                 parts.len()
@@ -131,7 +132,9 @@ impl Value for BlobsKey {
 
 impl Key for BlobsKey {
     fn compare(data1: &[u8], data2: &[u8]) -> Ordering {
-        data1.cmp(data2)
+        let key1 = BlobsKey::from_bytes(data1);
+        let key2 = BlobsKey::from_bytes(data2);
+        key1.cmp(&key2)
     }
 }
 
@@ -149,7 +152,7 @@ pub enum BlobsKeyPrefix {
 impl BlobsKeyPrefix {
     /// Returns a BlobsKey for the lower bound of a range query.
     /// Uses minimal values (empty author, seq 0, nil UUID) for unspecified parts.
-    pub fn range_start_key(&self) -> BlobsKey {
+    pub fn range_start(&self) -> BlobsKey {
         match self {
             BlobsKeyPrefix::Topic(topic) => BlobsKey {
                 topic_id: topic.clone(),
@@ -174,12 +177,12 @@ impl BlobsKeyPrefix {
 
     /// Returns a BlobsKey for the upper bound of a range query (exclusive).
     /// Uses maximal values for unspecified parts.
-    pub fn range_end_key(&self) -> BlobsKey {
+    pub fn range_end(&self) -> BlobsKey {
         match self {
             BlobsKeyPrefix::Topic(topic) => BlobsKey {
                 topic_id: topic.clone(),
-                // U+10FFFF is the highest Unicode code point, sorts after all valid authors
-                author: String::from("\u{10FFFF}"),
+                // U+FFFF is the highest Unicode code point, sorts after all valid authors
+                author: String::from("\u{FFFF}"),
                 sequence_number: u64::MAX,
                 uuid: Uuid::max(),
             },
@@ -196,24 +199,6 @@ impl BlobsKeyPrefix {
                 uuid: Uuid::max(),
             },
         }
-    }
-
-    /// Returns the start bound for a range query as a string
-    pub fn range_start(&self) -> String {
-        match self {
-            BlobsKeyPrefix::Topic(topic) => format!("{}:", topic),
-            BlobsKeyPrefix::TopicAuthor(topic, author) => format!("{}:{}:", topic, author),
-            BlobsKeyPrefix::TopicAuthorSeq(topic, author, seq) => {
-                format!("{}:{}:{:020}:", topic, author, seq)
-            }
-        }
-    }
-
-    /// Returns the end bound for a range query (appends char::MAX)
-    pub fn range_end(&self) -> String {
-        let mut end = self.range_start();
-        end.push(char::MAX);
-        end
     }
 }
 
@@ -277,16 +262,68 @@ mod tests {
     }
 
     #[test]
-    fn test_prefix_range() {
+    fn test_prefix_range_topic() {
+        let prefix = BlobsKeyPrefix::Topic(
+            "d8883c1402ed3c078953620a5bf2afc8fafca9601186e7133ca6b1bf72c35cfb".into(),
+        );
+        let start = prefix.range_start();
+        let end = prefix.range_end();
+
+        assert!(start < end);
+
+        let key = BlobsKey::new(
+            "d8883c1402ed3c078953620a5bf2afc8fafca9601186e7133ca6b1bf72c35cfb".into(),
+            "3cb6797ce981200974303722ca17cbd2691593f2b05fbe5b6152f0b813127a7e".into(),
+            0,
+            Uuid::parse_str("019be63b-efd7-7200-b7f5-d3d3945e989a").unwrap(),
+        )
+        .unwrap();
+
+        assert!(start < key);
+        assert!(key < end);
+
+        assert_eq!(
+            start.topic_id,
+            "d8883c1402ed3c078953620a5bf2afc8fafca9601186e7133ca6b1bf72c35cfb"
+        );
+        assert_eq!(start.author, "");
+        assert_eq!(start.sequence_number, 0);
+        assert_eq!(start.uuid, Uuid::nil());
+
+        assert_eq!(
+            end.topic_id,
+            "d8883c1402ed3c078953620a5bf2afc8fafca9601186e7133ca6b1bf72c35cfb"
+        );
+        assert_eq!(end.author, "\u{ffff}");
+        assert_eq!(end.sequence_number, u64::MAX);
+        assert_eq!(end.uuid, Uuid::max());
+    }
+
+    #[test]
+    fn test_prefix_range_topic_author() {
         let prefix = BlobsKeyPrefix::TopicAuthor("topic".into(), "author".into());
-        assert_eq!(prefix.range_start(), "topic:author:");
-        assert!(prefix.range_end().starts_with("topic:author:"));
-        assert!(prefix.range_end().len() > prefix.range_start().len());
+        let start = prefix.range_start();
+        let end = prefix.range_end();
+
+        assert_eq!(start.topic_id, "topic");
+        assert_eq!(start.author, "author");
+        assert_eq!(start.sequence_number, 0);
+        assert_eq!(start.uuid, Uuid::nil());
+
+        assert_eq!(end.topic_id, "topic");
+        assert_eq!(end.author, "author");
+        assert_eq!(end.sequence_number, u64::MAX);
+        assert_eq!(end.uuid, Uuid::max());
     }
 
     #[test]
     fn test_prefix_range_with_seq() {
         let prefix = BlobsKeyPrefix::TopicAuthorSeq("topic".into(), "author".into(), 5);
-        assert_eq!(prefix.range_start(), "topic:author:00000000000000000005:");
+        let start = prefix.range_start();
+
+        assert_eq!(start.topic_id, "topic");
+        assert_eq!(start.author, "author");
+        assert_eq!(start.sequence_number, 5);
+        assert_eq!(start.uuid, Uuid::nil());
     }
 }

@@ -16,6 +16,7 @@ pub enum WatermarksKeyError {
 /// Key for WATERMARKS_TABLE: "topic_id:author"
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WatermarksKey {
+    // NOTE: order of these fields matters!
     pub topic_id: String,
     pub author: String,
 }
@@ -35,7 +36,7 @@ impl WatermarksKey {
     /// Parses a WatermarksKey from its string representation
     pub fn parse(s: &str) -> Result<Self, WatermarksKeyError> {
         let parts: Vec<&str> = s.split(':').collect();
-        if parts.len() < 2 {
+        if parts.len() != 2 {
             return Err(WatermarksKeyError::ParseError(format!(
                 "Expected 2 parts, got {}",
                 parts.len()
@@ -85,7 +86,9 @@ impl Value for WatermarksKey {
 
 impl Key for WatermarksKey {
     fn compare(data1: &[u8], data2: &[u8]) -> Ordering {
-        data1.cmp(data2)
+        let key1 = WatermarksKey::from_bytes(data1);
+        let key2 = WatermarksKey::from_bytes(data2);
+        key1.cmp(&key2)
     }
 }
 

@@ -76,7 +76,7 @@ fn get_blobs_for_topics_inner(
         let prefix = BlobsKeyPrefix::Topic(topic_id.clone());
 
         for entry in blobs_table
-            .range(prefix.range_start_key()..=prefix.range_end_key())
+            .range(prefix.range_start()..=prefix.range_end())
             .map_err(|e| format!("Failed to create iterator: {}", e))?
         {
             let (key, value) = entry.map_err(|e| format!("Failed to read entry: {}", e))?;

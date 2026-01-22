@@ -169,7 +169,7 @@ fn blob_exists(
 
     // Use range query to check if any blob exists for this topic:author:seq
     let mut iter = table
-        .range(prefix.range_start_key()..=prefix.range_end_key())
+        .range(prefix.range_start()..=prefix.range_end())
         .map_err(|e| format!("Failed to create iterator: {}", e))?;
 
     Ok(iter.next().is_some())

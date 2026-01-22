@@ -28,6 +28,7 @@ async fn test_mailbox_late_join_toy() {
     dashchat_node::testing::setup_tracing(
         &[
             "dashchat=info",
+            "mailbox_server=info",
             "p2panda_stream=warn",
             "p2panda_auth=warn",
             "p2panda_encryption=warn",
