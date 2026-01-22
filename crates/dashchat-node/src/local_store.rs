@@ -157,8 +157,6 @@ mod tests {
         drop(store);
 
         let store = LocalStore::new(path).unwrap();
-        let private_key = store.private_key().unwrap();
-        let agent_id = store.agent_id().unwrap();
         assert_eq!(
             store.private_key().unwrap().as_bytes(),
             private_key.as_bytes()
