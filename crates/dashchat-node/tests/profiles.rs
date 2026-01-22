@@ -14,7 +14,57 @@ const TRACING_FILTER: [&str; 4] = [
 ];
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_profiles() {
+async fn test_my_profile_returns_none_when_no_profile_set() {
+    dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
+
+    let alice = TestNode::new(NodeConfig::testing(), Some("alice")).await;
+
+    let profile = alice.my_profile().await.unwrap();
+    assert!(profile.is_none());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_set_profile_and_my_profile() {
+    dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
+
+    let alice = TestNode::new(NodeConfig::testing(), Some("alice")).await;
+
+    let profile = Profile {
+        name: "Alice".to_string(),
+        avatar: Some("alice_avatar.png".to_string()),
+    };
+    alice.set_profile(profile.clone()).await.unwrap();
+
+    let retrieved = alice.my_profile().await.unwrap();
+    assert_eq!(retrieved, Some(profile));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_set_profile_overwrites_previous_profile() {
+    dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
+
+    let alice = TestNode::new(NodeConfig::testing(), Some("alice")).await;
+
+    // Set initial profile
+    let initial_profile = Profile {
+        name: "Alice".to_string(),
+        avatar: None,
+    };
+    alice.set_profile(initial_profile).await.unwrap();
+
+    // Update profile with new name and avatar
+    let updated_profile = Profile {
+        name: "Alice Updated".to_string(),
+        avatar: Some("new_avatar.png".to_string()),
+    };
+    alice.set_profile(updated_profile.clone()).await.unwrap();
+
+    let retrieved = alice.my_profile().await.unwrap();
+    assert_eq!(retrieved, Some(updated_profile));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_profiles_sync_between_contacts() {
     dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
     println!("nodes:");
