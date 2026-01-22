@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 pub fn local_store_path(handle: &AppHandle) -> anyhow::Result<PathBuf> {
     if cfg!(debug_assertions) {
         let dir = tempfile::tempdir()?;
-        let path = dir.keep().join("test_initialize_random.db");
+        let path = dir.keep().join("localdata.db");
         Ok(path)
     } else {
         Ok(handle.path().local_data_dir()?.join("localdata.redb"))
