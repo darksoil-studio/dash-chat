@@ -6,8 +6,8 @@ use tauri::{Emitter, Manager};
 use crate::{commands::logs::simplify, local_store::local_store_path};
 
 mod commands;
-mod utils;
 mod local_store;
+mod utils;
 
 #[cfg(not(mobile))]
 mod menu;
