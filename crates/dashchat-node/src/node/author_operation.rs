@@ -12,7 +12,7 @@ impl Node {
         let (header, body) = self
             .op_store
             .author_operation(
-                &self.local_data.private_key,
+                &self.node_data.private_key,
                 topic.clone(),
                 payload.clone(),
                 vec![],

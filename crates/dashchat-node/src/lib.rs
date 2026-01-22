@@ -11,7 +11,9 @@ mod util;
 pub mod polestar;
 
 mod id;
+pub mod local_store;
 pub mod mailbox;
+
 #[cfg(feature = "testing")]
 pub mod testing;
 
@@ -20,11 +22,11 @@ use named_id::*;
 pub use chat::*;
 pub use contact::{QrCode, ShareIntent};
 pub use id::*;
-pub use node::{Node, NodeConfig, NodeLocalData, Notification};
+pub use node::{LocalStore, Node, NodeConfig, Notification};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 pub use payload::*;
-pub use topic::{ Topic};
+pub use topic::Topic;
 
 pub trait Cbor: serde::Serialize + serde::de::DeserializeOwned {
     fn as_bytes(&self) -> Result<Vec<u8>, p2panda_core::cbor::EncodeError> {

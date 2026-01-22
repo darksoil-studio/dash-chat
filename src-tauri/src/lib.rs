@@ -71,19 +71,20 @@ pub fn run() {
         }
         let handle = app.handle().clone();
 
+        let local_store_path: std::path::PathBuf = todo!("guillem, hook me up!");
+
         tauri::async_runtime::block_on(async move {
-            let local_data = dashchat_node::NodeLocalData::new_random();
+            let local_store = dashchat_node::LocalStore::new(local_store_path).unwrap();
             let config = dashchat_node::NodeConfig::default();
             let (notification_tx, mut notification_rx) = tokio::sync::mpsc::channel(100);
-            let node = dashchat_node::Node::new(local_data, config, Some(notification_tx))
+            let node = dashchat_node::Node::new(local_store, config, Some(notification_tx))
                 .await
                 .expect("Failed to create node");
 
             #[cfg(debug_assertions)]
             let mailbox_url = "http://localhost:3000";
             #[cfg(not(debug_assertions))]
-            let mailbox_url =
-                "https://mailbox-server.production.dash-chat.dash-chat.garnix.me";
+            let mailbox_url = "https://mailbox-server.production.dash-chat.dash-chat.garnix.me";
 
             let mailbox_client = ToyMailboxClient::new(mailbox_url);
             node.mailboxes.add(mailbox_client).await;
