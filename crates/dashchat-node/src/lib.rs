@@ -26,7 +26,7 @@ pub use node::{Node, NodeConfig, NodeLocalData, Notification};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 pub use payload::*;
-pub use topic::{ Topic};
+pub use topic::Topic;
 
 pub trait Cbor: serde::Serialize + serde::de::DeserializeOwned {
     fn as_bytes(&self) -> Result<Vec<u8>, p2panda_core::cbor::EncodeError> {

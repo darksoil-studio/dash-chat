@@ -50,8 +50,17 @@ pub async fn cleanup_old_messages(db: &Database) -> Result<(), Box<dyn std::erro
             let parts: Vec<&str> = key_str.split(':').collect();
 
             if parts.len() < 4 {
-                tracing::error!("Invalid database key format during cleanup: {} (expected 4 parts, got {})", key_str, parts.len());
-                return Err(format!("Invalid database key format: {} (expected 4 parts, got {})", key_str, parts.len()).into());
+                tracing::error!(
+                    "Invalid database key format during cleanup: {} (expected 4 parts, got {})",
+                    key_str,
+                    parts.len()
+                );
+                return Err(format!(
+                    "Invalid database key format: {} (expected 4 parts, got {})",
+                    key_str,
+                    parts.len()
+                )
+                .into());
             }
 
             let message_uuid = uuid::Uuid::parse_str(parts[3]).map_err(|e| {

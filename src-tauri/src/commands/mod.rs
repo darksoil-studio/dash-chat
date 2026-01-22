@@ -1,8 +1,7 @@
-
 pub mod logs;
 
-pub mod devices;
 pub mod contacts;
+pub mod devices;
 pub mod profile;
 
 pub mod chats;

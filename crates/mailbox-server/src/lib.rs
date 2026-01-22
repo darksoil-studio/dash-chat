@@ -1,30 +1,26 @@
-use std::path::PathBuf;
 use axum::{
     routing::{get, post},
-    Router,
-    Json,
+    Json, Router,
 };
 use redb::{Database, TableDefinition};
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::sync::Arc;
-use tower_http::{
-    cors::CorsLayer,
-    trace::TraceLayer,
-};
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 mod blob;
-mod store_blobs;
-mod get_blobs;
 mod cleanup;
+mod get_blobs;
+mod store_blobs;
 mod watermark;
 
 #[cfg(feature = "test_utils")]
 pub mod test_utils;
 
 pub use blob::Blob;
-pub use store_blobs::{StoreBlobsRequest, store_blobs};
-pub use get_blobs::{GetBlobsRequest, GetBlobsResponse, get_blobs_for_topics};
 pub use cleanup::{cleanup_old_messages, spawn_cleanup_task};
+pub use get_blobs::{get_blobs_for_topics, GetBlobsRequest, GetBlobsResponse};
+pub use store_blobs::{store_blobs, StoreBlobsRequest};
 pub use watermark::compute_initial_watermarks;
 
 pub type TopicId = String;
