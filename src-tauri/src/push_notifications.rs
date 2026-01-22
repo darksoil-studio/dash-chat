@@ -4,7 +4,7 @@ use tauri::{AppHandle, Listener, Manager};
 // use tauri_plugin_holochain::*;
 use tauri_plugin_notification::*;
 
-use crate::{utils::with_retries};
+use crate::utils::with_retries;
 
 mod android_logs;
 
@@ -190,4 +190,3 @@ pub fn receive_push_notification(
 //         ..Default::default()
 //     }))
 // }
-

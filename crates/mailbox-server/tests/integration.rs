@@ -18,7 +18,8 @@ async fn test_store_and_retrieve_single_message() {
     let (server, _temp_file) = create_test_server();
 
     let message_data = b"Hello, World!";
-    let message_b64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message_data);
+    let message_b64 =
+        base64::Engine::encode(&base64::engine::general_purpose::STANDARD, message_data);
 
     let store_response = server
         .post("/blobs/store")
@@ -407,7 +408,10 @@ async fn test_missing_blobs_server_behind() {
 
     // Server should return empty blobs (nothing new for client)
     // The author might not even exist in blobs if all were filtered out
-    assert!(topic_response.blobs.get("author-x").map_or(true, |author| author.is_empty()));
+    assert!(topic_response
+        .blobs
+        .get("author-x")
+        .map_or(true, |author| author.is_empty()));
 
     // Server should report missing sequences 3, 4, 5
     assert!(topic_response.missing.contains_key("author-x"));
