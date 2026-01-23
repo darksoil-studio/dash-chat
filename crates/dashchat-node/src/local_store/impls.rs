@@ -11,9 +11,7 @@ use super::*;
 
 impl redb::Key for InboxTopic {
     fn compare(data1: &[u8], data2: &[u8]) -> std::cmp::Ordering {
-        let topic1 = InboxTopic::from_bytes(data1);
-        let topic2 = InboxTopic::from_bytes(data2);
-        topic1.cmp(&topic2)
+        data1.cmp(&data2)
     }
 }
 
