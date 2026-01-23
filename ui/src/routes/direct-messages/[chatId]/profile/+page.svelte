@@ -59,15 +59,15 @@
 		</Navbar>
 		<div class="column" style="flex: 1">
 			<div class="column center-in-desktop">
-				<div class="column m-10 gap-4" style="align-items: center">
+				<div class="column m-6 gap-2" style="align-items: center">
 					<wa-avatar
 						image={profile?.avatar}
 						initials={profile?.name.slice(0, 2)}
-						style="--size: 64px;"
+						style="--size: 80px;"
 					>
 					</wa-avatar>
 
-					<span>{profile?.name} </span>
+					<span class="text-lg font-semibold">{profile?.name} </span>
 				</div>
 			</div>
 		</div>

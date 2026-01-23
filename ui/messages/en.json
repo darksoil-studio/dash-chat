@@ -28,6 +28,8 @@
 	"reject": "Reject",
 	"accept": "Accept",
 	"contactAlreadyExists": "Contact already exists.",
+	"cantAddYourselfAsContact": "Can't add yourself as contact.",
+	"copiedCodeToClipboard": "Copied code to clipboard.",
 	"contactAdded": "{{name}} was added to your contacts.",
 	"contactAccepted": "Contact added.",
 	"contactRequestBanner": "{{name}} has sent a contact request to you. Do you want to add {{name}} as a contact?",

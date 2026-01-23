@@ -87,7 +87,7 @@
 
 			// Without set timeout, the route is navigated to before the notification is
 			// processed, showing the contact request still active
-			setTimeout(() => goto('/'));
+			setTimeout(() => goto('/'),1);
 		} catch (e) {
 			console.error(e);
 			errorMessage = m.errorUnexpected();
@@ -145,6 +145,24 @@
 
 	<div class={`column ${theme === 'ios' ? 'pb-16' : ''}`}>
 		<div class="center-in-desktop" style="flex:1">
+			{#await $peerProfile then profile}
+				{#if profile}
+					<Link
+						href={`/direct-messages/${chatId}/profile`}
+						class="column my-6 gap-2"
+						style="align-items: center"
+					>
+						<wa-avatar
+							image={profile.avatar}
+							initials={profile.name.slice(0, 2)}
+							style="--size: 80px;"
+						>
+						</wa-avatar>
+						<span class="text-lg font-semibold">{profile.name}</span>
+					</Link>
+				{/if}
+			{/await}
+
 			<div class="column m-2 gap-2">
 				{#await $myActorId then myActorId}
 					{#await $messages then messages}
@@ -212,7 +230,7 @@
 
 		{#await $contactRequest then contactRequest}
 			{#if contactRequest}
-				<Card class="center-in-desktop p-2 fixed bottom-1">
+				<Card class="center-in-desktop p-1 fixed bottom-1">
 					<div class="column gap-2 items-center justify-center">
 						<span style="flex: 1"
 							>{m.contactRequestBanner({

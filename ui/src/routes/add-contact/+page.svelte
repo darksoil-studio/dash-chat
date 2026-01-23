@@ -33,15 +33,27 @@
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
-	let code = contactsStore.client.createContactCode().then(encodeContactCode);
+	let myCode = contactsStore.client.createContactCode().then(encodeContactCode);
 
 	let contactAlreadyExistsToastOpen = $state(false);
+	let copiedToastOpen = $state(false);
 	let errorMessage = $state<string | undefined>(undefined);
 	let t: NodeJS.Timeout | undefined;
 
 	async function receiveCode(code: string) {
 		try {
 			const contactCode = decodeContactCode(code);
+
+			const myCodeString = await myCode;
+
+			if (code === myCodeString) {
+				errorMessage = m.cantAddYourselfAsContact();
+				clearTimeout(t);
+				t = setTimeout(() => {
+					errorMessage = undefined;
+				}, TOAST_TTL_MS);
+				return;
+			}
 
 			// Don't send a contact request if they're already in your contacts
 			//
@@ -119,7 +131,7 @@
 		{/snippet}
 	</Navbar>
 
-	{#await code}
+	{#await myCode}
 		<div
 			class="column"
 			style="height: 100%; align-items: center; justify-content: center"
@@ -145,9 +157,14 @@
 									textIos: 'text-white',
 									textMaterial: 'text-white',
 								}}
-								clear
+								clearMaterial
 								onClick={async () => {
 									await writeText(code);
+									copiedToastOpen = true;
+									clearTimeout(t);
+									t = setTimeout(() => {
+										copiedToastOpen = false;
+									}, TOAST_TTL_MS);
 								}}
 							>
 								<wa-icon src={wrapPathInSvg(mdiContentCopy)}> </wa-icon>
@@ -157,10 +174,10 @@
 						</div>
 					</div>
 				</Card>
-				<span>{m.shareCodeWarning()}</span>
+				<span class="mx-6 mb-2">{m.shareCodeWarning()}</span>
 
 				<div class="column gap-1">
-					<List nested>
+					<List nested strongIos insetIos>
 						<ListInput
 							floatingLabel
 							label={m.enterYourContactsCode()}
@@ -181,6 +198,9 @@
 	{/await}
 	<Toast position="center" opened={contactAlreadyExistsToastOpen}
 		>{m.contactAlreadyExists()}</Toast
+	>
+	<Toast position="center" opened={copiedToastOpen}
+		>{m.copiedCodeToClipboard()}</Toast
 	>
 	<Toast
 		position="center"
