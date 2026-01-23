@@ -46,7 +46,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init());
 
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, not(mobile)))]
     {
         builder = builder.plugin(tauri_plugin_mcp_bridge::init());
     }

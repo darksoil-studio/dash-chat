@@ -23,6 +23,7 @@
 		Link,
 		ListInput,
 		List,
+		Card,
 		Preloader,
 		Toast,
 	} from 'konsta/svelte';
@@ -42,12 +43,12 @@
 			const contactCode = decodeContactCode(code);
 
 			// Don't send a contact request if they're already in your contacts
-			// 
+			//
 			// Uncommenting this would mean that if the contact rejected your contact request
 			// there is no way to resend the contact request
 			//
 			// const contacts = await toPromise(contactsStore.contactsAgentIds);
-			// 
+			//
 			// if (contacts.includes(contactCode.agent_id)) {
 			// 	contactAlreadyExistsToastOpen = true;
 			// 	t = setTimeout(() => {
@@ -100,7 +101,13 @@
 						try {
 							const code = await scanQrcode();
 							await receiveCode(code);
-						} catch (e) {}
+						} catch (e) {
+							errorMessage = m.errorScanningQrCode();
+							clearTimeout(t);
+							t = setTimeout(() => {
+								errorMessage = undefined;
+							}, TOAST_TTL_MS);
+						}
 					}}
 				>
 					<wa-icon src={wrapPathInSvg(mdiQrcode)}> </wa-icon>
@@ -119,15 +126,26 @@
 	{:then code}
 		<div class="column" style="flex:1">
 			<div class="column center-in-desktop gap-4 m-6">
-				<span>{m.shareThisCode()}</span>
+				<Card class="qr-card p-6 pb-2">
+					<div class="column gap-4" style="align-items: center">
+						<div
+							class="column p-2"
+							style="align-items: center; justify-content: center; background-color: white; border-radius: 8px;"
+						>
+							<wa-qr-code value={code} size="250" fill="#007aff"></wa-qr-code>
+						</div>
 
-				<wa-qr-code value={code} size="300" style="align-self: center"
-				></wa-qr-code>
+						<div
+							class="row gap-2 text-lg"
+							style="align-items: center; color: white;"
+						>
+							<wa-copy-button class="wa-dark" value={code}> </wa-copy-button>
+							{code.slice(0, 15)}...
+						</div>
+					</div>
+				</Card>
 
-				<div class="row gap-2" style="align-items: center">
-					{code.slice(0, 15)}...
-					<wa-copy-button value={code}> </wa-copy-button>
-				</div>
+				<span>{m.shareCodeWarning()}</span>
 
 				<div class="column gap-1">
 					<span>{m.enterYourContactsCode()}</span>
@@ -158,3 +176,10 @@
 		opened={errorMessage !== undefined}>{errorMessage}</Toast
 	>
 </Page>
+
+<style>
+	:global(.qr-card) {
+		background-color: var(--color-brand-primary);
+		align-self: center;
+	}
+</style>
