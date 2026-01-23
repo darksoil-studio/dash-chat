@@ -53,6 +53,7 @@ tauri-plugin-safe-area-insets-css = { git = "https://github.com/guillemcordoba/t
 
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 tauri-plugin-deep-link = "2"
+tauri-plugin-clipboard-manager = "2"
 
 opener = { version = "0.7", features = ["reveal"] }
 log = "0.4"

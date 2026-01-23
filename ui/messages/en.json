@@ -7,6 +7,7 @@
 	"omit": "Omit",
 	"next": "Next",
 	"edit": "Edit",
+	"filter": "Filter",
 	"name": "Name",
 	"description": "Description",
 
@@ -20,7 +21,7 @@
 	"addContact": "Add contact",
 	"contacts": "Contacts",
 	"shareCodeWarning": "Share your QR code only with people you trust. When you share it, others will be able to see your profile and start chatting with you.",
-	"enterYourContactsCode": "Enter your contact's code:",
+	"enterYourContactsCode": "Enter your contact's code",
 	"contactRequest": "Contact request.",
 	"contactRequests": "Contact requests",
 	"myContacts": "My contacts",
@@ -29,8 +30,9 @@
 	"contactAlreadyExists": "Contact already exists.",
 	"contactAdded": "{{name}} was added to your contacts.",
 	"contactAccepted": "Contact added.",
-	"contactRequestBanner": "{{name}} wants to add you as a contact.",
+	"contactRequestBanner": "{{name}} has sent a contact request to you. Do you want to add {{name}} as a contact?",
 	"noContactsYet": "You don't have any contacts yet.",
+	"noContactsMatchFilter": "No contacts match this filter.",
 	"chats": "Chats",
 	"noChatsYet": "You don't have any chats yet.",
 

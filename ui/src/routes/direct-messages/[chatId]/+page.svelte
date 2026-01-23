@@ -6,10 +6,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 
 	import { useReactivePromise } from '$lib/stores/use-signal';
-	import {
-		lessThanAMinuteAgo,
-		moreThanAnHourAgo,
-	} from '$lib/utils/time';
+	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '$lib/utils/time';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type {
@@ -61,6 +58,7 @@
 				acceptedToastOpen = false;
 			}, TOAST_TTL_MS);
 		} catch (e) {
+			console.error(e);
 			const error = e as AddContactError;
 			switch (error.kind) {
 				case 'ProfileNotCreated':
@@ -90,8 +88,8 @@
 			// Without set timeout, the route is navigated to before the notification is
 			// processed, showing the contact request still active
 			setTimeout(() => goto('/'));
-			
 		} catch (e) {
+			console.error(e);
 			errorMessage = m.errorUnexpected();
 			setTimeout(() => {
 				errorMessage = undefined;
@@ -214,8 +212,8 @@
 
 		{#await $contactRequest then contactRequest}
 			{#if contactRequest}
-				<Card class="center-in-desktop p-2 fixed bottom-2">
-					<div class="flex flex-row items-center justify-center">
+				<Card class="center-in-desktop p-2 fixed bottom-1">
+					<div class="column gap-2 items-center justify-center">
 						<span style="flex: 1"
 							>{m.contactRequestBanner({
 								name: contactRequest.profile.name,
@@ -223,12 +221,14 @@
 						>
 						<div class="flex gap-2">
 							<Button
+								class="k-color-brand-red"
 								rounded
-								clear
+								tonal
 								onClick={() => rejectContactRequest(contactRequest)}
 								>{m.reject()}</Button
 							>
 							<Button
+								tonal
 								rounded
 								onClick={() => acceptContactRequest(contactRequest)}
 								>{m.accept()}</Button

@@ -4,10 +4,11 @@
 	import { getContext } from 'svelte';
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { wrapPathInSvg } from '$lib/utils/icon';
-	import { mdiAccountGroup, mdiSquareEditOutline } from '@mdi/js';
+	import { mdiAccountGroup, mdiPencil, mdiSquareEditOutline } from '@mdi/js';
 	import AllChats from '$lib/components/AllChats.svelte';
-	import { Link, Navbar, Page, useTheme } from 'konsta/svelte';
+	import { Fab, Link, Navbar, Page, useTheme } from 'konsta/svelte';
 	import { m } from '$lib/paraglide/messages';
+	import { goto } from '$app/navigation';
 	const theme = $derived(useTheme());
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
@@ -34,14 +35,22 @@
 				<wa-icon src={wrapPathInSvg(mdiAccountGroup)}></wa-icon>
 			</Link>
 
-			<Link iconOnly href="/new-message">
-				<wa-icon src={wrapPathInSvg(mdiSquareEditOutline)}> </wa-icon>
-			</Link>
-			{#if theme == 'material'}
-				<div></div>
+			{#if theme == 'ios'}
+				<Link iconOnly href="/new-message">
+					<wa-icon src={wrapPathInSvg(mdiSquareEditOutline)}> </wa-icon>
+				</Link>
 			{/if}
 		{/snippet}
 	</Navbar>
 
 	<AllChats></AllChats>
+
+	{#if theme == 'material'}
+		<Fab
+			class="fixed right-safe-4 bottom-safe-4 z-20"
+			onClick={() => goto('/new-message')}
+		>
+			<wa-icon src={wrapPathInSvg(mdiPencil)}> </wa-icon>
+		</Fab>
+	{/if}
 </Page>

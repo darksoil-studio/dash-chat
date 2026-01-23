@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     tauri-plugin-holochain.url =
-      "github:darksoil-studio/tauri-plugin-holochain";
+      "github:darksoil-studio/tauri-plugin-holochain/main-0.6";
     tauri-plugin-holochain.inputs.webkitnixpkgs.follows = "nixpkgs";
     rust-overlay.url = "github:oxalica/rust-overlay";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -15,7 +15,6 @@
       url = "github:garnix-io/garnix-lib";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-compose.url = "github:garnix-io/nixos-compose";
 
     nixos-generators.url = "github:nix-community/nixos-generators";
   };
@@ -53,19 +52,15 @@
           devShells.default = pkgs.mkShell {
             inputsFrom =
               [ inputs'.tauri-plugin-holochain.devShells.holochainTauriDev ];
-            packages = [
-              pkgs.mprocs
-              pkgs.pnpm
-              rust
-              inputs'.nixos-compose.packages.default
-            ];
+            packages = [ pkgs.mprocs pkgs.pnpm rust ];
           };
 
           devShells.androidDev = pkgs.mkShell {
             inputsFrom = [
-              devShells.default
+              # devShells.default
               inputs'.tauri-plugin-holochain.devShells.holochainTauriAndroidDev
             ];
+            packages = [ pkgs.mprocs pkgs.pnpm ];
           };
         };
     };

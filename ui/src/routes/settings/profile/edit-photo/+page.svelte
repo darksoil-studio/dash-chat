@@ -47,6 +47,7 @@
 			});
 			goto('/settings/profile');
 		} catch (e) {
+			console.error(e);
 			const error = e as Error;
 			switch (error.kind) {
 				case 'AuthorOperation':

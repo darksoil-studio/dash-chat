@@ -3,15 +3,15 @@
 	import '@awesome.me/webawesome/dist/components/qr-code/qr-code.js';
 	import '@awesome.me/webawesome/dist/components/copy-button/copy-button.js';
 	import { getContext } from 'svelte';
+	import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 	import {
-		toPromise,
 		decodeContactCode,
 		encodeContactCode,
 		type ContactsStore,
 	} from 'dash-chat-stores';
 	import type { AddContactError } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
-	import { mdiQrcode } from '@mdi/js';
+	import { mdiContentCopy, mdiQrcode } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages.js';
 
 	import { isMobile } from '$lib/utils/environment';
@@ -26,6 +26,7 @@
 		Card,
 		Preloader,
 		Toast,
+		Button,
 	} from 'konsta/svelte';
 	import { goto } from '$app/navigation';
 	import { TOAST_TTL_MS } from '$lib/utils/toasts';
@@ -62,6 +63,7 @@
 
 			goto(`/direct-messages/${contactCode.agent_id}`);
 		} catch (e) {
+			console.error(e);
 			const error = e as AddContactError;
 			switch (error.kind) {
 				case 'ProfileNotCreated':
@@ -102,6 +104,7 @@
 							const code = await scanQrcode();
 							await receiveCode(code);
 						} catch (e) {
+							console.error(e);
 							errorMessage = m.errorScanningQrCode();
 							clearTimeout(t);
 							t = setTimeout(() => {
@@ -135,23 +138,32 @@
 							<wa-qr-code value={code} size="250" fill="#007aff"></wa-qr-code>
 						</div>
 
-						<div
-							class="row gap-2 text-lg"
-							style="align-items: center; color: white;"
-						>
-							<wa-copy-button class="wa-dark" value={code}> </wa-copy-button>
-							{code.slice(0, 15)}...
+						<div>
+							<Button
+								colors={{
+									touchRipple: 'white',
+									textIos: 'text-white',
+									textMaterial: 'text-white',
+								}}
+								clear
+								onClick={async () => {
+									await writeText(code);
+								}}
+							>
+								<wa-icon src={wrapPathInSvg(mdiContentCopy)}> </wa-icon>
+
+								{code.slice(0, 15)}...
+							</Button>
 						</div>
 					</div>
 				</Card>
-
 				<span>{m.shareCodeWarning()}</span>
 
 				<div class="column gap-1">
-					<span>{m.enterYourContactsCode()}</span>
-
 					<List nested>
 						<ListInput
+							floatingLabel
+							label={m.enterYourContactsCode()}
 							type="text"
 							outline
 							onInput={async (e: Event) => {

@@ -15,16 +15,19 @@
 		BlockTitle,
 		List,
 		ListItem,
-		Button,
-		Link,
 		Preloader,
+		Searchbar,
 		useTheme,
+		Link,
+		Button,
 	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
 	const theme = $derived(useTheme());
+
+	let searchQuery = $state('');
 </script>
 
 <Page>
@@ -37,19 +40,26 @@
 	<div class="column" style="flex: 1">
 		<div class="column center-in-desktop">
 			<div class="column gap-4 mt-2 mx-4">
-				<Link href="/add-contact">
-					<Button tonal large class="w-full gap-2">
-						<wa-icon src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
-						{m.addContact()}
-					</Button>
-				</Link>
-
 				<Link href="/new-group" style="display: none">
 					<Button tonal large class="w-full gap-2">
 						<wa-icon src={wrapPathInSvg(mdiAccountMultiplePlus)}> </wa-icon>
 						{m.newGroup()}
 					</Button>
 				</Link>
+			</div>
+
+			<div class={theme === 'ios' ? 'mt-6 px-4' : 'pl-5 pr-10'}>
+				<Searchbar
+					clearButton
+					placeholder={m.filter()}
+					value={searchQuery}
+					onInput={e => {
+						searchQuery = e.target.value;
+					}}
+					onClear={() => {
+						searchQuery = '';
+					}}
+				/>
 			</div>
 
 			<BlockTitle>{m.contacts()}</BlockTitle>
@@ -63,24 +73,40 @@
 				</div>
 			{:then contacts}
 				<List strongIos insetIos>
-					{#each contacts as [actorId, profile]}
+					{#if contacts.length === 0}
+						<ListItem title={m.noContactsYet()} />
 						<ListItem
 							link
-							linkProps={{ href: `/direct-messages/${actorId}` }}
-							title={profile.name}
-							chevron={false}
+							linkProps={{ href: '/add-contact' }}
+							title={m.addContact()}
 						>
 							{#snippet media()}
-								<wa-avatar
-									image={profile.avatar}
-									initials={profile.name.slice(0, 2)}
-								>
-								</wa-avatar>
+								<wa-icon src={wrapPathInSvg(mdiAccountPlus)}></wa-icon>
 							{/snippet}
 						</ListItem>
 					{:else}
-						<ListItem title={m.noContactsYet()} />
-					{/each}
+						{@const filteredContacts = contacts.filter(([_, profile]) =>
+							profile.name.toLowerCase().includes(searchQuery.toLowerCase()),
+						)}
+						{#each filteredContacts as [actorId, profile]}
+							<ListItem
+								link
+								linkProps={{ href: `/direct-messages/${actorId}` }}
+								title={profile.name}
+								chevron={false}
+							>
+								{#snippet media()}
+									<wa-avatar
+										image={profile.avatar}
+										initials={profile.name.slice(0, 2)}
+									>
+									</wa-avatar>
+								{/snippet}
+							</ListItem>
+						{:else}
+							<ListItem title={m.noContactsMatchFilter()} />
+						{/each}
+					{/if}
 				</List>
 			{/await}
 		</div>
