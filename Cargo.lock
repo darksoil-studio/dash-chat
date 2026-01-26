@@ -1651,9 +1651,9 @@ dependencies = [
  "tauri-plugin-mcp-bridge",
  "tauri-plugin-notification",
  "tauri-plugin-process",
- "tauri-plugin-safe-area-insets-css",
  "tauri-plugin-single-instance",
  "tauri-plugin-updater",
+ "tauri-plugin-virtual-keyboard-padding",
  "tempfile",
  "tokio",
  "url2",
@@ -8795,17 +8795,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-safe-area-insets-css"
-version = "0.2.0"
-source = "git+https://github.com/guillemcordoba/tauri-plugin-safe-area-insets-css#5713112d9b7c92fff23809d748853507c436bc47"
-dependencies = [
- "serde",
- "tauri",
- "tauri-plugin",
- "thiserror 2.0.18",
-]
-
-[[package]]
 name = "tauri-plugin-single-instance"
 version = "2.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8851,6 +8840,17 @@ dependencies = [
  "url",
  "windows-sys 0.60.2",
  "zip",
+]
+
+[[package]]
+name = "tauri-plugin-virtual-keyboard-padding"
+version = "0.1.0"
+source = "git+https://github.com/dash-chat/tauri-plugin-virtual-keyboard-padding#a787cf95422b79db08457da0a63254aa2a3258f4"
+dependencies = [
+ "serde",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

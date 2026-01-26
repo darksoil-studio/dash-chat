@@ -18,8 +18,6 @@
 	import { App, KonstaProvider } from 'konsta/svelte';
 
 	import SplashscreenPrompt from '$lib/components/splashscreen/SplashscreenPrompt.svelte';
-	import { isMobile } from '$lib/utils/environment';
-	import { setupInsets } from '$lib/utils/insets';
 
 	import { setLocale } from '$lib/paraglide/runtime';
 	setLocale('en');
@@ -45,23 +43,13 @@
 	const chatsStore = new ChatsStore(logsStore, contactsStore, chatsClient);
 	setContext('chats-store', chatsStore);
 
-	if (isMobile) setupInsets();
 	let theme: 'ios' | 'material' = 'material';
 </script>
 
 <KonstaProvider {theme}>
-	<App {theme} class={`k-${theme}`}>
-		<main style="height: 100vh; width: 100vw; display: flex">
-			<SplashscreenPrompt>
-				{@render children()}
-			</SplashscreenPrompt>
-		</main>
+	<App safeAreas {theme} class={`k-${theme}`}>
+		<SplashscreenPrompt>
+			{@render children()}
+		</SplashscreenPrompt>
 	</App>
 </KonstaProvider>
-
-<style>
-	main {
-		margin-top: var(--safe-area-inset-top, 0);
-		margin-bottom: var(--safe-area-inset-bottom, 0);
-	}
-</style>

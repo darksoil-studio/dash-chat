@@ -8,7 +8,6 @@
 		"barcode-scanner:allow-open-app-settings",
 		"barcode-scanner:allow-request-permissions",
 		"barcode-scanner:allow-scan",
-		"barcode-scanner:allow-cancel",
-		"safe-area-insets-css:default"
+		"barcode-scanner:allow-cancel"
 	]
 }

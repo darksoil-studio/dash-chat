@@ -2763,84 +2763,6 @@
           "markdownDescription": "Denies the restart command without any pre-configured scope."
         },
         {
-          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-get-bottom-inset`\n- `allow-get-top-inset`\n- `allow-registerListener`\n- `allow-unregister-listener`",
-          "type": "string",
-          "const": "safe-area-insets-css:default",
-          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-get-bottom-inset`\n- `allow-get-top-inset`\n- `allow-registerListener`\n- `allow-unregister-listener`"
-        },
-        {
-          "description": "Enables the get_bottom_inset command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:allow-get-bottom-inset",
-          "markdownDescription": "Enables the get_bottom_inset command without any pre-configured scope."
-        },
-        {
-          "description": "Enables the get_top_inset command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:allow-get-top-inset",
-          "markdownDescription": "Enables the get_top_inset command without any pre-configured scope."
-        },
-        {
-          "description": "Enables the ping command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:allow-ping",
-          "markdownDescription": "Enables the ping command without any pre-configured scope."
-        },
-        {
-          "description": "Enables the register_listener command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:allow-register-listener",
-          "markdownDescription": "Enables the register_listener command without any pre-configured scope."
-        },
-        {
-          "description": "Enables the registerListener command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:allow-registerListener",
-          "markdownDescription": "Enables the registerListener command without any pre-configured scope."
-        },
-        {
-          "description": "Enables the unregister_listener command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:allow-unregister-listener",
-          "markdownDescription": "Enables the unregister_listener command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the get_bottom_inset command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:deny-get-bottom-inset",
-          "markdownDescription": "Denies the get_bottom_inset command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the get_top_inset command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:deny-get-top-inset",
-          "markdownDescription": "Denies the get_top_inset command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the ping command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:deny-ping",
-          "markdownDescription": "Denies the ping command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the register_listener command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:deny-register-listener",
-          "markdownDescription": "Denies the register_listener command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the registerListener command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:deny-registerListener",
-          "markdownDescription": "Denies the registerListener command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the unregister_listener command without any pre-configured scope.",
-          "type": "string",
-          "const": "safe-area-insets-css:deny-unregister-listener",
-          "markdownDescription": "Denies the unregister_listener command without any pre-configured scope."
-        },
-        {
           "description": "This permission set configures which kind of\nupdater functions are exposed to the frontend.\n\n#### Granted Permissions\n\nThe full workflow from checking for updates to installing them\nis enabled.\n\n\n#### This default permission set includes:\n\n- `allow-check`\n- `allow-download`\n- `allow-install`\n- `allow-download-and-install`",
           "type": "string",
           "const": "updater:default",
@@ -2893,6 +2815,24 @@
           "type": "string",
           "const": "updater:deny-install",
           "markdownDescription": "Denies the install command without any pre-configured scope."
+        },
+        {
+          "description": "Default permissions for the plugin",
+          "type": "string",
+          "const": "virtual-keyboard-padding:default",
+          "markdownDescription": "Default permissions for the plugin"
+        },
+        {
+          "description": "Enables the ping command without any pre-configured scope.",
+          "type": "string",
+          "const": "virtual-keyboard-padding:allow-ping",
+          "markdownDescription": "Enables the ping command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the ping command without any pre-configured scope.",
+          "type": "string",
+          "const": "virtual-keyboard-padding:deny-ping",
+          "markdownDescription": "Denies the ping command without any pre-configured scope."
         }
       ]
     },

@@ -21,11 +21,6 @@
 	{#if myProfile}
 		<slot></slot>
 	{:else}
-		<div
-			class="column"
-			style="flex: 1; align-items: center; justify-content: center"
-		>
-			<CreateProfile></CreateProfile>
-		</div>
+		<CreateProfile></CreateProfile>
 	{/if}
 {/await}

@@ -50,7 +50,7 @@ tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-w
 ] }
 tauri-plugin-dialog = "2.3"
 tauri-plugin-process = "2.3"
-tauri-plugin-safe-area-insets-css = { git = "https://github.com/guillemcordoba/tauri-plugin-safe-area-insets-css" }
+tauri-plugin-virtual-keyboard-padding = { git = "https://github.com/dash-chat/tauri-plugin-virtual-keyboard-padding" }
 
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 tauri-plugin-deep-link = "2"
