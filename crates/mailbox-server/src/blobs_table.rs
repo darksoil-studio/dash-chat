@@ -132,9 +132,10 @@ impl Value for BlobsKey {
 
 impl Key for BlobsKey {
     fn compare(data1: &[u8], data2: &[u8]) -> Ordering {
-        let key1 = BlobsKey::from_bytes(data1);
-        let key2 = BlobsKey::from_bytes(data2);
-        key1.cmp(&key2)
+        // let key1 = BlobsKey::from_bytes(data1);
+        // let key2 = BlobsKey::from_bytes(data2);
+        // key1.cmp(&key2)
+        data1.cmp(&data2)
     }
 }
 
@@ -270,6 +271,7 @@ mod tests {
         let end = prefix.range_end();
 
         assert!(start < end);
+        assert_eq!(BlobsKey::compare(BlobsKey::as_bytes(&start).as_bytes(), BlobsKey::as_bytes(&end).as_bytes()), Ordering::Less);
 
         let key = BlobsKey::new(
             "d8883c1402ed3c078953620a5bf2afc8fafca9601186e7133ca6b1bf72c35cfb".into(),
@@ -281,6 +283,10 @@ mod tests {
 
         assert!(start < key);
         assert!(key < end);
+
+        // Making sure that database comparison works correctly
+        assert_eq!(BlobsKey::compare(BlobsKey::as_bytes(&start).as_bytes(), BlobsKey::as_bytes(&key).as_bytes()), Ordering::Less);
+        assert_eq!(BlobsKey::compare(BlobsKey::as_bytes(&key).as_bytes(), BlobsKey::as_bytes(&end).as_bytes()), Ordering::Less);
 
         assert_eq!(
             start.topic_id,
