@@ -141,8 +141,8 @@
 	{:then code}
 		<div class="column" style="flex:1">
 			<div class="column center-in-desktop gap-4 m-6">
-				<Card class="qr-card p-6 pb-2">
-					<div class="column gap-4" style="align-items: center">
+				<Card class="qr-card p-2 pb-0">
+					<div class="column gap-2" style="align-items: center">
 						<div
 							class="column p-2"
 							style="align-items: center; justify-content: center; background-color: white; border-radius: 8px;"
