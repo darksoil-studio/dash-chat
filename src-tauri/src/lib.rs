@@ -21,18 +21,18 @@ mod push_notifications;
 pub fn run() {
     let mut builder = tauri::Builder::default();
 
-    if tauri::is_dev() {
-        // MCP for Claude Code to control the tauri app
-        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
-    }
     #[cfg(mobile)]
     {
         builder = builder
-            .plugin(tauri_plugin_barcode_scanner::init())
-            .plugin(tauri_plugin_safe_area_insets_css::init());
+            .plugin(tauri_plugin_virtual_keyboard_padding::init())
+            .plugin(tauri_plugin_barcode_scanner::init());
     }
     #[cfg(not(mobile))]
     {
+        if tauri::is_dev() {
+            // MCP for Claude Code to control the tauri app
+            builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+        }
         builder = builder
             .plugin(tauri_plugin_updater::Builder::new().build())
             .menu(|handle| menu::build_menu(handle));
