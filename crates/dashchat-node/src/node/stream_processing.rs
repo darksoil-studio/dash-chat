@@ -215,7 +215,7 @@ impl Node {
             }
 
             Some(Payload::Inbox(invitation)) => {
-                let active_topics = self.local_data.active_inbox_topics.read().await;
+                let active_topics = self.local_store.get_active_inbox_topics()?;
                 if !active_topics.iter().any(|it| **it.topic == *topic) {
                     // not for me, ignore
                     return Ok(());

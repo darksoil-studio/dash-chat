@@ -428,11 +428,11 @@ where
         &self,
         author: &DeviceId,
         topic: &TopicId,
-        from: Option<u64>,
+        from: u64,
     ) -> Result<Option<Vec<MailboxOperation>>, anyhow::Error> {
         let log = self
             .store
-            .get_log(author, topic, from)
+            .get_log(author, topic, Some(from))
             .await
             .map_err(|err| anyhow::anyhow!("failed to get log for {author:?}: {topic:?}: {err}"))?;
         Ok(log.map(|log| {

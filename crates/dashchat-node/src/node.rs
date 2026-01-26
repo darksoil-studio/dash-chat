@@ -1,26 +1,27 @@
 pub(crate) mod author_operation;
 mod stream_processing;
 
-use std::collections::{BTreeSet, HashSet};
+use std::collections::HashSet;
 use std::pin::Pin;
-use std::sync::Arc;
 
 use anyhow::Result;
 use chrono::{Duration, Utc};
 use futures::Stream;
+use named_id::Rename;
 use named_id::*;
-use p2panda_core::{Body, PrivateKey, PublicKey};
+use p2panda_core::Body;
 use p2panda_net::ResyncConfiguration;
 use p2panda_spaces::ActorId;
 use p2panda_store::{LogStore, MemoryStore};
 use p2panda_stream::IngestExt;
 use p2panda_stream::partial::operations::PartialOrder;
-use tokio::sync::{RwLock, mpsc};
+use tokio::sync::mpsc;
 
 use mailbox_client::manager::{Mailboxes, MailboxesConfig};
 
 use crate::chat::{ChatMessage, ChatMessageContent};
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
+use crate::local_store::NodeData;
 use crate::mailbox::MailboxOperation;
 use crate::payload::{
     AnnouncementsPayload, ChatPayload, Extensions, InboxPayload, Payload, Profile,
@@ -32,6 +33,7 @@ use crate::{
     Operation,
 };
 
+pub use crate::local_store::LocalStore;
 pub use stream_processing::Notification;
 
 #[derive(Clone, Debug)]
@@ -69,30 +71,6 @@ impl Default for NodeConfig {
 pub type Orderer<S> =
     PartialOrder<TopicId, Extensions, S, p2panda_stream::partial::MemoryStore<p2panda_core::Hash>>;
 
-// TODO: persist
-#[derive(Clone)]
-pub struct NodeLocalData {
-    pub private_key: PrivateKey,
-    pub agent_id: AgentId,
-    pub active_inbox_topics: Arc<RwLock<BTreeSet<InboxTopic>>>,
-}
-
-impl NodeLocalData {
-    pub fn new_random() -> Self {
-        let private_key = PrivateKey::new();
-        let agent_id = AgentId::from(ActorId::from(PrivateKey::new().public_key()));
-        Self {
-            private_key,
-            agent_id,
-            active_inbox_topics: Arc::new(RwLock::new(BTreeSet::new())),
-        }
-    }
-
-    pub fn device_id(&self) -> DeviceId {
-        DeviceId::from(self.private_key.public_key())
-    }
-}
-
 pub type NodeOpStore = OpStore<MemoryStore<TopicId, Extensions>>;
 
 #[derive(Clone)]
@@ -108,21 +86,18 @@ pub struct Node {
     /// Add new subscription streams
     stream_tx: mpsc::Sender<Pin<Box<dyn Stream<Item = Operation> + Send + 'static>>>,
 
-    local_data: NodeLocalData,
+    local_store: LocalStore,
+    node_data: NodeData,
 }
 
 impl Node {
-    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?local_data.device_id().renamed())))]
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?local_store.device_id().expect("can't load private key").renamed())))]
     pub async fn new(
-        local_data: NodeLocalData,
+        local_store: LocalStore,
         config: NodeConfig,
         notification_tx: Option<mpsc::Sender<Notification>>,
     ) -> Result<Self> {
-        let device_id = local_data.device_id();
-        let NodeLocalData {
-            active_inbox_topics,
-            ..
-        } = local_data.clone();
+        let node_data = local_store.node_data()?;
 
         let op_store = OpStore::new_memory();
         // let op_store = OpStore::new_sqlite().await?;
@@ -135,7 +110,8 @@ impl Node {
             op_store: op_store.clone(),
             mailboxes,
             config,
-            local_data,
+            local_store: local_store.clone(),
+            node_data,
             notification_tx,
             stream_tx,
         };
@@ -149,12 +125,12 @@ impl Node {
         )
         .await?;
 
-        for topic in active_inbox_topics.read().await.iter() {
+        for topic in local_store.get_active_inbox_topics()?.iter() {
             node.initialize_topic(
                 topic
                     .topic
                     .clone()
-                    .with_name(&format!("inbox({})", device_id.renamed())),
+                    .with_name(&format!("inbox({})", node.device_id().renamed())),
                 false,
             )
             .await?;
@@ -222,14 +198,14 @@ impl Node {
         share_intent: ShareIntent,
         inbox: bool,
     ) -> anyhow::Result<QrCode> {
-        let mut topics = self.local_data.active_inbox_topics.write().await;
         let inbox_topic = if inbox {
             let inbox_topic = InboxTopic {
                 topic: Topic::inbox().with_name(&format!("inbox({})", self.device_id().renamed())),
                 expires_at: Utc::now() + self.config.contact_code_expiry,
             };
             self.initialize_topic(inbox_topic.topic, false).await?;
-            topics.insert(inbox_topic.clone());
+            self.local_store
+                .add_active_inbox_topic(inbox_topic.clone())?;
             Some(inbox_topic)
         } else {
             None
@@ -238,17 +214,13 @@ impl Node {
         Ok(QrCode {
             device_pubkey: self.device_id(),
             inbox_topic,
-            agent_id: self.local_data.agent_id,
+            agent_id: self.node_data.agent_id,
             share_intent,
         })
     }
 
     pub fn agent_id(&self) -> AgentId {
-        self.local_data.agent_id
-    }
-
-    pub fn public_key(&self) -> PublicKey {
-        self.local_data.private_key.public_key()
+        self.node_data.agent_id
     }
 
     /// Get the topic for a direct chat between two public keys.
@@ -367,7 +339,7 @@ impl Node {
     }
 
     pub fn device_id(&self) -> DeviceId {
-        DeviceId::from(self.local_data.private_key.public_key())
+        self.node_data.device_id()
     }
 
     pub fn device_group_topic(&self) -> DeviceGroupId {

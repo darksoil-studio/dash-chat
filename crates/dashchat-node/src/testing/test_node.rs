@@ -5,6 +5,7 @@ use std::{
 };
 
 use named_id::*;
+use tempfile::TempDir;
 use tokio::sync::{Mutex, mpsc::Receiver};
 
 use mailbox_client::{MailboxClient, mem::MemMailbox};
@@ -12,7 +13,7 @@ use mailbox_client::{MailboxClient, mem::MemMailbox};
 use crate::{
     AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload,
     mailbox::MailboxOperation,
-    node::{Node, NodeLocalData},
+    node::{LocalStore, Node},
     testing::behavior::Behavior,
     topic::TopicId,
 };
@@ -23,21 +24,27 @@ pub struct TestNode {
     #[deref]
     node: Node,
     pub watcher: Arc<Mutex<Watcher<Notification>>>,
+
+    // store temp directory is deleted when this is dropped
+    _store_dir: Arc<TempDir>,
 }
 
 impl TestNode {
     pub async fn new(config: NodeConfig, name: Option<&str>) -> Self {
-        let local_data = NodeLocalData::new_random();
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("store.db");
+        let local_store = LocalStore::new(path).unwrap();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
         if let Some(alias) = name {
-            local_data.device_id().with_name(alias);
-            local_data.agent_id.with_name(alias);
+            local_store.device_id().unwrap().with_name(alias);
+            local_store.agent_id().unwrap().with_name(alias);
         }
         Self {
-            node: Node::new(local_data, config, Some(notification_tx))
+            node: Node::new(local_store, config, Some(notification_tx))
                 .await
                 .unwrap(),
             watcher: Arc::new(Mutex::new(Watcher(notification_rx))),
+            _store_dir: Arc::new(dir),
         }
     }
 
