@@ -50,7 +50,7 @@ tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-w
 ] }
 tauri-plugin-dialog = "2.3"
 tauri-plugin-process = "2.3"
-tauri-plugin-virtual-keyboard-padding = { git = "https://github.com/dash-chat/tauri-plugin-virtual-keyboard-padding" }
+tauri-plugin-virtual-keyboard-padding = { git = "https://github.com/dash-chat/tauri-plugin-virtual-keyboard-padding", branch = "main" }
 tauri-plugin-mcp-bridge = "0.7"
 
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
