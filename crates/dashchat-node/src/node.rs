@@ -19,7 +19,7 @@ use tokio::sync::{RwLock, mpsc};
 
 use mailbox_client::manager::{Mailboxes, MailboxesConfig};
 
-use crate::chat::{ChatMessage, ChatMessageContent};
+use crate::chat::ChatMessageContent;
 use crate::contact::{InboxTopic, QrCode, ShareIntent};
 use crate::mailbox::MailboxOperation;
 use crate::payload::{
@@ -309,11 +309,14 @@ impl Node {
     }
 
     /// Get all messages for a chat from the logs.
-    // TODO: Store state instead of regenerating from the logs.
-    //       This will be necessary when we switch to double ratchet message encryption.
+    ///
+    /// In the real app, the interleaving of logs happens on the front end.
     #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.device_id().renamed())))]
     #[cfg(feature = "testing")]
-    pub async fn get_messages(&self, topic: impl Into<ChatId>) -> anyhow::Result<Vec<ChatMessage>> {
+    pub async fn get_messages(
+        &self,
+        topic: impl Into<ChatId>,
+    ) -> anyhow::Result<Vec<crate::chat::testing::ChatMessage>> {
         let chat_id = topic.into();
         let mut messages = vec![];
 
@@ -324,7 +327,7 @@ impl Node {
             .await?
         {
             if let Some(Payload::Chat(ChatPayload::Message(message))) = payload {
-                messages.push(ChatMessage::new(message, &header));
+                messages.push(crate::chat::testing::ChatMessage::new(message, &header));
             }
         }
 
@@ -348,11 +351,9 @@ impl Node {
         &self,
         topic: impl Into<ChatId>,
         message: ChatMessageContent,
-    ) -> anyhow::Result<(ChatMessage, Header)> {
+    ) -> anyhow::Result<Header> {
         let topic = topic.into();
 
-        // NOTE: duplication of timestamp and author.
-        //       shouldn't we just encrypt the message itself since the rest is on the header?
         let message = ChatMessageContent::from(message);
 
         let header = self
@@ -363,7 +364,7 @@ impl Node {
             )
             .await?;
 
-        Ok((ChatMessage::new(message, &header), header))
+        Ok(header)
     }
 
     pub fn device_id(&self) -> DeviceId {
