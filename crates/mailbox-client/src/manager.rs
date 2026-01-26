@@ -36,6 +36,7 @@ impl<Item, Store> Mailboxes<Item, Store>
 where
     Item: MailboxItem,
     Store: MailboxStore<Item>,
+    Item::Topic: Rename,
 {
     fn new(store: Store, config: MailboxesConfig, trigger: mpsc::Sender<()>) -> Self {
         Self {
@@ -194,7 +195,7 @@ where
                 };
                 let Some(log) = self
                     .store
-                    .get_log(&author, &topic, Some(*lowest))
+                    .get_log(&author, &topic, *lowest)
                     .await
                     .map_err(|err| anyhow::anyhow!("failed to get log for {topic:?}: {err}"))?
                 else {

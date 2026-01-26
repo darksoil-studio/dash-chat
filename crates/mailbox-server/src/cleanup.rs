@@ -90,6 +90,7 @@ pub async fn cleanup_old_messages(db: &Database) -> Result<(), Box<dyn std::erro
 #[cfg(test)]
 mod tests {
     use super::*;
+    use redb::ReadableDatabase;
     use tempfile::NamedTempFile;
 
     fn create_test_db() -> (Database, NamedTempFile) {

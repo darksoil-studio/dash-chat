@@ -168,7 +168,7 @@ impl<K: TopicKind> p2panda_spaces::traits::SpaceId for Topic<K> {}
 impl<K: TopicKind> TopicQuery for Topic<K> {}
 
 impl<K: TopicKind> Topic<K> {
-    fn new(id: [u8; 32]) -> Self {
+    pub(crate) fn new(id: [u8; 32]) -> Self {
         Self {
             id: TopicId(id),
             kind: PhantomData::<K>,
@@ -213,7 +213,7 @@ impl Topic<kind::Inbox> {
 }
 
 impl Topic<kind::DeviceGroup> {
-    // TODO: use a random topic stored in NodeLocalData instead
+    // TODO: use a random topic stored in LocalStore instead
     pub fn device_group(agent_id: AgentId) -> Self {
         let mut hasher = blake3::Hasher::new();
         hasher.update(agent_id.as_bytes());

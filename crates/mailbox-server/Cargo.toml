@@ -13,7 +13,7 @@ path = "src/main.rs"
 [dependencies]
 axum = "0.7"
 tokio = { version = "1", features = ["full"] }
-redb = "2.1"
+redb = "3.1"
 tower = "0.5"
 tower-http = { version = "0.6", features = ["trace", "cors"] }
 tracing = "0.1"
