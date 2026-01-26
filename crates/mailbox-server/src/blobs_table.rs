@@ -132,10 +132,9 @@ impl Value for BlobsKey {
 
 impl Key for BlobsKey {
     fn compare(data1: &[u8], data2: &[u8]) -> Ordering {
-        // let key1 = BlobsKey::from_bytes(data1);
-        // let key2 = BlobsKey::from_bytes(data2);
-        // key1.cmp(&key2)
-        data1.cmp(&data2)
+        let key1 = BlobsKey::from_bytes(data1);
+        let key2 = BlobsKey::from_bytes(data2);
+        key1.cmp(&key2)
     }
 }
 
