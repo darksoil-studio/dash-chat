@@ -1,7 +1,7 @@
 pub(crate) mod author_operation;
 mod stream_processing;
 
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use std::pin::Pin;
 
 use anyhow::Result;
@@ -193,6 +193,12 @@ impl Node {
         Ok(authors)
     }
 
+    pub fn get_active_inbox_topics(&self) -> Result<BTreeSet<InboxTopic>, Error> {
+        self.local_store
+            .get_active_inbox_topics()
+            .map_err(|err| Error::GetActiveInboxes(format!("{err}")))
+    }
+
     /// Create a new contact QR code with configured expiry time,
     /// subscribe to the inbox topic for it, and register the topic as active.
     pub async fn new_qr_code(
@@ -205,9 +211,12 @@ impl Node {
                 topic: Topic::inbox().with_name(&format!("inbox({})", self.device_id().renamed())),
                 expires_at: Utc::now() + self.config.contact_code_expiry,
             };
-            self.initialize_topic(inbox_topic.topic, false).await?;
+            self.initialize_topic(inbox_topic.topic, false)
+                .await
+                .map_err(|err| crate::Error::InitializeTopic(format!("{err}")))?;
             self.local_store
-                .add_active_inbox_topic(inbox_topic.clone())?;
+                .add_active_inbox_topic(inbox_topic.clone())
+                .map_err(|err| crate::Error::AddActiveInbox(format!("{err}")))?;
             Some(inbox_topic)
         } else {
             None

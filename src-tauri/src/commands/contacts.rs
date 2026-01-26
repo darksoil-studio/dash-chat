@@ -24,8 +24,8 @@ pub async fn add_contact(
 }
 
 #[tauri::command]
-pub async fn active_inbox_topics(node: State<'_, Node>) -> Result<BTreeSet<Topic<Inbox>>, String> {
-    let topics = node.local_data.active_inbox_topics.read().await;
+pub fn active_inbox_topics(node: State<'_, Node>) -> Result<BTreeSet<Topic<Inbox>>, Error> {
+    let topics = node.get_active_inbox_topics()?;
     let topics_ids = topics.clone().into_iter().map(|t| t.topic).collect();
 
     Ok(topics_ids)

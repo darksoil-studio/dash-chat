@@ -9,6 +9,12 @@ pub enum Error {
 
     #[error("Failed to author operation: {0}")]
     AuthorOperation(String),
+
+    #[error("Failed to add active inbox: {0}")]
+    AddActiveInbox(String),
+
+    #[error("Failed to get active inboxes: {0}")]
+    GetActiveInboxes(String),
 }
 
 #[derive(Debug, Error, Serialize)]
