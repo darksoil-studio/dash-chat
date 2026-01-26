@@ -21,18 +21,18 @@ mod push_notifications;
 pub fn run() {
     let mut builder = tauri::Builder::default();
 
-    if tauri::is_dev() {
-        // MCP for Claude Code to control the tauri app
-        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
-    }
     #[cfg(mobile)]
     {
         builder = builder
-            .plugin(tauri_plugin_barcode_scanner::init())
-            .plugin(tauri_plugin_safe_area_insets_css::init());
+            .plugin(tauri_plugin_virtual_keyboard_padding::init())
+            .plugin(tauri_plugin_barcode_scanner::init());
     }
     #[cfg(not(mobile))]
     {
+        if tauri::is_dev() {
+            // MCP for Claude Code to control the tauri app
+            builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+        }
         builder = builder
             .plugin(tauri_plugin_updater::Builder::new().build())
             .menu(|handle| menu::build_menu(handle));
@@ -87,9 +87,11 @@ pub fn run() {
                     .expect("Failed to create node");
 
                 let mailbox_url = if tauri::is_dev() {
-                    "http://localhost:3000"
+                    // Use the IP address of the compiling machine to support tauri android dev
+                    // pointing to the compiling computer's IP address
+                    format!("http://{}:3000", env!("LOCAL_IP_ADDRESS"))
                 } else {
-                    "https://mailbox-server.production.dash-chat.dash-chat.garnix.me"
+                    "https://mailbox-server.production.dash-chat.dash-chat.garnix.me".to_string()
                 };
 
                 let mailbox_client = ToyMailboxClient::new(mailbox_url);

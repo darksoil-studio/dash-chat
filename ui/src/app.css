@@ -10,7 +10,7 @@
 
 body {
 	display: flex;
-	--background-color: #dddddd;
+	--background-color: var(--color-md-light-surface);
 	background-color: var(--background-color);
 }
 
@@ -85,4 +85,9 @@ li.plain span {
 
 .others-message {
 	align-self: start;
+}
+
+.qr-card > div {
+	/* Padding for the copy button below the QR code in add-contact */
+	padding-bottom: 8px;
 }
