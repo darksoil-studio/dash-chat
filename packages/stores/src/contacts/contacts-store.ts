@@ -48,11 +48,60 @@ export class ContactsStore {
 			};
 		}),
 	);
+	
+	contactsAgentIds = reactive(async () => {
+		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
+
+		const contacts: Set<AgentId> = new Set();
+
+		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+			for (const op of ops) {
+				if (op.body?.payload?.type === 'AddContact') {
+					contacts.add(op.body.payload.payload.agent_id);
+				}
+			}
+		}
+
+		return Array.from(contacts);
+	});
+
+
+	rejectedContactRequests = reactive(async () => {
+		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
+
+		const rejected: Record<AgentId, number> = {};
+		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+			for (const op of ops) {
+				if (op.body?.payload?.type !== 'RejectContactRequest') continue;
+				const agentId = op.body.payload.payload;
+
+				const existingTimestamp = rejected[agentId];
+
+				// Keep the latest rejection timestamp
+				if (
+					!existingTimestamp ||
+					op.header.timestamp * 1000 > existingTimestamp
+				) {
+					rejected[agentId] = op.header.timestamp * 1000;
+				}
+			}
+		}
+
+		return rejected;
+	}, {
+			// Disable memoization for this function
+			// 
+			// TODO: remove this, and debug why a contact request that has been
+			// just deleted still appears in allChatsSummaries used in the AllChats.svelte b
+			paramKey() {
+					return `${Date.now()}`
+			},
+		});
 
 	contactRequests = reactive(async () => {
 		const activeInboxTopics = await this.activeInboxTopics();
 
-		const allLogs = await ReactivePromise.all(
+		const allLogs = await Promise.all(
 			activeInboxTopics.map(topicId =>
 				this.logsStore.logsForAllAuthors(topicId),
 			),
@@ -67,8 +116,10 @@ export class ContactsStore {
 				for (const operation of operations) {
 					if (operation.body?.type !== 'Inbox') continue;
 					const agentId = operation.body.payload.payload.code.agent_id;
+
 					// We have already accepted this contact request
 					if (contacts.includes(agentId)) continue;
+
 					// Time-based rejection: only filter if request was made BEFORE rejection
 					const rejectionTimestamp = rejectedMap[agentId];
 					if (
@@ -76,6 +127,7 @@ export class ContactsStore {
 						operation.header.timestamp * 1000 < rejectionTimestamp
 					)
 						continue;
+
 					contactRequests.push({
 						...operation.body.payload.payload,
 						timestamp: operation.header.timestamp * 1000,
@@ -85,31 +137,15 @@ export class ContactsStore {
 		}
 
 		return contactRequests;
-	});
-
-	rejectedContactRequests = reactive(async () => {
-		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
-
-		const rejected: Record<AgentId, number> = {};
-
-		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
-			for (const op of ops) {
-				if (op.body?.payload?.type !== 'RejectContactRequest') continue;
-				const agentId = op.body.payload.payload as AgentId;
-
-				const existingTimestamp = rejected[agentId];
-				// Keep the latest rejection timestamp
-				if (
-					!existingTimestamp ||
-					op.header.timestamp * 1000 > existingTimestamp
-				) {
-					rejected[agentId] = op.header.timestamp * 1000;
-				}
-			}
-		}
-
-		return rejected;
-	});
+	}, {
+			// Disable memoization for this function
+			// 
+			// TODO: remove this, and debug why a contact request that has been
+			// just deleted still appears in allChatsSummaries used in the AllChats.svelte b
+			paramKey() {
+					return `${Date.now()}`
+			},
+		});
 
 	profiles = reactive(async (agentId: AgentId) => {
 		const topicId = personalTopicFor(agentId);
@@ -143,26 +179,10 @@ export class ContactsStore {
 		return profile;
 	});
 
-	contactsAgentIds = reactive(async () => {
-		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
-
-		const contacts: Set<AgentId> = new Set();
-
-		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
-			for (const op of ops) {
-				if (op.body?.payload?.type === 'AddContact') {
-					contacts.add(op.body.payload.payload.agent_id);
-				}
-			}
-		}
-
-		return Array.from(contacts);
-	});
-
 	profilesForAllContacts = reactive(async () => {
 		const contacts = await this.contactsAgentIds();
 
-		const profiles = await ReactivePromise.all(
+		const profiles = await Promise.all(
 			contacts.map(contact => this.profiles(contact)),
 		);
 

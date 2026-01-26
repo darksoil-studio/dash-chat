@@ -1,4 +1,4 @@
-import { ReactivePromise, reactive, relay } from 'signalium';
+import { reactive, relay } from 'signalium';
 
 import type { LogsClient } from './logs-client';
 import type { SimplifiedOperation } from './simplified-types';
@@ -54,7 +54,7 @@ export class LogsStore<PAYLOAD> {
 	logsForAllAuthors = reactive(async (topicId: TopicId) => {
 		const authorsForTopic = await this.authorsForTopic(topicId);
 
-		const logs = await ReactivePromise.all(
+		const logs = await Promise.all(
 			authorsForTopic.map(author => this.logs(topicId, author)),
 		);
 
@@ -62,6 +62,7 @@ export class LogsStore<PAYLOAD> {
 		for (let i = 0; i < authorsForTopic.length; i++) {
 			logsForAllAuthors[authorsForTopic[i]] = logs[i];
 		}
+
 		return logsForAllAuthors;
 	});
 }

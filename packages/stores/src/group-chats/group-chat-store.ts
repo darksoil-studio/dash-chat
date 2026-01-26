@@ -181,7 +181,7 @@ export class GroupChatStore {
 	allMembers = reactive(async () => {
 		const membersIds = await this.membersIds();
 
-		const members = await ReactivePromise.all(
+		const members = await Promise.all(
 			membersIds.map(memberId => this.members(memberId)),
 		);
 

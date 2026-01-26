@@ -85,9 +85,7 @@
 				contactRequest.code.agent_id,
 			);
 
-			// Without set timeout, the route is navigated to before the notification is
-			// processed, showing the contact request still active
-			setTimeout(() => goto('/'),1);
+			goto('/');
 		} catch (e) {
 			console.error(e);
 			errorMessage = m.errorUnexpected();

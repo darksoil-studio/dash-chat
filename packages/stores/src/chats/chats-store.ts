@@ -69,7 +69,7 @@ export class ChatsStore {
 	allChatsSummaries = reactive(async () => {
 		const chatIds = await this.allChatsIds();
 
-		let summaries = await ReactivePromise.all(
+		let summaries = await Promise.all(
 			chatIds.map(chatId => this.chatSummary(chatId)),
 		);
 
