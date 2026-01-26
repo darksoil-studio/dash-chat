@@ -36,7 +36,7 @@ impl<Item, Store> Mailboxes<Item, Store>
 where
     Item: MailboxItem,
     Store: MailboxStore<Item>,
-    Item::Topic: ExtraTraits,
+    Item::Topic: OptionalItemTraits,
 {
     fn new(store: Store, config: MailboxesConfig, trigger: mpsc::Sender<()>) -> Self {
         Self {

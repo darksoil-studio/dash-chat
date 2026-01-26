@@ -87,12 +87,14 @@ pub trait MailboxItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'sta
     fn topic(&self) -> Self::Topic;
 }
 
+/// Extra traits for ItemTraits which are feature-dependent.
 #[cfg(feature = "named-id")]
-pub trait ExtraTraits: named_id::Rename {}
+pub trait OptionalItemTraits: named_id::Rename {}
 #[cfg(feature = "named-id")]
-impl<T> ExtraTraits for T where T: named_id::Rename {}
+impl<T> OptionalItemTraits for T where T: named_id::Rename {}
 
+/// Extra traits for ItemTraits which are feature-dependent.
 #[cfg(not(feature = "named-id"))]
-pub trait ExtraTraits {}
+pub trait OptionalItemTraits {}
 #[cfg(not(feature = "named-id"))]
-impl<T> ExtraTraits for T {}
+impl<T> OptionalItemTraits for T {}
