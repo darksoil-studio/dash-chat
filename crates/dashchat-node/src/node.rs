@@ -28,8 +28,8 @@ use crate::payload::{
 use crate::stores::OpStore;
 use crate::topic::{Topic, TopicId};
 use crate::{
-    AgentId, AsBody, ChatId, DeviceGroupId, DeviceGroupPayload, DeviceId, DirectChatId, Header,
-    Operation,
+    AgentId, AsBody, ChatId, ChatReaction, DeviceGroupId, DeviceGroupPayload, DeviceId,
+    DirectChatId, Header, Operation,
 };
 
 pub use stream_processing::Notification;
@@ -362,6 +362,20 @@ impl Node {
                 Payload::Chat(ChatPayload::Message(message.clone())),
                 None,
             )
+            .await?;
+
+        Ok(header)
+    }
+
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.device_id().renamed())))]
+    pub async fn add_reaction(
+        &self,
+        topic: impl Into<ChatId>,
+        reaction: ChatReaction,
+    ) -> anyhow::Result<Header> {
+        let topic = topic.into();
+        let header = self
+            .author_operation(topic, Payload::Chat(ChatPayload::Reaction(reaction)), None)
             .await?;
 
         Ok(header)
