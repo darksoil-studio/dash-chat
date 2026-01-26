@@ -9,7 +9,10 @@ procs:
   #   shell: test-safehold-service somesecretnetworkseedv0.5.0
   ui:  pnpm -F ./packages/stores build && pnpm -F ./ui start
   stores: pnpm -F ./packages/stores dev
-  mailbox-server: cargo run -p mailbox-server -- --db-path /tmp/mailbox.redb
+  mailbox-server:
+    shell: |
+      TMPFILE=$(mktemp)
+      cargo run -p mailbox-server -- --db-path ${TMPFILE}
   android:
     shell: pnpm tauri android dev
     autostart: false

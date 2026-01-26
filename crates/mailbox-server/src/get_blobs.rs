@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
-use redb::Database;
+use redb::{Database, ReadableDatabase};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 

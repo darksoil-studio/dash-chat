@@ -48,7 +48,11 @@ impl<Item: MailboxItem> MemMailbox<Item> {
 }
 
 #[async_trait::async_trait]
-impl<Item: MailboxItem> MailboxClient<Item> for MemMailboxClient<Item> {
+impl<Item: MailboxItem> MailboxClient<Item> for MemMailboxClient<Item>
+where
+    Item::Topic: Rename,
+    Item::Hash: Rename,
+{
     async fn publish(&self, ops: Vec<Item>) -> Result<(), anyhow::Error> {
         let mut store = self.mailbox.ops.write().await;
         // ops.entry(topic).or_insert_with(Vec::new).push(op.into());

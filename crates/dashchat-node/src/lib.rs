@@ -12,7 +12,9 @@ mod util;
 pub mod polestar;
 
 mod id;
+pub mod local_store;
 pub mod mailbox;
+
 #[cfg(feature = "testing")]
 pub mod testing;
 
@@ -22,7 +24,7 @@ pub use chat::*;
 pub use contact::{QrCode, ShareIntent};
 pub use error::{AddContactError, Error};
 pub use id::*;
-pub use node::{Node, NodeConfig, NodeLocalData, Notification};
+pub use node::{LocalStore, Node, NodeConfig, Notification};
 pub use p2panda_core::PrivateKey;
 pub use p2panda_spaces::ActorId;
 pub use payload::*;

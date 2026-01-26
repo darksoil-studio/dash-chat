@@ -46,7 +46,9 @@ pub enum ShareIntent {
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, RenameAll)]
 pub struct InboxTopic {
+    // NOTE: order of these fields matters! expires_at, then topic.
     #[named_id(skip)]
+    /// Expiry date must be within the valid range expressible by DateTime::from_timestamp_nanos
     pub expires_at: DateTime<Utc>,
     pub topic: Topic<kind::Inbox>,
 }

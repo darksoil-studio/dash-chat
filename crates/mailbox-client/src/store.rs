@@ -6,7 +6,7 @@ pub trait MailboxStore<Item: MailboxItem>: Clone + Send + Sync + 'static {
         &self,
         author: &Item::Author,
         topic: &Item::Topic,
-        from: Option<u64>,
+        from: u64,
     ) -> Result<Option<Vec<Item>>, anyhow::Error>;
 
     async fn get_log_heights(

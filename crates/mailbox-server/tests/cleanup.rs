@@ -1,5 +1,5 @@
 use mailbox_server::{cleanup_old_messages, GetBlobsResponse, BLOBS_TABLE, WATERMARKS_TABLE};
-use redb::ReadableTable;
+use redb::{ReadableDatabase, ReadableTable};
 use std::time::Duration;
 
 /// Tests that cleanup of old messages does not affect watermarks or cause
