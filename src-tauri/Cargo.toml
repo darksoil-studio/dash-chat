@@ -16,6 +16,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.4.0", default-features = false, features = [] }
+local-ip-address = "0.6"
 
 [dependencies]
 dashchat-node = { path = "../crates/dashchat-node" }
@@ -75,6 +76,9 @@ hyper-tls = "0.6"
 # Logging
 libc = "0.2"
 env_logger = "0.11"
+
+# Build openssl from source to cross-compile to each platform as needed
+openssl-sys = { version = "0.9", features = ["vendored"] }
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 tauri-plugin-barcode-scanner = "2.4"

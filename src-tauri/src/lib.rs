@@ -87,9 +87,11 @@ pub fn run() {
                     .expect("Failed to create node");
 
                 let mailbox_url = if tauri::is_dev() {
-                    "http://localhost:3000"
+                    // Use the IP address of the compiling machine to support tauri android dev
+                    // pointing to the compiling computer's IP address
+                    format!("http://{}:3000", env!("LOCAL_IP_ADDRESS"))
                 } else {
-                    "https://mailbox-server.production.dash-chat.dash-chat.garnix.me"
+                    "https://mailbox-server.production.dash-chat.dash-chat.garnix.me".to_string()
                 };
 
                 let mailbox_client = ToyMailboxClient::new(mailbox_url);
