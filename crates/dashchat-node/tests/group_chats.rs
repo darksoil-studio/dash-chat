@@ -39,11 +39,11 @@ async fn test_direct_chat() {
     );
 
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
+    let alice = TestNode::new(NodeConfig::testing(), "alice")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
-    let bobbi = TestNode::new(NodeConfig::testing(), Some("bobbi"))
+    let bobbi = TestNode::new(NodeConfig::testing(), "bobbi")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
@@ -54,22 +54,6 @@ async fn test_direct_chat() {
     println!("nodes:");
     println!("alice: {:?}", alice.device_id().short());
     println!("bobbi: {:?}", bobbi.device_id().short());
-
-    // Set profiles before adding contacts
-    alice
-        .set_profile(Profile {
-            name: "Alice".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
-    bobbi
-        .set_profile(Profile {
-            name: "Bobbi".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
 
     alice
         .behavior()

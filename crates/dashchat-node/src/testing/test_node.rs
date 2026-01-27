@@ -11,7 +11,7 @@ use tokio::sync::{Mutex, mpsc::Receiver};
 use mailbox_client::{MailboxClient, mem::MemMailbox};
 
 use crate::{
-    AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload,
+    AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload, Profile,
     mailbox::MailboxOperation,
     node::{LocalStore, Node},
     testing::behavior::Behavior,
@@ -30,19 +30,29 @@ pub struct TestNode {
 }
 
 impl TestNode {
-    pub async fn new(config: NodeConfig, name: Option<&str>) -> Self {
+    pub async fn new(config: impl Into<TestNodeConfig>, name: &str) -> Self {
+        let config = config.into();
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("store.db");
         let local_store = LocalStore::new(path).unwrap();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
-        if let Some(alias) = name {
-            local_store.device_id().unwrap().with_name(alias);
-            local_store.agent_id().unwrap().with_name(alias);
+        if config.use_named_id {
+            local_store.device_id().unwrap().with_name(name);
+            local_store.agent_id().unwrap().with_name(name);
+        }
+        let node = Node::new(local_store, config.node_config, Some(notification_tx))
+            .await
+            .unwrap();
+        if config.create_profile {
+            node.set_profile(Profile {
+                name: name.to_string(),
+                avatar: None,
+            })
+            .await
+            .unwrap();
         }
         Self {
-            node: Node::new(local_store, config, Some(notification_tx))
-                .await
-                .unwrap(),
+            node,
             watcher: Arc::new(Mutex::new(Watcher(notification_rx))),
             _store_dir: Arc::new(dir),
         }
@@ -106,6 +116,35 @@ impl TestNode {
 }
 
 #[derive(Clone, Debug)]
+pub struct TestNodeConfig {
+    /// The config to pass on to the node
+    pub node_config: NodeConfig,
+    /// Create an initial profile before returning
+    pub create_profile: bool,
+    /// Use a named-id for the device and agent IDs
+    pub use_named_id: bool,
+}
+
+impl Default for TestNodeConfig {
+    fn default() -> Self {
+        Self {
+            node_config: NodeConfig::default(),
+            create_profile: true,
+            use_named_id: true,
+        }
+    }
+}
+
+impl From<NodeConfig> for TestNodeConfig {
+    fn from(node_config: NodeConfig) -> Self {
+        Self {
+            node_config,
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct ClusterConfig {
     pub poll_interval: Duration,
     pub poll_timeout: Duration,
@@ -132,7 +171,7 @@ impl<const N: usize> TestCluster<N> {
     pub async fn new(node_config: NodeConfig, config: ClusterConfig, aliases: [&str; N]) -> Self {
         let mailbox = MemMailbox::<MailboxOperation>::new();
         let nodes: [TestNode; N] = futures::future::join_all(
-            (0..N).map(|i| TestNode::new(node_config.clone(), Some(aliases[i]))),
+            (0..N).map(|i| TestNode::new(node_config.clone(), aliases[i])),
         )
         .await
         .try_into()

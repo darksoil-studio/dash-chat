@@ -17,7 +17,9 @@ const TRACING_FILTER: [&str; 4] = [
 async fn test_my_profile_returns_none_when_no_profile_set() {
     dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice")).await;
+    let mut config = TestNodeConfig::default();
+    config.create_profile = false;
+    let alice = TestNode::new(config, "alice").await;
 
     let profile = alice.my_profile().await.unwrap();
     assert!(profile.is_none());
@@ -27,7 +29,9 @@ async fn test_my_profile_returns_none_when_no_profile_set() {
 async fn test_set_profile_and_my_profile() {
     dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice")).await;
+    let mut config = TestNodeConfig::default();
+    config.create_profile = false;
+    let alice = TestNode::new(config, "alice").await;
 
     let profile = Profile {
         name: "Alice".to_string(),
@@ -43,14 +47,7 @@ async fn test_set_profile_and_my_profile() {
 async fn test_set_profile_overwrites_previous_profile() {
     dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice")).await;
-
-    // Set initial profile
-    let initial_profile = Profile {
-        name: "Alice".to_string(),
-        avatar: None,
-    };
-    alice.set_profile(initial_profile).await.unwrap();
+    let alice = TestNode::new(NodeConfig::testing(), "alice").await;
 
     // Update profile with new name and avatar
     let updated_profile = Profile {
@@ -69,11 +66,11 @@ async fn test_profiles_sync_between_contacts() {
 
     println!("nodes:");
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice--"))
+    let alice = TestNode::new(NodeConfig::testing(), "alice--")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
-    let bobbi = TestNode::new(NodeConfig::testing(), Some("--bobbi"))
+    let bobbi = TestNode::new(NodeConfig::testing(), "--bobbi")
         .await
         .add_mailbox_client(mailbox.client())
         .await;

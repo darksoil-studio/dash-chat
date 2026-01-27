@@ -17,11 +17,11 @@ async fn test_inbox_2() {
     dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
+    let alice = TestNode::new(NodeConfig::testing(), "alice")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
-    let bobbi = TestNode::new(NodeConfig::testing(), Some("bobbi"))
+    let bobbi = TestNode::new(NodeConfig::testing(), "bobbi")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
@@ -34,22 +34,6 @@ async fn test_inbox_2() {
     introduce_and_wait([&alice.network, &bobbi.network]).await;
 
     println!("peers see each other");
-
-    // Set profiles before adding contacts
-    alice
-        .set_profile(Profile {
-            name: "Alice".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
-    bobbi
-        .set_profile(Profile {
-            name: "Bobbi".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
 
     alice
         .behavior()

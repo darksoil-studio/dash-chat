@@ -115,8 +115,8 @@ mod tests {
         let config = NodeConfig::testing();
 
         // Start with no mailbox
-        let alice = TestNode::new(config.clone(), Some("alice")).await;
-        let bobbi = TestNode::new(config.clone(), Some("bobbi")).await;
+        let alice = TestNode::new(config.clone(), "alice").await;
+        let bobbi = TestNode::new(config.clone(), "bobbi").await;
 
         let chat = alice.direct_chat_topic(bobbi.agent_id());
         alice.initialize_topic(chat, false).await.unwrap();

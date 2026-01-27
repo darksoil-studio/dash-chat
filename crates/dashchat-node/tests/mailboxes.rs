@@ -58,24 +58,8 @@ async fn mailbox_late_join(
     config.mailboxes_config.error_interval = Duration::from_millis(1000);
 
     // Start with no mailbox
-    let alice = TestNode::new(config.clone(), Some("alice")).await;
-    let bobbi = TestNode::new(config.clone(), Some("bobbi")).await;
-
-    // Set profiles before adding contacts
-    alice
-        .set_profile(Profile {
-            name: "Alice".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
-    bobbi
-        .set_profile(Profile {
-            name: "Bobbi".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
+    let alice = TestNode::new(config.clone(), "alice").await;
+    let bobbi = TestNode::new(config.clone(), "bobbi").await;
 
     let qr = alice
         .new_qr_code(ShareIntent::AddContact, true)
@@ -141,19 +125,19 @@ async fn test_multiple_mailboxes_group_pivot() {
 
     let mb1 = MemMailbox::new();
     let mb2 = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
+    let alice = TestNode::new(NodeConfig::testing(), "alice")
         .await
         .add_mailbox_client(mb1.client())
         .await;
 
-    let bobbi = TestNode::new(NodeConfig::testing(), Some("bobbi"))
+    let bobbi = TestNode::new(NodeConfig::testing(), "bobbi")
         .await
         .add_mailbox_client(mb1.client())
         .await
         .add_mailbox_client(mb2.client())
         .await;
 
-    let carol = TestNode::new(NodeConfig::testing(), Some("carol"))
+    let carol = TestNode::new(NodeConfig::testing(), "carol")
         .await
         .add_mailbox_client(mb2.client())
         .await;

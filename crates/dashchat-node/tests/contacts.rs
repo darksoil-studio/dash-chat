@@ -20,11 +20,11 @@ async fn test_reject_contact_request() {
     dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
+    let alice = TestNode::new(NodeConfig::testing(), "alice")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
-    let bobbi = TestNode::new(NodeConfig::testing(), Some("bobbi"))
+    let bobbi = TestNode::new(NodeConfig::testing(), "bobbi")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
@@ -35,22 +35,6 @@ async fn test_reject_contact_request() {
 
     #[cfg(feature = "p2p")]
     introduce_and_wait([&alice.network, &bobbi.network]).await;
-
-    // Set profiles before adding contacts
-    alice
-        .set_profile(Profile {
-            name: "Alice".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
-    bobbi
-        .set_profile(Profile {
-            name: "Bobbi".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
 
     // Alice generates a QR code with inbox
     let qr = alice
@@ -95,41 +79,18 @@ async fn test_reject_multiple_contact_requests() {
     dashchat_node::testing::setup_tracing(&TRACING_FILTER, true);
 
     let mailbox = MemMailbox::new();
-    let alice = TestNode::new(NodeConfig::testing(), Some("alice"))
+    let alice = TestNode::new(NodeConfig::testing(), "alice")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
-    let bobbi = TestNode::new(NodeConfig::testing(), Some("bobbi"))
+    let bobbi = TestNode::new(NodeConfig::testing(), "bobbi")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
-    let carol = TestNode::new(NodeConfig::testing(), Some("carol"))
+    let carol = TestNode::new(NodeConfig::testing(), "carol")
         .await
         .add_mailbox_client(mailbox.client())
         .await;
-
-    // Set profiles
-    alice
-        .set_profile(Profile {
-            name: "Alice".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
-    bobbi
-        .set_profile(Profile {
-            name: "Bobbi".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
-    carol
-        .set_profile(Profile {
-            name: "Carol".to_string(),
-            avatar: None,
-        })
-        .await
-        .unwrap();
 
     // Alice generates QR codes for both Bobbi and Carol
     let qr_for_bobbi = alice
