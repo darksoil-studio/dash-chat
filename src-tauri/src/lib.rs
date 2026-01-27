@@ -125,6 +125,25 @@ pub fn run() {
                 } else {
                     log::error!("Failed to get window");
                 }
+
+                // Handle window close events to keep app running when tray is visible
+                if let Some(window) = app.get_webview_window("main") {
+                    let handle_for_event = handle.clone();
+                    window.on_window_event(move |event| {
+                        if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                            // Check if mailbox is enabled and hence the tray is visible
+                            if settings::load_mailbox_enabled(&handle_for_event) {
+                                // Hide window instead of closing when tray is visible
+                                api.prevent_close();
+                                if let Some(window) = handle_for_event.get_webview_window("main") {
+                                    if let Err(err) = window.hide() {
+                                        log::error!("Failed to hide window: {err:?}");
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
             }
             #[cfg(mobile)]
             {

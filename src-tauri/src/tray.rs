@@ -13,7 +13,21 @@ pub fn build_tray<R: Runtime>(app: &App<R>) -> tauri::Result<TrayIcon<R>> {
     let tray = TrayIconBuilder::new()
         .icon(app.default_window_icon().unwrap().clone())
         .menu(&menu)
-        .show_menu_on_left_click(true)
+        .show_menu_on_left_click(false)
+        .on_tray_icon_event(|tray, event| {
+            if let tauri::tray::TrayIconEvent::Click { .. } = event {
+                // Show/focus the main window when tray icon is clicked
+                let app = tray.app_handle();
+                if let Some(window) = app.get_webview_window("main") {
+                    if let Err(err) = window.show() {
+                        log::error!("Failed to show window: {err:?}");
+                    }
+                    if let Err(err) = window.set_focus() {
+                        log::error!("Failed to focus window: {err:?}");
+                    }
+                }
+            }
+        })
         .on_menu_event(move |app, menu_event| match menu_event.id().as_ref() {
             "quit" => {
                 app.exit(0);
@@ -29,8 +43,6 @@ pub fn toggle_tray<R: Runtime>(
     enabled: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let tray = app_handle.state::<TrayIcon<R>>();
-
     tray.set_visible(enabled)?;
-
     Ok(())
 }
