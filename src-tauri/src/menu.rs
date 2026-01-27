@@ -8,7 +8,7 @@ pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R
         "toggle-local-mailbox",
         "Run Local Mailbox",
         true,
-        false,
+        false, // Will be updated in setup once path resolver is available
         None::<&str>,
     )?;
     let mailbox_toggle_handle = mailbox_toggle.clone();
@@ -47,9 +47,7 @@ pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R
             }
             "toggle-local-mailbox" => match mailbox_toggle_handle.is_checked() {
                 Ok(is_checked) => {
-                    // if let Err(err) = mailbox_toggle_handle.set_checked(is_checked) {
-                    //     log::error!("Failed to update mailbox server toggle state: {err:?}");
-                    // }
+                    crate::settings::save_mailbox_enabled::<R>(app_handle, is_checked);
                     // TODO: enable/disable the mailbox server based on next_state
                 }
                 Err(err) => {

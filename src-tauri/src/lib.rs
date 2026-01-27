@@ -1,6 +1,7 @@
 use dashchat_node::Node;
 use mailbox_client::toy::ToyMailboxClient;
 use p2panda_core::{cbor::encode_cbor, Body};
+
 use tauri::{Emitter, Manager, RunEvent};
 
 use crate::{
@@ -10,6 +11,7 @@ use crate::{
 
 mod commands;
 mod local_store;
+mod settings;
 mod utils;
 
 #[cfg(not(mobile))]
@@ -79,6 +81,44 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(move |app| {
             let handle = app.handle().clone();
+
+            #[cfg(not(mobile))]
+            {
+                let mailbox_enabled = settings::load_mailbox_enabled(&handle);
+                log::info!("Mailbox enabled: {mailbox_enabled}");
+                if let Some(window) = app.get_webview_window("main") {
+                    if let Some(menu) = window.menu() {
+                        // Menu item is nested in "File" submenu, need to search through submenus
+                        let mut found = false;
+                        if let Ok(items) = menu.items() {
+                            for item in items {
+                                if let Some(submenu) = item.as_submenu() {
+                                    if let Some(toggle) = submenu.get("toggle-local-mailbox") {
+                                        if let Some(check_item) = toggle.as_check_menuitem() {
+                                            if let Err(err) =
+                                                check_item.set_checked(mailbox_enabled)
+                                            {
+                                                log::error!(
+                                                    "Failed to set mailbox toggle: {err:?}"
+                                                );
+                                            }
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if !found {
+                            log::error!("Failed to find toggle-local-mailbox menu item");
+                        }
+                    } else {
+                        log::error!("Failed to get menu");
+                    }
+                } else {
+                    log::error!("Failed to get window");
+                }
+            }
 
             let local_store_path: std::path::PathBuf = local_store_path(&handle)?;
             log::info!("Using local store path: {local_store_path:?}");
