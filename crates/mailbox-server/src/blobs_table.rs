@@ -170,9 +170,8 @@ impl Value for BlobsKey {
     where
         Self: 'b,
     {
-        let mut bytes = Vec::with_capacity(
-            value.topic_id.len() + 1 + value.author.len() + 1 + 8 + 16,
-        );
+        let mut bytes =
+            Vec::with_capacity(value.topic_id.len() + 1 + value.author.len() + 1 + 8 + 16);
         bytes.extend_from_slice(value.topic_id.as_bytes());
         bytes.push(0);
         bytes.extend_from_slice(value.author.as_bytes());
@@ -354,10 +353,7 @@ mod tests {
 
         assert!(start < end);
         assert_eq!(
-            BlobsKey::compare(
-                &BlobsKey::as_bytes(&start),
-                &BlobsKey::as_bytes(&end)
-            ),
+            BlobsKey::compare(&BlobsKey::as_bytes(&start), &BlobsKey::as_bytes(&end)),
             Ordering::Less
         );
 
@@ -374,17 +370,11 @@ mod tests {
 
         // Making sure that database comparison works correctly
         assert_eq!(
-            BlobsKey::compare(
-                &BlobsKey::as_bytes(&start),
-                &BlobsKey::as_bytes(&key)
-            ),
+            BlobsKey::compare(&BlobsKey::as_bytes(&start), &BlobsKey::as_bytes(&key)),
             Ordering::Less
         );
         assert_eq!(
-            BlobsKey::compare(
-                &BlobsKey::as_bytes(&key),
-                &BlobsKey::as_bytes(&end)
-            ),
+            BlobsKey::compare(&BlobsKey::as_bytes(&key), &BlobsKey::as_bytes(&end)),
             Ordering::Less
         );
 
