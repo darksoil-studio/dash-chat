@@ -48,7 +48,11 @@ pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R
             "toggle-local-mailbox" => match mailbox_toggle_handle.is_checked() {
                 Ok(is_checked) => {
                     crate::settings::save_mailbox_enabled::<R>(app_handle, is_checked);
-                    // TODO: enable/disable the mailbox server based on next_state
+
+                    // Toggle tray visibility
+                    if let Err(err) = crate::tray::toggle_tray::<R>(app_handle, is_checked) {
+                        log::error!("Failed to toggle tray: {err:?}");
+                    }
                 }
                 Err(err) => {
                     log::error!("Failed to read mailbox server toggle state: {err:?}");

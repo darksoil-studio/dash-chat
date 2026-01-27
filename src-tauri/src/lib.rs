@@ -2,6 +2,7 @@ use dashchat_node::Node;
 use mailbox_client::toy::ToyMailboxClient;
 use p2panda_core::{cbor::encode_cbor, Body};
 
+use tauri::tray::TrayIconBuilder;
 use tauri::{Emitter, Manager, RunEvent};
 
 use crate::{
@@ -18,6 +19,7 @@ mod utils;
 mod menu;
 #[cfg(mobile)]
 mod push_notifications;
+mod tray;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -86,6 +88,11 @@ pub fn run() {
             {
                 let mailbox_enabled = settings::load_mailbox_enabled(&handle);
                 log::info!("Mailbox enabled: {mailbox_enabled}");
+
+                let tray = crate::tray::build_tray(&app)?;
+                tray.set_visible(mailbox_enabled)?;
+                app.manage(tray);
+
                 if let Some(window) = app.get_webview_window("main") {
                     if let Some(menu) = window.menu() {
                         // Menu item is nested in "File" submenu, need to search through submenus
@@ -118,6 +125,12 @@ pub fn run() {
                 } else {
                     log::error!("Failed to get window");
                 }
+            }
+            #[cfg(mobile)]
+            {
+                app.manage(std::sync::Mutex::new(
+                    None::<tauri::tray::TrayIcon<tauri::Wry>>,
+                ));
             }
 
             let local_store_path: std::path::PathBuf = local_store_path(&handle)?;
