@@ -1,14 +1,15 @@
 use tauri::tray::{TrayIcon, TrayIconBuilder};
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     App, AppHandle, Manager, Runtime,
 };
 
 pub fn build_tray<R: Runtime>(app: &App<R>) -> tauri::Result<TrayIcon<R>> {
-    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    // TODO: add separator
     let title = MenuItem::new(app, "DashChat Local Mailbox", false, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&title, &quit_i])?;
+    let separator = PredefinedMenuItem::separator(app)?;
+    let show_i = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&title, &separator, &show_i, &quit_i])?;
 
     let tray = TrayIconBuilder::new()
         .icon(app.default_window_icon().unwrap().clone())
@@ -29,6 +30,16 @@ pub fn build_tray<R: Runtime>(app: &App<R>) -> tauri::Result<TrayIcon<R>> {
             }
         })
         .on_menu_event(move |app, menu_event| match menu_event.id().as_ref() {
+            "show" => {
+                if let Some(window) = app.get_webview_window("main") {
+                    if let Err(err) = window.show() {
+                        log::error!("Failed to show window: {err:?}");
+                    }
+                    if let Err(err) = window.set_focus() {
+                        log::error!("Failed to focus window: {err:?}");
+                    }
+                }
+            }
             "quit" => {
                 app.exit(0);
             }
