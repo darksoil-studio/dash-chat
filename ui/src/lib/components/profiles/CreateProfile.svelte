@@ -3,7 +3,7 @@
 	import type { ContactsStore, Error } from 'dash-chat-stores';
 	import SelectAvatar from './SelectAvatar.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { TOAST_TTL_MS } from '$lib/utils/toasts';
+	import { showToast } from '$lib/utils/toasts';
 	import {
 		Page,
 		Button,
@@ -12,13 +12,11 @@
 		useTheme,
 		Link,
 		Navbar,
-		Toast,
 	} from 'konsta/svelte';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let nickname = $state<string | undefined>(undefined);
 	let avatar = $state<string | undefined>(undefined);
-	let errorMessage = $state<string | undefined>(undefined);
 
 	async function setProfile() {
 		try {
@@ -31,14 +29,11 @@
 			const error = e as Error;
 			switch (error.kind) {
 				case 'AuthorOperation':
-					errorMessage = m.errorSetProfile();
+					showToast(m.errorSetProfile(), 'error');
 					break;
 				default:
-					errorMessage = m.errorUnexpected();
+					showToast(m.errorUnexpected(), 'error');
 			}
-			setTimeout(() => {
-				errorMessage = undefined;
-			}, TOAST_TTL_MS);
 		}
 	}
 	const theme = $derived(useTheme());
@@ -91,7 +86,4 @@
 			{m.create()}
 		</Button>
 	{/if}
-	<Toast position="center" class="k-color-brand-red" opened={errorMessage !== undefined}
-		>{errorMessage}</Toast
-	>
 </Page>

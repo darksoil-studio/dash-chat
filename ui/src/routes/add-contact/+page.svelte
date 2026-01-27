@@ -25,11 +25,10 @@
 		List,
 		Card,
 		Preloader,
-		Toast,
 		Button,
 	} from 'konsta/svelte';
 	import { goto } from '$app/navigation';
-	import { TOAST_TTL_MS } from '$lib/utils/toasts';
+	import { showToast } from '$lib/utils/toasts';
 	import { cancel } from '@tauri-apps/plugin-barcode-scanner';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
@@ -38,11 +37,6 @@
 
 	let tab = $state<'code' | 'scan'>('code');
 
-	let contactAlreadyExistsToastOpen = $state(false);
-	let copiedToastOpen = $state(false);
-	let errorMessage = $state<string | undefined>(undefined);
-	let t: NodeJS.Timeout | undefined;
-
 	async function receiveCode(code: string) {
 		try {
 			const contactCode = decodeContactCode(code);
@@ -50,11 +44,7 @@
 			const myCodeString = await myCode;
 
 			if (code === myCodeString) {
-				errorMessage = m.cantAddYourselfAsContact();
-				clearTimeout(t);
-				t = setTimeout(() => {
-					errorMessage = undefined;
-				}, TOAST_TTL_MS);
+				showToast(m.cantAddYourselfAsContact(), 'error');
 				return;
 			}
 
@@ -66,37 +56,31 @@
 			// const contacts = await toPromise(contactsStore.contactsAgentIds);
 			//
 			// if (contacts.includes(contactCode.agent_id)) {
-			// 	contactAlreadyExistsToastOpen = true;
-			// 	t = setTimeout(() => {
-			// 		clearTimeout(t);
-			// 		contactAlreadyExistsToastOpen = false;
-			// 	}, TOAST_TTL_MS);
+			// 	showToast(m.contactAlreadyExists());
 			// 	return;
 			// }
 
 			await contactsStore.client.addContact(contactCode);
+			showToast(m.contactAccepted())
 
 			goto(`/direct-messages/${contactCode.agent_id}`);
+
 		} catch (e) {
 			console.error(e);
 			const error = e as AddContactError;
 			switch (error.kind) {
 				case 'ProfileNotCreated':
-					errorMessage = m.errorAddContactProfileRequired();
+					showToast(m.errorAddContactProfileRequired(), 'error');
 					break;
 				case 'InitializeTopic':
 				case 'AuthorOperation':
 				case 'CreateQrCode':
 				case 'CreateDirectChat':
-					errorMessage = m.errorAddContact();
+					showToast(m.errorAddContact(), 'error');
 					break;
 				default:
-					errorMessage = m.errorUnexpected();
+					showToast(m.errorUnexpected(), 'error');
 			}
-			clearTimeout(t);
-			t = setTimeout(() => {
-				errorMessage = undefined;
-			}, TOAST_TTL_MS);
 		}
 	}
 </script>
@@ -148,11 +132,7 @@
 								await receiveCode(code);
 							} catch (e) {
 								console.error(e);
-								errorMessage = m.errorScanningQrCode();
-								clearTimeout(t);
-								t = setTimeout(() => {
-									errorMessage = undefined;
-								}, TOAST_TTL_MS);
+								showToast(m.errorScanningQrCode(), 'error');
 							}
 						}}
 						>{m.scan()}
@@ -194,11 +174,7 @@
 									clearMaterial
 									onClick={async () => {
 										await writeText(code);
-										copiedToastOpen = true;
-										clearTimeout(t);
-										t = setTimeout(() => {
-											copiedToastOpen = false;
-										}, TOAST_TTL_MS);
+										showToast(m.copiedCodeToClipboard());
 									}}
 								>
 									<wa-icon src={wrapPathInSvg(mdiContentCopy)}> </wa-icon>
@@ -252,17 +228,6 @@
 			</div>
 		</div>
 	{/if}
-	<Toast position="center" opened={contactAlreadyExistsToastOpen}
-		>{m.contactAlreadyExists()}</Toast
-	>
-	<Toast position="center" opened={copiedToastOpen}
-		>{m.copiedCodeToClipboard()}</Toast
-	>
-	<Toast
-		position="center"
-		class="k-color-brand-red"
-		opened={errorMessage !== undefined}>{errorMessage}</Toast
-	>
 </Page>
 
 <style>

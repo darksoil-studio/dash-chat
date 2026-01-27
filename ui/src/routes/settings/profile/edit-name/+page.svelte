@@ -19,15 +19,13 @@
 		Preloader,
 		ListInput,
 		List,
-		Toast,
 		useTheme,
 	} from 'konsta/svelte';
-	import { TOAST_TTL_MS } from '$lib/utils/toasts';
+	import { showToast } from '$lib/utils/toasts';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let avatar = $state<string | undefined>(undefined);
 	let name = $state<string>('');
-	let errorMessage = $state<string | undefined>(undefined);
 
 	const myProfile = useReactivePromise(contactsStore.myProfile);
 	myProfile.subscribe(m => {
@@ -49,14 +47,11 @@
 			const error = e as Error;
 			switch (error.kind) {
 				case 'AuthorOperation':
-					errorMessage = m.errorSetProfile();
+					showToast(m.errorSetProfile(), 'error');
 					break;
 				default:
-					errorMessage = m.errorUnexpected();
+					showToast(m.errorUnexpected(), 'error');
 			}
-			setTimeout(() => {
-				errorMessage = undefined;
-			}, TOAST_TTL_MS);
 		}
 	}
 	const theme = $derived(useTheme());
@@ -121,7 +116,4 @@
 			</Button>
 		{/if}
 	{/await}
-	<Toast position="center" class="k-color-brand-red" opened={errorMessage !== undefined}
-		>{errorMessage}</Toast
-	>
 </Page>

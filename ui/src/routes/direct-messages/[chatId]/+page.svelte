@@ -31,10 +31,9 @@
 		ToolbarPane,
 		Icon,
 		useTheme,
-		Toast,
 	} from 'konsta/svelte';
 	import { page } from '$app/state';
-	import { TOAST_TTL_MS } from '$lib/utils/toasts';
+	import { showToast } from '$lib/utils/toasts';
 	let chatId = page.params.chatId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
@@ -47,35 +46,26 @@
 	const peerProfile = useReactivePromise(store.peerProfile);
 	const contactRequest = useReactivePromise(store.getContactRequest);
 
-	let acceptedToastOpen = $state(false);
-	let errorMessage = $state<string | undefined>(undefined);
-
 	async function acceptContactRequest(contactRequest: ContactRequest) {
 		try {
 			await contactsStore.client.addContact(contactRequest.code);
-			acceptedToastOpen = true;
-			setTimeout(() => {
-				acceptedToastOpen = false;
-			}, TOAST_TTL_MS);
+			showToast(m.contactAccepted());
 		} catch (e) {
 			console.error(e);
 			const error = e as AddContactError;
 			switch (error.kind) {
 				case 'ProfileNotCreated':
-					errorMessage = m.errorAddContactProfileRequired();
+					showToast(m.errorAddContactProfileRequired(), 'error');
 					break;
 				case 'InitializeTopic':
 				case 'AuthorOperation':
 				case 'CreateQrCode':
 				case 'CreateDirectChat':
-					errorMessage = m.errorAddContact();
+					showToast(m.errorAddContact(), 'error');
 					break;
 				default:
-					errorMessage = m.errorUnexpected();
+					showToast(m.errorUnexpected(), 'error');
 			}
-			setTimeout(() => {
-				errorMessage = undefined;
-			}, TOAST_TTL_MS);
 		}
 	}
 
@@ -88,10 +78,7 @@
 			goto('/');
 		} catch (e) {
 			console.error(e);
-			errorMessage = m.errorUnexpected();
-			setTimeout(() => {
-				errorMessage = undefined;
-			}, TOAST_TTL_MS);
+			showToast(m.errorUnexpected(), 'error');
 		}
 	}
 
@@ -278,12 +265,4 @@
 		{/await}
 	</div>
 
-	<Toast position="center" opened={acceptedToastOpen}>
-		{m.contactAccepted()}
-	</Toast>
-	<Toast
-		position="center"
-		class="k-color-brand-red"
-		opened={errorMessage !== undefined}>{errorMessage}</Toast
-	>
 </Page>

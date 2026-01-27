@@ -2,7 +2,7 @@
 	import '@awesome.me/webawesome/dist/styles/webawesome.css';
 
 	import '../app.css';
-	import { setContext } from 'svelte';
+	import { setContext, onMount } from 'svelte';
 	import {
 		ChatsClient,
 		ChatsStore,
@@ -15,9 +15,10 @@
 		DevicesClient,
 		DevicesStore,
 	} from 'dash-chat-stores';
-	import { App, KonstaProvider } from 'konsta/svelte';
+	import { App, KonstaProvider, Toast } from 'konsta/svelte';
 
 	import SplashscreenPrompt from '$lib/components/splashscreen/SplashscreenPrompt.svelte';
+	import { TOAST_TTL_MS, type ToastEvent } from '$lib/utils/toasts';
 
 	import { setLocale } from '$lib/paraglide/runtime';
 	setLocale('en');
@@ -44,6 +45,29 @@
 	setContext('chats-store', chatsStore);
 
 	let theme: 'ios' | 'material' = 'material';
+
+	let toastOpen = $state(false);
+	let toastMessage = $state('');
+	let toastVariant = $state<'default' | 'error'>('default');
+	let toastTimeout: ReturnType<typeof setTimeout> | undefined;
+
+	function handleToast(event: CustomEvent<ToastEvent>) {
+		clearTimeout(toastTimeout);
+		toastMessage = event.detail.message;
+		toastVariant = event.detail.variant ?? 'default';
+		toastOpen = true;
+		toastTimeout = setTimeout(() => {
+			toastOpen = false;
+		}, TOAST_TTL_MS);
+	}
+
+	onMount(() => {
+		window.addEventListener('app:toast', handleToast as EventListener);
+		return () => {
+			window.removeEventListener('app:toast', handleToast as EventListener);
+			clearTimeout(toastTimeout);
+		};
+	});
 </script>
 
 <KonstaProvider {theme}>
@@ -51,5 +75,12 @@
 		<SplashscreenPrompt>
 			{@render children()}
 		</SplashscreenPrompt>
+		<Toast
+			position="center"
+			class={toastVariant === 'error' ? 'k-color-brand-red' : ''}
+			opened={toastOpen}
+		>
+			{toastMessage}
+		</Toast>
 	</App>
 </KonstaProvider>
