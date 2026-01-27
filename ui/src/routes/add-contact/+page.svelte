@@ -26,10 +26,16 @@
 		Card,
 		Preloader,
 		Button,
+		useTheme,
+		ToolbarPane,
+		TabbarLink,
+		Tabbar,
 	} from 'konsta/svelte';
 	import { goto } from '$app/navigation';
 	import { showToast } from '$lib/utils/toasts';
 	import { cancel } from '@tauri-apps/plugin-barcode-scanner';
+
+	const theme = $derived(useTheme());
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
@@ -61,10 +67,9 @@
 			// }
 
 			await contactsStore.client.addContact(contactCode);
-			showToast(m.contactAccepted())
+			showToast(m.contactAccepted());
 
 			goto(`/direct-messages/${contactCode.agent_id}`);
-
 		} catch (e) {
 			console.error(e);
 			const error = e as AddContactError;
@@ -83,16 +88,37 @@
 			}
 		}
 	}
+
+	async function scan() {
+		if (tab === 'scan') return;
+		tab = 'scan';
+		try {
+			const code = await scanQrcode();
+			await receiveCode(code);
+		} catch (e) {
+			console.error(e);
+			showToast(m.errorScanningQrCode(), 'error');
+		}
+	}
+
+	async function cancelScan() {
+		if (tab === 'code') return;
+		tab = 'code';
+		await cancel();
+	}
 </script>
 
 <Page
 	class={tab === 'scan' ? 'transparent' : ''}
-	style="display: flex; flex-direction: column;"
+	style="display: flex; flex-direction: column"
 >
 	<Navbar
-		centerTitle={isMobile}
+		centerTitle={isMobile || theme === 'ios'}
 		titleClass="opacity1"
-		transparent={tab !== 'scan'}
+		transparent={true}
+		style={tab === 'scan' && theme === 'material'
+			? 'background-color: var(--background-color)'
+			: ''}
 	>
 		{#snippet left()}
 			<NavbarBackLink
@@ -104,44 +130,54 @@
 
 		{#snippet title()}
 			{#if isMobile}
-				<div
-					class="row gap-2"
-					style="align-items: center; justify-content: center"
-				>
-					<Button
-						small
-						rounded
-						tonal={tab !== 'code'}
-						onClick={async () => {
-							if (tab === 'code') return;
-							tab = 'code';
-							await cancel();
-						}}
-						>{m.code()}
-					</Button>
+				{#if theme === 'material'}
+					<div
+						class="row gap-2"
+						style="align-items: center; justify-content: center"
+					>
+						<Button
+							class="w-24"
+							small
+							rounded
+							tonal={tab !== 'code'}
+							onClick={cancelScan}
+							>{m.code()}
+						</Button>
 
-					<Button
-						small
-						rounded
-						tonal={tab !== 'scan'}
-						onClick={async () => {
-							if (tab === 'scan') return;
-							tab = 'scan';
-							try {
-								const code = await scanQrcode();
-								await receiveCode(code);
-							} catch (e) {
-								console.error(e);
-								showToast(m.errorScanningQrCode(), 'error');
-							}
-						}}
-						>{m.scan()}
-					</Button>
-				</div>
+						<Button
+							class="w-24"
+							small
+							rounded
+							tonal={tab !== 'scan'}
+							onClick={scan}
+							>{m.scan()}
+						</Button>
+					</div>
+				{:else}
+					<Tabbar
+						labels={true}
+						class="transparent"
+						style="margin-top: env(safe-area-inset-top); z-index: -1;"
+					>
+						<ToolbarPane>
+							<TabbarLink
+								active={tab === 'code'}
+								onclick={cancelScan}
+								label={m.code()}
+							/>
+							<TabbarLink
+								active={tab !== 'code'}
+								onclick={scan}
+								label={m.scan()}
+							/>
+						</ToolbarPane>
+					</Tabbar>
+				{/if}
 			{:else}
 				{m.addContact()}
 			{/if}
 		{/snippet}
+
 	</Navbar>
 
 	{#if tab === 'code'}
@@ -207,7 +243,13 @@
 			</div>
 		{/await}
 	{:else}
-		<div class="column" style="flex: 1">
+		<div class="column" style="position: relative; flex: 1;">
+			<div
+				class="row p-4 top-2"
+				style="color: white; position: absolute; width: 100%; align-items: center; justify-content: center; z-index: 1; text-align: center"
+			>
+				<span class="w-60">{m.scanQrCodeOfYourContact()}</span>
+			</div>
 			<div
 				class="column"
 				style="flex: 1; align-items: center; justify-content: center"
@@ -217,14 +259,6 @@
 						<div class="barcode-scanner--area--outer surround-cover"></div>
 					</div>
 				</div>
-			</div>
-			<div
-				class="row p-2"
-				style="background-color: var(--background-color); align-items: center; justify-content: center; z-index: 1"
-			>
-				<span style="margin-bottom: env(safe-area-inset-bottom)"
-					>{m.scanQrCodeOfYourContact()}</span
-				>
 			</div>
 		</div>
 	{/if}
@@ -263,7 +297,6 @@
 	.barcode-scanner--area--container {
 		width: 80%;
 		max-width: min(500px, 80vh);
-		margin: auto;
 	}
 	.barcode-scanner--area--outer {
 		display: flex;

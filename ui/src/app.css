@@ -101,3 +101,7 @@ li.plain span {
 .transparent.k-page {
 	background-color: transparent !important;
 }
+
+.k-toolbar.transparent .bg-gradient-to-t {
+	display: none
+}
