@@ -8,10 +8,16 @@
 	--color-brand-green: #00ff00;
 }
 
+html {
+	background-color: transparent !important;
+	
+}
+
 body {
 	display: flex;
 	--background-color: var(--color-md-light-surface);
-	background-color: var(--background-color);
+	/* background-color: var(--background-color); */
+	background-color: transparent !important;
 }
 
 .column {
@@ -90,4 +96,8 @@ li.plain span {
 .qr-card > div {
 	/* Padding for the copy button below the QR code in add-contact */
 	padding-bottom: 8px;
+}
+
+.transparent.k-page {
+	background-color: transparent !important;
 }
