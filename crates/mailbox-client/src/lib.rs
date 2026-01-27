@@ -9,7 +9,6 @@ use std::{
     time::Duration,
 };
 
-use named_id::Rename;
 use tokio::sync::{Mutex, mpsc};
 use tracing::Instrument;
 
@@ -87,3 +86,15 @@ pub trait MailboxItem: Clone + Serialize + DeserializeOwned + Send + Sync + 'sta
     fn author(&self) -> Self::Author;
     fn topic(&self) -> Self::Topic;
 }
+
+/// Extra traits for ItemTraits which are feature-dependent.
+#[cfg(feature = "named-id")]
+pub trait OptionalItemTraits: named_id::Rename {}
+#[cfg(feature = "named-id")]
+impl<T> OptionalItemTraits for T where T: named_id::Rename {}
+
+/// Extra traits for ItemTraits which are feature-dependent.
+#[cfg(not(feature = "named-id"))]
+pub trait OptionalItemTraits {}
+#[cfg(not(feature = "named-id"))]
+impl<T> OptionalItemTraits for T {}

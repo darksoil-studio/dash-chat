@@ -36,7 +36,7 @@ impl<Item, Store> Mailboxes<Item, Store>
 where
     Item: MailboxItem,
     Store: MailboxStore<Item>,
-    Item::Topic: Rename,
+    Item::Topic: OptionalItemTraits,
 {
     fn new(store: Store, config: MailboxesConfig, trigger: mpsc::Sender<()>) -> Self {
         Self {
@@ -68,6 +68,7 @@ where
         &self,
         topic: Item::Topic,
     ) -> Result<mpsc::Receiver<Item>, anyhow::Error> {
+        #[cfg(feature = "named-id")]
         tracing::info!(topic = ?topic.renamed(), "subscribing to topic");
         let (tx, rx) = mpsc::channel(100);
         self.topics.lock().await.insert(topic, tx);
@@ -75,6 +76,7 @@ where
     }
 
     pub async fn unsubscribe(&self, topic: Item::Topic) -> Result<(), anyhow::Error> {
+        #[cfg(feature = "named-id")]
         tracing::info!(topic = ?topic.renamed(), "unsubscribing from topic");
         self.topics.lock().await.remove(&topic);
         Ok(())
@@ -181,6 +183,7 @@ where
             );
 
             let Some(sender) = self.topics.lock().await.get(&topic).cloned() else {
+                #[cfg(feature = "named-id")]
                 tracing::warn!(topic = ?topic.renamed(), "no sender for topic");
                 continue;
             };
