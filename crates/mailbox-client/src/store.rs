@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::MailboxItem;
 
 #[async_trait::async_trait]
@@ -12,5 +14,5 @@ pub trait MailboxStore<Item: MailboxItem>: Clone + Send + Sync + 'static {
     async fn get_log_heights(
         &self,
         topic: &Item::Topic,
-    ) -> Result<Vec<(Item::Author, u64)>, anyhow::Error>;
+    ) -> Result<BTreeMap<Item::Author, u64>, anyhow::Error>;
 }

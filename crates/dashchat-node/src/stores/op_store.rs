@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     sync::{Arc, RwLock},
 };
 
@@ -442,7 +442,9 @@ where
         }))
     }
 
-    async fn get_log_heights(&self, topic: &TopicId) -> anyhow::Result<Vec<(DeviceId, u64)>> {
-        OpStore::get_log_heights(self, topic).await
+    async fn get_log_heights(&self, topic: &TopicId) -> anyhow::Result<BTreeMap<DeviceId, u64>> {
+        Ok(BTreeMap::from_iter(
+            OpStore::get_log_heights(self, topic).await?.into_iter(),
+        ))
     }
 }
