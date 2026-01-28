@@ -2,7 +2,6 @@ use dashchat_node::Node;
 use mailbox_client::toy::ToyMailboxClient;
 use p2panda_core::{cbor::encode_cbor, Body};
 
-use tauri::tray::TrayIconBuilder;
 use tauri::{Emitter, Manager, RunEvent};
 
 use crate::{
@@ -15,6 +14,7 @@ mod local_store;
 mod settings;
 mod utils;
 
+mod mailbox;
 #[cfg(not(mobile))]
 mod menu;
 #[cfg(mobile)]
@@ -140,6 +140,11 @@ pub fn run() {
                                         log::error!("Failed to hide window: {err:?}");
                                     }
                                 }
+                                // // TODO: stop local mailbox
+                                // tokio::task::block_in_place(|| {
+                                //     tokio::runtime::Handle::current()
+                                //         .block_on(mailbox::stop_local_mailbox(&handle_for_event))
+                                // });
                             }
                         }
                     });

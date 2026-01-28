@@ -2,6 +2,8 @@ use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 
+use crate::mailbox;
+
 pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     let mailbox_toggle = CheckMenuItem::with_id(
         app_handle,
@@ -46,13 +48,28 @@ pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R
                 });
             }
             "toggle-local-mailbox" => match mailbox_toggle_handle.is_checked() {
-                Ok(is_checked) => {
-                    crate::settings::save_mailbox_enabled::<R>(app_handle, is_checked);
+                Ok(enabled) => {
+                    crate::settings::save_mailbox_enabled::<R>(app_handle, enabled);
 
                     // Toggle tray visibility
-                    if let Err(err) = crate::tray::toggle_tray::<R>(app_handle, is_checked) {
+                    if let Err(err) = crate::tray::toggle_tray::<R>(app_handle, enabled) {
                         log::error!("Failed to toggle tray: {err:?}");
                     }
+
+                    // // TODO: run/stop local mailbox
+                    // let r = tokio::task::block_in_place(|| {
+                    //     if enabled {
+                    //         tokio::runtime::Handle::current()
+                    //             .block_on(mailbox::start_local_mailbox(app_handle))
+                    //     } else {
+                    //         tokio::runtime::Handle::current()
+                    //             .block_on(mailbox::stop_local_mailbox(app_handle));
+                    //         Ok(())
+                    //     }
+                    // });
+                    // if let Err(err) = r {
+                    //     log::error!("Failed to start/stop local mailbox: {err:?}");
+                    // }
                 }
                 Err(err) => {
                     log::error!("Failed to read mailbox server toggle state: {err:?}");
