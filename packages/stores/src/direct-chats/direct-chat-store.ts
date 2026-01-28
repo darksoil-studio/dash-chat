@@ -59,6 +59,18 @@ export class DirectChatStore {
 
 	async sendMessage(content: MessageContent) {
 		const chatId = await toPromise(this.chatId);
-		return this.client.sendMessage(chatId, content);
+		const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
+		const promise = new Promise(resolve => {
+			this.logsStore.logsClient.onNewOperation((topicId, op) => {
+				if (topicId !== chatId) return;
+				if (op.body?.payload.type !== 'Message') return;
+				if (op.header.public_key !== myDeviceId) return;
+				if (op.body.payload.payload !== content) return;
+
+				resolve(undefined);
+			});
+		});
+		await this.client.sendMessage(chatId, content);
+		return promise 
 	}
 }

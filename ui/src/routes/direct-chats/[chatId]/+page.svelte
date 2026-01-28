@@ -7,13 +7,15 @@
 
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '$lib/utils/time';
-	import { getContext } from 'svelte';
+	import { getContext, onMount, tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type {
 		ChatsStore,
 		ContactCode,
 		ContactRequest,
 		ContactsStore,
+		DeviceId,
+		Message,
 	} from 'dash-chat-stores';
 	import type { AddContactError } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
@@ -34,11 +36,15 @@
 	} from 'konsta/svelte';
 	import { page } from '$app/state';
 	import { showToast } from '$lib/utils/toasts';
+	import { get } from 'svelte/store';
+	import { watcher } from 'signalium';
+	import type { Action } from 'svelte/action';
+	import MessageInput from '$lib/components/MessageInput.svelte';
 	let chatId = page.params.chatId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	const myAgentId = useReactivePromise(contactsStore.myAgentId);
-	const myDeviceId= useReactivePromise(contactsStore.myDeviceId);
+	const myDeviceId = useReactivePromise(contactsStore.myDeviceId);
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.directChats(chatId);
@@ -84,12 +90,20 @@
 	}
 
 	let messageText = $state('');
-	let isClickable = $state(false);
-	let inputOpacity = $state(0.3);
-	const onMessageTextChange = (e: InputEvent) => {
-		messageText = (e.target as HTMLInputElement).value;
-		isClickable = messageText.trim().length > 0;
-		inputOpacity = messageText ? 1 : 0.3;
+	let showEmojiPicker= $state(false);
+
+	const scrollToBottom = (animate = true) => {
+		const pageEl = document.querySelector('.messages-page')! as HTMLDivElement;
+		pageEl.scrollTo({
+			top: pageEl.scrollHeight - pageEl.offsetHeight,
+			behavior: animate ? 'smooth' : 'auto',
+		});
+	};
+
+	const scrolltobottom: Action = () => {
+		tick().then(() => {
+			scrollToBottom(false);
+		});
 	};
 
 	async function sendMessage() {
@@ -99,17 +113,21 @@
 
 		await store.sendMessage(message);
 		messageText = '';
+		// Wait for the message to get rendered in the UI
+		setTimeout(() => {
+			scrollToBottom();
+		});
 	}
 	const theme = $derived(useTheme());
 </script>
 
-<Page>
-	<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
-		{#snippet left()}
-			<NavbarBackLink onClick={() => goto('/')} />
-		{/snippet}
-		{#snippet title()}
-			{#await $peerProfile then profile}
+{#await $peerProfile then profile}
+	<Page class="messages-page">
+		<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
+			{#snippet left()}
+				<NavbarBackLink onClick={() => goto('/')} />
+			{/snippet}
+			{#snippet title()}
 				{#if profile}
 					<Link
 						class="gap-2"
@@ -125,67 +143,38 @@
 						<span>{profile!.name}</span>
 					</Link>
 				{/if}
-			{/await}
-		{/snippet}
-	</Navbar>
+			{/snippet}
+		</Navbar>
 
-	<div class="column pb-16">
-		<div class="center-in-desktop" style="flex:1">
-			{#await $peerProfile then profile}
+		<div class="column">
+			<div class="center-in-desktop column pb-16">
 				{#if profile}
-					<Link
-						href={`/direct-chats/${chatId}/profile`}
-						class="column my-6 gap-2"
-						style="align-items: center"
-					>
-						<wa-avatar
-							image={profile.avatar}
-							initials={profile.name.slice(0, 2)}
-							style="--size: 80px;"
+					<div class="column" style="align-items: center">
+						<Link
+							class="column my-6 gap-2"
+							href={`/direct-chats/${chatId}/profile`}
 						>
-						</wa-avatar>
-						<span class="text-lg font-semibold">{profile.name}</span>
-					</Link>
+							<wa-avatar
+								image={profile.avatar}
+								initials={profile.name.slice(0, 2)}
+								style="--size: 80px;"
+							>
+							</wa-avatar>
+							<span class="text-lg font-semibold">{profile.name}</span>
+						</Link>
+					</div>
 				{/if}
-			{/await}
 
-			<div class="column m-2 gap-2">
 				{#await $myDeviceId then myDeviceId}
 					{#await $messages then messages}
-						{#each messages as message}
-							{#if myDeviceId == message.author}
-								<Card raised class="message my-message">
-									<div class="row gap-2" style="align-items: center">
-										<span>{message.content}</span>
-
-										<div class="dark-quiet text-xs">
-											{#if lessThanAMinuteAgo(message.timestamp)}
-												<span>{m.now()}</span>
-											{:else if moreThanAnHourAgo(message.timestamp)}
-												<wa-format-date
-													hour="numeric"
-													minute="numeric"
-													hour-format="24"
-													date={new Date(message.timestamp)}
-												></wa-format-date>
-											{:else}
-												<wa-relative-time
-													sync
-													format="narrow"
-													date={new Date(message.timestamp)}
-												>
-												</wa-relative-time>
-											{/if}
-										</div>
-									</div>
-								</Card>
-							{:else}
-								<div class="row gap-2 m-0">
-									<Card raised class="message others-message">
+						<div use:scrolltobottom class="column m-2 gap-2">
+							{#each messages as message}
+								{#if myDeviceId == message.author}
+									<Card raised class="message my-message">
 										<div class="row gap-2" style="align-items: center">
 											<span>{message.content}</span>
 
-											<div class="quiet text-xs">
+											<div class="dark-quiet text-xs">
 												{#if lessThanAMinuteAgo(message.timestamp)}
 													<span>{m.now()}</span>
 												{:else if moreThanAnHourAgo(message.timestamp)}
@@ -206,64 +195,75 @@
 											</div>
 										</div>
 									</Card>
-								</div>
-							{/if}
-						{/each}
+								{:else}
+									<div class="row gap-2 m-0">
+										<Card raised class="message others-message">
+											<div class="row gap-2" style="align-items: center">
+												<span>{message.content}</span>
+
+												<div class="quiet text-xs">
+													{#if lessThanAMinuteAgo(message.timestamp)}
+														<span>{m.now()}</span>
+													{:else if moreThanAnHourAgo(message.timestamp)}
+														<wa-format-date
+															hour="numeric"
+															minute="numeric"
+															hour-format="24"
+															date={new Date(message.timestamp)}
+														></wa-format-date>
+													{:else}
+														<wa-relative-time
+															sync
+															format="narrow"
+															date={new Date(message.timestamp)}
+														>
+														</wa-relative-time>
+													{/if}
+												</div>
+											</div>
+										</Card>
+									</div>
+								{/if}
+							{/each}
+						</div>
 					{/await}
 				{/await}
 			</div>
-		</div>
 
-		{#await $contactRequest then contactRequest}
-			{#if contactRequest}
-				<Card class="center-in-desktop p-1 fixed bottom-1">
-					<div class="column gap-2 items-center justify-center">
-						<span style="flex: 1"
-							>{m.contactRequestBanner({
-								name: contactRequest.profile.name,
-							})}</span
-						>
-						<div class="flex gap-2">
-							<Button
-								class="k-color-brand-red"
-								rounded
-								tonal
-								onClick={() => rejectContactRequest(contactRequest)}
-								>{m.reject()}</Button
+			{#await $contactRequest then contactRequest}
+				{#if contactRequest}
+					<Card class="center-in-desktop p-1 fixed bottom-1">
+						<div class="column gap-2 items-center justify-center">
+							<span style="flex: 1"
+								>{m.contactRequestBanner({
+									name: contactRequest.profile.name,
+								})}</span
 							>
-							<Button
-								tonal
-								rounded
-								onClick={() => acceptContactRequest(contactRequest)}
-								>{m.accept()}</Button
-							>
+							<div class="flex gap-2">
+								<Button
+									class="k-color-brand-red"
+									rounded
+									tonal
+									onClick={() => rejectContactRequest(contactRequest)}
+									>{m.reject()}</Button
+								>
+								<Button
+									tonal
+									rounded
+									onClick={() => acceptContactRequest(contactRequest)}
+									>{m.accept()}</Button
+								>
+							</div>
 						</div>
-					</div>
-				</Card>
-			{:else}
-				<Messagebar
-					placeholder={m.typeMessage()}
-					onInput={onMessageTextChange}
-					value={messageText}
-				>
-					{#snippet right()}
-						<ToolbarPane class="ios:h-10">
-							<Link
-								iconOnly
-								onClick={() => (isClickable ? sendMessage() : undefined)}
-								style="opacity: {inputOpacity}; cursor: {isClickable
-									? 'pointer'
-									: 'default'}"
-							>
-								<Icon>
-									<wa-icon src={wrapPathInSvg(mdiSend)}> </wa-icon>
-								</Icon>
-							</Link>
-						</ToolbarPane>
-					{/snippet}
-				</Messagebar>
-			{/if}
-		{/await}
-	</div>
-
-</Page>
+					</Card>
+				{:else}
+				<MessageInput
+    bind:value={messageText}
+    onSend={sendMessage}
+    onEmojiClick={() => showEmojiPicker = true}
+  />
+				{/if}
+			{/await}
+		</div>
+	</Page>
+{/await}
