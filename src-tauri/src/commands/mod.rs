@@ -5,6 +5,7 @@ pub mod devices;
 pub mod profile;
 
 pub mod chats;
+pub mod direct_messages;
 pub mod group_chat;
 
 // #[command]

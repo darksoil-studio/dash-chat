@@ -56,6 +56,10 @@ pub fn run() {
             commands::contacts::my_agent_id,
             commands::contacts::create_contact_code,
             commands::contacts::add_contact,
+            commands::contacts::active_inbox_topics,
+            commands::contacts::reject_contact_request,
+            commands::direct_messages::direct_message_chat_id,
+            commands::direct_messages::direct_messages_send_message,
             // commands::chats::create_group,
             // commands::group_chat::add_member,
             // commands::group_chat::send_message,
@@ -72,6 +76,7 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .setup(move |app| {
             let handle = app.handle().clone();
 

@@ -1,22 +1,22 @@
-import { ReactivePromise, reactive } from 'signalium';
+import { ReactivePromise, reactive, relay } from 'signalium';
 
 import { DevicesStore } from '../devices/devices-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { personalTopicFor } from '../topics';
-import { AnnouncementPayload, Payload } from '../types';
-import { ContactRequestId, IContactsClient, Profile } from './contacts-client';
+import { AnnouncementPayload, ContactCode, Payload } from '../types';
+import { IContactsClient, Profile } from './contacts-client';
 
-export interface IncomingContactRequest {
+export interface ContactRequest {
 	profile: Profile;
-	actorId: AgentId;
-	contactRequestId: ContactRequestId;
+	code: ContactCode;
+	timestamp: number;
 }
 
 export class ContactsStore {
 	constructor(
-		protected logsStore: LogsStore<TopicId, Payload>,
+		protected logsStore: LogsStore<Payload>,
 		protected devicesStore: DevicesStore,
 		public client: IContactsClient,
 	) {}
@@ -29,16 +29,123 @@ export class ContactsStore {
 		return await this.profiles(myAgentId);
 	});
 
-	incomingContactRequests = reactive(async () => {
-		const requests: Array<IncomingContactRequest> = [
-			{
-				actorId: await this.myAgentId(),
-				profile: (await this.myProfile())!,
-				contactRequestId: '1',
-			},
-		];
-		return requests;
+	private activeInboxTopics = reactive(() =>
+		relay<TopicId[]>(state => {
+			state.setPromise(this.client.activeInboxTopics());
+
+			const interval = setInterval(() => {
+				this.client.activeInboxTopics().then(topics => {
+					if (topics.find(topic => !(state.value || []).includes(topic))) {
+						state.value = topics;
+					}
+				});
+			}, 1_000);
+
+			return {
+				deactivate() {
+					clearInterval(interval);
+				},
+			};
+		}),
+	);
+	
+	contactsAgentIds = reactive(async () => {
+		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
+
+		const contacts: Set<AgentId> = new Set();
+
+		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+			for (const op of ops) {
+				if (op.body?.payload?.type === 'AddContact') {
+					contacts.add(op.body.payload.payload.agent_id);
+				}
+			}
+		}
+
+		return Array.from(contacts);
 	});
+
+
+	rejectedContactRequests = reactive(async () => {
+		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
+
+		const rejected: Record<AgentId, number> = {};
+		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+			for (const op of ops) {
+				if (op.body?.payload?.type !== 'RejectContactRequest') continue;
+				const agentId = op.body.payload.payload;
+
+				const existingTimestamp = rejected[agentId];
+
+				// Keep the latest rejection timestamp
+				if (
+					!existingTimestamp ||
+					op.header.timestamp * 1000 > existingTimestamp
+				) {
+					rejected[agentId] = op.header.timestamp * 1000;
+				}
+			}
+		}
+
+		return rejected;
+	}, {
+			// Disable memoization for this function
+			// 
+			// TODO: remove this, and debug why a contact request that has been
+			// just deleted still appears in allChatsSummaries used in the AllChats.svelte b
+			paramKey() {
+					return `${Date.now()}`
+			},
+		});
+
+	contactRequests = reactive(async () => {
+		const activeInboxTopics = await this.activeInboxTopics();
+
+		const allLogs = await Promise.all(
+			activeInboxTopics.map(topicId =>
+				this.logsStore.logsForAllAuthors(topicId),
+			),
+		);
+		const contacts = await this.contactsAgentIds();
+		const rejectedMap = await this.rejectedContactRequests();
+
+		const contactRequests: ContactRequest[] = [];
+
+		for (const log of allLogs) {
+			for (const operations of Object.values(log)) {
+				for (const operation of operations) {
+					if (operation.body?.type !== 'Inbox') continue;
+					const agentId = operation.body.payload.payload.code.agent_id;
+
+					// We have already accepted this contact request
+					if (contacts.includes(agentId)) continue;
+
+					// Time-based rejection: only filter if request was made BEFORE rejection
+					const rejectionTimestamp = rejectedMap[agentId];
+					if (
+						rejectionTimestamp &&
+						operation.header.timestamp * 1000 < rejectionTimestamp
+					)
+						continue;
+
+					contactRequests.push({
+						...operation.body.payload.payload,
+						timestamp: operation.header.timestamp * 1000,
+					});
+				}
+			}
+		}
+
+		return contactRequests;
+	}, {
+			// Disable memoization for this function
+			// 
+			// TODO: remove this, and debug why a contact request that has been
+			// just deleted still appears in allChatsSummaries used in the AllChats.svelte b
+			paramKey() {
+					return `${Date.now()}`
+			},
+		});
 
 	profiles = reactive(async (agentId: AgentId) => {
 		const topicId = personalTopicFor(agentId);
@@ -56,7 +163,7 @@ export class ContactsStore {
 			)
 			.map(l => [
 				l.header.timestamp,
-				((l.body! as any).payload as AnnouncementPayload).payload,
+				(l.body!.payload as AnnouncementPayload).payload,
 			]);
 
 		const descendantSortedOperations = setProfiles.sort(
@@ -72,26 +179,10 @@ export class ContactsStore {
 		return profile;
 	});
 
-	contactsActorIds = reactive(async () => {
-		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
-
-		const contacts: Set<AgentId> = new Set();
-
-		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
-			for (const op of ops) {
-				if (op.body?.payload?.type === 'AddContact') {
-					contacts.add(op.body.payload.payload.agent_id);
-				}
-			}
-		}
-
-		return Array.from(contacts);
-	});
-
 	profilesForAllContacts = reactive(async () => {
-		const contacts = await this.contactsActorIds();
+		const contacts = await this.contactsAgentIds();
 
-		const profiles = await ReactivePromise.all(
+		const profiles = await Promise.all(
 			contacts.map(contact => this.profiles(contact)),
 		);
 

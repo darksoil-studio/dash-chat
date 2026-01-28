@@ -5,7 +5,7 @@
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
-	import { mdiPencil } from '@mdi/js';
+	import { mdiPencil, mdiQrcode } from '@mdi/js';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
@@ -42,7 +42,12 @@
 		</div>
 	{:then myProfile}
 		<div class="column" style="flex: 1">
-			<List class="center-in-desktop" strongIos nested={theme==='material'} inset>
+			<List
+				class="center-in-desktop"
+				strongIos
+				nested={theme === 'material'}
+				inset
+			>
 				<ListItem
 					link
 					chevron={false}
@@ -56,6 +61,25 @@
 							style="--size: 64px"
 						>
 						</wa-avatar>
+					{/snippet}
+					{#snippet after()}
+						<div
+							on:pointerdown|preventDefault|stopPropagation={(e: any) => {
+								e.stopPropagation();
+								e.preventDefault();
+							}}
+						>
+							<Link
+								iconOnly
+								onClick={e => {
+									e.stopPropagation();
+									e.preventDefault();
+									goto('/add-contact');
+								}}
+							>
+								<wa-icon src={wrapPathInSvg(mdiQrcode)}></wa-icon>
+							</Link>
+						</div>
 					{/snippet}
 				</ListItem>
 			</List>

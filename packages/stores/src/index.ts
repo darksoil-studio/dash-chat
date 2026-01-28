@@ -10,6 +10,7 @@ export * from './types.js';
 export * from './contacts/contacts-store.js';
 export * from './contacts/contacts-client.js';
 export * from './contacts/contact-code.js';
+export * from './contacts/errors.js';
 
 export * from './devices/devices-store.js';
 export * from './devices/devices-client.js';
@@ -22,3 +23,5 @@ export * from './group-chats/group-chat-client.js';
 
 export * from './chats/chats-store.js';
 export * from './chats/chats-client.js';
+
+export * from './utils/to-promise.js';

@@ -17,12 +17,9 @@ export interface SpaceControlMessage {
 	// spaces_args: SpacesArgs,
 }
 
+export type MessageContent = string;
 export type AnnouncementPayload = { type: 'SetProfile'; payload: Profile };
-export type ChatPayload = Array<SpaceControlMessage>;
-
-export type InboxPayload =
-	| { type: 'JoinGroup'; payload: ChatId }
-	| { type: 'Contact' };
+export type ChatPayload = { type: 'Message'; payload: MessageContent };
 
 export interface InboxTopic {
 	expires_at: number;
@@ -41,16 +38,23 @@ export interface ContactCode {
 	share_intent: ShareIntent;
 }
 
-export type DeviceGroupPayload = {
-	type: 'AddContact';
-	payload: ContactCode;
+export type DeviceGroupPayload =
+	| { type: 'AddContact'; payload: ContactCode }
+	| { type: 'RejectContactRequest'; payload: AgentId };
+
+export type InboxPayload = {
+	type: 'ContactRequest';
+	payload: {
+		code: ContactCode;
+		profile: Profile;
+	};
 };
 
 export type Payload =
 	| { type: 'Announcements'; payload: AnnouncementPayload }
 	| { type: 'Chat'; payload: ChatPayload }
 	| { type: 'DeviceGroupPayload'; payload: DeviceGroupPayload }
-	| { type: 'Inbox' };
+	| { type: 'Inbox'; payload: InboxPayload };
 
 export type MessageId = string;
 

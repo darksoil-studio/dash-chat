@@ -14,6 +14,7 @@ Please read this coding style carefully and take it into account when planning o
 
 - Try to remain as simple as possible with your implementations.
 - Try to reuse types and functions across the project rather than reimplement them.
+- Don't use `any` or `unknown` typescript types. Instead, try to understand the actual typescript types and use them to infer the appropriate data structures and algorithms to use.
 
 ## Development Environment
 
@@ -147,6 +148,100 @@ This is a pnpm workspace with multiple packages:
 - UI built with Konsta UI components (mobile-first design)
 - Internationalization using @inlang/paraglide-js
 - Image compression before upload
+
+### State Management (packages/stores)
+
+The `packages/stores` package implements a layered reactive state management system using Signalium. It bridges the gap between Svelte components and the Tauri/Rust backend.
+
+**Architecture Layers:**
+
+1. **Client Classes** (`*-client.ts`): Thin wrappers around Tauri `invoke()` calls for backend communication
+   ```typescript
+   // Example: contacts-client.ts
+   export class ContactsClient implements IContactsClient {
+     myAgentId(): Promise<AgentId> {
+       return invoke('my_agent_id');
+     }
+     addContact(contactCode: ContactCode): Promise<void> {
+       return invoke('add_contact', { contactCode });
+     }
+   }
+   ```
+
+2. **Store Classes** (`*-store.ts`): Reactive state containers that transform raw data into computed/derived state
+   ```typescript
+   // Example: contacts-store.ts
+   export class ContactsStore {
+     constructor(
+       protected logsStore: LogsStore<Payload>,
+       protected devicesStore: DevicesStore,
+       public client: IContactsClient,
+     ) {}
+
+     // Reactive computed properties using signalium's reactive()
+     myProfile = reactive(async () => {
+       const myAgentId = await this.myAgentId();
+       return await this.profiles(myAgentId);
+     });
+   }
+   ```
+
+3. **LogsStore** (`p2panda/logs-store.ts`): Base store for p2panda operation logs with automatic event subscription
+   - Fetches logs via `LogsClient.getLog()` and `getAuthorsForTopic()`
+   - Subscribes to `p2panda://new-operation` events for real-time updates
+   - Uses `relay()` for cleanup on unsubscribe
+
+**Key Signalium Primitives:**
+
+- `reactive()`: Creates memoized reactive computations that re-run when dependencies change
+- `relay()`: Creates reactive values with cleanup/teardown logic (for event subscriptions)
+- `ReactivePromise`: Async-aware reactive wrapper that tracks pending/resolved/rejected states
+- `watcher()`: Observes reactive values and notifies on changes (used to bridge to Svelte)
+
+**Backend Event Flow:**
+
+1. Rust backend receives new p2panda operations via `notification_rx` channel (`src-tauri/src/lib.rs`)
+2. Operations are serialized and emitted as `p2panda://new-operation` Tauri events
+3. `TauriLogsClient` listens via `@tauri-apps/api/event.listen()` and invokes registered handlers
+4. `LogsStore` updates reactive state, triggering dependent store recomputations
+
+**Svelte Integration:**
+
+Stores are bridged to Svelte's store contract via `ui/src/lib/stores/use-signal.ts`:
+
+```typescript
+// useReactivePromise converts Signalium ReactivePromise to Svelte Readable
+const myProfile = useReactivePromise(contactsStore.myProfile);
+
+// In Svelte component: use $myProfile with {#await}
+{#await $myProfile then profile}
+  <span>{profile.name}</span>
+{/await}
+```
+
+**Store Initialization:**
+
+Stores are instantiated in `ui/src/routes/+layout.svelte` and passed via Svelte context:
+
+```typescript
+const logsClient = new TauriLogsClient<TopicId, Payload>();
+const logsStore = new LogsStore<Payload>(logsClient);
+
+const devicesStore = new DevicesStore(logsStore, new DevicesClient());
+setContext('devices-store', devicesStore);
+
+const contactsStore = new ContactsStore(logsStore, devicesStore, new ContactsClient());
+setContext('contacts-store', contactsStore);
+
+const chatsStore = new ChatsStore(logsStore, contactsStore, new ChatsClient());
+setContext('chats-store', chatsStore);
+```
+
+**Store Composition:**
+
+Stores depend on each other forming a dependency graph:
+- `LogsStore` (base) ← `DevicesStore` ← `ContactsStore` ← `ChatsStore`
+- Domain-specific stores (e.g., `DirectMessagesChatStore`, `GroupChatStore`) are created on-demand with specific parameters
 
 ### Data Flow
 

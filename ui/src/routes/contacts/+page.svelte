@@ -4,14 +4,12 @@
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
-	import type { ContactRequestId, ContactsStore } from 'dash-chat-stores';
-	import Avatar from '$lib/components/profiles/Avatar.svelte';
+	import type { ContactsStore } from 'dash-chat-stores';
 	import { mdiAccountPlus } from '@mdi/js';
-	import { m, myContacts } from '$lib/paraglide/messages.js';
+	import { m } from '$lib/paraglide/messages.js';
 	import {
 		Page,
 		BlockTitle,
-		Button,
 		Link,
 		List,
 		ListItem,
@@ -23,24 +21,7 @@
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
-	const incomingContactRequests = useReactivePromise(
-		contactsStore.incomingContactRequests,
-	);
 	const contacts = useReactivePromise(contactsStore.profilesForAllContacts);
-
-	async function rejectContactRequest(contactRequestId: ContactRequestId) {
-		try {
-			// Actual rejection logic here
-		} finally {
-		}
-	}
-
-	async function acceptContactRequest(contactRequestId: ContactRequestId) {
-		try {
-			// Actual acceptance logic here
-		} finally {
-		}
-	}
 </script>
 
 <Page>
@@ -58,52 +39,6 @@
 
 	<div class="column" style="flex: 1">
 		<div class="center-in-desktop">
-			{#await $incomingContactRequests}
-				<div
-					class="column"
-					style="height: 100%; align-items: center; justify-content: center"
-				>
-					<Preloader />
-				</div>
-			{:then incomingContactRequests}
-				{#if incomingContactRequests.length > 0}
-					<BlockTitle>{m.contactRequests()}</BlockTitle>
-					<List strongIos insetIos>
-						{#each incomingContactRequests as incomingContactRequest}
-							<ListItem title={incomingContactRequest.profile.name}>
-								{#snippet media()}
-									<wa-avatar
-										image={incomingContactRequest.profile.avatar}
-										initials={incomingContactRequest.profile.name.slice(0, 2)}
-									>
-									</wa-avatar>
-								{/snippet}
-								{#snippet after()}
-									<Button
-										class="k-color-brand-red"
-										onClick={() =>
-											rejectContactRequest(
-												incomingContactRequest.contactRequestId,
-											)}
-									>
-										{m.reject()}
-									</Button>
-
-									<Button
-										onClick={() =>
-											acceptContactRequest(
-												incomingContactRequest.contactRequestId,
-											)}
-									>
-										{m.accept()}
-									</Button>
-								{/snippet}
-							</ListItem>
-						{/each}
-					</List>
-				{/if}
-			{/await}
-
 			{#await $contacts}
 				<div
 					class="column"
@@ -135,6 +70,4 @@
 			{/await}
 		</div>
 	</div>
-
-</Page
->
+</Page>

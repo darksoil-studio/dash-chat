@@ -1,16 +1,12 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import { AgentId, type PublicKey, type TopicId } from '../p2panda/types';
+import { AgentId, type TopicId } from '../p2panda/types';
 import { ContactCode } from '../types';
 
 export interface Profile {
 	name: string;
 	avatar: string | undefined;
 }
-
-export type ContactRequestId = string;
-
-
 
 export interface IContactsClient {
 	/// Profiles
@@ -25,10 +21,15 @@ export interface IContactsClient {
 	// Creates a new contact code to be shared
 	createContactCode(): Promise<ContactCode>;
 
+	activeInboxTopics(): Promise<TopicId[]>
+
 	// getContacts(): Promise<Array<PublicKey>>;
 
-	// Remove contact
+	// Add contact
 	addContact(code: ContactCode): Promise<void>;
+
+	// Reject contact request
+	rejectContactRequest(agentId: AgentId): Promise<void>;
 
 	// Remove contact
 	// removeContact(contact: ContactId): Promise<void>;
@@ -63,9 +64,19 @@ export class ContactsClient implements IContactsClient {
 		return invoke('create_contact_code');
 	}
 
+	activeInboxTopics(): Promise<TopicId[]> {
+		return invoke('active_inbox_topics');
+	}
+
 	addContact(contactCode: ContactCode): Promise<void> {
 		return invoke('add_contact', {
 			contactCode,
+		});
+	}
+
+	rejectContactRequest(agentId: AgentId): Promise<void> {
+		return invoke('reject_contact_request', {
+			agentId,
 		});
 	}
 

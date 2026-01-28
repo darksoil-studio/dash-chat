@@ -43,7 +43,9 @@
 			<ListItem
 				title={summary.name}
 				link
-				linkProps={{ href: `/group-chat/${summary.chatId}` }}
+				linkProps={{ href: summary.type === 'GroupChat'
+					? `/group-chat/${summary.chatId}`
+					: `/direct-messages/${summary.chatId}` }}
 				chevron={false}
 			>
 				{#snippet media()}
@@ -55,7 +57,7 @@
 						<wa-format-date
 							weekday="short"
 							date={new Date(summary.lastEvent.timestamp)}
-						></wa-format-date>`;
+						></wa-format-date>
 					{:else if inYesterday(summary.lastEvent.timestamp)}
 						{m.yesterday()}
 					{:else if lessThanAMinuteAgo(summary.lastEvent.timestamp)}
@@ -79,7 +81,7 @@
 				{/snippet}
 				{#snippet subtitle()}
 					<div class="row" style="align-items: center">
-						<span style="flex: 1">{summary.lastEvent.summary}</span>
+						<span style="flex: 1">{summary.type === 'ContactRequest' ? m.contactRequest() : summary.lastEvent.summary === 'contact_added' ? m.contactAccepted(): summary.lastEvent.summary}</span>
 						{#if summary.unreadMessages !== 0}
 							<Badge>{summary.unreadMessages}</Badge>
 						{/if}

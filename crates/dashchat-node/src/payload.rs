@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::chat::ChatId;
 use crate::contact::QrCode;
 use crate::topic::TopicId;
-use crate::{AsBody, Cbor, ChatMessageContent, Topic};
+use crate::{AgentId, AsBody, Cbor, ChatMessageContent, Topic};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Extensions {
@@ -32,13 +32,15 @@ pub enum AnnouncementsPayload {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]
+#[serde(tag = "type", content = "payload")]
 pub enum InboxPayload {
     /// Invites the recipient to add the sender as a contact.
-    Contact(QrCode),
+    ContactRequest { code: QrCode, profile: Profile },
 }
 
 // TODO: consolidate into something else
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
+#[serde(tag = "type", content = "payload")]
 pub enum ChatPayload {
     /// Instructs the recipient to subscribe to the group chat topic.
     /// This is only sent in direct chat messages.
@@ -57,6 +59,7 @@ pub enum ChatPayload {
 #[serde(tag = "type", content = "payload")]
 pub enum DeviceGroupPayload {
     AddContact(QrCode),
+    RejectContactRequest(AgentId),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]

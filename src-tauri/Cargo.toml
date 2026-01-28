@@ -51,10 +51,10 @@ tauri-plugin-notification = { git = "https://github.com/guillemcordoba/plugins-w
 tauri-plugin-dialog = "2.3"
 tauri-plugin-process = "2.3"
 tauri-plugin-virtual-keyboard-padding = { git = "https://github.com/dash-chat/tauri-plugin-virtual-keyboard-padding", branch = "main" }
-tauri-plugin-mcp-bridge = "0.7"
 
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 tauri-plugin-deep-link = "2"
+tauri-plugin-clipboard-manager = "2"
 
 opener = { version = "0.7", features = ["reveal"] }
 log = "0.4"
@@ -86,6 +86,7 @@ ndk-sys = "0.6"
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 tauri-plugin-updater = "2.9"
+tauri-plugin-mcp-bridge = "0.7"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }

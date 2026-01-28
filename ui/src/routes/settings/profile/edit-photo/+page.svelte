@@ -2,6 +2,7 @@
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import type { ContactsStore } from 'dash-chat-stores';
+	import type { Error } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
@@ -22,6 +23,7 @@
 		useTheme,
 	} from 'konsta/svelte';
 	import { resizeAndExport } from '$lib/utils/image';
+	import { showToast } from '$lib/utils/toasts';
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	let avatar = $state<string | undefined>(undefined);
@@ -36,11 +38,23 @@
 	});
 
 	async function save() {
-		await contactsStore.client.setProfile({
-			name: name!,
-			avatar,
-		});
-		goto('/settings/profile');
+		try {
+			await contactsStore.client.setProfile({
+				name: name!,
+				avatar,
+			});
+			goto('/settings/profile');
+		} catch (e) {
+			console.error(e);
+			const error = e as Error;
+			switch (error.kind) {
+				case 'AuthorOperation':
+					showToast(m.errorSetProfile(), 'error');
+					break;
+				default:
+					showToast(m.errorUnexpected(), 'error');
+			}
+		}
 	}
 	const theme = $derived(useTheme());
 

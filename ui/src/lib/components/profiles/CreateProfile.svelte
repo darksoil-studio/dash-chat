@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import type { ContactsStore } from 'dash-chat-stores';
+	import type { ContactsStore, Error } from 'dash-chat-stores';
 	import SelectAvatar from './SelectAvatar.svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { showToast } from '$lib/utils/toasts';
 	import {
 		Page,
 		Button,
 		ListInput,
 		List,
-		BlockTitle,
 		useTheme,
 		Link,
 		Navbar,
@@ -19,10 +19,22 @@
 	let avatar = $state<string | undefined>(undefined);
 
 	async function setProfile() {
-		await contactsStore.client.setProfile({
-			name: nickname!,
-			avatar,
-		});
+		try {
+			await contactsStore.client.setProfile({
+				name: nickname!,
+				avatar,
+			});
+		} catch (e) {
+			console.error(e);
+			const error = e as Error;
+			switch (error.kind) {
+				case 'AuthorOperation':
+					showToast(m.errorSetProfile(), 'error');
+					break;
+				default:
+					showToast(m.errorUnexpected(), 'error');
+			}
+		}
 	}
 	const theme = $derived(useTheme());
 </script>

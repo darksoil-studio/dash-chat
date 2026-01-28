@@ -18,6 +18,7 @@
 	import { App, KonstaProvider } from 'konsta/svelte';
 
 	import SplashscreenPrompt from '$lib/components/splashscreen/SplashscreenPrompt.svelte';
+	import ToastManager from '$lib/components/toast/ToastManager.svelte';
 
 	import { setLocale } from '$lib/paraglide/runtime';
 	setLocale('en');
@@ -25,7 +26,7 @@
 	let { children } = $props();
 
 	const logsClient = new TauriLogsClient<TopicId, Payload>();
-	const logsStore = new LogsStore<TopicId, Payload>(logsClient);
+	const logsStore = new LogsStore<Payload>(logsClient);
 
 	const devicesClient = new DevicesClient();
 	const devicesStore = new DevicesStore(logsStore, devicesClient);
@@ -51,5 +52,6 @@
 		<SplashscreenPrompt>
 			{@render children()}
 		</SplashscreenPrompt>
+		<ToastManager />
 	</App>
 </KonstaProvider>
