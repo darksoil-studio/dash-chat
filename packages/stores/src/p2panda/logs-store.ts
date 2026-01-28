@@ -7,8 +7,6 @@ import type { PublicKey, TopicId } from './types';
 export class LogsStore<PAYLOAD> {
 	constructor(protected logsClient: LogsClient<TopicId, PAYLOAD>) {}
 
-	// myPubKey = reactive(() => this.logsClient.myPubKey());
-
 	authorsForTopic = reactive((topicId: TopicId) =>
 		relay<PublicKey[]>(state => {
 			const fetchAuthors = async () => {
@@ -42,6 +40,11 @@ export class LogsStore<PAYLOAD> {
 			const unsubs = this.logsClient.onNewOperation(
 				(operationTopicId, operation) => {
 					if (topicId !== operationTopicId) return;
+					if (author !== operation.header.public_key) return;
+
+					// We already have this operation
+					if (state.value?.find(op => op.header.seq_num === operation.header.seq_num)) return;
+
 					state.value = [...(state.value || []), operation];
 				},
 			);

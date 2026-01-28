@@ -48,11 +48,11 @@ pub fn run() {
 
     builder
         .invoke_handler(tauri::generate_handler![
-            // commands::my_pub_key,
             commands::logs::get_log,
             commands::logs::get_authors,
             commands::profile::set_profile,
             commands::devices::my_device_group_topic,
+            commands::contacts::my_device_id,
             commands::contacts::my_agent_id,
             commands::contacts::create_contact_code,
             commands::contacts::add_contact,

@@ -23,6 +23,8 @@ export class ContactsStore {
 
 	myAgentId = reactive(async () => await this.client.myAgentId());
 
+	myDeviceId = reactive(async () => await this.client.myDeviceId());
+
 	myProfile = reactive(async () => {
 		const myAgentId = await this.myAgentId();
 

@@ -37,7 +37,8 @@
 	let chatId = page.params.chatId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
-	const myActorId = useReactivePromise(contactsStore.myAgentId);
+	const myAgentId = useReactivePromise(contactsStore.myAgentId);
+	const myDeviceId= useReactivePromise(contactsStore.myDeviceId);
 
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.directChats(chatId);
@@ -128,7 +129,7 @@
 		{/snippet}
 	</Navbar>
 
-	<div class={`column ${theme === 'ios' ? 'pb-16' : ''}`}>
+	<div class="column pb-16">
 		<div class="center-in-desktop" style="flex:1">
 			{#await $peerProfile then profile}
 				{#if profile}
@@ -149,10 +150,10 @@
 			{/await}
 
 			<div class="column m-2 gap-2">
-				{#await $myActorId then myActorId}
+				{#await $myDeviceId then myDeviceId}
 					{#await $messages then messages}
 						{#each messages as message}
-							{#if myActorId == message.author}
+							{#if myDeviceId == message.author}
 								<Card raised class="message my-message">
 									<div class="row gap-2" style="align-items: center">
 										<span>{message.content}</span>
