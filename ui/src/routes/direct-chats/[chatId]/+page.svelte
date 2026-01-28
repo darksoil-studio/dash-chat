@@ -40,7 +40,7 @@
 	const myActorId = useReactivePromise(contactsStore.myAgentId);
 
 	const chatsStore: ChatsStore = getContext('chats-store');
-	const store = chatsStore.directMessagesChats(chatId);
+	const store = chatsStore.directChats(chatId);
 
 	const messages = useReactivePromise(store.messages);
 	const peerProfile = useReactivePromise(store.peerProfile);
@@ -113,7 +113,7 @@
 					<Link
 						class="gap-2"
 						style="display: flex; justify-content: start; align-items: center;"
-						href={`/direct-messages/${chatId}/profile`}
+						href={`/direct-chats/${chatId}/profile`}
 					>
 						<wa-avatar
 							image={profile!.avatar}
@@ -133,7 +133,7 @@
 			{#await $peerProfile then profile}
 				{#if profile}
 					<Link
-						href={`/direct-messages/${chatId}/profile`}
+						href={`/direct-chats/${chatId}/profile`}
 						class="column my-6 gap-2"
 						style="align-items: center"
 					>

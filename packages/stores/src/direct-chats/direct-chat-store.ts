@@ -6,14 +6,14 @@ import { LogsStore } from '../p2panda/logs-store';
 import { AgentId } from '../p2panda/types';
 import { MessageContent, Payload } from '../types';
 import { toPromise } from '../utils/to-promise';
-import { DirectMessagesChatClient } from './direct-messages-chat-client';
+import { DirectChatClient } from './direct-chat-client';
 
-// Store tied to a specific direct messages chat
-export class DirectMessagesChatStore {
+// Store tied to a specific direct chat
+export class DirectChatStore {
 	constructor(
 		protected logsStore: LogsStore<Payload>,
 		protected contactsStore: ContactsStore,
-		public client: DirectMessagesChatClient,
+		public client: DirectChatClient,
 		public peer: AgentId,
 	) {}
 
