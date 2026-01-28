@@ -232,7 +232,7 @@ impl Node {
                 }
             }
 
-            Some(Payload::Chat(ChatPayload::Message(_))) => {
+            Some(Payload::Chat(ChatPayload::Message(_) | ChatPayload::Reaction(_))) => {
                 // Nothing to do.
             }
 
