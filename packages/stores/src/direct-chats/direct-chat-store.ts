@@ -1,12 +1,17 @@
 import { reactive } from 'signalium';
 
 import { ContactsStore } from '../contacts/contacts-store';
-import { Message } from '../group-chats/group-chat-client';
 import { LogsStore } from '../p2panda/logs-store';
-import { AgentId } from '../p2panda/types';
+import { AgentId, DeviceId } from '../p2panda/types';
 import { MessageContent, Payload } from '../types';
 import { toPromise } from '../utils/to-promise';
 import { DirectChatClient } from './direct-chat-client';
+
+export interface Message {
+	content: MessageContent;
+	timestamp: number;
+	author: DeviceId;
+}
 
 // Store tied to a specific direct chat
 export class DirectChatStore {
@@ -71,6 +76,6 @@ export class DirectChatStore {
 			});
 		});
 		await this.client.sendMessage(chatId, content);
-		return promise 
+		return promise;
 	}
 }
