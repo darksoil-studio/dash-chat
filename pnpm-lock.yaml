@@ -23,6 +23,9 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.2
         version: 9.1.2(eslint@9.36.0(jiti@2.6.1))
+      mprocs:
+        specifier: ^0.8.3
+        version: 0.8.3
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -2126,6 +2129,11 @@ packages:
 
   mkdirp@0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
+    hasBin: true
+
+  mprocs@0.8.3:
+    resolution: {integrity: sha512-q3uKG6YLWF9l+fnEgu9CC4qMzEIPSYYMlbTIYdeHYCxGcIm67m4uQmQFmuDr6h69rWPHWJX5N/ih5Ei4h8G9Yg==}
+    engines: {node: '>=0.10.0'}
     hasBin: true
 
   mri@1.2.0:
@@ -4585,6 +4593,8 @@ snapshots:
   mkdirp@0.5.6:
     dependencies:
       minimist: 1.2.8
+
+  mprocs@0.8.3: {}
 
   mri@1.2.0: {}
 
