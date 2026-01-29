@@ -5,6 +5,7 @@
 	import { mdiSend, mdiEmoticonHappyOutline } from '@mdi/js';
 	import { useTheme } from 'konsta/svelte';
 	import { onMount } from 'svelte';
+	import { isIos } from '$lib/utils/environment';
 
 	interface Props {
 		value?: string;
@@ -44,8 +45,9 @@
 	}
 
 	function autoResize() {
+		if (textarea.scrollHeight > 100) return;
 		textarea.style.height = 'auto';
-		const textareaHeight = Math.min(textarea.scrollHeight, 100) + 'px';
+		const textareaHeight = textarea.scrollHeight + 'px';
 		textarea.style.height = textareaHeight;
 		height = `${div.scrollHeight}px`;
 	}
@@ -58,7 +60,7 @@
 		if (hasText) {
 			onSend?.();
 			textarea.style.height = 'auto';
-		height = `${div.scrollHeight}px`;
+			height = `${div.scrollHeight}px`;
 		}
 	}
 
@@ -82,7 +84,7 @@
 				? 'input-container bg-ios-light-glass shadow-ios-light-glass backdrop-blur-lg'
 				: 'input-container bg-white dark:bg-gray-400'}
 		>
-			{#if onEmojiClick && theme === 'material'}
+			{#if onEmojiClick && !isIos}
 				<button
 					type="button"
 					class="icon-button emoji-btn"

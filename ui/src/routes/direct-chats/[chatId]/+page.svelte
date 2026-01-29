@@ -106,7 +106,7 @@
 		});
 	};
 
-	const scrolltobottom: Action = () => {
+	const scrolltobottom: Action = node => {
 		tick().then(() => {
 			scrollToBottom(false);
 		});
@@ -152,31 +152,32 @@
 			{/snippet}
 		</Navbar>
 
-		<div class="column">
-			<div
-				class="center-in-desktop column"
-				style={`padding-bottom: ${messageInputHeight}`}
-			>
-				{#if profile}
-					<div class="column" style="align-items: center">
-						<Link
-							class="column my-6 gap-2"
-							href={`/direct-chats/${chatId}/profile`}
-						>
-							<wa-avatar
-								image={profile.avatar}
-								initials={profile.name.slice(0, 2)}
-								style="--size: 80px;"
-							>
-							</wa-avatar>
-							<span class="text-lg font-semibold">{profile.name}</span>
-						</Link>
-					</div>
-				{/if}
+				<div class="column" >
+		{#await $myDeviceId then myDeviceId}
+			{#await $messages then messages}
+					<div
+use:scrolltobottom
+						class="center-in-desktop column"
+						style={`padding-bottom: ${messageInputHeight}`}
+					>
+						{#if profile}
+							<div class="column" style="align-items: center">
+								<Link
+									class="column my-6 gap-2"
+									href={`/direct-chats/${chatId}/profile`}
+								>
+									<wa-avatar
+										image={profile.avatar}
+										initials={profile.name.slice(0, 2)}
+										style="--size: 80px;"
+									>
+									</wa-avatar>
+									<span class="text-lg font-semibold">{profile.name}</span>
+								</Link>
+							</div>
+						{/if}
 
-				{#await $myDeviceId then myDeviceId}
-					{#await $messages then messages}
-						<div use:scrolltobottom class="column m-2 gap-2">
+						<div class="column m-2 gap-2">
 							{#each messages as message}
 								{#if myDeviceId == message.author}
 									<Card raised class="message my-message">
@@ -235,51 +236,51 @@
 								{/if}
 							{/each}
 						</div>
-					{/await}
-				{/await}
-			</div>
-
-			{#await $contactRequest then contactRequest}
-				{#if contactRequest}
-					<Card class="center-in-desktop p-1 fixed bottom-1">
-						<div class="column gap-2 items-center justify-center">
-							<span style="flex: 1"
-								>{m.contactRequestBanner({
-									name: contactRequest.profile.name,
-								})}</span
-							>
-							<div class="flex gap-2">
-								<Button
-									class="k-color-brand-red"
-									rounded
-									tonal
-									onClick={() => rejectContactRequest(contactRequest)}
-									>{m.reject()}</Button
-								>
-								<Button
-									tonal
-									rounded
-									onClick={() => acceptContactRequest(contactRequest)}
-									>{m.accept()}</Button
-								>
-							</div>
-						</div>
-					</Card>
-				{:else}
-					<MessageInput
-						bind:value={messageText}
-						bind:height={messageInputHeight}
-						onSend={sendMessage}
-						onInput={async () => {
-							if (scrollIsAtBottom()) {
-								await tick();
-								scrollToBottom();
-							}
-						}}
-						onEmojiClick={() => (showEmojiPicker = true)}
-					/>
-				{/if}
+					</div>
 			{/await}
-		</div>
+		{/await}
+
+					{#await $contactRequest then contactRequest}
+						{#if contactRequest}
+							<Card class="center-in-desktop p-1 fixed bottom-1">
+								<div class="column gap-2 items-center justify-center">
+									<span style="flex: 1"
+										>{m.contactRequestBanner({
+											name: contactRequest.profile.name,
+										})}</span
+									>
+									<div class="flex gap-2">
+										<Button
+											class="k-color-brand-red"
+											rounded
+											tonal
+											onClick={() => rejectContactRequest(contactRequest)}
+											>{m.reject()}</Button
+										>
+										<Button
+											tonal
+											rounded
+											onClick={() => acceptContactRequest(contactRequest)}
+											>{m.accept()}</Button
+										>
+									</div>
+								</div>
+							</Card>
+						{:else}
+							<MessageInput
+								bind:value={messageText}
+								bind:height={messageInputHeight}
+								onSend={sendMessage}
+								onInput={async () => {
+									if (scrollIsAtBottom()) {
+										await tick();
+										scrollToBottom();
+									}
+								}}
+								onEmojiClick={() => (showEmojiPicker = true)}
+							/>
+						{/if}
+					{/await}
+				</div>
 	</Page>
 {/await}
