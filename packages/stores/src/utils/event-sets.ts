@@ -1,11 +1,6 @@
-import type {
-	AgentId,
-	DeviceId,
-	Hash,
-	SimplifiedOperation,
-} from 'dash-chat-stores';
+import { DeviceId, Hash } from '../p2panda/types';
 
-export const MESSAGE_SET_TIMEFRAME_INTERVAL_MS = 60 * 1000 * 1000; // 1 minute
+export const MESSAGE_SET_TIMEFRAME_INTERVAL_MS = 60 * 1000; // 1 minute
 
 export interface EventSetsInDay<T> {
 	day: Date;
@@ -23,13 +18,13 @@ export type EventSet<T> = Array<[Hash, T]>;
 
 export function orderInEventSets<T>(
 	events: Record<Hash, EventWithProvenance<T>>,
-	agentSets: Array<Array<AgentId>>,
+	agentSets: Array<Array<DeviceId>>,
 ): Array<EventSetsInDay<T>> {
 	const eventsSetsInDay: EventSetsInDay<EventWithProvenance<T>>[] = [];
-	const orderedDescendingEvents = Object.entries(events).sort(
-		(m1, m2) => m2[1].timestamp - m1[1].timestamp,
+	const orderedAscendingEvents = Object.entries(events).sort(
+		(m1, m2) => m1[1].timestamp - m2[1].timestamp,
 	);
-	for (const [eventHash, event] of orderedDescendingEvents) {
+	for (const [eventHash, event] of orderedAscendingEvents) {
 		if (eventsSetsInDay.length === 0) {
 			const date = new Date(event.timestamp);
 			date.setHours(0);
@@ -57,7 +52,7 @@ export function orderInEventSets<T>(
 
 			const sameProvenance = lastMessageAgentSet === currentMessageAgentSet;
 			const sameTimeframe =
-				lastEvent.timestamp - event.timestamp <
+				event.timestamp - lastEvent.timestamp <
 				MESSAGE_SET_TIMEFRAME_INTERVAL_MS;
 			const sameType = lastEvent.type === event.type;
 

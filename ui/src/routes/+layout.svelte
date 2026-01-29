@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/styles/webawesome.css';
+	import '@awesome.me/webawesome/dist/styles/themes/default.css';
 
 	import '../app.css';
 	import { setContext } from 'svelte';

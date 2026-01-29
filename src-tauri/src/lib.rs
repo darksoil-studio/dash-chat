@@ -116,14 +116,17 @@ pub fn run() {
                             }
                         };
                         let _node = handle.state::<Node>();
-                        let simplified_operation =
-                            match simplify(notification.header, Some(Body::new(&body[..]))) {
-                                Ok(o) => o,
-                                Err(err) => {
-                                    log::error!("Failed to simplify operation: {err:?}");
-                                    continue;
-                                }
-                            };
+                        let simplified_operation = match simplify(
+                            notification.header.hash(),
+                            notification.header,
+                            Some(Body::new(&body[..])),
+                        ) {
+                            Ok(o) => o,
+                            Err(err) => {
+                                log::error!("Failed to simplify operation: {err:?}");
+                                continue;
+                            }
+                        };
 
                         if let Err(err) =
                             handle.emit("p2panda://new-operation", simplified_operation)

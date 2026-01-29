@@ -2,8 +2,9 @@ import { reactive } from 'signalium';
 
 import { ContactsStore } from '../contacts/contacts-store';
 import { LogsStore } from '../p2panda/logs-store';
-import { AgentId, DeviceId } from '../p2panda/types';
+import { AgentId, DeviceId, Hash } from '../p2panda/types';
 import { MessageContent, Payload } from '../types';
+import { EventWithProvenance, orderInEventSets } from '../utils/event-sets';
 import { toPromise } from '../utils/to-promise';
 import { DirectChatClient } from './direct-chat-client';
 
@@ -41,25 +42,48 @@ export class DirectChatStore {
 		const chatId = await this.chatId();
 		const logs = await this.logsStore.logsForAllAuthors(chatId);
 
-		const messages: Array<Message> = [];
+		const messages: Record<Hash, Message> = {};
 
 		for (const [author, operations] of Object.entries(logs)) {
 			for (const operation of operations) {
 				const body = operation.body;
 				if (body?.type === 'Chat' && body.payload.type === 'Message') {
-					messages.push({
+					messages[operation.hash] = {
 						content: body.payload.payload,
 						author,
-						timestamp: operation.header.timestamp,
-					});
+						timestamp: operation.header.timestamp * 1000,
+					};
 				}
 			}
 		}
 
-		// Sort messages by timestamp (ascending order)
-		messages.sort((a, b) => a.timestamp - b.timestamp);
-
 		return messages;
+	});
+
+	messageSets = reactive(async () => {
+		const messages = await this.messages();
+
+		const eventsWithProvenance: Record<Hash, EventWithProvenance<Message>> = {};
+		const devices = new Set<DeviceId>();
+
+		for (const [hash, message] of Object.entries(messages)) {
+			devices.add(message.author);
+			eventsWithProvenance[hash] = {
+				event: message,
+				author: message.author,
+				timestamp: message.timestamp,
+				type: 'Message',
+			};
+		}
+
+		const agentsSets = Array.from(devices).map(a => [a]);
+
+		const messagesWithProvenance = orderInEventSets(
+			eventsWithProvenance,
+			agentsSets,
+		);
+		console.log(messagesWithProvenance)
+		return messagesWithProvenance;
 	});
 
 	async sendMessage(content: MessageContent) {

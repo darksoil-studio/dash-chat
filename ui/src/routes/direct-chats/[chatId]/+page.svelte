@@ -6,7 +6,12 @@
 	import { m } from '$lib/paraglide/messages.js';
 
 	import { useReactivePromise } from '$lib/stores/use-signal';
-	import { lessThanAMinuteAgo, moreThanAnHourAgo } from '$lib/utils/time';
+	import {
+		lessThanAMinuteAgo,
+		moreThanAnHourAgo,
+		moreThanAWeekAgo,
+		moreThanAYearAgo,
+	} from '$lib/utils/time';
 	import { getContext, onMount, tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type {
@@ -33,6 +38,7 @@
 		ToolbarPane,
 		Icon,
 		useTheme,
+		Chip,
 	} from 'konsta/svelte';
 	import { page } from '$app/state';
 	import { showToast } from '$lib/utils/toasts';
@@ -49,7 +55,7 @@
 	const chatsStore: ChatsStore = getContext('chats-store');
 	const store = chatsStore.directChats(chatId);
 
-	const messages = useReactivePromise(store.messages);
+	const messagesSets = useReactivePromise(store.messageSets);
 	const peerProfile = useReactivePromise(store.peerProfile);
 	const contactRequest = useReactivePromise(store.getContactRequest);
 
@@ -153,11 +159,11 @@
 			{/snippet}
 		</Navbar>
 
-				<div class="column" >
-		{#await $myDeviceId then myDeviceId}
-			{#await $messages then messages}
+		<div class="column">
+			{#await $myDeviceId then myDeviceId}
+				{#await $messagesSets then messagesSetsInDays}
 					<div
-use:scrolltobottom
+						use:scrolltobottom
 						class="center-in-desktop column"
 						style={`padding-bottom: ${messageInputHeight}`}
 					>
@@ -178,110 +184,160 @@ use:scrolltobottom
 							</div>
 						{/if}
 
-						<div class="column m-2 gap-2">
-							{#each messages as message}
-								{#if myDeviceId == message.author}
-									<Card raised class="message my-message">
-										<div class="row gap-2" style="align-items: center">
-											<span>{message.content}</span>
+						<div class="column m-2 gap-1">
+							{#each messagesSetsInDays as messageSetInDay}
+								<Card outline class="day-tag" style="align-self: center">
+									{#if moreThanAYearAgo(messageSetInDay.day.valueOf())}
+										<wa-format-date
+											month="numeric"
+											year="numeric"
+											day="numeric"
+											date={messageSetInDay.day}
+										></wa-format-date>
+									{:else if moreThanAWeekAgo(messageSetInDay.day.valueOf())}
+										<wa-format-date
+											month="long"
+											day="numeric"
+											date={messageSetInDay.day}
+										></wa-format-date>
+									{:else}
+										<wa-format-date date={messageSetInDay.day} weekday="long"
+										></wa-format-date>
+									{/if}
+								</Card>
 
-											<div class="dark-quiet text-xs">
-												{#if lessThanAMinuteAgo(message.timestamp)}
-													<span>{m.now()}</span>
-												{:else if moreThanAnHourAgo(message.timestamp)}
-													<wa-format-date
-														hour="numeric"
-														minute="numeric"
-														hour-format="24"
-														date={new Date(message.timestamp)}
-													></wa-format-date>
-												{:else}
-													<wa-relative-time
-														sync
-														format="narrow"
-														date={new Date(message.timestamp)}
+								{#each messageSetInDay.eventsSets as messageSet}
+									<div class="column" style="gap: 1px">
+										{#each messageSet as [hash, message], i}
+											{#if myDeviceId == message.author}
+												<Card
+													raised
+													class={i === messageSet.length - 1
+														? `last-message message my-message`
+														: i === 0
+															? `first-message message my-message`
+															: `message my-message`}
+												>
+													<div
+														class="row gap-2 mx-1"
+														style="align-items: center"
 													>
-													</wa-relative-time>
-												{/if}
-											</div>
-										</div>
-									</Card>
-								{:else}
-									<div class="row gap-2 m-0">
-										<Card raised class="message others-message">
-											<div class="row gap-2" style="align-items: center">
-												<span>{message.content}</span>
+														<span>{message.content}</span>
 
-												<div class="quiet text-xs">
-													{#if lessThanAMinuteAgo(message.timestamp)}
-														<span>{m.now()}</span>
-													{:else if moreThanAnHourAgo(message.timestamp)}
-														<wa-format-date
-															hour="numeric"
-															minute="numeric"
-															hour-format="24"
-															date={new Date(message.timestamp)}
-														></wa-format-date>
-													{:else}
-														<wa-relative-time
-															sync
-															format="narrow"
-															date={new Date(message.timestamp)}
+														{#if i === messageSet.length - 1}
+															<div class="dark-quiet text-xs">
+																{#if lessThanAMinuteAgo(message.timestamp)}
+																	<span>{m.now()}</span>
+																{:else if moreThanAnHourAgo(message.timestamp)}
+																	<wa-format-date
+																		hour="numeric"
+																		minute="numeric"
+																		hour-format="24"
+																		date={new Date(message.timestamp)}
+																	></wa-format-date>
+																{:else}
+																	<wa-relative-time
+																		sync
+																		format="narrow"
+																		date={new Date(message.timestamp)}
+																	>
+																	</wa-relative-time>
+																{/if}
+															</div>
+														{/if}
+													</div>
+												</Card>
+											{:else}
+												<div class="row gap-2 m-0">
+													<Card
+														raised
+														class={i === messageSet.length - 1
+															? `last-message message others-message`
+															: i === 0
+																? `first-message message others-message`
+																: `message others-message`}
+													>
+														<div
+															class="row gap-2 mx-1"
+															style="align-items: center"
 														>
-														</wa-relative-time>
-													{/if}
+															<span>{message.content}</span>
+
+															{#if i === messageSet.length - 1}
+																<div class="quiet text-xs">
+																	{#if lessThanAMinuteAgo(message.timestamp)}
+																		<span>{m.now()}</span>
+																	{:else if moreThanAnHourAgo(message.timestamp)}
+																		<wa-format-date
+																			hour="numeric"
+																			minute="numeric"
+																			hour-format="24"
+																			date={new Date(message.timestamp)}
+																		></wa-format-date>
+																	{:else}
+																		<wa-relative-time
+																			sync
+																			format="narrow"
+																			date={new Date(message.timestamp)}
+																		>
+																		</wa-relative-time>
+																	{/if}
+																</div>
+															{/if}
+														</div>
+													</Card>
 												</div>
-											</div>
-										</Card>
+											{/if}
+										{/each}
 									</div>
-								{/if}
+								{/each}
 							{/each}
 						</div>
 					</div>
+				{/await}
 			{/await}
-		{/await}
 
-					{#await $contactRequest then contactRequest}
-						{#if contactRequest}
-							<Card class="center-in-desktop p-1 fixed bottom-1">
-								<div class="column gap-2 items-center justify-center">
-									<span style="flex: 1"
-										>{m.contactRequestBanner({
-											name: contactRequest.profile.name,
-										})}</span
-									>
-									<div class="flex gap-2">
-										<Button
-											class="k-color-brand-red"
-											rounded
-											tonal
-											onClick={() => rejectContactRequest(contactRequest)}
-											>{m.reject()}</Button
-										>
-										<Button
-											tonal
-											rounded
-											onClick={() => acceptContactRequest(contactRequest)}
-											>{m.accept()}</Button
-										>
-									</div>
-								</div>
-							</Card>
-						{:else}
-							<MessageInput
-								bind:value={messageText}
-								bind:height={messageInputHeight}
-								onSend={sendMessage}
-								onInput={async () => {
-									if (scrollIsAtBottom()) {
-										await tick();
-										scrollToBottom();
-									}
-								}}
-								onEmojiClick={() => (showEmojiPicker = true)}
-							/>
-						{/if}
-					{/await}
-				</div>
+			{#await $contactRequest then contactRequest}
+				{#if contactRequest}
+					<Card class="center-in-desktop p-1 fixed bottom-1">
+						<div class="column gap-2 items-center justify-center">
+							<span style="flex: 1"
+								>{m.contactRequestBanner({
+									name: contactRequest.profile.name,
+								})}</span
+							>
+							<div class="flex gap-2">
+								<Button
+									class="k-color-brand-red"
+									rounded
+									tonal
+									onClick={() => rejectContactRequest(contactRequest)}
+									>{m.reject()}</Button
+								>
+								<Button
+									tonal
+									rounded
+									onClick={() => acceptContactRequest(contactRequest)}
+									>{m.accept()}</Button
+								>
+							</div>
+						</div>
+					</Card>
+				{:else}
+					<MessageInput
+						bind:value={messageText}
+						bind:height={messageInputHeight}
+						onSend={sendMessage}
+						onInput={async () => {
+							if (scrollIsAtBottom()) {
+								await tick();
+								scrollToBottom();
+							}
+						}}
+						onEmojiClick={() => (showEmojiPicker = true)}
+					/>
+				{/if}
+			{/await}
+		</div>
 	</Page>
 {/await}
