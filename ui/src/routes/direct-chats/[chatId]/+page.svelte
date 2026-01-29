@@ -90,7 +90,13 @@
 	}
 
 	let messageText = $state('');
-	let showEmojiPicker= $state(false);
+	let showEmojiPicker = $state(false);
+	let messageInputHeight: string = $state('');
+
+	const scrollIsAtBottom = () => {
+		const pageEl = document.querySelector('.messages-page')! as HTMLDivElement;
+		return pageEl.scrollTop === pageEl.scrollHeight - pageEl.offsetHeight;
+	};
 
 	const scrollToBottom = (animate = true) => {
 		const pageEl = document.querySelector('.messages-page')! as HTMLDivElement;
@@ -147,7 +153,10 @@
 		</Navbar>
 
 		<div class="column">
-			<div class="center-in-desktop column pb-16">
+			<div
+				class="center-in-desktop column"
+				style={`padding-bottom: ${messageInputHeight}`}
+			>
 				{#if profile}
 					<div class="column" style="align-items: center">
 						<Link
@@ -257,11 +266,18 @@
 						</div>
 					</Card>
 				{:else}
-				<MessageInput
-    bind:value={messageText}
-    onSend={sendMessage}
-    onEmojiClick={() => showEmojiPicker = true}
-  />
+					<MessageInput
+						bind:value={messageText}
+						bind:height={messageInputHeight}
+						onSend={sendMessage}
+						onInput={async () => {
+							if (scrollIsAtBottom()) {
+								await tick();
+								scrollToBottom();
+							}
+						}}
+						onEmojiClick={() => (showEmojiPicker = true)}
+					/>
 				{/if}
 			{/await}
 		</div>

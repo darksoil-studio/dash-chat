@@ -4,56 +4,85 @@
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiSend, mdiEmoticonHappyOutline } from '@mdi/js';
 	import { useTheme } from 'konsta/svelte';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		value?: string;
 		placeholder?: string;
+		height: string;
 		onSend?: () => void;
+		onInput?: () => void;
 		onEmojiClick?: () => void;
 	}
 
 	let {
 		value = $bindable(''),
+		height = $bindable(''),
 		placeholder = m.typeMessage(),
 		onSend,
+		onInput,
 		onEmojiClick,
 	}: Props = $props();
+	let div: HTMLDivElement;
 
 	const theme = $derived(useTheme());
 
 	let hasText = $derived(value.trim().length > 0);
+	let textarea: HTMLTextAreaElement;
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter' && !event.shiftKey) {
 			event.preventDefault();
-			if (hasText) {
-				onSend?.();
-			}
+			triggerOnSend();
 		}
 	}
 
-	function handleInput(event: Event) {
-		const target = event.target as HTMLTextAreaElement;
-		value = target.value;
-		autoResize(target);
+	function handleInput() {
+		value = textarea.value;
+		autoResize();
+		onInput?.();
 	}
 
-	function autoResize(textarea: HTMLTextAreaElement) {
+	function autoResize() {
 		textarea.style.height = 'auto';
-		textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+		const textareaHeight = Math.min(textarea.scrollHeight, 100) + 'px';
+		textarea.style.height = textareaHeight;
+		height = `${div.scrollHeight}px`;
 	}
 
 	function handleSendClick() {
+		triggerOnSend();
+	}
+
+	function triggerOnSend() {
 		if (hasText) {
 			onSend?.();
+			textarea.style.height = 'auto';
+		height = `${div.scrollHeight}px`;
 		}
 	}
+
+	onMount(() => {
+		height = `${div.scrollHeight}px`;
+	});
 </script>
 
-<div class="message-input-bar" class:ios={theme === 'ios'}>
-	<div class="input-row">
-		<div class="input-container bg-white dark:bg-gray-400">
-			{#if onEmojiClick}
+<div
+	bind:this={div}
+	class="message-input-bar p-2"
+	class:ios={theme === 'ios'}
+	class:bg-md-light-surface={theme === 'material'}
+>
+	<div
+		class="row gap-2 center-in-desktop"
+		style="align-items: flex-end; margin: 0 auto"
+	>
+		<div
+			class={theme === 'ios'
+				? 'input-container bg-ios-light-glass shadow-ios-light-glass backdrop-blur-lg'
+				: 'input-container bg-white dark:bg-gray-400'}
+		>
+			{#if onEmojiClick && theme === 'material'}
 				<button
 					type="button"
 					class="icon-button emoji-btn"
@@ -68,6 +97,7 @@
 				class="message-textarea"
 				{placeholder}
 				bind:value
+				bind:this={textarea}
 				rows="1"
 				onkeydown={handleKeydown}
 				oninput={handleInput}
@@ -93,21 +123,10 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
-		background: var(--k-bars-bg-color);
-		padding: 8px 12px;
-		z-index: 100;
 	}
 
 	.message-input-bar.ios {
 		padding-bottom: max(8px, env(safe-area-inset-bottom));
-	}
-
-	.input-row {
-		display: flex;
-		align-items: flex-end;
-		gap: 8px;
-		max-width: 680px;
-		margin: 0 auto;
 	}
 
 	.input-container {
@@ -185,6 +204,7 @@
 		justify-content: center;
 		cursor: pointer;
 		padding: 0;
+		margin-bottom: 4px;
 		background: rgba(128, 128, 128, 0.15);
 		color: var(--k-text-color);
 		opacity: 0.4;
