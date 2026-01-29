@@ -5,7 +5,8 @@ import { ContactsStore } from '../contacts/contacts-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { AgentId, PublicKey } from '../p2panda/types';
 import { ChatId, MessageContent, Payload } from '../types';
-import { GroupChatClient, Message } from './group-chat-client';
+import { GroupChatClient  } from './group-chat-client';
+import { Message } from '../direct-chats/direct-chat-store';
 
 export interface GroupInfo {
 	name: string;
