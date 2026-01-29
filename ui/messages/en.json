@@ -35,6 +35,7 @@
 	"copiedCodeToClipboard": "Copied code to clipboard.",
 	"contactAdded": "{{name}} was added to your contacts.",
 	"contactAccepted": "Contact added.",
+	"contactRequestRejected": "Contact request was rejected.",
 	"contactRequestBanner": "{{name}} has sent a contact request to you. Do you want to add {{name}} as a contact?",
 	"noContactsYet": "You don't have any contacts yet.",
 	"noContactsMatchFilter": "No contacts match this filter.",

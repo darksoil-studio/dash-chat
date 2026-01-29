@@ -81,6 +81,7 @@
 			await contactsStore.client.rejectContactRequest(
 				contactRequest.code.agent_id,
 			);
+			showToast(m.contactRequestRejected());
 
 			goto('/');
 		} catch (e) {
@@ -106,7 +107,7 @@
 		});
 	};
 
-	const scrolltobottom: Action = node => {
+	const scrolltobottom: Action = () => {
 		tick().then(() => {
 			scrollToBottom(false);
 		});
