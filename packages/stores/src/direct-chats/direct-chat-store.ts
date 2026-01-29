@@ -2,6 +2,7 @@ import { reactive } from 'signalium';
 
 import { ContactsStore } from '../contacts/contacts-store';
 import { LogsStore } from '../p2panda/logs-store';
+import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, DeviceId, Hash } from '../p2panda/types';
 import { MessageContent, Payload } from '../types';
 import { EventWithProvenance, orderInEventSets } from '../utils/event-sets';
@@ -82,19 +83,30 @@ export class DirectChatStore {
 			eventsWithProvenance,
 			agentsSets,
 		);
-		console.log(messagesWithProvenance)
 		return messagesWithProvenance;
 	});
 
+	onNewMessage(
+		handler: (
+			operation: SimplifiedOperation<Payload>,
+			message: MessageContent,
+		) => void,
+	) {
+		return this.logsStore.logsClient.onNewOperation(async (topicId, op) => {
+			const chatId = await toPromise(this.chatId);
+			if (topicId !== chatId) return;
+			if (op.body?.payload.type !== 'Message') return;
+			handler(op, op.body.payload.payload);
+		});
+	}
+
 	async sendMessage(content: MessageContent) {
 		const chatId = await toPromise(this.chatId);
-		const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
+			const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
 		const promise = new Promise(resolve => {
-			this.logsStore.logsClient.onNewOperation((topicId, op) => {
-				if (topicId !== chatId) return;
-				if (op.body?.payload.type !== 'Message') return;
-				if (op.header.public_key !== myDeviceId) return;
-				if (op.body.payload.payload !== content) return;
+			this.onNewMessage((op, message) => {
+			if (op.header.public_key !== myDeviceId) return;
+				if (message !== content) return;
 
 				resolve(undefined);
 			});

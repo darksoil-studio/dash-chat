@@ -14,13 +14,14 @@
 	} from '$lib/utils/time';
 	import { getContext, onMount, tick } from 'svelte';
 	import { goto } from '$app/navigation';
-	import type {
-		ChatsStore,
-		ContactCode,
-		ContactRequest,
-		ContactsStore,
-		DeviceId,
-		Message,
+	import {
+		toPromise,
+		type ChatsStore,
+		type ContactCode,
+		type ContactRequest,
+		type ContactsStore,
+		type DeviceId,
+		type Message,
 	} from 'dash-chat-stores';
 	import type { AddContactError } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
@@ -131,7 +132,21 @@
 			scrollToBottom();
 		});
 	}
+	store.onNewMessage(async () => {
+		if (scrollIsAtBottom()) {
+			// Wait for the message to get rendered in the UI
+			setTimeout(() => {
+				scrollToBottom();
+			});
+		}
+	});
 	const theme = $derived(useTheme());
+	const messageClass = (messageSetLength: number, index: number) => {
+		if (messageSetLength <= 1) return '';
+		if (index === 0) return 'first-message';
+		if (index === messageSetLength - 1) return 'last-message';
+		return 'middle-message';
+	};
 </script>
 
 {#await $peerProfile then profile}
@@ -212,11 +227,7 @@
 											{#if myDeviceId == message.author}
 												<Card
 													raised
-													class={i === messageSet.length - 1
-														? `last-message message my-message`
-														: i === 0
-															? `first-message message my-message`
-															: `message my-message`}
+													class={`${messageClass(messageSet.length, i)} message my-message`}
 												>
 													<div
 														class="row gap-2 mx-1"
@@ -251,11 +262,7 @@
 												<div class="row gap-2 m-0">
 													<Card
 														raised
-														class={i === messageSet.length - 1
-															? `last-message message others-message`
-															: i === 0
-																? `first-message message others-message`
-																: `message others-message`}
+														class={`${messageClass(messageSet.length, i)} message others-message`}
 													>
 														<div
 															class="row gap-2 mx-1"
