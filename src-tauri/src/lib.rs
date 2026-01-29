@@ -60,6 +60,7 @@ pub fn run() {
             commands::contacts::reject_contact_request,
             commands::direct_chats::direct_chat_id,
             commands::direct_chats::direct_chat_send_message,
+            commands::direct_chats::direct_chat_send_reaction,
             // commands::chats::create_group,
             // commands::group_chat::add_member,
             // commands::group_chat::send_message,
