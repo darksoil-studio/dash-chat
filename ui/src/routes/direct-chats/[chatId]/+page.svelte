@@ -257,6 +257,7 @@
 															</div>
 														{/if}
 													</div>
+													<div>{Array.from(message.reactions.values()).join('')}</div>
 												</Card>
 											{:else}
 												<div class="row gap-2 m-0">

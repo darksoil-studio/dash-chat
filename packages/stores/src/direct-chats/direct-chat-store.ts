@@ -13,6 +13,7 @@ export interface Message {
 	content: MessageContent;
 	timestamp: number;
 	author: DeviceId;
+	reactions: Map<DeviceId, string>
 }
 
 // Store tied to a specific direct chat
@@ -22,7 +23,7 @@ export class DirectChatStore {
 		protected contactsStore: ContactsStore,
 		public client: DirectChatClient,
 		public peer: AgentId,
-	) {}
+	) { }
 
 	chatId = reactive(async () => {
 		return await this.client.chatId(this.peer);
@@ -43,17 +44,30 @@ export class DirectChatStore {
 		const chatId = await this.chatId();
 		const logs = await this.logsStore.logsForAllAuthors(chatId);
 
-		const messages: Record<Hash, Message> = {};
+		const messages: Record<Hash, Message> = {}; // todo: convert to map?
 
 		for (const [author, operations] of Object.entries(logs)) {
 			for (const operation of operations) {
 				const body = operation.body;
-				if (body?.type === 'Chat' && body.payload.type === 'Message') {
-					messages[operation.hash] = {
-						content: body.payload.payload,
-						author,
-						timestamp: operation.header.timestamp * 1000,
-					};
+				if (body?.type === 'Chat') {
+					if (body.payload.type === 'Message') {
+						messages[operation.hash] = {
+							content: body.payload.payload,
+							author,
+							timestamp: operation.header.timestamp * 1000,
+							reactions: new Map([[author, "✅"]])
+						};
+					} else if (body.payload.type === 'Reaction') {
+						const payload = body.payload.payload
+						let message = Object.entries(messages).find(record => record[0] === payload.target)
+						if (message) {
+							if (payload.emoji === undefined) {
+								message[1].reactions.delete(author)
+							} else {
+								message[1].reactions.set(author, payload.emoji)
+							}
+						}
+					}
 				}
 			}
 		}
@@ -102,10 +116,10 @@ export class DirectChatStore {
 
 	async sendMessage(content: MessageContent) {
 		const chatId = await toPromise(this.chatId);
-			const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
+		const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
 		const promise = new Promise(resolve => {
 			this.onNewMessage((op, message) => {
-			if (op.header.public_key !== myDeviceId) return;
+				if (op.header.public_key !== myDeviceId) return;
 				if (message !== content) return;
 
 				resolve(undefined);
