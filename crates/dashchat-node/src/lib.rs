@@ -1,5 +1,6 @@
 #![feature(bool_to_result)]
 
+mod filesystem;
 mod chat;
 mod contact;
 mod error;
