@@ -1,8 +1,6 @@
 name: "test"
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the main branch
-  push: 
+  push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
@@ -11,29 +9,48 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Extend space
         uses: ./.github/actions/extend-space
 
-      - name: Install nix
-        uses: cachix/install-nix-action@v27
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          nix_path: nixpkgs=channel:nixos-25.11
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Cache cargo build artifacts
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: cargo-target-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          restore-keys: |
+            cargo-target-${{ runner.os }}-
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
 
       - name: Check Rust formatting
-        run: |
-          nix develop --no-update-lock-file --accept-flake-config --command bash -c "cargo fmt --check"
+        run: cargo fmt --check
 
       - name: Test
-        run: |
-          nix develop --no-update-lock-file --accept-flake-config --command bash -c "cargo test"
+        run: cargo test
 
-      - name: Install
-        run: |
-          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm install"
+      - name: Install pnpm dependencies
+        run: pnpm install
 
       - name: Build UI packages
-        run: |
-          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm --recursive build"
+        run: pnpm --recursive build
