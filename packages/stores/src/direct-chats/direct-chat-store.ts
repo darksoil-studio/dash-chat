@@ -4,7 +4,7 @@ import { ContactsStore } from '../contacts/contacts-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, DeviceId, Hash } from '../p2panda/types';
-import { MessageContent, Payload } from '../types';
+import { ChatReaction, MessageContent, Payload } from '../types';
 import { EventWithProvenance, orderInEventSets } from '../utils/event-sets';
 import { toPromise } from '../utils/to-promise';
 import { DirectChatClient } from './direct-chat-client';
@@ -13,7 +13,7 @@ export interface Message {
 	content: MessageContent;
 	timestamp: number;
 	author: DeviceId;
-	reactions: Map<DeviceId, string>
+	reactions: Record<DeviceId, string>
 }
 
 // Store tied to a specific direct chat
@@ -55,23 +55,33 @@ export class DirectChatStore {
 							content: body.payload.payload,
 							author,
 							timestamp: operation.header.timestamp * 1000,
-							reactions: new Map([[author, "✅"]])
+							reactions: {}
 						};
-					} else if (body.payload.type === 'Reaction') {
+					}
+				}
+			}
+		}
+		// reactions applied in second loop after messages are fully resolved
+		for (const [author, operations] of Object.entries(logs)) {
+			for (const operation of operations) {
+				const body = operation.body;
+				if (body?.type === 'Chat') {
+					if (body.payload.type === 'Reaction') {
 						const payload = body.payload.payload
 						let message = Object.entries(messages).find(record => record[0] === payload.target)
 						if (message) {
-							if (payload.emoji === undefined) {
-								message[1].reactions.delete(author)
+							if (payload.emoji) {
+								message[1].reactions[author] = payload.emoji
 							} else {
-								message[1].reactions.set(author, payload.emoji)
+								delete message[1].reactions[author]
 							}
+						} else {
+							console.warn('reaction for missing message')
 						}
 					}
 				}
 			}
 		}
-
 		return messages;
 	});
 
@@ -103,13 +113,13 @@ export class DirectChatStore {
 	onNewMessage(
 		handler: (
 			operation: SimplifiedOperation<Payload>,
-			message: MessageContent,
+			message: MessageContent | ChatReaction,
 		) => void,
 	) {
 		return this.logsStore.logsClient.onNewOperation(async (topicId, op) => {
 			const chatId = await toPromise(this.chatId);
 			if (topicId !== chatId) return;
-			if (op.body?.payload.type !== 'Message') return;
+			if (op.body?.payload.type !== 'Message' && op.body?.payload.type !== 'Reaction') return;
 			handler(op, op.body.payload.payload);
 		});
 	}
@@ -119,6 +129,7 @@ export class DirectChatStore {
 		const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
 		const promise = new Promise(resolve => {
 			this.onNewMessage((op, message) => {
+				if (op.body?.payload.type !== 'Message') return;
 				if (op.header.public_key !== myDeviceId) return;
 				if (message !== content) return;
 
@@ -126,6 +137,25 @@ export class DirectChatStore {
 			});
 		});
 		await this.client.sendMessage(chatId, content);
+		return promise;
+	}
+
+	async sendReaction(reaction: ChatReaction) {
+		console.log('sending reaction', reaction)
+		const chatId = await toPromise(this.chatId);
+		const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
+		const promise = new Promise(resolve => {
+			this.onNewMessage((op, message) => {
+				if (op.header.public_key !== myDeviceId) return;
+				if (op.body?.payload.type !== 'Reaction') return;
+
+				let incoming = message as ChatReaction;
+				if (reaction.emoji != incoming.emoji) return;
+				if (reaction.target != incoming.target) return;
+				resolve(undefined);
+			});
+		});
+		await this.client.sendReaction(chatId, reaction);
 		return promise;
 	}
 }
