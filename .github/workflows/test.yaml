@@ -57,7 +57,7 @@ jobs:
         run: cargo fmt --check
 
       - name: Test
-        run: cargo test
+        run: RUSTFLAGS="" cargo test
 
       - name: Install pnpm dependencies
         run: pnpm install
