@@ -30,7 +30,7 @@ jobs:
           node-version: 20
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@master
         with:
           version: 10
           cache: true
@@ -38,7 +38,7 @@ jobs:
       - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          rustflags: ''
+          rustflags: '' # TODO: remove this when we want to disallow warnings in our rust code in CI
 
       - name: Check Rust formatting
         run: cargo fmt --check
