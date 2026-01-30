@@ -7,7 +7,6 @@ use std::{
 use p2panda_core::{Body, Hash, Operation, PublicKey, RawOperation};
 use p2panda_store::{LogStore, MemoryStore, OperationStore, SqliteStore};
 use p2panda_stream::operation::IngestResult;
-use rand::distr::Distribution;
 use tokio::sync::Mutex;
 
 use crate::{
