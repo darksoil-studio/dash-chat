@@ -1,7 +1,7 @@
 use dashchat_node::Node;
 use mailbox_client::toy::ToyMailboxClient;
 use p2panda_core::{cbor::encode_cbor, Body};
-use tauri::{Emitter, Manager, RunEvent};
+use tauri::{Emitter, Manager};
 
 use crate::{commands::logs::simplify, filesystem::local_data_dir};
 

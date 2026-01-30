@@ -12,10 +12,7 @@ use mailbox_client::{MailboxClient, mem::MemMailbox};
 
 use crate::{
     AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload, Profile,
-    mailbox::MailboxOperation,
-    node::{LocalStore, Node},
-    testing::behavior::Behavior,
-    topic::TopicId,
+    mailbox::MailboxOperation, node::Node, testing::behavior::Behavior, topic::TopicId,
 };
 
 #[derive(Clone, derive_more::Deref, derive_more::Debug)]
