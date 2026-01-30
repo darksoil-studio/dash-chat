@@ -40,16 +40,10 @@ jobs:
         with:
             version: 10.15.0  # Optional: specify a pnpm version
 
-      - name: Install and prepare
-        run: |
-          pnpm install
-          pnpm -F ./packages/stores build
-          npx @inlang/paraglide-js compile --project ./ui/project.inlang
-
       - name: install Rust stable
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - name: install dependencies (ubuntu only)
+      - name: install dependencies
         run: |
           sudo apt-get update
           sudo apt install libwebkit2gtk-4.1-dev \
@@ -61,6 +55,28 @@ jobs:
             libssl-dev \
             libayatana-appindicator3-dev \
             librsvg2-dev
+
+      - name: Cache cargo build artifacts
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: cargo-target-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          restore-keys: |
+            cargo-target-${{ runner.os }}-
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install and prepare
+        run: |
+          pnpm install
+          pnpm -F ./packages/stores build
+          npx @inlang/paraglide-js compile --project ./ui/project.inlang
 
       - name: Run Claude Code
         id: claude
