@@ -29,9 +29,6 @@ importers:
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
-      rimraf:
-        specifier: ^6.1.0
-        version: 6.1.0
       rust-just:
         specifier: ^1.46.0
         version: 1.46.0
