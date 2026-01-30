@@ -1,6 +1,5 @@
 #![feature(bool_to_result)]
 #[allow(deprecated)]
-
 mod chat;
 mod contact;
 mod error;
