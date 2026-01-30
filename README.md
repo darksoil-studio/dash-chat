@@ -9,9 +9,10 @@ Dash Chat is in pre-alpha. We are currently rebuilding the application on top of
 ## Tech Stack
 
 - Frontend: SvelteKit 5 with TypeScript, and [Konsta UI](https://konstaui.com/) as the component library
-- Backend: Rust with Tauri
-- P2P: P2Panda for peer-to-peer communication
-- Build Tool: Vite
+- Backend: Rust with [Tauri](https://tauri.app)
+- P2P: [p2panda](https://p2panda.org) for peer-to-peer communication
+- Build Tool: [Vite](https://vite.dev)
+- Development: [just](https://just.systems/)
 
 ## Translate Dash Chat
 
