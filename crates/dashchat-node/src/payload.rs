@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::chat::ChatId;
 use crate::contact::QrCode;
 use crate::topic::TopicId;
-use crate::{AgentId, AsBody, Cbor, ChatMessageContent, Topic};
+use crate::{AgentId, AsBody, Cbor, ChatMessageContent, ChatReaction, Topic};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Extensions {
@@ -53,6 +53,8 @@ pub enum ChatPayload {
     JoinGroup(ChatId),
 
     Message(ChatMessageContent),
+
+    Reaction(ChatReaction),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]

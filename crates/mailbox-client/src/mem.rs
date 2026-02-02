@@ -50,8 +50,8 @@ impl<Item: MailboxItem> MemMailbox<Item> {
 #[async_trait::async_trait]
 impl<Item: MailboxItem> MailboxClient<Item> for MemMailboxClient<Item>
 where
-    Item::Topic: Rename,
-    Item::Hash: Rename,
+    Item::Topic: OptionalItemTraits,
+    Item::Hash: OptionalItemTraits,
 {
     async fn publish(&self, ops: Vec<Item>) -> Result<(), anyhow::Error> {
         let mut store = self.mailbox.ops.write().await;
@@ -60,6 +60,7 @@ where
             let author = op.author();
             let seq_num = op.seq_num();
             let topic = op.topic();
+            #[cfg(feature = "named-id")]
             tracing::info!(topic = ?topic.renamed(), hash = ?op.hash().renamed(), "publishing mailbox operation");
             store
                 .entry(topic)
@@ -125,6 +126,7 @@ where
                 }
             }
 
+            #[cfg(feature = "named-id")]
             tracing::info!(
                 topic = ?topic.renamed(),
                 num = new.len(),

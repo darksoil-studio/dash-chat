@@ -2,39 +2,34 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use redb::{Database, TableDefinition};
+use redb::Database;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::{future::Future, path::PathBuf};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 mod blob;
+mod blobs_table;
 mod cleanup;
 mod get_blobs;
 mod store_blobs;
 mod watermark;
+mod watermarks_table;
 
 #[cfg(feature = "test_utils")]
 pub mod test_utils;
 
 pub use blob::Blob;
+pub use blobs_table::{BlobsKey, BlobsKeyError, BlobsKeyPrefix, BLOBS_TABLE};
 pub use cleanup::{cleanup_old_messages, spawn_cleanup_task};
 pub use get_blobs::{get_blobs_for_topics, GetBlobsRequest, GetBlobsResponse};
 pub use store_blobs::{store_blobs, StoreBlobsRequest};
 pub use watermark::compute_initial_watermarks;
+pub use watermarks_table::{WatermarksKey, WatermarksKeyError, WATERMARKS_TABLE};
 
 pub type TopicId = String;
 pub type Author = String;
 pub type SequenceNumber = u64;
-
-// Database key format: "topic_id:author:sequence_number:uuid_v7"
-// The UUID v7 suffix is used for cleanup based on message age
-pub const BLOBS_TABLE: TableDefinition<&str, &[u8]> = TableDefinition::new("blobs");
-
-// Watermarks table: tracks highest contiguous sequence number per topic:author
-// Key format: "topic_id:author"
-// Value: highest contiguous sequence number (0..=watermark are all present)
-pub const WATERMARKS_TABLE: TableDefinition<&str, u64> = TableDefinition::new("watermarks");
 
 #[derive(Clone)]
 pub struct AppState {
