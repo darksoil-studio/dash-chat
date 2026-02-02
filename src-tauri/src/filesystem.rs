@@ -10,12 +10,12 @@ pub fn local_data_dir(handle: &AppHandle) -> anyhow::Result<PathBuf> {
         local_data_path = local_data_path
             .join(".dev-dbs")
             .join(format!("agent-{}", std::env::var("AGENT")?));
-        if !local_data_path.exists() {
-            std::fs::create_dir_all(&local_data_path)?;
-        }
         local_data_path
     } else {
         handle.path().local_data_dir()?
     };
+    if !local_data_path.exists() {
+        std::fs::create_dir_all(&local_data_path)?;
+    }
     Ok(local_data_path)
 }

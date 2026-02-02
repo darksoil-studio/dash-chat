@@ -11,10 +11,8 @@ use tokio::sync::{Mutex, mpsc::Receiver};
 use mailbox_client::{MailboxClient, mem::MemMailbox};
 
 use crate::{
-    AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload, Profile,
-    mailbox::MailboxOperation,
-    node::{LocalStore, Node},
-    testing::behavior::Behavior,
+    AgentId, DeviceGroupPayload, LocalStore, NodeConfig, Notification, Payload, Profile,
+    filesystem::Filesystem, mailbox::MailboxOperation, node::Node, testing::behavior::Behavior,
     topic::TopicId,
 };
 
@@ -34,13 +32,18 @@ impl TestNode {
         let config = config.into();
         let dir = tempfile::tempdir().unwrap();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
+
+        let filesystem = Filesystem::new(dir.path().to_path_buf());
+        let local_store = LocalStore::new(filesystem.local_store_path()).unwrap();
+        if config.use_named_id {
+            local_store.device_id().unwrap().with_name(name);
+            local_store.agent_id().unwrap().with_name(name);
+        }
+        drop(local_store);
+
         let node = Node::new(dir.path().into(), config.node_config, Some(notification_tx))
             .await
             .unwrap();
-        if config.use_named_id {
-            node.device_id().with_name(name);
-            node.agent_id().with_name(name);
-        }
         if config.create_profile {
             node.set_profile(Profile {
                 name: name.to_string(),

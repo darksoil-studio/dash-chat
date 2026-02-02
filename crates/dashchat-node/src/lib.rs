@@ -1,9 +1,9 @@
 #![feature(bool_to_result)]
 
-mod filesystem;
 mod chat;
 mod contact;
 mod error;
+mod filesystem;
 pub mod node;
 mod payload;
 pub mod stores;
