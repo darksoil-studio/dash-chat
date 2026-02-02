@@ -8,6 +8,7 @@
 	import { mdiAccount, mdiPencil } from '@mdi/js';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { m } from '$lib/paraglide/messages.js';
+	import { fullName } from 'dash-chat-stores'
 	import {
 		Button,
 		Card,
@@ -55,7 +56,7 @@
 
 				<List nested strongIos insetIos>
 					<ListItem
-						title={myProfile?.name}
+						title={fullName(myProfile!)}
 						link
 						linkProps={{ href: '/settings/profile/edit-name' }}
 					>

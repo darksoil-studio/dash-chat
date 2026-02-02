@@ -130,3 +130,15 @@ li.plain span {
 .k-toolbar.transparent .bg-gradient-to-t {
 	display: none
 }
+
+.icon-only-card {
+	border-radius: 50%;
+	margin: 0;
+	width: 32px;
+	height: 32px;
+}
+.icon-only-card > div {
+	padding: 0px;
+	padding-top: 4px;
+	padding-left: 1px;
+}

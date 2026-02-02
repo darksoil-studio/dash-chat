@@ -47,6 +47,7 @@ impl TestNode {
         if config.create_profile {
             node.set_profile(Profile {
                 name: name.to_string(),
+                surname: None,
                 avatar: None,
             })
             .await

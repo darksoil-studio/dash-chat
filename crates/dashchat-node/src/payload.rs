@@ -22,6 +22,7 @@ impl Extensions {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameNone)]
 pub struct Profile {
     pub name: String,
+    pub surname: Option<String>,
     pub avatar: Option<String>,
 }
 

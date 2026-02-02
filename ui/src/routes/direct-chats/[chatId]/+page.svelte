@@ -15,6 +15,7 @@
 	import { getContext, onMount, tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import {
+	fullName,
 		toPromise,
 		type ChatsStore,
 		type ContactCode,
@@ -168,7 +169,7 @@
 							style="--size: 2.5rem"
 						>
 						</wa-avatar>
-						<span>{profile!.name}</span>
+						<span>{fullName(profile!)}</span>
 					</Link>
 				{/if}
 			{/snippet}
@@ -194,7 +195,7 @@
 										style="--size: 80px;"
 									>
 									</wa-avatar>
-									<span class="text-lg font-semibold">{profile.name}</span>
+									<span class="text-lg font-semibold">{fullName(profile)}</span>
 								</Link>
 							</div>
 						{/if}

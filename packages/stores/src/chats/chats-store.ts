@@ -1,5 +1,6 @@
 import { ReactivePromise, reactive } from 'signalium';
 
+import { fullName } from '../contacts/contacts-client';
 import { ContactsStore } from '../contacts/contacts-store';
 import { DirectChatClient } from '../direct-chats/direct-chat-client';
 import { DirectChatStore } from '../direct-chats/direct-chat-store';
@@ -78,14 +79,15 @@ export class ChatsStore {
 		// Deduplicate by agent_id
 		const uniquePendingRequests = pendingRequests.filter(
 			(request, index, self) =>
-				self.findIndex(r => r.code.agent_id === request.code.agent_id) === index,
+				self.findIndex(r => r.code.agent_id === request.code.agent_id) ===
+				index,
 		);
 
 		const pendingRequestsSummaries: ChatSummary[] = uniquePendingRequests.map(
 			pendingRequest => ({
 				type: 'ContactRequest',
 				chatId: pendingRequest.code.agent_id,
-				name: pendingRequest.profile.name,
+				name: fullName(pendingRequest.profile),
 				avatar: pendingRequest.profile.avatar,
 				lastEvent: {
 					summary: '',
@@ -107,7 +109,7 @@ export class ChatsStore {
 		return {
 			type: 'DirectChat',
 			chatId,
-			name: profile?.name,
+			name: fullName(profile!),
 			avatar: profile?.avatar,
 			lastEvent: {
 				summary: 'contact_added',

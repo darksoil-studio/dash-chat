@@ -5,7 +5,12 @@ import { ContactCode } from '../types';
 
 export interface Profile {
 	name: string;
+	surname: string | undefined;
 	avatar: string | undefined;
+}
+
+export function fullName(profile: Profile): string {
+	return `${profile.name}${profile.surname ? ` ${profile.surname}` : ''}`;
 }
 
 export interface IContactsClient {
@@ -23,7 +28,7 @@ export interface IContactsClient {
 	// Creates a new contact code to be shared
 	createContactCode(): Promise<ContactCode>;
 
-	activeInboxTopics(): Promise<TopicId[]>
+	activeInboxTopics(): Promise<TopicId[]>;
 
 	// getContacts(): Promise<Array<PublicKey>>;
 

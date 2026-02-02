@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '@awesome.me/webawesome/dist/components/icon/icon.js';
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
-	import type { ChatsStore } from 'dash-chat-stores';
+	import { fullName, type ChatsStore } from 'dash-chat-stores';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
@@ -9,7 +9,7 @@
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
-	Link,
+		Link,
 		List,
 		ListItem,
 		Navbar,
@@ -37,9 +37,7 @@
 	{:then profile}
 		<Navbar transparent={true}>
 			{#snippet left()}
-				<NavbarBackLink
-					onClick={() => goto(`/direct-chats/${chatId}`)}
-				/>
+				<NavbarBackLink onClick={() => goto(`/direct-chats/${chatId}`)} />
 			{/snippet}
 
 			{#snippet title()}
@@ -53,7 +51,7 @@
 						style="--size: 2.5rem"
 					>
 					</wa-avatar>
-					<span>{profile!.name}</span>
+					<span>{fullName(profile!)}</span>
 				</div>
 			{/snippet}
 		</Navbar>
@@ -67,7 +65,7 @@
 					>
 					</wa-avatar>
 
-					<span class="text-lg font-semibold">{profile?.name} </span>
+					<span class="text-lg font-semibold">{fullName(profile!)} </span>
 				</div>
 			</div>
 		</div>
