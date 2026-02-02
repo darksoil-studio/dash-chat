@@ -537,4 +537,27 @@ impl Node {
         // TODO: shutdown inbox task, etc.
         todo!("add tombstone to contacts list");
     }
+
+    /// Mark messages as read by storing a ReadMessages operation in the device group topic.
+    #[cfg_attr(feature = "instrument", tracing::instrument(skip_all, fields(me = ?self.device_id().renamed())))]
+    pub async fn mark_messages_read(
+        &self,
+        chat_id: ChatId,
+        message_hashes: Vec<p2panda_core::Hash>,
+    ) -> Result<(), Error> {
+        use crate::payload::ReadMessagesPayload;
+
+        self.author_operation(
+            self.device_group_topic(),
+            Payload::DeviceGroup(DeviceGroupPayload::ReadMessages(ReadMessagesPayload {
+                chat_id,
+                message_hashes,
+            })),
+            Some(&format!("mark_messages_read({})", chat_id.renamed())),
+        )
+        .await
+        .map_err(|e| Error::AuthorOperation(e.to_string()))?;
+
+        Ok(())
+    }
 }

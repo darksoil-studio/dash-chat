@@ -1,10 +1,11 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import { AgentId, TopicId } from '../p2panda/types';
+import { AgentId, Hash, TopicId } from '../p2panda/types';
 import { ChatId, MessageContent, Payload } from '../types';
 
 export interface IDirectChatClient {
 	sendMessage(chatId: ChatId, content: MessageContent): Promise<void>;
+	markMessagesRead(chatId: ChatId, messageHashes: Hash[]): Promise<void>;
 }
 
 export class DirectChatClient implements IDirectChatClient {
@@ -18,6 +19,13 @@ export class DirectChatClient implements IDirectChatClient {
 		return invoke('direct_chat_send_message', {
 			chatId,
 			content,
+		});
+	}
+
+	markMessagesRead(chatId: ChatId, messageHashes: Hash[]): Promise<void> {
+		return invoke('mark_messages_read', {
+			chatId,
+			messageHashes,
 		});
 	}
 }

@@ -46,9 +46,15 @@ export interface ContactCode {
 	share_intent: ShareIntent;
 }
 
+export interface ReadMessagesPayload {
+	chat_id: ChatId;
+	message_hashes: Hash[];
+}
+
 export type DeviceGroupPayload =
 	| { type: 'AddContact'; payload: ContactCode }
-	| { type: 'RejectContactRequest'; payload: AgentId };
+	| { type: 'RejectContactRequest'; payload: AgentId }
+	| { type: 'ReadMessages'; payload: ReadMessagesPayload };
 
 export type InboxPayload = {
 	type: 'ContactRequest';

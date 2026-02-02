@@ -107,6 +107,7 @@ export class ChatsStore {
 		const profile = await this.contactsStore.profiles(chatId);
 		const directChat = this.directChats(chatId);
 		const message = await directChat.lastMessage();
+		const unreadCount = await directChat.unreadCount();
 
 		const lastEvent = message
 			? {
@@ -124,7 +125,7 @@ export class ChatsStore {
 			name: fullName(profile!),
 			avatar: profile?.avatar,
 			lastEvent,
-			unreadMessages: 0,
+			unreadMessages: unreadCount,
 		} as ChatSummary;
 	});
 }

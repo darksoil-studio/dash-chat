@@ -5,7 +5,8 @@ import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { personalTopicFor } from '../topics';
-import { AnnouncementPayload, ContactCode, Payload } from '../types';
+import { AnnouncementPayload, ChatId, ContactCode, Payload } from '../types';
+import { Hash } from '../p2panda/types';
 import { IContactsClient, Profile } from './contacts-client';
 
 export interface ContactRequest {
@@ -17,7 +18,7 @@ export interface ContactRequest {
 export class ContactsStore {
 	constructor(
 		protected logsStore: LogsStore<Payload>,
-		protected devicesStore: DevicesStore,
+		public devicesStore: DevicesStore,
 		public client: IContactsClient,
 	) {}
 
@@ -83,7 +84,6 @@ export class ContactsStore {
 
 		return undefined;
 	});
-
 
 	rejectedContactRequests = reactive(async () => {
 		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();

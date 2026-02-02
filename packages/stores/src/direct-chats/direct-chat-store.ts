@@ -4,7 +4,7 @@ import { ContactsStore } from '../contacts/contacts-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, DeviceId, Hash } from '../p2panda/types';
-import { MessageContent, Payload } from '../types';
+import { ChatId, MessageContent, Payload } from '../types';
 import { EventWithProvenance, orderInEventSets } from '../utils/event-sets';
 import { toPromise } from '../utils/to-promise';
 import { DirectChatClient } from './direct-chat-client';
@@ -122,5 +122,46 @@ export class DirectChatStore {
 		});
 		await this.client.sendMessage(chatId, content);
 		return promise;
+	}
+
+	readMessageHashes = reactive(async () => {
+		const chatId = await this.chatId();
+		const myDeviceGroupTopic = await this.contactsStore.devicesStore.myDeviceGroupTopic();
+		const readHashes: Set<Hash> = new Set();
+
+		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+			for (const op of ops) {
+				if (
+					op.body?.payload?.type === 'ReadMessages' &&
+					op.body.payload.payload.chat_id === chatId
+				) {
+					for (const hash of op.body.payload.payload.message_hashes) {
+						readHashes.add(hash);
+					}
+				}
+			}
+		}
+
+		return readHashes;
+	});
+
+	unreadCount = reactive(async () => {
+		const messages = await this.messages();
+		const readHashes = await this.readMessageHashes();
+		const myDeviceId = await this.contactsStore.myDeviceId();
+
+		let count = 0;
+		for (const [hash, message] of Object.entries(messages)) {
+			// Only count messages from others (not our own)
+			if (message.author !== myDeviceId && !readHashes.has(hash)) {
+				count++;
+			}
+		}
+		return count;
+	});
+
+	async markAsRead(messageHashes: Hash[]): Promise<void> {
+		const chatId = await toPromise(this.chatId);
+		await this.client.markMessagesRead(chatId, messageHashes);
 	}
 }

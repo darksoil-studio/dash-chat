@@ -1,6 +1,6 @@
 use named_id::{RenameAll, RenameNone};
 use p2panda_core::cbor::{DecodeError, EncodeError, decode_cbor, encode_cbor};
-use p2panda_core::{Body, Extension, PruneFlag};
+use p2panda_core::{Body, Extension, Hash, PruneFlag};
 use serde::{Deserialize, Serialize};
 
 use crate::chat::ChatId;
@@ -58,11 +58,18 @@ pub enum ChatPayload {
     Reaction(ChatReaction),
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, RenameNone)]
+pub struct ReadMessagesPayload {
+    pub chat_id: ChatId,
+    pub message_hashes: Vec<Hash>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
 #[serde(tag = "type", content = "payload")]
 pub enum DeviceGroupPayload {
     AddContact(QrCode),
     RejectContactRequest(AgentId),
+    ReadMessages(ReadMessagesPayload),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]

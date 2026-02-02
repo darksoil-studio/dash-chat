@@ -24,6 +24,7 @@
 		type ContactRequest,
 		type ContactsStore,
 		type DeviceId,
+		type Hash,
 		type Message,
 	} from 'dash-chat-stores';
 	import type { AddContactError } from 'dash-chat-stores';
@@ -144,6 +145,49 @@
 		if (index === messageSetLength - 1) return 'last-message';
 		return 'middle-message';
 	};
+
+	// Track visible messages to mark as read
+	let observer: IntersectionObserver | undefined;
+	const visibleMessages: Set<Hash> = new Set();
+	let markReadTimeout: ReturnType<typeof setTimeout>;
+
+	onMount(() => {
+		observer = new IntersectionObserver(
+			entries => {
+				for (const entry of entries) {
+					const hash = entry.target.getAttribute('data-message-hash');
+					if (hash && entry.isIntersecting) {
+						visibleMessages.add(hash);
+					}
+				}
+				// Debounce the mark-as-read call
+				clearTimeout(markReadTimeout);
+				markReadTimeout = setTimeout(() => {
+					if (visibleMessages.size > 0) {
+						store.markAsRead(Array.from(visibleMessages));
+						visibleMessages.clear();
+					}
+				}, 500);
+			},
+			{ threshold: 0.5 },
+		);
+
+		return () => {
+			observer?.disconnect();
+			clearTimeout(markReadTimeout);
+		};
+	});
+
+	// Svelte action to observe message elements for read tracking
+	const observeMessage: Action<HTMLElement, Hash> = (node, hash) => {
+		node.setAttribute('data-message-hash', hash);
+		observer?.observe(node);
+		return {
+			destroy() {
+				observer?.unobserve(node);
+			},
+		};
+	};
 </script>
 
 {#await $peerProfile then profile}
@@ -258,7 +302,7 @@
 													</div>
 												</Card>
 											{:else}
-												<div class="row gap-2 m-0">
+												<div class="row gap-2 m-0" use:observeMessage={hash}>
 													<Card
 														raised
 														class={`${messageClass(messageSet.length, i)} message others-message`}
