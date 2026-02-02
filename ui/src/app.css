@@ -83,10 +83,6 @@ li.plain span {
 	padding: 8px;
 }
 
-.day-tag > div {
-	padding: 8px;
-}
-
 .my-message {
 	align-self: end;
 	background-color: var(--color-brand-primary);

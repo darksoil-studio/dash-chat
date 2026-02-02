@@ -1,6 +1,7 @@
 {
 	"now": "now",
-	"yesterday": "yesterday",
+	"yesterday": "Yesterday",
+	"today": "Today",
 	"cancel": "Cancel",
 	"save": "Save",
 	"create": "Create",

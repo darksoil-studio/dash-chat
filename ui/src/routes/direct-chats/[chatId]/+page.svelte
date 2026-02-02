@@ -3,10 +3,12 @@
 	import '@awesome.me/webawesome/dist/components/avatar/avatar.js';
 	import '@awesome.me/webawesome/dist/components/relative-time/relative-time.js';
 	import '@awesome.me/webawesome/dist/components/format-date/format-date.js';
-	import { m } from '$lib/paraglide/messages.js';
+	import { m, yesterday } from '$lib/paraglide/messages.js';
 
 	import { useReactivePromise } from '$lib/stores/use-signal';
 	import {
+		beforeYesterday,
+		inYesterday,
 		lessThanAMinuteAgo,
 		moreThanAnHourAgo,
 		moreThanAWeekAgo,
@@ -15,7 +17,7 @@
 	import { getContext, onMount, tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import {
-	fullName,
+		fullName,
 		toPromise,
 		type ChatsStore,
 		type ContactCode,
@@ -34,13 +36,7 @@
 		Link,
 		Button,
 		Card,
-		ListInput,
-		List,
-		Messagebar,
-		ToolbarPane,
-		Icon,
 		useTheme,
-		Chip,
 	} from 'konsta/svelte';
 	import { page } from '$app/state';
 	import { showToast } from '$lib/utils/toasts';
@@ -202,7 +198,7 @@
 
 						<div class="column m-2 gap-1">
 							{#each messagesSetsInDays as messageSetInDay}
-								<Card outline class="day-tag" style="align-self: center">
+								<div class="quiet" style="align-self: center">
 									{#if moreThanAYearAgo(messageSetInDay.day.valueOf())}
 										<wa-format-date
 											month="numeric"
@@ -210,17 +206,19 @@
 											day="numeric"
 											date={messageSetInDay.day}
 										></wa-format-date>
-									{:else if moreThanAWeekAgo(messageSetInDay.day.valueOf())}
+									{:else if beforeYesterday(messageSetInDay.day.valueOf())}
 										<wa-format-date
-											month="long"
+											month="short"
 											day="numeric"
+											weekday="narrow"
 											date={messageSetInDay.day}
 										></wa-format-date>
+									{:else if inYesterday(messageSetInDay.day.valueOf())}
+										{m.yesterday()}
 									{:else}
-										<wa-format-date date={messageSetInDay.day} weekday="long"
-										></wa-format-date>
+										{m.today()}
 									{/if}
-								</Card>
+								</div>
 
 								{#each messageSetInDay.eventsSets as messageSet}
 									<div class="column" style="gap: 1px">
