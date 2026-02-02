@@ -73,6 +73,8 @@ pub fn run() {
             tauri_plugin_log::Builder::default()
                 .level(log::LevelFilter::Warn)
                 .level_for("dashchat_node", log::LevelFilter::Debug)
+                .level_for("mailbox_client", log::LevelFilter::Debug)
+                .level_for("mailbox_server", log::LevelFilter::Debug)
                 .level_for("tauri_app_lib", log::LevelFilter::Debug) // dash-chat crate
                 .build(),
         )
@@ -87,7 +89,10 @@ pub fn run() {
             #[cfg(not(mobile))]
             {
                 let mailbox_enabled = settings::load_mailbox_enabled(&handle);
-                log::info!("Mailbox enabled: {mailbox_enabled}");
+
+                if mailbox_enabled {
+                    mailbox::start_local_mailbox(&handle)?;
+                }
 
                 let tray = crate::tray::build_tray(&app)?;
                 tray.set_visible(mailbox_enabled)?;

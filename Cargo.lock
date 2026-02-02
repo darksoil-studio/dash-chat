@@ -1657,6 +1657,7 @@ dependencies = [
  "tauri-plugin-virtual-keyboard-padding",
  "tempfile",
  "tokio",
+ "tracing-subscriber",
  "url2",
  "uuid",
 ]

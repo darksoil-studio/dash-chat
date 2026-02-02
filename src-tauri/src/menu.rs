@@ -56,20 +56,15 @@ pub fn build_menu<R: Runtime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R
                         log::error!("Failed to toggle tray: {err:?}");
                     }
 
-                    // // TODO: run/stop local mailbox
-                    // let r = tokio::task::block_in_place(|| {
-                    //     if enabled {
-                    //         tokio::runtime::Handle::current()
-                    //             .block_on(mailbox::start_local_mailbox(app_handle))
-                    //     } else {
-                    //         tokio::runtime::Handle::current()
-                    //             .block_on(mailbox::stop_local_mailbox(app_handle));
-                    //         Ok(())
-                    //     }
-                    // });
-                    // if let Err(err) = r {
-                    //     log::error!("Failed to start/stop local mailbox: {err:?}");
-                    // }
+                    let r = if enabled {
+                        mailbox::start_local_mailbox(app_handle)
+                    } else {
+                        mailbox::stop_local_mailbox(app_handle);
+                        Ok(())
+                    };
+                    if let Err(err) = r {
+                        log::error!("Failed to start/stop local mailbox: {err:?}");
+                    }
                 }
                 Err(err) => {
                     log::error!("Failed to read mailbox server toggle state: {err:?}");
