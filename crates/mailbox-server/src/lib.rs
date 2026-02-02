@@ -50,7 +50,7 @@ pub async fn spawn_server(
     let db_arc = Arc::new(db);
 
     // Spawn background cleanup task
-    spawn_cleanup_task(Arc::clone(&db_arc));
+    let cleanup_task = spawn_cleanup_task(Arc::clone(&db_arc));
     tracing::info!("Started background cleanup task (runs every 5 minutes)");
 
     let app = create_app_with_arc(db_arc);
@@ -62,6 +62,10 @@ pub async fn spawn_server(
 
     let server = axum::serve(listener, app);
     server.with_graceful_shutdown(signal).await?;
+    // TODO: cleanup task needs to be cleaned up even if the server is aborted.
+    //      the database stays open as long as this task holds a reference to the db arc.
+    cleanup_task.abort();
+    tracing::info!("Mailbox server gracefully shut down");
 
     Ok(())
 }

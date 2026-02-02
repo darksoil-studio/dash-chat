@@ -88,6 +88,8 @@ pub fn run() {
 
             #[cfg(not(mobile))]
             {
+                // Manage the local mailbox state
+                app.manage(mailbox::LocalMailboxMutex::new(None));
                 let mailbox_enabled = settings::load_mailbox_enabled(&handle);
 
                 if mailbox_enabled {
