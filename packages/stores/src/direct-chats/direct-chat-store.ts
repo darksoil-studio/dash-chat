@@ -86,6 +86,15 @@ export class DirectChatStore {
 		return messagesWithProvenance;
 	});
 
+	lastMessage = reactive(async () => {
+		const messages = await this.messages();
+
+		const sortedMessages = Object.values(messages).sort(
+			(m1, m2) => m2.timestamp - m1.timestamp,
+		);
+		return sortedMessages.length > 0 ? sortedMessages[0] : undefined;
+	});
+
 	onNewMessage(
 		handler: (
 			operation: SimplifiedOperation<Payload>,
@@ -102,10 +111,10 @@ export class DirectChatStore {
 
 	async sendMessage(content: MessageContent) {
 		const chatId = await toPromise(this.chatId);
-			const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
+		const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
 		const promise = new Promise(resolve => {
 			this.onNewMessage((op, message) => {
-			if (op.header.public_key !== myDeviceId) return;
+				if (op.header.public_key !== myDeviceId) return;
 				if (message !== content) return;
 
 				resolve(undefined);

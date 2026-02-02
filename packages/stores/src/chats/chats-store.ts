@@ -105,16 +105,25 @@ export class ChatsStore {
 
 	chatSummary = reactive(async (chatId: ChatId) => {
 		const profile = await this.contactsStore.profiles(chatId);
+		const directChat = this.directChats(chatId);
+		const message = await directChat.lastMessage();
+
+		const lastEvent = message
+			? {
+					summary: message.content,
+					timestamp: message.timestamp,
+				}
+			: {
+					summary: 'contact_added',
+					timestamp: await this.contactsStore.contactAddedTimestamp(chatId),
+				};
 
 		return {
 			type: 'DirectChat',
 			chatId,
 			name: fullName(profile!),
 			avatar: profile?.avatar,
-			lastEvent: {
-				summary: 'contact_added',
-				timestamp: Date.now(),
-			},
+			lastEvent,
 			unreadMessages: 0,
 		} as ChatSummary;
 	});

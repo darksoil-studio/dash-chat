@@ -228,7 +228,6 @@
 								floatingLabel
 								label={m.enterYourContactsCode()}
 								type="text"
-								outline
 								onInput={async (e: Event) => {
 									const target = e.target as HTMLInputElement;
 									if (target.value) {

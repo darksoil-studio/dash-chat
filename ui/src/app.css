@@ -138,3 +138,14 @@ li.plain span {
 	padding-top: 4px;
 	padding-left: 1px;
 }
+
+.sticky-day-tag {
+	position: sticky;
+	top: calc(64px + env(safe-area-inset-top, 0px) + 8px);
+	align-self: center;
+	z-index: 30;
+	background-color: var(--k-page-bg-color, #f2f2f7);
+	padding: 4px 12px;
+	border-radius: 12px;
+	font-size: 0.75rem;
+}

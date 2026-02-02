@@ -67,6 +67,23 @@ export class ContactsStore {
 		return Array.from(contacts);
 	});
 
+	contactAddedTimestamp = reactive(async (agentId: AgentId) => {
+		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
+
+		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+			for (const op of ops) {
+				if (
+					op.body?.payload?.type === 'AddContact' &&
+					op.body.payload.payload.agent_id === agentId
+				) {
+					return op.header.timestamp * 1000;
+				}
+			}
+		}
+
+		return undefined;
+	});
+
 
 	rejectedContactRequests = reactive(async () => {
 		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();

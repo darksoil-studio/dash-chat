@@ -198,7 +198,7 @@
 
 						<div class="column m-2 gap-1">
 							{#each messagesSetsInDays as messageSetInDay}
-								<div class="quiet" style="align-self: center">
+								<div class="sticky-day-tag quiet">
 									{#if moreThanAYearAgo(messageSetInDay.day.valueOf())}
 										<wa-format-date
 											month="numeric"
