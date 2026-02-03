@@ -19,7 +19,7 @@ export interface IContactsClient {
 	/// contacts
 
 	// Creates a new contact code to be shared (reuses existing if valid)
-	createContactCode(): Promise<ContactCode>;
+	getOrCreateContactCode(): Promise<ContactCode>;
 
 	// Resets the contact code, invalidating the old one
 	resetContactCode(): Promise<ContactCode>;
@@ -63,7 +63,7 @@ export class ContactsClient implements IContactsClient {
 		});
 	}
 
-	createContactCode(): Promise<ContactCode> {
+	getOrCreateContactCode(): Promise<ContactCode> {
 		return invoke('get_or_create_contact_code');
 	}
 

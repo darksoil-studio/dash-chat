@@ -41,7 +41,7 @@
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 
-	let myCode = $state(contactsStore.client.createContactCode().then(encodeContactCode));
+	let myCode = $state(contactsStore.client.getOrCreateContactCode().then(encodeContactCode));
 	let codeError = $state<string | null>(null);
 	let resetDialogOpen = $state(false);
 
