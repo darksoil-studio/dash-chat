@@ -94,7 +94,7 @@
 					break;
 				case 'InitializeTopic':
 				case 'AuthorOperation':
-				case 'CreateQrCode':
+				case 'CreateContactCode':
 				case 'CreateDirectChat':
 					showToast(m.errorAddContact(), 'error');
 					break;
