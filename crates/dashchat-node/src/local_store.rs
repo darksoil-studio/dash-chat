@@ -3,16 +3,19 @@ use std::{collections::BTreeSet, path::Path, sync::Arc};
 use chrono::{DateTime, Utc};
 use redb::*;
 
-use crate::{contact::InboxTopic, *};
+use crate::{contact::{InboxTopic, ContactCode}, *};
 
 mod impls;
 
 const IDENTITY_TABLE: TableDefinition<&'static str, [u8; 32]> = TableDefinition::new("identity");
 const ACTIVE_INBOXES_TABLE: TableDefinition<InboxTopic, ()> =
     TableDefinition::new("active_inboxes");
+const CONTACT_CODE_TABLE: TableDefinition<&'static str, &str> =
+    TableDefinition::new("contact_code");
 
 const PRIVATE_KEY_KEY: &str = "private_key";
 const AGENT_ID_KEY: &str = "agent_id";
+const CONTACT_CODE_KEY: &str = "contact_code";
 
 #[derive(Clone, Debug)]
 pub struct NodeData {
@@ -50,6 +53,7 @@ impl LocalStore {
         {
             let mut identity = txn.open_table(IDENTITY_TABLE)?;
             let _ = txn.open_table(ACTIVE_INBOXES_TABLE)?;
+            let _ = txn.open_table(CONTACT_CODE_TABLE)?;
             let uninitialized =
                 identity.get(PRIVATE_KEY_KEY)?.is_none() && identity.get(AGENT_ID_KEY)?.is_none();
             if uninitialized {
@@ -126,6 +130,50 @@ impl LocalStore {
                 topic: Topic::new([0; 32]),
             };
             table.retain_in(..limit, |_, _| false)?;
+        }
+        txn.commit()?;
+        Ok(())
+    }
+
+    pub fn remove_active_inbox_topic(&self, topic: &InboxTopic) -> anyhow::Result<()> {
+        let txn = self.db.begin_write()?;
+        {
+            let mut table = txn.open_table(ACTIVE_INBOXES_TABLE)?;
+            table.remove(topic)?;
+        }
+        txn.commit()?;
+        Ok(())
+    }
+
+    pub fn get_contact_code(&self) -> anyhow::Result<Option<ContactCode>> {
+        let txn = self.db.begin_read()?;
+        let table = txn.open_table(CONTACT_CODE_TABLE)?;
+        match table.get(CONTACT_CODE_KEY)? {
+            Some(value) => {
+                let code_str = value.value();
+                let code = code_str.parse::<ContactCode>()?;
+                Ok(Some(code))
+            }
+            None => Ok(None),
+        }
+    }
+
+    pub fn set_contact_code(&self, code: &ContactCode) -> anyhow::Result<()> {
+        let code_str = code.to_string();
+        let txn = self.db.begin_write()?;
+        {
+            let mut table = txn.open_table(CONTACT_CODE_TABLE)?;
+            table.insert(CONTACT_CODE_KEY, code_str.as_str())?;
+        }
+        txn.commit()?;
+        Ok(())
+    }
+
+    pub fn clear_contact_code(&self) -> anyhow::Result<()> {
+        let txn = self.db.begin_write()?;
+        {
+            let mut table = txn.open_table(CONTACT_CODE_TABLE)?;
+            table.remove(CONTACT_CODE_KEY)?;
         }
         txn.commit()?;
         Ok(())
