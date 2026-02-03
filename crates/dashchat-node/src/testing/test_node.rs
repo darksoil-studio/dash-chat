@@ -11,10 +11,8 @@ use tokio::sync::{Mutex, mpsc::Receiver};
 use mailbox_client::{MailboxClient, mem::MemMailbox};
 
 use crate::{
-    AgentId, DeviceGroupPayload, NodeConfig, Notification, Payload, Profile,
-    mailbox::MailboxOperation,
-    node::{LocalStore, Node},
-    testing::behavior::Behavior,
+    AgentId, DeviceGroupPayload, LocalStore, NodeConfig, Notification, Payload, Profile,
+    filesystem::Filesystem, mailbox::MailboxOperation, node::Node, testing::behavior::Behavior,
     topic::TopicId,
 };
 
@@ -33,14 +31,17 @@ impl TestNode {
     pub async fn new(config: impl Into<TestNodeConfig>, name: &str) -> Self {
         let config = config.into();
         let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("store.db");
-        let local_store = LocalStore::new(path).unwrap();
         let (notification_tx, notification_rx) = tokio::sync::mpsc::channel(100);
+
+        let filesystem = Filesystem::new(dir.path().to_path_buf());
+        let local_store = LocalStore::new(filesystem.local_store_path()).unwrap();
         if config.use_named_id {
             local_store.device_id().unwrap().with_name(name);
             local_store.agent_id().unwrap().with_name(name);
         }
-        let node = Node::new(local_store, config.node_config, Some(notification_tx))
+        drop(local_store);
+
+        let node = Node::new(dir.path().into(), config.node_config, Some(notification_tx))
             .await
             .unwrap();
         if config.create_profile {
