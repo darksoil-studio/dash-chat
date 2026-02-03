@@ -24,7 +24,7 @@ use tokio::sync::mpsc;
 use mailbox_client::manager::{Mailboxes, MailboxesConfig};
 
 use crate::chat::ChatMessageContent;
-use crate::contact::{InboxTopic, ContactCode, ShareIntent};
+use crate::contact::{ContactCode, InboxTopic, ShareIntent};
 use crate::local_store::NodeData;
 use crate::mailbox::MailboxOperation;
 use crate::payload::{
@@ -251,13 +251,14 @@ impl Node {
                     return Ok(stored_code);
                 }
                 // Expired - remove from active inboxes and create new
-                let _ = self.local_store.remove_active_inbox_topic(inbox_topic);
+                if let Err(err) = self.local_store.remove_active_inbox_topic(&inbox_topic.topic) {
+                    tracing::error!("Failed to remove expired inbox topic: {}", err);
+                }
             } else {
                 // No inbox topic means this is a response code, should still be valid
                 return Ok(stored_code);
             }
         }
-
         // Create a new contact code and store it
         let new_code = self.new_qr_code(ShareIntent::AddContact, true).await?;
         self.local_store
@@ -273,7 +274,7 @@ impl Node {
         if let Ok(Some(stored_code)) = self.local_store.get_contact_code() {
             if let Some(inbox_topic) = &stored_code.inbox_topic {
                 // Remove from active inboxes so we stop listening for messages on this topic
-                let _ = self.local_store.remove_active_inbox_topic(inbox_topic);
+                let _ = self.local_store.remove_active_inbox_topic(&inbox_topic.topic);
             }
         }
 
@@ -375,6 +376,12 @@ impl Node {
             return Ok(None);
         };
         Ok(Some(profile.clone()))
+    }
+
+    /// Get a reference to the local store for testing purposes.
+    #[cfg(feature = "testing")]
+    pub fn local_store(&self) -> &LocalStore {
+        &self.local_store
     }
 
     /// Get all messages for a chat from the logs.

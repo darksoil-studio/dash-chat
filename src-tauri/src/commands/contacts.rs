@@ -1,11 +1,13 @@
 use dashchat_node::{
-    topic::kind::Inbox, AddContactError, AgentId, ContactCodeError, Error, Node, ContactCode, Topic,
+    topic::kind::Inbox, AddContactError, AgentId, ContactCode, ContactCodeError, Error, Node, Topic,
 };
 use std::collections::BTreeSet;
 use tauri::State;
 
 #[tauri::command]
-pub async fn get_or_create_contact_code(node: State<'_, Node>) -> Result<ContactCode, ContactCodeError> {
+pub async fn get_or_create_contact_code(
+    node: State<'_, Node>,
+) -> Result<ContactCode, ContactCodeError> {
     node.get_or_create_contact_code().await
 }
 

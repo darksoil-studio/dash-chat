@@ -22,7 +22,7 @@ pub mod testing;
 use named_id::*;
 
 pub use chat::*;
-pub use contact::{ContactCode, ShareIntent};
+pub use contact::{ContactCode, InboxTopic, ShareIntent};
 pub use error::{AddContactError, ContactCodeError, Error};
 pub use id::*;
 pub use node::{LocalStore, Node, NodeConfig, Notification};

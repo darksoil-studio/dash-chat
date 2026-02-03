@@ -89,7 +89,7 @@ impl From<ContactCode> for String {
 impl TryFrom<String> for ContactCode {
     type Error = anyhow::Error;
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(ContactCode::from_str(&value).unwrap())
+        ContactCode::from_str(&value)
     }
 }
 
