@@ -9,6 +9,7 @@ import { GroupChatStore } from '../group-chats/group-chat-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
 import { ChatId, Payload } from '../types';
+import { memo } from '../utils/memo';
 import { ChatsClient } from './chats-client';
 
 function random_hexadecimal(length: number) {
@@ -41,7 +42,7 @@ export class ChatsStore {
 		return groupStore;
 	}
 
-	groupChats = reactive(
+	groupChats = memo(
 		(chatId: ChatId) =>
 			new GroupChatStore(
 				this.logsStore,
@@ -51,7 +52,7 @@ export class ChatsStore {
 			),
 	);
 
-	directChats = reactive(
+	directChats = memo(
 		(peer: AgentId) =>
 			new DirectChatStore(
 				this.logsStore,

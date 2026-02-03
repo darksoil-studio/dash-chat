@@ -4,9 +4,9 @@ import { DevicesStore } from '../devices/devices-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
+import { Hash } from '../p2panda/types';
 import { personalTopicFor } from '../topics';
 import { AnnouncementPayload, ChatId, ContactCode, Payload } from '../types';
-import { Hash } from '../p2panda/types';
 import { IContactsClient, Profile } from './contacts-client';
 
 export interface ContactRequest {
@@ -35,7 +35,6 @@ export class ContactsStore {
 	private activeInboxTopics = reactive(() =>
 		relay<TopicId[]>(state => {
 			state.setPromise(this.client.activeInboxTopics());
-
 			const interval = setInterval(() => {
 				this.client.activeInboxTopics().then(topics => {
 					if (topics.find(topic => !(state.value || []).includes(topic))) {
@@ -51,7 +50,7 @@ export class ContactsStore {
 			};
 		}),
 	);
-	
+
 	contactsAgentIds = reactive(async () => {
 		const myDeviceGroupTopic = await this.devicesStore.myDeviceGroupTopic();
 
@@ -107,15 +106,7 @@ export class ContactsStore {
 		}
 
 		return rejected;
-	}, {
-			// Disable memoization for this function
-			// 
-			// TODO: remove this, and debug why a contact request that has been
-			// just deleted still appears in allChatsSummaries used in the AllChats.svelte b
-			paramKey() {
-					return `${Date.now()}`
-			},
-		});
+	});
 
 	contactRequests = reactive(async () => {
 		const activeInboxTopics = await this.activeInboxTopics();
@@ -156,15 +147,7 @@ export class ContactsStore {
 		}
 
 		return contactRequests;
-	}, {
-			// Disable memoization for this function
-			// 
-			// TODO: remove this, and debug why a contact request that has been
-			// just deleted still appears in allChatsSummaries used in the AllChats.svelte b
-			paramKey() {
-					return `${Date.now()}`
-			},
-		});
+	});
 
 	profiles = reactive(async (agentId: AgentId) => {
 		const topicId = personalTopicFor(agentId);

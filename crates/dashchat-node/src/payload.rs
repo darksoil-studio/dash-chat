@@ -24,6 +24,7 @@ pub struct Profile {
     pub name: String,
     pub surname: Option<String>,
     pub avatar: Option<String>,
+    pub about: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, RenameAll)]

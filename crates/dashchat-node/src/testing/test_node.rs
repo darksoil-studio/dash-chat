@@ -49,6 +49,7 @@ impl TestNode {
                 name: name.to_string(),
                 surname: None,
                 avatar: None,
+                about: None,
             })
             .await
             .unwrap();

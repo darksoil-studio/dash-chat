@@ -32,7 +32,7 @@
 			if (!name) name = myProfile?.name || '';
 			if (!surname) surname = myProfile?.surname;
 			if (!avatar) avatar = myProfile?.avatar;
-			if (!about) about = myProfile?.about;
+			if (about === undefined) about = myProfile?.about;
 		});
 	});
 
@@ -42,7 +42,7 @@
 				name: name!,
 				surname,
 				avatar,
-				about,
+				about: about || undefined,
 			});
 			goto('/settings/profile');
 		} catch (e) {
@@ -70,10 +70,10 @@
 		</div>
 	{:then myProfile}
 		<Navbar
-			title={m.editName()}
+			title={m.about()}
 			titleClass="opacity1"
 			transparent={true}
-			rightClass={myProfile?.name === name
+			rightClass={myProfile?.about === about
 				? 'pointer-events-none opacity-50'
 				: ''}
 		>
@@ -98,16 +98,10 @@
 				nested={theme === 'material'}
 			>
 				<ListInput
-					type="text"
-					bind:value={name}
-					label={theme === 'material' ? m.name() : ''}
-					placeholder={theme === 'ios' ? m.name() : ''}
-				/>
-				<ListInput
-					type="text"
-					bind:value={surname}
-					label={theme === 'material' ? m.surname() : ''}
-					placeholder={theme === 'ios' ? m.surname() : ''}
+					type="textarea"
+					bind:value={about}
+					placeholder={m.about()}
+					inputStyle="min-height: 100px"
 				/>
 			</List>
 		</div>
@@ -118,7 +112,7 @@
 				class="end-4 bottom-4"
 				style="position: fixed; width: auto"
 				rounded
-				disabled={myProfile?.name === name && myProfile.surname === surname}
+				disabled={myProfile?.about === about}
 			>
 				{m.save()}
 			</Button>

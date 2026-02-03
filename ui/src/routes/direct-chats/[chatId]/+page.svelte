@@ -138,7 +138,7 @@
 			});
 		}
 	});
-	const theme = $derived(useTheme());
+
 	const messageClass = (messageSetLength: number, index: number) => {
 		if (messageSetLength <= 1) return '';
 		if (index === 0) return 'first-message';

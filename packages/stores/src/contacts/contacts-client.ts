@@ -7,6 +7,7 @@ export interface Profile {
 	name: string;
 	surname: string | undefined;
 	avatar: string | undefined;
+	about: string | undefined;
 }
 
 export function fullName(profile: Profile): string {

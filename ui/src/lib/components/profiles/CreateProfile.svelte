@@ -28,6 +28,7 @@
 				name: name!,
 				surname,
 				avatar,
+				about: undefined,
 			});
 		} catch (e) {
 			console.error(e);

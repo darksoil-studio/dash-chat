@@ -1,3 +1,5 @@
+alias d := dev
+
 # start two dash chat instances connected to a local mailbox server
 dev:
     mprocs

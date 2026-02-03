@@ -125,6 +125,7 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
+		z-index: 40;
 	}
 
 	.message-input-bar.ios {

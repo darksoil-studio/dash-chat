@@ -5,7 +5,7 @@
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { useReactivePromise } from '$lib/stores/use-signal';
-	import { mdiPencil, mdiQrcode } from '@mdi/js';
+	import { mdiAccountCircleOutline, mdiPencil, mdiQrcode } from '@mdi/js';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
@@ -80,6 +80,24 @@
 								<wa-icon src={wrapPathInSvg(mdiQrcode)}></wa-icon>
 							</Link>
 						</div>
+					{/snippet}
+				</ListItem>
+			</List>
+
+			<List
+				class="center-in-desktop"
+				strongIos
+				nested={theme === 'material'}
+				inset
+			>
+				<ListItem
+					link
+					linkProps={{ href: '/settings/account' }}
+					title={m.account()}
+					chevron={false}
+				>
+					{#snippet media()}
+						<wa-icon src={wrapPathInSvg(mdiAccountCircleOutline)} style="font-size: 28px"></wa-icon>
 					{/snippet}
 				</ListItem>
 			</List>
