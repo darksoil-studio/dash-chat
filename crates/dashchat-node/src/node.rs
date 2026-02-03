@@ -251,7 +251,10 @@ impl Node {
                     return Ok(stored_code);
                 }
                 // Expired - remove from active inboxes and create new
-                if let Err(err) = self.local_store.remove_active_inbox_topic(&inbox_topic.topic) {
+                if let Err(err) = self
+                    .local_store
+                    .remove_active_inbox_topic(&inbox_topic.topic)
+                {
                     tracing::error!("Failed to remove expired inbox topic: {}", err);
                 }
             } else {
@@ -274,7 +277,9 @@ impl Node {
         if let Ok(Some(stored_code)) = self.local_store.get_contact_code() {
             if let Some(inbox_topic) = &stored_code.inbox_topic {
                 // Remove from active inboxes so we stop listening for messages on this topic
-                let _ = self.local_store.remove_active_inbox_topic(&inbox_topic.topic);
+                let _ = self
+                    .local_store
+                    .remove_active_inbox_topic(&inbox_topic.topic);
             }
         }
 

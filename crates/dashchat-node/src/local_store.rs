@@ -3,7 +3,11 @@ use std::{collections::BTreeSet, path::Path, sync::Arc};
 use chrono::{DateTime, Utc};
 use redb::*;
 
-use crate::{contact::InboxTopic, topic::{kind, Topic}, *};
+use crate::{
+    contact::InboxTopic,
+    topic::{Topic, kind},
+    *,
+};
 
 mod contact_code;
 mod impls;
@@ -291,7 +295,9 @@ mod tests {
         assert_eq!(loaded_topics, topics);
 
         // Remove the middle topic (by topic only, not full InboxTopic)
-        store.remove_active_inbox_topic(&topic_to_remove.topic).unwrap();
+        store
+            .remove_active_inbox_topic(&topic_to_remove.topic)
+            .unwrap();
         topics.remove(&topic_to_remove);
 
         // Only the middle one should be gone
