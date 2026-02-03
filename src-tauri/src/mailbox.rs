@@ -1,4 +1,5 @@
 use futures::FutureExt;
+use mdns_sd::{ServiceDaemon, ServiceInfo};
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
 
@@ -32,6 +33,14 @@ pub fn start_local_mailbox<R: Runtime>(
                 Err(e) => log::error!("Failed to start local mailbox: {e:?}"),
             }
         });
+        let service = mdns_service_info(handle);
+        log::info!(
+            "Registering local mailbox service via mdns: {} ({})",
+            service.get_fullname(),
+            service.get_type()
+        );
+        handle.state::<ServiceDaemon>().register(service)?;
+
         log::info!("Started local mailbox");
         if state
             .replace(LocalMailboxState {
@@ -57,6 +66,67 @@ pub fn stop_local_mailbox<R: Runtime>(handle: &AppHandle<R>) {
         log::info!("Sending stop signal to local mailbox...");
         let _ = state.stop_signal.send(());
         state.server.await.unwrap();
+        if let Err(e) = handle
+            .state::<ServiceDaemon>()
+            .unregister(MDNS_SERVICE_TYPE)
+        {
+            log::error!("Failed to unregister MDNS service: {e:?}");
+        }
+
         log::info!("Local mailbox stopped");
-    })
+    });
+}
+
+const MDNS_SERVICE_TYPE: &str = "_dashchat._udp.local.";
+
+pub fn spawn_local_mailbox_mdns_discovery<R: Runtime>(
+    handle: &AppHandle<R>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mdns = ServiceDaemon::new()?;
+    let receiver = mdns.browse(MDNS_SERVICE_TYPE)?;
+
+    handle.manage(mdns);
+
+    std::thread::spawn(move || {
+        while let Ok(event) = receiver.recv() {
+            match event {
+                mdns_sd::ServiceEvent::ServiceResolved(resolved) => {
+                    log::info!(
+                        "*** Resolved a new mailbox service via mdns: {} ***",
+                        resolved.fullname
+                    );
+                }
+                other_event => {
+                    log::debug!("((( Received other mdns event: {:?} )))", &other_event);
+                }
+            }
+        }
+
+        log::warn!("mdns discovery loop ended");
+    });
+
+    Ok(())
+}
+
+fn mdns_service_info<R: Runtime>(_handle: &AppHandle<R>) -> ServiceInfo {
+    // let ip = local_ip_address::local_ip().unwrap().to_string();
+    // let instance_name = format!("{}.{}", &nanoid::nanoid!(), MDNS_SERVICE_TYPE);
+    let instance_name = nanoid::nanoid!(7);
+
+    // let host_name = &format!("{ip}.local.");
+    let host_name = "0.0.0.0.local.";
+    // let host_name = "localhost.local.";
+    let port = 3456;
+    let properties = [("property_1", "test"), ("property_2", "1234")];
+
+    ServiceInfo::new(
+        MDNS_SERVICE_TYPE,
+        &instance_name,
+        host_name,
+        "",
+        port,
+        &properties[..],
+    )
+    .unwrap()
+    .enable_addr_auto()
 }

@@ -86,6 +86,8 @@ pub fn run() {
         .setup(move |app| {
             let handle = app.handle().clone();
 
+            mailbox::spawn_local_mailbox_mdns_discovery(&handle)?;
+
             #[cfg(not(mobile))]
             {
                 // Manage the local mailbox state
