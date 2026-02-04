@@ -86,7 +86,8 @@ pub fn run() {
         .setup(move |app| {
             let handle = app.handle().clone();
 
-            mailbox::spawn_local_mailbox_mdns_discovery(&handle)?;
+            // Manage the mDNS service daemon
+            app.manage(mdns_sd::ServiceDaemon::new()?);
 
             #[cfg(not(mobile))]
             {
@@ -188,7 +189,10 @@ pub fn run() {
                 let mailbox_client = ToyMailboxClient::new(mailbox_url);
                 node.mailboxes.add(mailbox_client).await;
 
-                handle.manage(node);
+                handle.manage(node.clone());
+
+                mailbox::spawn_local_mailbox_mdns_discovery(&handle, node)
+                    .expect("Failed to spawn local mailbox mdns discovery");
 
                 tauri::async_runtime::spawn(async move {
                     while let Some(notification) = notification_rx.recv().await {

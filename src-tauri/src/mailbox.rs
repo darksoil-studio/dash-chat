@@ -81,23 +81,39 @@ const MDNS_SERVICE_TYPE: &str = "_dashchat._udp.local.";
 
 pub fn spawn_local_mailbox_mdns_discovery<R: Runtime>(
     handle: &AppHandle<R>,
+    node: dashchat_node::Node,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mdns = ServiceDaemon::new()?;
+    let mdns = handle.state::<ServiceDaemon>();
     let receiver = mdns.browse(MDNS_SERVICE_TYPE)?;
 
-    handle.manage(mdns);
-
-    std::thread::spawn(move || {
+    tokio::spawn(async move {
         while let Ok(event) = receiver.recv() {
             match event {
                 mdns_sd::ServiceEvent::ServiceResolved(resolved) => {
+                    let ip = resolved
+                        .addresses
+                        .iter()
+                        .find_map(|addr| match addr {
+                            mdns_sd::ScopedIp::V4(ip) => Some(ip.addr().to_string()),
+                            _ => None,
+                        })
+                        .unwrap_or_default();
+                    let n = node.clone();
+                    let ip2 = ip.clone();
+                    n.mailboxes
+                        .add(mailbox_client::toy::ToyMailboxClient::new(format!(
+                            "http://{}:3411",
+                            ip2
+                        )))
+                        .await;
                     log::info!(
-                        "*** Resolved a new mailbox service via mdns: {} ***",
-                        resolved.fullname
+                        "*** Added new local mailbox client via mdns: {} ({}) ***",
+                        resolved.fullname,
+                        ip
                     );
                 }
                 other_event => {
-                    log::debug!("((( Received other mdns event: {:?} )))", &other_event);
+                    log::trace!("((( Received other mdns event: {:?} )))", &other_event);
                 }
             }
         }
