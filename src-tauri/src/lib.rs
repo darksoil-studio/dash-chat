@@ -89,83 +89,8 @@ pub fn run() {
             // Manage the mDNS service daemon
             app.manage(mdns_sd::ServiceDaemon::new()?);
 
-            #[cfg(not(mobile))]
-            {
-                // Manage the local mailbox state
-                app.manage(mailbox::LocalMailboxMutex::new(None));
-                let mailbox_enabled = settings::load_mailbox_enabled(&handle);
-
-                if mailbox_enabled {
-                    mailbox::start_local_mailbox(&handle)?;
-                }
-
-                let tray = crate::tray::build_tray(&app)?;
-                tray.set_visible(mailbox_enabled)?;
-                app.manage(tray);
-
-                if let Some(window) = app.get_webview_window("main") {
-                    if let Some(menu) = window.menu() {
-                        // Menu item is nested in "File" submenu, need to search through submenus
-                        let mut found = false;
-                        if let Ok(items) = menu.items() {
-                            for item in items {
-                                if let Some(submenu) = item.as_submenu() {
-                                    if let Some(toggle) = submenu.get("toggle-local-mailbox") {
-                                        if let Some(check_item) = toggle.as_check_menuitem() {
-                                            if let Err(err) =
-                                                check_item.set_checked(mailbox_enabled)
-                                            {
-                                                log::error!(
-                                                    "Failed to set mailbox toggle: {err:?}"
-                                                );
-                                            }
-                                            found = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if !found {
-                            log::error!("Failed to find toggle-local-mailbox menu item");
-                        }
-                    } else {
-                        log::error!("Failed to get menu");
-                    }
-                } else {
-                    log::error!("Failed to get window");
-                }
-
-                // Handle window close events to keep app running when tray is visible
-                if let Some(window) = app.get_webview_window("main") {
-                    let handle_for_event = handle.clone();
-                    window.on_window_event(move |event| {
-                        if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                            // Check if mailbox is enabled and hence the tray is visible
-                            if settings::load_mailbox_enabled(&handle_for_event) {
-                                // Hide window instead of closing when tray is visible
-                                api.prevent_close();
-                                if let Some(window) = handle_for_event.get_webview_window("main") {
-                                    if let Err(err) = window.hide() {
-                                        log::error!("Failed to hide window: {err:?}");
-                                    }
-                                }
-                                // // TODO: stop local mailbox
-                                // tokio::task::block_in_place(|| {
-                                //     tokio::runtime::Handle::current()
-                                //         .block_on(mailbox::stop_local_mailbox(&handle_for_event))
-                                // });
-                            }
-                        }
-                    });
-                }
-            }
-            #[cfg(mobile)]
-            {
-                app.manage(std::sync::Mutex::new(
-                    None::<tauri::tray::TrayIcon<tauri::Wry>>,
-                ));
-            }
+            // Setup the menu to work with the tray icon
+            crate::tray::setup_tray_menu(&app)?;
 
             let local_store_path: std::path::PathBuf = local_store_path(&handle)?;
             log::info!("Using local store path: {local_store_path:?}");

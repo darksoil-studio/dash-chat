@@ -43,9 +43,6 @@ p2panda-spaces = { git = "https://github.com/maackle/p2panda.git", branch = "das
 tokio = { version = "1.43.0", features = ["fs"] }
 hex = "0.4.3"
 mdns-sd = "0.17"
-
-# lazy i know...
-local-ip-address = "0.6"
 nanoid = "0"
 
 image = "0.25"
@@ -63,7 +60,6 @@ tauri-plugin-clipboard-manager = "2"
 
 opener = { version = "0.7", features = ["reveal"] }
 log = "0.4"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tauri-plugin-log = "2.0.0"
 url2 = "0.0.6"
 app_dirs2 = "2.5.5"
