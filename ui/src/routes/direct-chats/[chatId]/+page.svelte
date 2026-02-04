@@ -29,7 +29,7 @@
 	} from 'dash-chat-stores';
 	import type { AddContactError } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
-	import { mdiSend } from '@mdi/js';
+	import { mdiSend, mdiAlert, mdiAccountQuestion, mdiAccountGroup } from '@mdi/js';
 	import {
 		Page,
 		Navbar,
@@ -188,9 +188,11 @@
 			},
 		};
 	};
+	const theme = $derived(useTheme());
 </script>
 
 {#await $peerProfile then profile}
+{#await $contactRequest then contactRequest}
 	<Page class="messages-page">
 		<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
 			{#snippet left()}
@@ -239,6 +241,35 @@
 								</Link>
 							</div>
 						{/if}
+						<div class="row justify-center ">
+						<Card raised class="no-padding rounded-xl" style="background-color: transparent">
+							<div class="flex flex-col items-center gap-3 p-3 text-center">
+								{#if contactRequest}
+									<div class="flex items-center gap-2 text-amber-600">
+										<wa-icon class="small-icon" src={wrapPathInSvg(mdiAlert)}></wa-icon>
+										<span class="font-semibold">{m.reviewCarefully()}</span>
+									</div>
+								{/if}
+								<div class="flex flex-col gap-2 text-sm text-gray-700 dark:text-gray-300">
+									<div class="flex items-center justify-center gap-2">
+										<wa-icon class="small-icon" src={wrapPathInSvg(mdiAccountQuestion)}></wa-icon>
+										<span>{m.profileNamesNotVerified()}</span>
+									</div>
+									<div class="flex items-center justify-center gap-2">
+										<wa-icon class="small-icon" src={wrapPathInSvg(mdiAccountGroup)}></wa-icon>
+										<span>{m.noGroupsInCommon()}</span>
+									</div>
+								</div>
+								{#if contactRequest}
+						<div class="row justify-center ">
+								<Button rounded tonal small>
+										{m.securityTips()}
+									</Button>
+						</div>
+								{/if}
+							</div>
+						</Card>
+						</div>
 
 						<div class="column m-2 gap-1">
 							{#each messagesSetsInDays as messageSetInDay}
@@ -347,7 +378,6 @@
 				{/await}
 			{/await}
 
-			{#await $contactRequest then contactRequest}
 				{#if contactRequest}
 					<Card class="center-in-desktop p-1 fixed bottom-1">
 						<div class="column gap-2 items-center justify-center">
@@ -387,7 +417,7 @@
 						onEmojiClick={() => (showEmojiPicker = true)}
 					/>
 				{/if}
-			{/await}
 		</div>
 	</Page>
+{/await}
 {/await}

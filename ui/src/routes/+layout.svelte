@@ -45,7 +45,11 @@
 	const chatsStore = new ChatsStore(logsStore, contactsStore, chatsClient);
 	setContext('chats-store', chatsStore);
 
-	let theme: 'ios' | 'material' = 'material';
+	let theme: 'ios' | 'material' = $state('material');
+
+window.addEventListener('theme-change', (event) => {
+	theme = event.detail.theme;
+});
 </script>
 
 <KonstaProvider {theme}>

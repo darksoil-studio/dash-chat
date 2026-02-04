@@ -87,8 +87,7 @@
 			<List
 				class="center-in-desktop"
 				strongIos
-				nested={theme === 'material'}
-				inset
+				nested				inset
 			>
 				<ListItem
 					link

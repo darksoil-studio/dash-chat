@@ -10,7 +10,6 @@
 
 html {
 	background-color: transparent !important;
-	
 }
 
 body {
@@ -113,10 +112,14 @@ li.plain span {
 	border-top-left-radius: 4px;
 }
 
-
 .qr-card > div {
 	/* Padding for the copy button below the QR code in add-contact */
 	padding-bottom: 8px;
+}
+.k-card.no-padding > div {
+	padding: 0;
+	padding-right: 8px;
+	padding-left: 8px;
 }
 
 .transparent.k-page {
@@ -124,7 +127,7 @@ li.plain span {
 }
 
 .k-toolbar.transparent .bg-gradient-to-t {
-	display: none
+	display: none;
 }
 
 .icon-only-card {
@@ -148,4 +151,8 @@ li.plain span {
 	padding: 4px 12px;
 	border-radius: 12px;
 	font-size: 0.75rem;
+}
+
+.small-icon {
+	font-size: 16px;
 }
