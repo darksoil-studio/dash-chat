@@ -1,16 +1,12 @@
 use dashchat_node::Node;
 use mailbox_client::toy::ToyMailboxClient;
 use p2panda_core::{cbor::encode_cbor, Body};
+use tauri::{Emitter, Manager};
 
-use tauri::{Emitter, Manager, RunEvent};
-
-use crate::{
-    commands::logs::simplify,
-    local_store::{cleanup_local_store_path, local_store_path},
-};
+use crate::{commands::logs::simplify, filesystem::local_data_dir};
 
 mod commands;
-mod local_store;
+mod filesystem;
 mod settings;
 mod utils;
 
@@ -92,14 +88,13 @@ pub fn run() {
             // Setup the menu to work with the tray icon
             crate::tray::setup_tray_menu(&app)?;
 
-            let local_store_path: std::path::PathBuf = local_store_path(&handle)?;
-            log::info!("Using local store path: {local_store_path:?}");
+            let local_data_path: std::path::PathBuf = local_data_dir(&handle)?;
+            log::info!("Using local data path: {local_data_path:?}");
 
             tauri::async_runtime::block_on(async move {
-                let local_store = dashchat_node::LocalStore::new(local_store_path).unwrap();
                 let config = dashchat_node::NodeConfig::default();
                 let (notification_tx, mut notification_rx) = tokio::sync::mpsc::channel(100);
-                let node = dashchat_node::Node::new(local_store, config, Some(notification_tx))
+                let node = dashchat_node::Node::new(local_data_path, config, Some(notification_tx))
                     .await
                     .expect("Failed to create node");
 
@@ -175,14 +170,8 @@ pub fn run() {
 
             Ok(())
         })
-        .build(tauri::generate_context!())
-        .expect("error while running tauri application")
-        .run(|app_handle, event| match event {
-            // Limitation: this won't fire when running pnpm start with mprocs,
-            // only when the tauri app is closed directly
-            RunEvent::Exit => cleanup_local_store_path(app_handle).expect("Failed to cleanup"),
-            _ => {}
-        });
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 
     ()
 }
