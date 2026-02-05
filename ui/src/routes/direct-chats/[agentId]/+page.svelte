@@ -34,6 +34,7 @@
 		mdiAlert,
 		mdiAccountQuestion,
 		mdiAccountGroup,
+		mdiChevronDown,
 	} from '@mdi/js';
 	import {
 		Page,
@@ -42,6 +43,7 @@
 		Link,
 		Button,
 		Card,
+		Badge,
 		useTheme,
 	} from 'konsta/svelte';
 	import { page } from '$app/state';
@@ -61,6 +63,8 @@
 	const messagesSets = useReactivePromise(store.messageSets);
 	const peerProfile = useReactivePromise(store.peerProfile);
 	const contactRequest = useReactivePromise(store.contactRequest);
+	const unreadCount = useReactivePromise(store.unreadCount);
+	const readMessageHashes = useReactivePromise(store.readMessageHashes);
 
 	async function acceptContactRequest(contactRequest: ContactRequest) {
 		try {
@@ -106,6 +110,7 @@
 	let messageText = $state('');
 	let showEmojiPicker = $state(false);
 	let messageInputHeight: string = $state('');
+	let showScrollToBottom = $state(false);
 
 	const scrollIsAtBottom = () => {
 		const pageEl = document.querySelector('.messages-page') as HTMLDivElement;
@@ -144,7 +149,7 @@
 		if (scrollIsAtBottom()) bottom = true;
 		if (scrollIsAtBottom() || bottom) {
 			// Wait for the message to get rendered in the UI
-			clearTimeout(t)
+			clearTimeout(t);
 			t = setTimeout(() => {
 				bottom = false;
 				scrollToBottom();
@@ -177,6 +182,7 @@
 				clearTimeout(markReadTimeout);
 				markReadTimeout = setTimeout(() => {
 					if (visibleMessages.size > 0) {
+					console.log('reaad',visibleMessages)
 						store.markAsRead(Array.from(visibleMessages));
 						visibleMessages.clear();
 					}
@@ -185,14 +191,23 @@
 			{ threshold: 0.5 },
 		);
 
+		// Track scroll position to show/hide scroll-to-bottom button
+		const pageEl = document.querySelector('.messages-page') as HTMLDivElement;
+		const handleScroll = () => {
+			showScrollToBottom = !scrollIsAtBottom();
+		};
+		pageEl?.addEventListener('scroll', handleScroll);
+
 		return () => {
 			observer?.disconnect();
 			clearTimeout(markReadTimeout);
+			pageEl?.removeEventListener('scroll', handleScroll);
 		};
 	});
 
 	// Svelte action to observe message elements for read tracking
-	const observeMessage: Action<HTMLElement, Hash> = (node, hash) => {
+	const observeMessage: Action<HTMLElement, Hash | null> = (node, hash) => {
+		if (hash === null) return;
 		node.setAttribute('data-message-hash', hash);
 		observer?.observe(node);
 		return {
@@ -236,7 +251,8 @@
 
 			<div class="column">
 				{#await $myDeviceId then myDeviceId}
-					{#await $messagesSets then messagesSetsInDays}
+					{#await $readMessageHashes then readHashes}
+						{#await $messagesSets then messagesSetsInDays}
 						<div
 							use:scrolltobottom
 							class="center-in-desktop column"
@@ -367,7 +383,10 @@
 														</div>
 													</Card>
 												{:else}
-													<div class="row gap-2 m-0" use:observeMessage={hash}>
+													<div
+														class="row gap-2 m-0"
+														use:observeMessage={readHashes?.has(hash) ? null : hash}
+													>
 														<Card
 															raised
 															class={`${messageClass(messageSet.length, i)} message others-message`}
@@ -409,8 +428,27 @@
 								{/each}
 							</div>
 						</div>
+						{/await}
 					{/await}
 				{/await}
+
+				{#if showScrollToBottom}
+					{#await $unreadCount then count}
+						<button
+							class="fixed right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 shadow-md transition-opacity hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+							style={`bottom: calc(${messageInputHeight || '60px'} + 0.5rem)`}
+							onclick={() => scrollToBottom()}
+							aria-label="Scroll to bottom"
+						>
+							{#if count && count > 0}
+								<Badge class="absolute -top-1 -right-1">
+									{count > 99 ? '99+' : count}
+								</Badge>
+							{/if}
+							<wa-icon src={wrapPathInSvg(mdiChevronDown)}></wa-icon>
+						</button>
+					{/await}
+				{/if}
 
 				{#if contactRequest}
 					<Card class="center-in-desktop p-1 fixed bottom-1">
