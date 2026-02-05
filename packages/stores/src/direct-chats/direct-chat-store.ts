@@ -29,12 +29,12 @@ export class DirectChatStore {
 	chatId = reactive(async () => await this.client.chatId(this.peer));
 
 	peerProfile = reactive(async () => {
-		const request = await this.getContactRequest();
+		const request = await this.contactRequest();
 		if (request) return request.profile;
 		return await this.contactsStore.profiles(this.peer);
 	});
 
-	getContactRequest = reactive(async () => {
+	contactRequest = reactive(async () => {
 		const contactRequests = await this.contactsStore.contactRequests();
 		return contactRequests.find(cr => cr.code.agent_id === this.peer);
 	});

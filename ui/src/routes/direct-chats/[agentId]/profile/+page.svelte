@@ -18,10 +18,10 @@
 		Preloader,
 	} from 'konsta/svelte';
 	import { page } from '$app/state';
-	let chatId = page.params.chatId!;
+	let agentId = page.params.agentId!;
 
 	const chatsStore: ChatsStore = getContext('chats-store');
-	const store = chatsStore.directChats(chatId);
+	const store = chatsStore.directChats(agentId);
 
 	const peerProfile = useReactivePromise(store.peerProfile);
 </script>
@@ -37,7 +37,7 @@
 	{:then profile}
 		<Navbar transparent={true}>
 			{#snippet left()}
-				<NavbarBackLink onClick={() => goto(`/direct-chats/${chatId}`)} />
+				<NavbarBackLink onClick={() => goto(`/direct-chats/${agentId}`)} />
 			{/snippet}
 
 			{#snippet title()}

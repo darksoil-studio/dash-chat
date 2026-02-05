@@ -46,22 +46,20 @@
 	} from 'konsta/svelte';
 	import { page } from '$app/state';
 	import { showToast } from '$lib/utils/toasts';
-	import { get } from 'svelte/store';
-	import { watcher } from 'signalium';
 	import type { Action } from 'svelte/action';
 	import MessageInput from '$lib/components/MessageInput.svelte';
-	let chatId = page.params.chatId!;
+	let agentId = page.params.agentId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
 	const myAgentId = useReactivePromise(contactsStore.myAgentId);
 	const myDeviceId = useReactivePromise(contactsStore.myDeviceId);
 
 	const chatsStore: ChatsStore = getContext('chats-store');
-	const store = chatsStore.directChats(chatId);
+	const store = chatsStore.directChats(agentId);
 
 	const messagesSets = useReactivePromise(store.messageSets);
 	const peerProfile = useReactivePromise(store.peerProfile);
-	const contactRequest = useReactivePromise(store.getContactRequest);
+	const contactRequest = useReactivePromise(store.contactRequest);
 
 	async function acceptContactRequest(contactRequest: ContactRequest) {
 		try {
@@ -109,7 +107,8 @@
 	let messageInputHeight: string = $state('');
 
 	const scrollIsAtBottom = () => {
-		const pageEl = document.querySelector('.messages-page')! as HTMLDivElement;
+		const pageEl = document.querySelector('.messages-page') as HTMLDivElement;
+		if (!pageEl) return;
 		return pageEl.scrollTop === pageEl.scrollHeight - pageEl.offsetHeight;
 	};
 
@@ -200,9 +199,9 @@
 	const theme = $derived(useTheme());
 </script>
 
-{#await $peerProfile then profile}
-	{#await $contactRequest then contactRequest}
-		<Page class="messages-page">
+<Page class="messages-page">
+	{#await $peerProfile then profile}
+		{#await $contactRequest then contactRequest}
 			<Navbar
 				transparent={true}
 				titleClass="opacity1 w-full"
@@ -216,7 +215,7 @@
 						<Link
 							class="gap-2"
 							style="display: flex; justify-content: start; align-items: center;"
-							href={`/direct-chats/${chatId}/profile`}
+							href={`/direct-chats/${agentId}/profile`}
 						>
 							<wa-avatar
 								image={profile!.avatar}
@@ -242,7 +241,7 @@
 								<div class="column" style="align-items: center">
 									<Link
 										class="column my-6 gap-2"
-										href={`/direct-chats/${chatId}/profile`}
+										href={`/direct-chats/${agentId}/profile`}
 									>
 										<wa-avatar
 											image={profile.avatar}
@@ -448,6 +447,6 @@
 					/>
 				{/if}
 			</div>
-		</Page>
+		{/await}
 	{/await}
-{/await}
+</Page>
