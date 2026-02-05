@@ -232,8 +232,13 @@ impl Node {
                 }
             }
 
-            Some(Payload::Chat(ChatPayload::Message(_) | ChatPayload::Reaction(_))) => {
-                // Nothing to do.
+            Some(Payload::Chat(
+                ChatPayload::Message(_)
+                | ChatPayload::Reaction(_)
+                | ChatPayload::ReceivedMessages(_)
+                | ChatPayload::ReadMessages(_),
+            )) => {
+                // Nothing to do - informational for frontend, background task handles ReceivedMessages creation
             }
 
             Some(Payload::Announcements(_)) => {

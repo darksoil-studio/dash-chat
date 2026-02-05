@@ -57,12 +57,14 @@ pub enum ChatPayload {
     Message(ChatMessageContent),
 
     Reaction(ChatReaction),
-}
 
-#[derive(Clone, Debug, Serialize, Deserialize, RenameNone)]
-pub struct ReadMessagesPayload {
-    pub chat_id: ChatId,
-    pub message_hashes: Vec<Hash>,
+    /// Acknowledges that the messages with the given hashes have been received.
+    /// Created automatically by a background task when messages arrive from peers.
+    ReceivedMessages(Vec<Hash>),
+
+    /// Acknowledges that the messages with the given hashes have been read.
+    /// Created when the user views messages in the chat UI.
+    ReadMessages(Vec<Hash>),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]
@@ -70,7 +72,6 @@ pub struct ReadMessagesPayload {
 pub enum DeviceGroupPayload {
     AddContact(QrCode),
     RejectContactRequest(AgentId),
-    ReadMessages(ReadMessagesPayload),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, RenameAll)]

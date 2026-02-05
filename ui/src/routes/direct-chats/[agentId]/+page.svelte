@@ -48,6 +48,8 @@
 	import { showToast } from '$lib/utils/toasts';
 	import type { Action } from 'svelte/action';
 	import MessageInput from '$lib/components/MessageInput.svelte';
+	import MessageStatus from '$lib/components/MessageStatus.svelte';
+
 	let agentId = page.params.agentId!;
 
 	const contactsStore: ContactsStore = getContext('contacts-store');
@@ -60,6 +62,8 @@
 	const messagesSets = useReactivePromise(store.messageSets);
 	const peerProfile = useReactivePromise(store.peerProfile);
 	const contactRequest = useReactivePromise(store.contactRequest);
+	const peerReceivedHashes = useReactivePromise(store.peerReceivedHashes);
+	const peerReadHashes = useReactivePromise(store.peerReadHashes);
 
 	async function acceptContactRequest(contactRequest: ContactRequest) {
 		try {
@@ -339,7 +343,7 @@
 															<span>{message.content}</span>
 
 															{#if i === messageSet.length - 1}
-																<div class="dark-quiet text-xs">
+																<div class="dark-quiet text-xs row items-center gap-1">
 																	{#if lessThanAMinuteAgo(message.timestamp)}
 																		<span>{m.now()}</span>
 																	{:else if moreThanAnHourAgo(message.timestamp)}
@@ -357,6 +361,15 @@
 																		>
 																		</wa-relative-time>
 																	{/if}
+																	{#await Promise.all([$peerReceivedHashes, $peerReadHashes]) then [received, read]}
+																		{#if read.has(hash)}
+																			<MessageStatus status="read" />
+																		{:else if received.has(hash)}
+																			<MessageStatus status="received" />
+																		{:else}
+																			<MessageStatus status="sent" />
+																		{/if}
+																	{/await}
 																</div>
 															{/if}
 														</div>

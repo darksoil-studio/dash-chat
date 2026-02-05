@@ -124,18 +124,66 @@ export class DirectChatStore {
 		return promise;
 	}
 
+	// My read receipts - messages I have read (from the chat topic)
 	readMessageHashes = reactive(async () => {
 		const chatId = await this.chatId();
-		const myDeviceGroupTopic = await this.contactsStore.devicesStore.myDeviceGroupTopic();
+		const logs = await this.logsStore.logsForAllAuthors(chatId);
+		const myDeviceId = await this.contactsStore.myDeviceId();
 		const readHashes: Set<Hash> = new Set();
 
-		for (const [_, ops] of Object.entries(myDeviceGroupTopic)) {
+		for (const [author, ops] of Object.entries(logs)) {
+			// Only look at my own read receipts
+			if (author !== myDeviceId) continue;
+
 			for (const op of ops) {
-				if (
-					op.body?.payload?.type === 'ReadMessages' &&
-					op.body.payload.payload.chat_id === chatId
-				) {
-					for (const hash of op.body.payload.payload.message_hashes) {
+				if (op.body?.type === 'Chat' && op.body.payload.type === 'ReadMessages') {
+					for (const hash of op.body.payload.payload) {
+						readHashes.add(hash);
+					}
+				}
+			}
+		}
+
+		return readHashes;
+	});
+
+	// Peer's received receipts - messages the peer has received
+	peerReceivedHashes = reactive(async () => {
+		const chatId = await this.chatId();
+		const logs = await this.logsStore.logsForAllAuthors(chatId);
+		const myDeviceId = await this.contactsStore.myDeviceId();
+		const receivedHashes: Set<Hash> = new Set();
+
+		for (const [author, ops] of Object.entries(logs)) {
+			// Only look at peer's receipts
+			if (author === myDeviceId) continue;
+
+			for (const op of ops) {
+				if (op.body?.type === 'Chat' && op.body.payload.type === 'ReceivedMessages') {
+					for (const hash of op.body.payload.payload) {
+						receivedHashes.add(hash);
+					}
+				}
+			}
+		}
+
+		return receivedHashes;
+	});
+
+	// Peer's read receipts - messages the peer has read
+	peerReadHashes = reactive(async () => {
+		const chatId = await this.chatId();
+		const logs = await this.logsStore.logsForAllAuthors(chatId);
+		const myDeviceId = await this.contactsStore.myDeviceId();
+		const readHashes: Set<Hash> = new Set();
+
+		for (const [author, ops] of Object.entries(logs)) {
+			// Only look at peer's receipts
+			if (author === myDeviceId) continue;
+
+			for (const op of ops) {
+				if (op.body?.type === 'Chat' && op.body.payload.type === 'ReadMessages') {
+					for (const hash of op.body.payload.payload) {
 						readHashes.add(hash);
 					}
 				}

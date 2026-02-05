@@ -27,7 +27,11 @@ export type MessageContent = string;
 export type AnnouncementPayload = { type: 'SetProfile'; payload: Profile };
 export type ChatPayload =
 	| { type: 'Message'; payload: MessageContent }
-	| { type: 'Reaction'; payload: ChatReaction };
+	| { type: 'Reaction'; payload: ChatReaction }
+	| { type: 'ReceivedMessages'; payload: Hash[] }
+	| { type: 'ReadMessages'; payload: Hash[] };
+
+export type MessageStatus = 'sent' | 'received' | 'read';
 
 export interface InboxTopic {
 	expires_at: number;
@@ -46,15 +50,9 @@ export interface ContactCode {
 	share_intent: ShareIntent;
 }
 
-export interface ReadMessagesPayload {
-	chat_id: ChatId;
-	message_hashes: Hash[];
-}
-
 export type DeviceGroupPayload =
 	| { type: 'AddContact'; payload: ContactCode }
-	| { type: 'RejectContactRequest'; payload: AgentId }
-	| { type: 'ReadMessages'; payload: ReadMessagesPayload };
+	| { type: 'RejectContactRequest'; payload: AgentId };
 
 export type InboxPayload = {
 	type: 'ContactRequest';
