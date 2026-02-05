@@ -4,10 +4,11 @@ import { ContactsStore } from '../contacts/contacts-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
 import { AgentId, DeviceId, Hash } from '../p2panda/types';
-import { ChatId, MessageContent, Payload } from '../types';
+import { ChatId, ChatSummary, MessageContent, Payload } from '../types';
 import { EventWithProvenance, orderInEventSets } from '../utils/event-sets';
 import { toPromise } from '../utils/to-promise';
 import { DirectChatClient } from './direct-chat-client';
+import { fullName } from '../contacts/contacts-client';
 
 export interface Message {
 	content: MessageContent;
@@ -22,11 +23,10 @@ export class DirectChatStore {
 		protected contactsStore: ContactsStore,
 		public client: DirectChatClient,
 		public peer: AgentId,
-	) {}
+	) {
+	}
 
-	chatId = reactive(async () => {
-		return await this.client.chatId(this.peer);
-	});
+	chatId = reactive(async () => await this.client.chatId(this.peer));
 
 	peerProfile = reactive(async () => {
 		const request = await this.getContactRequest();
@@ -158,6 +158,31 @@ export class DirectChatStore {
 			}
 		}
 		return count;
+	});
+
+	summary = reactive(async () => {
+		const profile = await this.contactsStore.profiles(this.peer);
+		const message = await this.lastMessage();
+		const unreadCount = await this.unreadCount();
+
+		const lastEvent = message
+			? {
+					summary: message.content,
+					timestamp: message.timestamp,
+				}
+			: {
+					summary: 'contact_added',
+					timestamp: await this.contactsStore.contactAddedTimestamp(this.peer),
+				};
+
+		return {
+			type: 'DirectChat',
+			chatId: this.peer,
+			name: fullName(profile!),
+			avatar: profile?.avatar,
+			lastEvent,
+			unreadMessages: unreadCount,
+		} as ChatSummary;
 	});
 
 	async markAsRead(messageHashes: Hash[]): Promise<void> {

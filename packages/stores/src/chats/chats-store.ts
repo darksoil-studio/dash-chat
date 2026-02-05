@@ -8,7 +8,7 @@ import { GroupChatClient } from '../group-chats/group-chat-client';
 import { GroupChatStore } from '../group-chats/group-chat-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { AgentId, PublicKey, TopicId } from '../p2panda/types';
-import { ChatId, Payload } from '../types';
+import { ChatId, ChatSummary, Payload } from '../types';
 import { memo } from '../utils/memo';
 import { ChatsClient } from './chats-client';
 
@@ -72,7 +72,7 @@ export class ChatsStore {
 		const chatIds = await this.allChatsIds();
 
 		let summaries = await Promise.all(
-			chatIds.map(chatId => this.chatSummary(chatId)),
+			chatIds.map(chatId => this.directChats(chatId).summary()),
 		);
 
 		const pendingRequests = await this.contactsStore.contactRequests();
@@ -103,42 +103,4 @@ export class ChatsStore {
 
 		return summaries;
 	});
-
-	chatSummary = reactive(async (chatId: ChatId) => {
-		const profile = await this.contactsStore.profiles(chatId);
-		const directChat = this.directChats(chatId);
-		const message = await directChat.lastMessage();
-		const unreadCount = await directChat.unreadCount();
-
-		const lastEvent = message
-			? {
-					summary: message.content,
-					timestamp: message.timestamp,
-				}
-			: {
-					summary: 'contact_added',
-					timestamp: await this.contactsStore.contactAddedTimestamp(chatId),
-				};
-
-		return {
-			type: 'DirectChat',
-			chatId,
-			name: fullName(profile!),
-			avatar: profile?.avatar,
-			lastEvent,
-			unreadMessages: unreadCount,
-		} as ChatSummary;
-	});
-}
-
-export interface ChatSummary {
-	type: 'GroupChat' | 'DirectChat' | 'ContactRequest';
-	chatId: TopicId;
-	unreadMessages: number;
-	name: string;
-	avatar: string | undefined;
-	lastEvent: {
-		summary: string;
-		timestamp: number;
-	};
 }

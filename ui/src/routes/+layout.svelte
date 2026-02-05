@@ -9,7 +9,6 @@
 		ChatsStore,
 		LogsStore,
 		TauriLogsClient,
-		type TopicId,
 		type Payload,
 		ContactsClient,
 		ContactsStore,
@@ -26,14 +25,14 @@
 
 	let { children } = $props();
 
-	const logsClient = new TauriLogsClient<TopicId, Payload>();
+	const logsClient = new TauriLogsClient<Payload>();
 	const logsStore = new LogsStore<Payload>(logsClient);
 
 	const devicesClient = new DevicesClient();
 	const devicesStore = new DevicesStore(logsStore, devicesClient);
 	setContext('devices-store', devicesStore);
 
-	const contactsClient = new ContactsClient();
+	const contactsClient = new ContactsClient(logsClient);
 	const contactsStore = new ContactsStore(
 		logsStore,
 		devicesStore,
@@ -47,7 +46,7 @@
 
 	let theme: 'ios' | 'material' = $state('material');
 
-window.addEventListener('theme-change', (event) => {
+window.addEventListener('theme-change', (event: CustomEvent) => {
 	theme = event.detail.theme;
 });
 </script>

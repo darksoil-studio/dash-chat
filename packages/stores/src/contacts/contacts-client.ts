@@ -1,7 +1,8 @@
 import { invoke } from '@tauri-apps/api/core';
 
+import { LogsClient, waitForOperation } from '../p2panda/logs-client';
 import { AgentId, DeviceId, type TopicId } from '../p2panda/types';
-import { ContactCode } from '../types';
+import { ContactCode, Payload } from '../types';
 
 export interface Profile {
 	name: string;
@@ -58,6 +59,8 @@ export interface IContactsClient {
 }
 
 export class ContactsClient implements IContactsClient {
+	constructor(protected logsClient: LogsClient<Payload>) {}
+
 	myAgentId(): Promise<AgentId> {
 		return invoke('my_agent_id');
 	}
@@ -86,10 +89,16 @@ export class ContactsClient implements IContactsClient {
 		});
 	}
 
-	rejectContactRequest(agentId: AgentId): Promise<void> {
-		return invoke('reject_contact_request', {
+	async rejectContactRequest(agentId: AgentId): Promise<void> {
+		invoke('reject_contact_request', {
 			agentId,
 		});
+		await waitForOperation(
+			this.logsClient,
+			op =>
+				op.body?.payload.type === 'RejectContactRequest' &&
+				op.body.payload.payload === agentId,
+		);
 	}
 
 	// getContacts(): Promise<Array<PublicKey>> {

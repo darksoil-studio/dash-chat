@@ -5,7 +5,7 @@ import type { SimplifiedOperation } from './simplified-types';
 import type { PublicKey, TopicId } from './types';
 
 export class LogsStore<PAYLOAD> {
-	constructor(public logsClient: LogsClient<TopicId, PAYLOAD>) {}
+	constructor(public logsClient: LogsClient<PAYLOAD>) {}
 
 	authorsForTopic = reactive((topicId: TopicId) =>
 		relay<PublicKey[]>(state => {

@@ -47,9 +47,7 @@
           overlays = [ (import inputs.rust-overlay) ];
           pkgs = import inputs.nixpkgs { inherit system overlays; };
 
-          rust = (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override {
-            extensions = [ "rust-src" ];
-          };
+          rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
         in rec {
           devShells.default = pkgs.mkShell {
             inputsFrom =

@@ -1,10 +1,9 @@
-import { ReactivePromise, reactive, relay } from 'signalium';
+import { reactive, relay } from 'signalium';
 
 import { DevicesStore } from '../devices/devices-store';
 import { LogsStore } from '../p2panda/logs-store';
 import { SimplifiedOperation } from '../p2panda/simplified-types';
-import { AgentId, PublicKey, TopicId } from '../p2panda/types';
-import { Hash } from '../p2panda/types';
+import { AgentId, TopicId } from '../p2panda/types';
 import { personalTopicFor } from '../topics';
 import { AnnouncementPayload, ChatId, ContactCode, Payload } from '../types';
 import { IContactsClient, Profile } from './contacts-client';
@@ -106,7 +105,7 @@ export class ContactsStore {
 		}
 
 		return rejected;
-	});
+		});
 
 	contactRequests = reactive(async () => {
 		const activeInboxTopics = await this.activeInboxTopics();

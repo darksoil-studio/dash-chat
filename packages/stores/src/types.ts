@@ -84,3 +84,15 @@ export type MessageId = string;
 // 	author: PublicKey;
 // 	timestamp: number;
 // }
+
+export interface ChatSummary {
+	type: 'GroupChat' | 'DirectChat' | 'ContactRequest';
+	chatId: TopicId;
+	unreadMessages: number;
+	name: string;
+	avatar: string | undefined;
+	lastEvent: {
+		summary: string;
+		timestamp: number;
+	};
+}

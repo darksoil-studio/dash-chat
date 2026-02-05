@@ -29,7 +29,12 @@
 	} from 'dash-chat-stores';
 	import type { AddContactError } from 'dash-chat-stores';
 	import { wrapPathInSvg } from '$lib/utils/icon';
-	import { mdiSend, mdiAlert, mdiAccountQuestion, mdiAccountGroup } from '@mdi/js';
+	import {
+		mdiSend,
+		mdiAlert,
+		mdiAccountQuestion,
+		mdiAccountGroup,
+	} from '@mdi/js';
 	import {
 		Page,
 		Navbar,
@@ -86,9 +91,13 @@
 			await contactsStore.client.rejectContactRequest(
 				contactRequest.code.agent_id,
 			);
-			showToast(m.contactRequestRejected());
+			// Wait for the new operation to redirect to the home page
+			// This prevents the rejected contact request to render on the home page before it's
+			setTimeout(() => {
+				showToast(m.contactRequestRejected());
 
-			goto('/');
+				goto('/');
+			});
 		} catch (e) {
 			console.error(e);
 			showToast(m.errorUnexpected(), 'error');
@@ -192,151 +201,137 @@
 </script>
 
 {#await $peerProfile then profile}
-{#await $contactRequest then contactRequest}
-	<Page class="messages-page">
-		<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
-			{#snippet left()}
-				<NavbarBackLink onClick={() => goto('/')} />
-			{/snippet}
-			{#snippet title()}
-				{#if profile}
-					<Link
-						class="gap-2"
-						style="display: flex; justify-content: start; align-items: center;"
-						href={`/direct-chats/${chatId}/profile`}
-					>
-						<wa-avatar
-							image={profile!.avatar}
-							initials={profile!.name.slice(0, 2)}
-							style="--size: 2.5rem"
+	{#await $contactRequest then contactRequest}
+		<Page class="messages-page">
+			<Navbar
+				transparent={true}
+				titleClass="opacity1 w-full"
+				centerTitle={false}
+			>
+				{#snippet left()}
+					<NavbarBackLink onClick={() => goto('/')} />
+				{/snippet}
+				{#snippet title()}
+					{#if profile}
+						<Link
+							class="gap-2"
+							style="display: flex; justify-content: start; align-items: center;"
+							href={`/direct-chats/${chatId}/profile`}
 						>
-						</wa-avatar>
-						<span>{fullName(profile!)}</span>
-					</Link>
-				{/if}
-			{/snippet}
-		</Navbar>
+							<wa-avatar
+								image={profile!.avatar}
+								initials={profile!.name.slice(0, 2)}
+								style="--size: 2.5rem"
+							>
+							</wa-avatar>
+							<span>{fullName(profile!)}</span>
+						</Link>
+					{/if}
+				{/snippet}
+			</Navbar>
 
-		<div class="column">
-			{#await $myDeviceId then myDeviceId}
-				{#await $messagesSets then messagesSetsInDays}
-					<div
-						use:scrolltobottom
-						class="center-in-desktop column"
-						style={`padding-bottom: ${messageInputHeight}`}
-					>
-						{#if profile}
-							<div class="column" style="align-items: center">
-								<Link
-									class="column my-6 gap-2"
-									href={`/direct-chats/${chatId}/profile`}
-								>
-									<wa-avatar
-										image={profile.avatar}
-										initials={profile.name.slice(0, 2)}
-										style="--size: 80px;"
+			<div class="column">
+				{#await $myDeviceId then myDeviceId}
+					{#await $messagesSets then messagesSetsInDays}
+						<div
+							use:scrolltobottom
+							class="center-in-desktop column"
+							style={`padding-bottom: ${messageInputHeight}`}
+						>
+							{#if profile}
+								<div class="column" style="align-items: center">
+									<Link
+										class="column my-6 gap-2"
+										href={`/direct-chats/${chatId}/profile`}
 									>
-									</wa-avatar>
-									<span class="text-lg font-semibold">{fullName(profile)}</span>
-								</Link>
-							</div>
-						{/if}
-						<div class="row justify-center ">
-						<Card raised class="no-padding rounded-xl" style="background-color: transparent">
-							<div class="flex flex-col items-center gap-3 p-3 text-center">
-								{#if contactRequest}
-									<div class="flex items-center gap-2 text-amber-600">
-										<wa-icon class="small-icon" src={wrapPathInSvg(mdiAlert)}></wa-icon>
-										<span class="font-semibold">{m.reviewCarefully()}</span>
-									</div>
-								{/if}
-								<div class="flex flex-col gap-2 text-sm text-gray-700 dark:text-gray-300">
-									<div class="flex items-center justify-center gap-2">
-										<wa-icon class="small-icon" src={wrapPathInSvg(mdiAccountQuestion)}></wa-icon>
-										<span>{m.profileNamesNotVerified()}</span>
-									</div>
-									<div class="flex items-center justify-center gap-2">
-										<wa-icon class="small-icon" src={wrapPathInSvg(mdiAccountGroup)}></wa-icon>
-										<span>{m.noGroupsInCommon()}</span>
-									</div>
+										<wa-avatar
+											image={profile.avatar}
+											initials={profile.name.slice(0, 2)}
+											style="--size: 80px;"
+										>
+										</wa-avatar>
+										<span class="text-lg font-semibold"
+											>{fullName(profile)}</span
+										>
+									</Link>
 								</div>
-								{#if contactRequest}
-						<div class="row justify-center ">
-								<Button rounded tonal small>
-										{m.securityTips()}
-									</Button>
-						</div>
-								{/if}
+							{/if}
+							<div class="row justify-center">
+								<Card
+									raised
+									class="no-padding rounded-xl"
+									style="background-color: transparent"
+								>
+									<div class="flex flex-col items-center gap-3 p-3 text-center">
+										{#if contactRequest}
+											<div class="flex items-center gap-2 text-amber-600">
+												<wa-icon
+													class="small-icon"
+													src={wrapPathInSvg(mdiAlert)}
+												></wa-icon>
+												<span class="font-semibold">{m.reviewCarefully()}</span>
+											</div>
+										{/if}
+										<div
+											class="flex flex-col gap-2 text-sm text-gray-700 dark:text-gray-300"
+										>
+											<div class="flex items-center justify-center gap-2">
+												<wa-icon
+													class="small-icon"
+													src={wrapPathInSvg(mdiAccountQuestion)}
+												></wa-icon>
+												<span>{m.profileNamesNotVerified()}</span>
+											</div>
+											<div class="flex items-center justify-center gap-2">
+												<wa-icon
+													class="small-icon"
+													src={wrapPathInSvg(mdiAccountGroup)}
+												></wa-icon>
+												<span>{m.noGroupsInCommon()}</span>
+											</div>
+										</div>
+										{#if contactRequest}
+											<div class="row justify-center">
+												<Button rounded tonal small>
+													{m.securityTips()}
+												</Button>
+											</div>
+										{/if}
+									</div>
+								</Card>
 							</div>
-						</Card>
-						</div>
 
-						<div class="column m-2 gap-1">
-							{#each messagesSetsInDays as messageSetInDay}
-								<div class="sticky-day-tag quiet">
-									{#if moreThanAYearAgo(messageSetInDay.day.valueOf())}
-										<wa-format-date
-											month="numeric"
-											year="numeric"
-											day="numeric"
-											date={messageSetInDay.day}
-										></wa-format-date>
-									{:else if beforeYesterday(messageSetInDay.day.valueOf())}
-										<wa-format-date
-											month="short"
-											day="numeric"
-											weekday="narrow"
-											date={messageSetInDay.day}
-										></wa-format-date>
-									{:else if inYesterday(messageSetInDay.day.valueOf())}
-										{m.yesterday()}
-									{:else}
-										{m.today()}
-									{/if}
-								</div>
+							<div class="column m-2 gap-1">
+								{#each messagesSetsInDays as messageSetInDay}
+									<div class="sticky-day-tag quiet">
+										{#if moreThanAYearAgo(messageSetInDay.day.valueOf())}
+											<wa-format-date
+												month="numeric"
+												year="numeric"
+												day="numeric"
+												date={messageSetInDay.day}
+											></wa-format-date>
+										{:else if beforeYesterday(messageSetInDay.day.valueOf())}
+											<wa-format-date
+												month="short"
+												day="numeric"
+												weekday="narrow"
+												date={messageSetInDay.day}
+											></wa-format-date>
+										{:else if inYesterday(messageSetInDay.day.valueOf())}
+											{m.yesterday()}
+										{:else}
+											{m.today()}
+										{/if}
+									</div>
 
-								{#each messageSetInDay.eventsSets as messageSet}
-									<div class="column" style="gap: 1px">
-										{#each messageSet as [hash, message], i}
-											{#if myDeviceId == message.author}
-												<Card
-													raised
-													class={`${messageClass(messageSet.length, i)} message my-message`}
-												>
-													<div
-														class="row gap-2 mx-1"
-														style="align-items: center"
-													>
-														<span>{message.content}</span>
-
-														{#if i === messageSet.length - 1}
-															<div class="dark-quiet text-xs">
-																{#if lessThanAMinuteAgo(message.timestamp)}
-																	<span>{m.now()}</span>
-																{:else if moreThanAnHourAgo(message.timestamp)}
-																	<wa-format-date
-																		hour="numeric"
-																		minute="numeric"
-																		hour-format="24"
-																		date={new Date(message.timestamp)}
-																	></wa-format-date>
-																{:else}
-																	<wa-relative-time
-																		sync
-																		format="narrow"
-																		date={new Date(message.timestamp)}
-																	>
-																	</wa-relative-time>
-																{/if}
-															</div>
-														{/if}
-													</div>
-												</Card>
-											{:else}
-												<div class="row gap-2 m-0" use:observeMessage={hash}>
+									{#each messageSetInDay.eventsSets as messageSet}
+										<div class="column" style="gap: 1px">
+											{#each messageSet as [hash, message], i}
+												{#if myDeviceId == message.author}
 													<Card
 														raised
-														class={`${messageClass(messageSet.length, i)} message others-message`}
+														class={`${messageClass(messageSet.length, i)} message my-message`}
 													>
 														<div
 															class="row gap-2 mx-1"
@@ -345,7 +340,7 @@
 															<span>{message.content}</span>
 
 															{#if i === messageSet.length - 1}
-																<div class="quiet text-xs">
+																<div class="dark-quiet text-xs">
 																	{#if lessThanAMinuteAgo(message.timestamp)}
 																		<span>{m.now()}</span>
 																	{:else if moreThanAnHourAgo(message.timestamp)}
@@ -367,16 +362,51 @@
 															{/if}
 														</div>
 													</Card>
-												</div>
-											{/if}
-										{/each}
-									</div>
+												{:else}
+													<div class="row gap-2 m-0" use:observeMessage={hash}>
+														<Card
+															raised
+															class={`${messageClass(messageSet.length, i)} message others-message`}
+														>
+															<div
+																class="row gap-2 mx-1"
+																style="align-items: center"
+															>
+																<span>{message.content}</span>
+
+																{#if i === messageSet.length - 1}
+																	<div class="quiet text-xs">
+																		{#if lessThanAMinuteAgo(message.timestamp)}
+																			<span>{m.now()}</span>
+																		{:else if moreThanAnHourAgo(message.timestamp)}
+																			<wa-format-date
+																				hour="numeric"
+																				minute="numeric"
+																				hour-format="24"
+																				date={new Date(message.timestamp)}
+																			></wa-format-date>
+																		{:else}
+																			<wa-relative-time
+																				sync
+																				format="narrow"
+																				date={new Date(message.timestamp)}
+																			>
+																			</wa-relative-time>
+																		{/if}
+																	</div>
+																{/if}
+															</div>
+														</Card>
+													</div>
+												{/if}
+											{/each}
+										</div>
+									{/each}
 								{/each}
-							{/each}
+							</div>
 						</div>
-					</div>
+					{/await}
 				{/await}
-			{/await}
 
 				{#if contactRequest}
 					<Card class="center-in-desktop p-1 fixed bottom-1">
@@ -417,7 +447,7 @@
 						onEmojiClick={() => (showEmojiPicker = true)}
 					/>
 				{/if}
-		</div>
-	</Page>
-{/await}
+			</div>
+		</Page>
+	{/await}
 {/await}
