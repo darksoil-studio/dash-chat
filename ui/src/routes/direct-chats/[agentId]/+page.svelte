@@ -47,6 +47,7 @@
 	import { page } from '$app/state';
 	import { showToast } from '$lib/utils/toasts';
 	import type { Action } from 'svelte/action';
+	import { watcher } from 'signalium';
 	import MessageInput from '$lib/components/MessageInput.svelte';
 	let agentId = page.params.agentId!;
 
@@ -108,8 +109,7 @@
 
 	const scrollIsAtBottom = () => {
 		const pageEl = document.querySelector('.messages-page') as HTMLDivElement;
-		if (!pageEl) return;
-		return pageEl.scrollTop === pageEl.scrollHeight - pageEl.offsetHeight;
+		return pageEl.scrollTop + 200 >= pageEl.scrollHeight - pageEl.offsetHeight;
 	};
 
 	const scrollToBottom = (animate = true) => {
@@ -138,10 +138,15 @@
 			scrollToBottom();
 		});
 	}
+	let t: any;
+	let bottom = false;
 	store.onNewMessage(async () => {
-		if (scrollIsAtBottom()) {
+		if (scrollIsAtBottom()) bottom = true;
+		if (scrollIsAtBottom() || bottom) {
 			// Wait for the message to get rendered in the UI
-			setTimeout(() => {
+			clearTimeout(t)
+			t = setTimeout(() => {
+				bottom = false;
 				scrollToBottom();
 			});
 		}
