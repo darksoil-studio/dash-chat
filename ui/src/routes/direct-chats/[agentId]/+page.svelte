@@ -235,7 +235,7 @@
 						<Link
 							class="gap-2"
 							style="display: flex; justify-content: start; align-items: center;"
-							href={`/direct-chats/${agentId}/profile`}
+							href={`/direct-chats/${agentId}/chat-settings`}
 						>
 							<wa-avatar
 								image={profile!.avatar}
@@ -262,7 +262,7 @@
 								<div class="column" style="align-items: center">
 									<Link
 										class="column my-6 gap-2"
-										href={`/direct-chats/${agentId}/profile`}
+										href={`/direct-chats/${agentId}/chat-settings`}
 									>
 										<wa-avatar
 											image={profile.avatar}

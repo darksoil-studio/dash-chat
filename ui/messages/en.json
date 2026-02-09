@@ -104,5 +104,12 @@
 	"errorAddContactProfileRequired": "Please create your profile before adding contacts.",
 	"errorSetProfile": "Failed to save profile. Please try again.",
 	"errorScanningQrCode": "Failed to scan QR code. Please try again.",
-	"errorUnexpected": "An unexpected error occurred."
+	"errorUnexpected": "An unexpected error occurred.",
+
+	"mute": "Mute",
+	"search": "Search",
+	"chatColorAndWallpaper": "Chat color & wallpaper",
+	"addToAGroup": "Add to a group",
+	"noGroupsInCommonTitle": "No groups in common",
+	"comingSoon": "Coming soon"
 }
