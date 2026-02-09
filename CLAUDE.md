@@ -290,6 +290,25 @@ Run tests from workspace root. Tests use tokio async runtime.
 ### Development Testing
 Use `pnpm start` to run two instances locally that can communicate with each other over the p2panda network.
 
+### Verifying UI Features
+
+After implementing UI changes, verify them by running the app and connecting via the Tauri MCP bridge.
+
+The dev server supports `UI_PORT`, `MAILBOX_PORT`, and `DEV_DBS_PATH` environment variables. Before starting, allocate free ports and a temporary database directory to avoid conflicts with any already-running instance:
+
+```bash
+# Find two free ports
+UI_PORT=$(node -e "const s=require('net').createServer();s.listen(0,()=>{console.log(s.address().port);s.close()})")
+MAILBOX_PORT=$(node -e "const s=require('net').createServer();s.listen(0,()=>{console.log(s.address().port);s.close()})")
+
+# Create a temporary directory for databases
+DEV_DBS_PATH=$(mktemp -d)
+
+UI_PORT=$UI_PORT MAILBOX_PORT=$MAILBOX_PORT DEV_DBS_PATH=$DEV_DBS_PATH pnpm start
+```
+
+Once the app is running, use `driver_session` (start) to connect to one of the Tauri instances, then use `webview_screenshot`, `webview_dom_snapshot`, and other Tauri MCP tools to inspect and interact with the UI.
+
 ## Platform Support
 
 - **Desktop**: Linux, macOS, Windows (via Tauri)
