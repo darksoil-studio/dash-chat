@@ -16,7 +16,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.4.0", default-features = false, features = [] }
-local-ip-address = "0.6"
+localip = "0.2"
 
 [dependencies]
 dashchat-node = { path = "../crates/dashchat-node" }

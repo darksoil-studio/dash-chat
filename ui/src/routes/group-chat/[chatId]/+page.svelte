@@ -90,7 +90,7 @@
 							{#each messages as message}
 								{#if myActorId == message.author}
 									<Card raised class="message my-message">
-										<div class="row gap-2" style="align-items: center">
+										<div class="row gap-2" style="align-items: end">
 											<span>{message.content}</span>
 
 											<div class="dark-quiet text-xs">
@@ -126,7 +126,7 @@
 										>
 										</wa-avatar>
 										<Card raised class="message others-message">
-											<div class="row gap-2" style="align-items: center">
+											<div class="row gap-2" style="align-items: end">
 												<span>{message.content}</span>
 
 												<div class="quiet text-xs">

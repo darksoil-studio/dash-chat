@@ -70,7 +70,7 @@
 					<div class="row" style="align-items: center">
 						<span style="flex: 1"
 							>{summary.type === 'ContactRequest'
-								? m.contactRequest()
+								? m.messageRequest()
 								: summary.lastEvent.summary === 'contact_added'
 									? m.contactAccepted()
 									: summary.lastEvent.summary}</span
