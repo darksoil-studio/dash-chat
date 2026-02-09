@@ -35,12 +35,12 @@
 		mdiAccountQuestion,
 		mdiAccountGroup,
 		mdiChevronDown,
+		mdiChevronRight,
 	} from '@mdi/js';
 	import {
 		Page,
 		Navbar,
 		NavbarBackLink,
-		Link,
 		Button,
 		Card,
 		Badge,
@@ -48,8 +48,10 @@
 		Dialog,
 		DialogButton,
 		useTheme,
+		Link,
 	} from 'konsta/svelte';
 	import SafetyTipsSheet from '$lib/components/SafetyTipsSheet.svelte';
+	import PeerProfileSheet from '$lib/components/PeerProfileSheet.svelte';
 	import { page } from '$app/state';
 	import { showToast } from '$lib/utils/toasts';
 	import type { Action } from 'svelte/action';
@@ -114,6 +116,7 @@
 	let messageText = $state('');
 	let showEmojiPicker = $state(false);
 	let showSecurityTips = $state(false);
+	let showPeerProfile = $state(false);
 	let showAcceptDialog = $state(false);
 	let showRejectDialog = $state(false);
 	let profileNamesSheetOpen = $state(false);
@@ -243,8 +246,7 @@
 				{#snippet title()}
 					{#if profile}
 						<Link
-							class="gap-2"
-							style="display: flex; justify-content: start; align-items: center;"
+							class="flex items-center justify-start gap-2"
 							href={`/direct-chats/${agentId}/chat-settings`}
 						>
 							<wa-avatar
@@ -271,8 +273,8 @@
 								{#if profile}
 									<div class="column" style="align-items: center">
 										<Link
-											class="column my-6 gap-2"
-										href={`/direct-chats/${agentId}/chat-settings`}
+											class="column my-6 gap-2 items-center"
+											onclick={() => (showPeerProfile = true)}
 										>
 											<wa-avatar
 												image={profile.avatar}
@@ -280,13 +282,19 @@
 												style="--size: 80px;"
 											>
 											</wa-avatar>
-											<span class="text-lg font-semibold"
-												>{fullName(profile)}</span
-											>
+											<div class="flex items-center gap-1">
+												<span class="text-xl font-semibold"
+													>{fullName(profile!)}</span
+												>
+												<wa-icon
+													class="small-icon quiet"
+													src={wrapPathInSvg(mdiChevronRight)}
+												></wa-icon>
+											</div>
 										</Link>
 									</div>
 								{/if}
-								<div class="row justify-center">
+								<div class="row justify-center mb-4">
 									<div
 										class="rounded-xl border-2 border-gray-300 dark:border-gray-600"
 									>
@@ -315,7 +323,9 @@
 														class="small-icon"
 														src={wrapPathInSvg(mdiAccountQuestion)}
 													></wa-icon>
-													<span><u>{m.profileNames()}</u>{m.areNotVerified()}</span>
+													<span
+														><u>{m.profileNames()}</u>{m.areNotVerified()}</span
+													>
 												</div>
 												<div class="flex items-center justify-center gap-2">
 													<wa-icon
@@ -327,7 +337,12 @@
 											</div>
 											{#if contactRequest}
 												<div class="row pt-1 justify-center">
-													<Button rounded tonal small onClick={() => (showSecurityTips = true)}>
+													<Button
+														rounded
+														tonal
+														small
+														onClick={() => (showSecurityTips = true)}
+													>
 														{m.securityTips()}
 													</Button>
 												</div>
@@ -349,7 +364,8 @@
 										></wa-icon>
 
 										<p class="text-center text-base">
-											<strong>{m.profileNames()}</strong> {m.profileNamesExplanation()}
+											<strong>{m.profileNames()}</strong>
+											{m.profileNamesExplanation()}
 										</p>
 
 										<div class="flex flex-col gap-4 w-full">
@@ -501,28 +517,38 @@
 				{/if}
 
 				{#if contactRequest}
-					<div class="center-in-desktop fixed bottom-0 pb-safe bg-[var(--k-page-bg-color)] z-40" style="margin: auto">
-						<div class="mx-4 border-t border-gray-300 dark:border-gray-600"></div>
+					<div
+						class="center-in-desktop fixed bottom-0 pb-safe bg-[var(--k-page-bg-color)] z-40"
+						style="margin: auto"
+					>
+						<div
+							class="mx-4 border-t border-gray-300 dark:border-gray-600"
+						></div>
 						<div class="flex flex-col items-center gap-3 px-6 py-3">
 							<p class="text-center text-sm text-gray-600 dark:text-gray-400">
-								{@html m.contactRequestBanner({
-									name: contactRequest.profile.name.replace(/</g, '&lt;').replace(/>/g, '&gt;'),
-								}).replace(/\*\*(.*?)\*\*/g, '<strong class="text-black dark:text-white">$1</strong>')}
+								{@html m
+									.contactRequestBanner({
+										name: contactRequest.profile.name
+											.replace(/</g, '&lt;')
+											.replace(/>/g, '&gt;'),
+									})
+									.replace(
+										/\*\*(.*?)\*\*/g,
+										'<strong class="text-black dark:text-white">$1</strong>',
+									)}
 							</p>
 							<div class="flex w-full gap-2">
 								<Button
 									class="neutral-tonal-button text-red-500 flex-1"
 									rounded
 									tonal
-									onClick={() => (showRejectDialog = true)}
-									>{m.reject()}</Button
+									onClick={() => (showRejectDialog = true)}>{m.reject()}</Button
 								>
 								<Button
 									class="neutral-tonal-button flex-1"
 									rounded
 									tonal
-									onClick={() => (showAcceptDialog = true)}
-									>{m.accept()}</Button
+									onClick={() => (showAcceptDialog = true)}>{m.accept()}</Button
 								>
 							</div>
 						</div>
@@ -559,7 +585,12 @@
 					<DialogButton onClick={() => (showAcceptDialog = false)}>
 						{m.cancel()}
 					</DialogButton>
-					<DialogButton onClick={() => { showAcceptDialog = false; acceptContactRequest(contactRequest); }}>
+					<DialogButton
+						onClick={() => {
+							showAcceptDialog = false;
+							acceptContactRequest(contactRequest);
+						}}
+					>
 						{m.accept()}
 					</DialogButton>
 				{/snippet}
@@ -576,7 +607,12 @@
 					<DialogButton onClick={() => (showRejectDialog = false)}>
 						{m.cancel()}
 					</DialogButton>
-					<DialogButton onClick={() => { showRejectDialog = false; rejectContactRequest(contactRequest); }}>
+					<DialogButton
+						onClick={() => {
+							showRejectDialog = false;
+							rejectContactRequest(contactRequest);
+						}}
+					>
 						{m.reject()}
 					</DialogButton>
 				{/snippet}
@@ -584,5 +620,16 @@
 		{/if}
 	{/await}
 
-	<SafetyTipsSheet opened={showSecurityTips} onClose={() => (showSecurityTips = false)} />
+	<SafetyTipsSheet
+		opened={showSecurityTips}
+		onClose={() => (showSecurityTips = false)}
+	/>
+
+	{#await $peerProfile then profile}
+		<PeerProfileSheet
+			opened={showPeerProfile}
+			onClose={() => (showPeerProfile = false)}
+			{profile}
+		/>
+	{/await}
 </Page>

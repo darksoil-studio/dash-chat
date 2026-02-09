@@ -14,8 +14,10 @@
 	} from '@mdi/js';
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { showToast } from '$lib/utils/toasts';
+	import PeerProfileSheet from '$lib/components/PeerProfileSheet.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
+		Button,
 		List,
 		ListItem,
 		Navbar,
@@ -30,6 +32,8 @@
 	const store = chatsStore.directChats(agentId);
 
 	const peerProfile = useReactivePromise(store.peerProfile);
+
+	let showPeerProfile = $state(false);
 
 	function comingSoon() {
 		showToast(m.comingSoon());
@@ -61,13 +65,8 @@
 					>
 					</wa-avatar>
 
-					<button
-						class="flex items-center gap-1"
-						onclick={comingSoon}
-					>
-						<span class="text-xl font-semibold"
-							>{fullName(profile!)}</span
-						>
+					<button class="flex items-center gap-1" onclick={() => (showPeerProfile = true)}>
+						<span class="text-xl font-semibold">{fullName(profile!)}</span>
 						<wa-icon
 							class="small-icon quiet"
 							src={wrapPathInSvg(mdiChevronRight)}
@@ -79,22 +78,22 @@
 					{/if}
 				</div>
 
-				<div class="my-4 flex justify-center gap-4">
-					<button
-						class="flex w-[70px] flex-col items-center gap-1 rounded-xl bg-blue-50 p-3 dark:bg-blue-900/30"
-						onclick={comingSoon}
-					>
-						<wa-icon src={wrapPathInSvg(mdiBellOutline)}></wa-icon>
+				<div class="mb-4 flex justify-center gap-6">
+					<div class="flex flex-col items-center gap-1">
+						<Button class="icon-only" tonal onClick={comingSoon}>
+							<wa-icon src={wrapPathInSvg(mdiBellOutline)}></wa-icon>
+						</Button>
 						<span class="text-xs">{m.mute()}</span>
-					</button>
-					<button
-						class="flex w-[70px] flex-col items-center gap-1 rounded-xl bg-blue-50 p-3 dark:bg-blue-900/30"
-						onclick={comingSoon}
-					>
-						<wa-icon src={wrapPathInSvg(mdiMagnify)}></wa-icon>
+					</div>
+					<div class="flex flex-col items-center gap-1">
+						<Button class="icon-only" tonal onClick={comingSoon}>
+							<wa-icon src={wrapPathInSvg(mdiMagnify)}></wa-icon>
+						</Button>
 						<span class="text-xs">{m.search()}</span>
-					</button>
+					</div>
 				</div>
+
+				<div class="mx-4 my-2 border-t border-gray-200 dark:border-gray-700"></div>
 
 				<List nested strongIos insetIos>
 					<ListItem
@@ -105,14 +104,16 @@
 					>
 						{#snippet media()}
 							<wa-icon
-								style="font-size: 2rem;"
+								style="font-size: 1.5rem;"
 								src={wrapPathInSvg(mdiPalette)}
 							></wa-icon>
 						{/snippet}
 					</ListItem>
 				</List>
 
-				<div class="mt-6 px-4">
+				<div class="mx-4 my-2 border-t border-gray-200 dark:border-gray-700"></div>
+
+				<div class="mt-4 mb-1 px-4">
 					<span class="font-bold">{m.noGroupsInCommonTitle()}</span>
 				</div>
 
@@ -125,7 +126,7 @@
 					>
 						{#snippet media()}
 							<wa-icon
-								style="font-size: 2rem;"
+								style="font-size: 1.5rem;"
 								src={wrapPathInSvg(mdiPlusCircle)}
 							></wa-icon>
 						{/snippet}
@@ -133,5 +134,7 @@
 				</List>
 			</div>
 		</div>
+
+		<PeerProfileSheet opened={showPeerProfile} onClose={() => (showPeerProfile = false)} {profile} />
 	{/await}
 </Page>

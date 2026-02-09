@@ -10,12 +10,7 @@
 	import { wrapPathInSvg } from '$lib/utils/icon';
 	import { mdiClose, mdiCamera, mdiImage } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages.js';
-	import {
-		Button,
-		Page,
-		Preloader,
-		useTheme,
-	} from 'konsta/svelte';
+	import { Button, Page, Preloader, useTheme } from 'konsta/svelte';
 	import { resizeAndExport } from '$lib/utils/image';
 	import { showToast } from '$lib/utils/toasts';
 	import { isMobile } from '$lib/utils/environment';
@@ -78,10 +73,22 @@
 
 	// Default emoji avatars (4x4 grid)
 	const defaultAvatars = [
-		'🐸', '🐱', '🐶', '🦊',
-		'🐻', '🐼', '🦁', '🐷',
-		'🐧', '🦉', '🐢', '🦄',
-		'👻', '🐰', '🐮', '🐵',
+		'🐸',
+		'🐱',
+		'🐶',
+		'🦊',
+		'🐻',
+		'🐼',
+		'🦁',
+		'🐷',
+		'🐧',
+		'🦉',
+		'🐢',
+		'🦄',
+		'👻',
+		'🐰',
+		'🐮',
+		'🐵',
 	];
 
 	async function save() {
@@ -144,7 +151,8 @@
 		ctx.fill();
 
 		// Draw the emoji with proper emoji font stack
-		ctx.font = '140px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+		ctx.font =
+			'140px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
 		ctx.fillText(emoji, 128, 128);
@@ -177,7 +185,8 @@
 				onclick={() => goto('/settings/profile')}
 				aria-label="Close"
 			>
-				<wa-icon src={wrapPathInSvg(mdiClose)} style="font-size: 28px"></wa-icon>
+				<wa-icon src={wrapPathInSvg(mdiClose)} style="font-size: 28px"
+				></wa-icon>
 			</button>
 		</div>
 
@@ -192,22 +201,27 @@
 							onclick={removeAvatar}
 							aria-label={m.removePhoto()}
 						>
-							<wa-icon src={wrapPathInSvg(mdiClose)} style="font-size: 20px"></wa-icon>
+							<wa-icon src={wrapPathInSvg(mdiClose)} style="font-size: 20px"
+							></wa-icon>
 						</button>
 					{/if}
 				</div>
 			</div>
 
 			<!-- Action buttons: Camera, Photo, Text -->
-			<div class="row gap-4" style="justify-content: center; padding: 0 16px 24px;">
+			<div
+				class="row gap-4"
+				style="justify-content: center; padding: 0 16px 24px;"
+			>
 				{#if isMobile}
 					<div class="column" style="align-items: center; gap: 8px;">
 						<Button
 							tonal
 							onClick={() => avatarFilePicker.click()}
-							style="width: 64px; height: 64px; border-radius: 12px"
+							class="icon-only"
 						>
-							<wa-icon src={wrapPathInSvg(mdiCamera)} style="font-size: 28px"></wa-icon>
+							<wa-icon src={wrapPathInSvg(mdiCamera)} style="font-size: 28px"
+							></wa-icon>
 						</Button>
 						<span class="action-label">{m.camera()}</span>
 					</div>
@@ -217,9 +231,10 @@
 					<Button
 						tonal
 						onClick={() => avatarFilePicker.click()}
-						style="width: 64px; height: 64px; border-radius: 12px"
+						class="icon-only"
 					>
-						<wa-icon src={wrapPathInSvg(mdiImage)} style="font-size: 28px"></wa-icon>
+						<wa-icon src={wrapPathInSvg(mdiImage)} style="font-size: 28px"
+						></wa-icon>
 					</Button>
 					<span class="action-label">{m.photo()}</span>
 				</div>
@@ -228,7 +243,8 @@
 					<Button
 						tonal
 						onClick={() => goto('/settings/profile/edit-photo/text')}
-						style="width: 64px; height: 64px; border-radius: 12px; font-size: 20px; font-weight: 600"
+						class="icon-only"
+						style="font-size: 20px; font-weight: 600"
 					>
 						Aa
 					</Button>
@@ -332,7 +348,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: transform 0.2s, background 0.2s;
+		transition:
+			transform 0.2s,
+			background 0.2s;
 	}
 
 	.default-avatar-btn:hover {

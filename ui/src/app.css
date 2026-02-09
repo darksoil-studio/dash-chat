@@ -182,3 +182,9 @@ li.plain span {
 		background-color: rgba(255, 255, 255, 0.1);
 	}
 }
+
+.k-button.icon-only {
+	width: 56px;
+	height: 56px;
+	border-radius: 16px;
+}
