@@ -50,6 +50,10 @@ pub enum ChatPayload {
     /// The reason for including this message in the ChatPayload
     /// is that it can only be sent to contacts, and we want it to be
     /// long-lasting, so using an Inbox is not an option.
+    ///
+    /// OPTIMIZATION: include a message in the group chat
+    /// which instructs anyone who is a contact of this person to send them
+    /// this JoinGroup message 1:1, to increase their ability to receive it.
     JoinGroup(ChatId),
 
     Message(ChatMessageContent),
