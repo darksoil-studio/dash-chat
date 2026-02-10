@@ -134,5 +134,8 @@
 	"chatColorAndWallpaper": "Chat color & wallpaper",
 	"addToAGroup": "Add to a group",
 	"noGroupsInCommonTitle": "No groups in common",
-	"comingSoon": "Coming soon"
+	"comingSoon": "Coming soon",
+	"searchMessages": "Search messages...",
+	"noResults": "No results",
+	"searchResultsCount": "{{current}} of {{total}}"
 }

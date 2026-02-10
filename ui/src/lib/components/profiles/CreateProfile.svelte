@@ -56,7 +56,7 @@
 	>
 		{#snippet right()}
 			{#if theme === 'ios'}
-				<Link onClick={setProfile}>
+				<Link onClick={setProfile} data-testid="create-profile-create-link">
 					{m.create()}
 				</Link>
 			{/if}
@@ -86,11 +86,13 @@
 					type="text"
 					onInput={e => (name = e.target.value)}
 					placeholder={m.nameMandatory()}
+					data-testid="create-profile-name"
 				></ListInput>
 				<ListInput
 					type="text"
 					onInput={e => (surname = e.target.value)}
 					placeholder={m.surnameOptional()}
+					data-testid="create-profile-surname"
 				></ListInput>
 			</List>
 		</div>
@@ -103,6 +105,7 @@
 			style="position: fixed; width: auto"
 			rounded
 			disabled={name === undefined || name === ''}
+			data-testid="create-profile-create-btn"
 		>
 			{m.create()}
 		</Button>

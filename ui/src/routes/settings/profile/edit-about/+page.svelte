@@ -78,12 +78,12 @@
 				: ''}
 		>
 			{#snippet left()}
-				<NavbarBackLink onClick={() => goto('/settings/profile')} />
+				<NavbarBackLink onClick={() => goto('/settings/profile')} data-testid="edit-about-back" />
 			{/snippet}
 
 			{#snippet right()}
 				{#if theme === 'ios'}
-					<Link onClick={save}>
+					<Link onClick={save} data-testid="edit-about-save-link">
 						{m.save()}
 					</Link>
 				{/if}
@@ -100,6 +100,7 @@
 				<ListInput
 					type="textarea"
 					bind:value={about}
+					data-testid="edit-about-input"
 					placeholder={m.about()}
 					inputStyle="min-height: 100px"
 				/>
@@ -112,6 +113,7 @@
 				class="end-4 bottom-4"
 				style="position: fixed; width: auto"
 				rounded
+				data-testid="edit-about-save-btn"
 				disabled={myProfile?.about === about}
 			>
 				{m.save()}

@@ -133,11 +133,10 @@ This is a pnpm workspace with multiple packages:
 ### Frontend Architecture (Svelte 5 + TypeScript)
 
 **Structure:**
-- **ui/src/routes/**: SvelteKit file-based routing
-  - Main routes: contacts, direct-chats, group-chat, settings, add-contact, new-group, new-message
-  - Uses Svelte 5 runes (signals) for reactivity
+- **ui/src/routes/**: SvelteKit file-based routing (see [UI Navigation Map](#ui-navigation-map) below)
 - **ui/src/components/**: Reusable UI components
 - **ui/src/utils/**: Utility functions (image compression, time formatting, QR codes, etc.)
+- **ui/tests/**: Test selectors and page objects (see [UI Test Utilities](#ui-test-utilities) below)
 - **packages/stores/src/**: Shared state management
   - Organized by domain: contacts, chats, group-chats, direct-chats, devices
   - Each domain has a `-store.ts` (state) and `-client.ts` (Tauri commands)
@@ -149,6 +148,73 @@ This is a pnpm workspace with multiple packages:
 - UI built with Konsta UI components (mobile-first design)
 - Internationalization using @inlang/paraglide-js
 - Image compression before upload
+
+### UI Navigation Map
+
+The app uses SvelteKit file-based routing. On first launch the user sees the Create Profile screen; after creating a profile the home page (`/`) is the root. The theme (Material or iOS) determines whether some actions use buttons/FABs (Material) or navbar links (iOS).
+
+```
+Create Profile (first launch only)
+  └─ / (Home — chat list)
+
+/ (Home)
+  ├─ [avatar] ──────────── /settings
+  ├─ [contacts icon] ───── /contacts
+  ├─ [new message] ─────── /new-message        (FAB on Material, navbar link on iOS)
+  └─ [chat item] ──────── /direct-chats/{agentId}  or  /group-chat/{chatId}
+
+/settings
+  ├─ [profile item] ────── /settings/profile
+  ├─ [QR icon] ──────────── /add-contact
+  └─ [account item] ────── /settings/account
+
+/settings/profile
+  ├─ [edit photo] ──────── /settings/profile/edit-photo
+  ├─ [name item] ──────── /settings/profile/edit-name
+  ├─ [about item] ─────── /settings/profile/edit-about
+  └─ [QR code item] ───── /add-contact
+
+/settings/account
+  └─ [delete account] ─── confirmation dialog
+
+/contacts
+  └─ [add icon] ────────── /add-contact
+
+/add-contact
+  ├─ code tab ──── shows QR + code input
+  └─ scan tab ──── camera scanner (mobile only)
+
+/new-message
+  └─ [contact item] ───── /direct-chats/{agentId}
+
+/new-group
+  ├─ step 1: member selection ─── [next] ──► step 2: group info ─── [create]
+  └─ step 2 back ──► step 1
+
+/direct-chats/{agentId}
+  ├─ [navbar title] ────── /direct-chats/{agentId}/chat-settings
+  └─ [back] ────────────── /
+
+/direct-chats/{agentId}/chat-settings
+  ├─ [search button] ───── /direct-chats/{agentId}?search=true
+  └─ [back] ────────────── /direct-chats/{agentId}
+
+/group-chat/{chatId}
+  ├─ [navbar title] ────── /group-chat/{chatId}/info
+  └─ [back] ────────────── /
+```
+
+### UI Test Utilities
+
+All interactive elements have `data-testid` attributes. The selector registry and page objects live in `ui/tests/`:
+
+- **`ui/tests/selectors.ts`** — Single source of truth for all `data-testid` selectors, organized by page. Use `S.pageName.elementName` to get a CSS selector like `[data-testid="page-element"]`.
+- **`ui/tests/pages/*.ts`** — Page object modules exporting selectors, interaction descriptors, and assertion scripts for each page.
+- **`ui/tests/flows/*.ts`** — Multi-step workflow descriptors (profile creation, contact exchange, send message).
+
+When driving the app via Tauri MCP tools, always use `data-testid` selectors instead of CSS class selectors. For Konsta `ListInput` components, the `data-testid` lands on the outer `<li>`, so type into `[data-testid="..."] input` (or `textarea` for text areas).
+
+Reference `ui/tests/selectors.ts` for the full list of available selectors.
 
 ### State Management (packages/stores)
 
@@ -292,22 +358,13 @@ Use `pnpm start` to run two instances locally that can communicate with each oth
 
 ### Verifying UI Features
 
-After implementing UI changes, verify them by running the app and connecting via the Tauri MCP bridge.
+**REQUIREMENT:** Every time you make UI changes, you MUST start the app, visually verify that the feature works correctly and looks polished, and then kill the dev processes when done. Do not skip this step.
 
-The dev server supports `UI_PORT`, `MAILBOX_PORT`, and `DEV_DBS_PATH` environment variables. Before starting, allocate free ports and a temporary database directory to avoid conflicts with any already-running instance:
-
-```bash
-# Find two free ports
-UI_PORT=$(node -e "const s=require('net').createServer();s.listen(0,()=>{console.log(s.address().port);s.close()})")
-MAILBOX_PORT=$(node -e "const s=require('net').createServer();s.listen(0,()=>{console.log(s.address().port);s.close()})")
-
-# Create a temporary directory for databases
-DEV_DBS_PATH=$(mktemp -d)
-
-UI_PORT=$UI_PORT MAILBOX_PORT=$MAILBOX_PORT DEV_DBS_PATH=$DEV_DBS_PATH pnpm start
-```
-
-Once the app is running, use `driver_session` (start) to connect to one of the Tauri instances, then use `webview_screenshot`, `webview_dom_snapshot`, and other Tauri MCP tools to inspect and interact with the UI.
+1. Use the `start-dev` skill to start the development environment.
+2. Connect via `driver_session` and use `webview_screenshot`, `webview_dom_snapshot`, and other Tauri MCP tools to inspect and interact with the UI.
+3. Verify that the feature works as expected and the UI is well polished — check layout, spacing, alignment, text, colors, and interactive states.
+4. If something looks off, fix it and re-verify.
+5. When done, kill all background dev processes (Tauri agents, mailbox server, stores watcher) to free up ports and resources.
 
 ## Platform Support
 

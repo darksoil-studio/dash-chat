@@ -78,12 +78,12 @@
 				: ''}
 		>
 			{#snippet left()}
-				<NavbarBackLink onClick={() => goto('/settings/profile')} />
+				<NavbarBackLink onClick={() => goto('/settings/profile')} data-testid="edit-name-back" />
 			{/snippet}
 
 			{#snippet right()}
 				{#if theme === 'ios'}
-					<Link onClick={save}>
+					<Link onClick={save} data-testid="edit-name-save-link">
 						{m.save()}
 					</Link>
 				{/if}
@@ -100,12 +100,14 @@
 				<ListInput
 					type="text"
 					bind:value={name}
+					data-testid="edit-name-name"
 					label={theme === 'material' ? m.name() : ''}
 					placeholder={theme === 'ios' ? m.name() : ''}
 				/>
 				<ListInput
 					type="text"
 					bind:value={surname}
+					data-testid="edit-name-surname"
 					label={theme === 'material' ? m.surname() : ''}
 					placeholder={theme === 'ios' ? m.surname() : ''}
 				/>
@@ -118,6 +120,7 @@
 				class="end-4 bottom-4"
 				style="position: fixed; width: auto"
 				rounded
+				data-testid="edit-name-save-btn"
 				disabled={myProfile?.name === name && myProfile.surname === surname}
 			>
 				{m.save()}

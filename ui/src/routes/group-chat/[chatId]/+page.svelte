@@ -60,12 +60,13 @@
 <Page style={theme === 'material' ? 'height: calc(100vh - 57px)' : ''}>
 	<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => goto('/')} />
+			<NavbarBackLink onClick={() => goto('/')}  data-testid="group-chat-back" />
 		{/snippet}
 		{#snippet title()}
 			{#await $info then info}
 				<Link
 					href={`/group-chat/${chatId}/info`}
+					data-testid="group-chat-info-link"
 					class="gap-2"
 					style="display: flex; justify-content: start; align-items: center;"
 				>

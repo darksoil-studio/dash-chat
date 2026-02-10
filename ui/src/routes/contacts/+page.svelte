@@ -27,11 +27,11 @@
 <Page>
 	<Navbar title={m.myContacts()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => goto('/')} />
+			<NavbarBackLink onClick={() => goto('/')}  data-testid="contacts-back" />
 		{/snippet}
 
 		{#snippet right()}
-			<Link href="/add-contact" iconOnly>
+			<Link href="/add-contact" iconOnly data-testid="contacts-add-link">
 				<wa-icon src={wrapPathInSvg(mdiAccountPlus)}> </wa-icon>
 			</Link>
 		{/snippet}
@@ -48,7 +48,7 @@
 				</div>
 			{:then contacts}
 				<BlockTitle>{m.contacts()}</BlockTitle>
-				<List strongIos insetIos>
+				<List strongIos insetIos data-testid="contacts-list">
 					{#each contacts as [actorId, profile]}
 						<ListItem
 							link

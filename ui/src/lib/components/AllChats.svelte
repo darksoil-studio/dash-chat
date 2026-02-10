@@ -21,7 +21,7 @@
 	const chatSummaries = useReactivePromise(chatsStore.allChatsSummaries);
 </script>
 
-<List nested>
+<List nested data-testid="all-chats-list">
 	{#await $chatSummaries then summaries}
 		{#each summaries as summary}
 			<ListItem
@@ -82,7 +82,7 @@
 				{/snippet}
 			</ListItem>
 		{:else}
-			<ListItem title={m.noChatsYet()} />
+			<ListItem title={m.noChatsYet()} data-testid="all-chats-empty" />
 		{/each}
 	{/await}
 </List>

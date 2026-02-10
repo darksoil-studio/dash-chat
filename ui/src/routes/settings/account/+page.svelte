@@ -35,7 +35,7 @@
 <Page>
 	<Navbar title={m.account()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => goto('/settings')} />
+			<NavbarBackLink onClick={() => goto('/settings')}  data-testid="account-back" />
 		{/snippet}
 	</Navbar>
 
@@ -48,6 +48,7 @@
 				link
 				chevron={false}
 				onClick={() => (showDeleteDialog = true)}
+				data-testid="account-delete"
 				colors={{
 					primaryTextIos: 'text-red-500',
 					primaryTextMaterial: 'text-red-500',
@@ -66,10 +67,10 @@
 		{/snippet}
 		<span>{m.areYouSureDeleteAccount()}</span>
 		{#snippet buttons()}
-			<DialogButton onClick={() => (showDeleteDialog = false)}>
+			<DialogButton onClick={() => (showDeleteDialog = false)} data-testid="account-delete-cancel">
 				{m.cancel()}
 			</DialogButton>
-			<DialogButton strong onClick={handleDeleteAccount} disabled={loading}>
+			<DialogButton strong onClick={handleDeleteAccount} disabled={loading} data-testid="account-delete-confirm">
 				{loading ? '...' : m.delete()}
 			</DialogButton>
 		{/snippet}

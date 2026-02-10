@@ -90,6 +90,7 @@
 					class="icon-button emoji-btn"
 					onclick={onEmojiClick}
 					aria-label="Emoji"
+					data-testid="message-input-emoji"
 				>
 					<wa-icon src={wrapPathInSvg(mdiEmoticonHappyOutline)}></wa-icon>
 				</button>
@@ -97,6 +98,7 @@
 
 			<textarea
 				class="message-textarea"
+				data-testid="message-input-textarea"
 				{placeholder}
 				bind:value
 				bind:this={textarea}
@@ -109,6 +111,7 @@
 		<button
 			type="button"
 			class="send-button"
+			data-testid="message-input-send"
 			class:active={hasText}
 			onclick={handleSendClick}
 			disabled={!hasText}

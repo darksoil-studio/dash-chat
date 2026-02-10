@@ -22,6 +22,7 @@
 
 	import { setLocale } from '$lib/paraglide/runtime';
 	setLocale('en');
+	window.__setLocale = setLocale;
 
 	let { children } = $props();
 
@@ -46,9 +47,9 @@
 
 	let theme: 'ios' | 'material' = $state('material');
 
-window.addEventListener('theme-change', (event: CustomEvent) => {
-	theme = event.detail.theme;
-});
+	window.addEventListener('theme-change', (event: CustomEvent) => {
+		theme = event.detail.theme;
+	});
 </script>
 
 <KonstaProvider {theme}>

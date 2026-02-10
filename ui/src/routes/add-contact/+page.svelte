@@ -122,6 +122,7 @@
 	>
 		{#snippet left()}
 			<NavbarBackLink
+				data-testid="add-contact-back"
 				onClick={() => {
 					window.history.back();
 				}}
@@ -141,6 +142,7 @@
 							rounded
 							tonal={tab !== 'code'}
 							onClick={cancelScan}
+							data-testid="add-contact-code-tab"
 							>{m.code()}
 						</Button>
 
@@ -150,6 +152,7 @@
 							rounded
 							tonal={tab !== 'scan'}
 							onClick={scan}
+							data-testid="add-contact-scan-tab"
 							>{m.scan()}
 						</Button>
 					</div>
@@ -164,11 +167,13 @@
 								active={tab === 'code'}
 								onclick={cancelScan}
 								label={m.code()}
+								data-testid="add-contact-code-tab"
 							/>
 							<TabbarLink
 								active={tab !== 'code'}
 								onclick={scan}
 								label={m.scan()}
+								data-testid="add-contact-scan-tab"
 							/>
 						</ToolbarPane>
 					</Tabbar>
@@ -208,6 +213,7 @@
 										textMaterial: 'text-white',
 									}}
 									clearMaterial
+									data-testid="add-contact-copy-btn"
 									onClick={async () => {
 										await writeText(code);
 										showToast(m.copiedCodeToClipboard());
@@ -228,6 +234,7 @@
 								floatingLabel
 								label={m.enterYourContactsCode()}
 								type="text"
+								data-testid="add-contact-code-input"
 								onInput={async (e: Event) => {
 									const target = e.target as HTMLInputElement;
 									if (target.value) {

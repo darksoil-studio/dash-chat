@@ -2,17 +2,10 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
 // In production, use the local data dir from the operating system
-// In development, use a numbered directory in the local data dir
+// In development, use DEV_DBS_PATH/agent-{AGENT} (set in mprocs.yaml)
 pub fn local_data_dir(handle: &AppHandle) -> anyhow::Result<PathBuf> {
     let local_data_path = if tauri::is_dev() {
-        let base = match std::env::var("DEV_DBS_PATH") {
-            Ok(path) => PathBuf::from(path),
-            Err(_) => {
-                let mut p = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR")?);
-                p.pop();
-                p.join(".dev-dbs")
-            }
-        };
+        let base = PathBuf::from(std::env::var("DEV_DBS_PATH")?);
         base.join(format!("agent-{}", std::env::var("AGENT")?))
     } else {
         handle.path().local_data_dir()?

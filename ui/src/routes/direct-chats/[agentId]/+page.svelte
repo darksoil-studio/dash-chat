@@ -36,6 +36,10 @@
 		mdiAccountGroup,
 		mdiChevronDown,
 		mdiChevronRight,
+		mdiChevronUp,
+		mdiClose,
+		mdiMagnify,
+		mdiCalendarSearch,
 	} from '@mdi/js';
 	import {
 		Page,
@@ -123,6 +127,17 @@
 	let messageInputHeight: string = $state('');
 	let showScrollToBottom = $state(false);
 
+	// Search state
+	let searchMode = $state(page.url.searchParams.has('search'));
+	let searchQuery = $state('');
+	let currentMatchIndex = $state(0);
+	let matchingHashes: Hash[] = $state([]);
+	let dateInput = $state<HTMLInputElement>();
+
+	const focusOnMount: Action = (node) => {
+		node.focus();
+	};
+
 	const scrollIsAtBottom = () => {
 		const pageEl = document.querySelector('.messages-page') as HTMLDivElement;
 		if (!pageEl) return;
@@ -183,6 +198,10 @@
 	let markReadTimeout: ReturnType<typeof setTimeout>;
 
 	onMount(() => {
+		if (page.url.searchParams.has('search')) {
+			goto(`/direct-chats/${agentId}`, { replaceState: true });
+		}
+
 		observer = new IntersectionObserver(
 			entries => {
 				for (const entry of entries) {
@@ -229,37 +248,150 @@
 			},
 		};
 	};
+	// Search helpers
+	function escapeHtml(text: string): string {
+		return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	}
+
+	function highlightMatch(text: string, query: string): string {
+		if (!query) return escapeHtml(text);
+		const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		return escapeHtml(text).replace(
+			new RegExp(`(${escaped})`, 'gi'),
+			'<mark class="search-highlight">$1</mark>',
+		);
+	}
+
+	$effect(() => {
+		const q = searchQuery;
+		tick().then(() => {
+			if (!q || !searchMode) {
+				matchingHashes = [];
+				currentMatchIndex = 0;
+				return;
+			}
+			const lowerQ = q.toLowerCase();
+			const els = document.querySelectorAll('[data-message-hash]');
+			const matches: Hash[] = [];
+			els.forEach((el) => {
+				const hash = el.getAttribute('data-message-hash') as Hash;
+				const text = el.querySelector('.flex-1')?.textContent || '';
+				if (text.toLowerCase().includes(lowerQ)) matches.push(hash);
+			});
+			matchingHashes = matches;
+			currentMatchIndex = matches.length > 0 ? matches.length - 1 : 0;
+			if (matches.length > 0) scrollToMatch();
+		});
+	});
+
+	function scrollToMatch() {
+		if (!matchingHashes.length) return;
+		const hash = matchingHashes[currentMatchIndex];
+		const el = document.querySelector(`[data-message-hash="${hash}"]`);
+		if (!el) return;
+		el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		// Remove flash from any previously flashing message
+		document
+			.querySelectorAll('.search-flash')
+			.forEach((e) => e.classList.remove('search-flash'));
+		// Flash the current match's message card
+		const card = el.closest('.message') ?? el.querySelector('.message') ?? el;
+		void (card as HTMLElement).offsetWidth;
+		card.classList.add('search-flash');
+	}
+
+	function goToPreviousMatch() {
+		if (!matchingHashes.length) return;
+		currentMatchIndex =
+			(currentMatchIndex - 1 + matchingHashes.length) % matchingHashes.length;
+		scrollToMatch();
+	}
+
+	function goToNextMatch() {
+		if (!matchingHashes.length) return;
+		currentMatchIndex = (currentMatchIndex + 1) % matchingHashes.length;
+		scrollToMatch();
+	}
+
+	function closeSearch() {
+		searchMode = false;
+		searchQuery = '';
+		matchingHashes = [];
+		currentMatchIndex = 0;
+	}
+
+	function jumpToDate(dateStr: string) {
+		const target = new Date(dateStr).getTime();
+		const dayTags = Array.from(document.querySelectorAll('[data-day]'));
+		let closest: Element | null = null;
+		let closestDiff = Infinity;
+		for (const el of dayTags) {
+			const day = new Date(el.getAttribute('data-day')!).getTime();
+			const diff = Math.abs(day - target);
+			if (diff < closestDiff) {
+				closestDiff = diff;
+				closest = el;
+			}
+		}
+		closest?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	$effect(() => {
+		if (searchMode) messageInputHeight = '60px';
+	});
+
 	const theme = $derived(useTheme());
 </script>
 
 <Page class="messages-page">
 	{#await $peerProfile then profile}
 		{#await $contactRequest then contactRequest}
-			<Navbar
-				transparent={true}
-				titleClass="opacity1 w-full"
-				centerTitle={false}
-			>
-				{#snippet left()}
-					<NavbarBackLink onClick={() => goto('/')} />
-				{/snippet}
-				{#snippet title()}
-					{#if profile}
-						<Link
-							class="flex items-center justify-start gap-2"
-							href={`/direct-chats/${agentId}/chat-settings`}
-						>
-							<wa-avatar
-								image={profile!.avatar}
-								initials={profile!.name.slice(0, 2)}
-								style="--size: 2.5rem"
+			{#if searchMode}
+				<Navbar transparent={true} titleClass="opacity1 w-full" centerTitle={false}>
+					{#snippet left()}
+						<NavbarBackLink onClick={closeSearch} />
+					{/snippet}
+					{#snippet title()}
+						<div class="flex items-center gap-2">
+							<wa-icon class="quiet" src={wrapPathInSvg(mdiMagnify)}></wa-icon>
+							<input
+								type="text"
+								class="w-full border-none bg-transparent text-base outline-none"
+								placeholder={m.searchMessages()}
+								bind:value={searchQuery}
+								use:focusOnMount
+							/>
+						</div>
+					{/snippet}
+				</Navbar>
+			{:else}
+				<Navbar
+					transparent={true}
+					titleClass="opacity1 w-full"
+					centerTitle={false}
+				>
+					{#snippet left()}
+						<NavbarBackLink onClick={() => goto('/')} data-testid="direct-chat-back" />
+					{/snippet}
+					{#snippet title()}
+						{#if profile}
+							<Link
+								class="flex items-center justify-start gap-2"
+								href={`/direct-chats/${agentId}/chat-settings`}
+								data-testid="direct-chat-settings-link"
 							>
-							</wa-avatar>
-							<span>{fullName(profile!)}</span>
-						</Link>
-					{/if}
-				{/snippet}
-			</Navbar>
+								<wa-avatar
+									image={profile!.avatar}
+									initials={profile!.name.slice(0, 2)}
+									style="--size: 2.5rem"
+								>
+								</wa-avatar>
+								<span data-testid="direct-chat-peer-name">{fullName(profile!)}</span>
+							</Link>
+						{/if}
+					{/snippet}
+				</Navbar>
+			{/if}
 
 			<div class="column">
 				{#await $myDeviceId then myDeviceId}
@@ -385,9 +517,9 @@
 									</div>
 								</Sheet>
 
-								<div class="column m-2 gap-1">
+								<div class="column m-2 gap-1" data-testid="direct-chat-messages">
 									{#each messagesSetsInDays as messageSetInDay}
-										<div class="sticky-day-tag quiet">
+										<div class="sticky-day-tag quiet" data-day={messageSetInDay.day.toISOString()}>
 											{#if moreThanAYearAgo(messageSetInDay.day.valueOf())}
 												<wa-format-date
 													month="numeric"
@@ -416,12 +548,19 @@
 														<Card
 															raised
 															class={`${messageClass(messageSet.length, i)} message my-message`}
+															data-message-hash={hash}
 														>
 															<div
 																class="row gap-2 mx-1"
 																style="align-items: end"
 															>
-																<span style="flex: 1">{message.content}</span>
+																<span class="flex-1">
+																	{#if searchMode && searchQuery}
+																		{@html highlightMatch(message.content, searchQuery)}
+																	{:else}
+																		{message.content}
+																	{/if}
+																</span>
 
 																{#if i === messageSet.length - 1}
 																	<div class="dark-quiet text-xs">
@@ -461,7 +600,13 @@
 																	class="row gap-2 mx-1"
 																	style="align-items: end"
 																>
-																	<span style="flex: 1">{message.content}</span>
+																	<span class="flex-1">
+																		{#if searchMode && searchQuery}
+																			{@html highlightMatch(message.content, searchQuery)}
+																		{:else}
+																			{message.content}
+																		{/if}
+																	</span>
 
 																	{#if i === messageSet.length - 1}
 																		<div class="quiet text-xs">
@@ -498,16 +643,17 @@
 					{/await}
 				{/await}
 
-				{#if showScrollToBottom}
+				{#if showScrollToBottom && !searchMode}
 					{#await $unreadCount then count}
 						<button
 							class="fixed right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 shadow-md transition-opacity hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
 							style={`bottom: calc(${messageInputHeight || '60px'} + 0.5rem)`}
 							onclick={() => scrollToBottom()}
 							aria-label="Scroll to bottom"
+							data-testid="direct-chat-scroll-bottom"
 						>
 							{#if count && count > 0}
-								<Badge class="absolute -top-1 -right-1">
+								<Badge class="absolute -top-1 -right-1" data-testid="direct-chat-unread-badge">
 									{count > 99 ? '99+' : count}
 								</Badge>
 							{/if}
@@ -516,9 +662,47 @@
 					{/await}
 				{/if}
 
-				{#if contactRequest}
+				{#if searchMode}
+					<div class="fixed bottom-0 left-0 right-0 z-40 pb-safe bg-md-light-surface dark:bg-md-dark-surface">
+						<div class="center-in-desktop mx-4 border-t border-gray-300 dark:border-gray-600" style="margin: 0 auto"></div>
+						<div class="center-in-desktop row items-center gap-2 px-4 py-3" style="margin: 0 auto">
+							<button onclick={() => dateInput?.click()}>
+								<wa-icon class="quiet" src={wrapPathInSvg(mdiCalendarSearch)}></wa-icon>
+							</button>
+							<input
+								type="date"
+								class="absolute opacity-0 h-0 w-0"
+								bind:this={dateInput}
+								onchange={(e) => jumpToDate(e.currentTarget.value)}
+							/>
+							<span class="flex-1 text-center text-sm quiet">
+								{#if !searchQuery}
+									<!-- empty -->
+								{:else if matchingHashes.length === 0}
+									{m.noResults()}
+								{:else}
+									{m.searchResultsCount({ current: String(currentMatchIndex + 1), total: String(matchingHashes.length) })}
+								{/if}
+							</span>
+							<button
+								disabled={!matchingHashes.length}
+								onclick={goToPreviousMatch}
+								class="flex h-8 w-8 items-center justify-center disabled:opacity-30"
+							>
+								<wa-icon src={wrapPathInSvg(mdiChevronUp)}></wa-icon>
+							</button>
+							<button
+								disabled={!matchingHashes.length}
+								onclick={goToNextMatch}
+								class="flex h-8 w-8 items-center justify-center disabled:opacity-30"
+							>
+								<wa-icon src={wrapPathInSvg(mdiChevronDown)}></wa-icon>
+							</button>
+						</div>
+					</div>
+				{:else if contactRequest}
 					<div
-						class="center-in-desktop fixed bottom-0 pb-safe bg-[var(--k-page-bg-color)] z-40"
+						class="center-in-desktop fixed bottom-0 pb-safe z-40 bg-md-light-surface dark:bg-md-dark-surface"
 						style="margin: auto"
 					>
 						<div
@@ -542,12 +726,14 @@
 									class="neutral-tonal-button text-red-500 flex-1"
 									rounded
 									tonal
+									data-testid="direct-chat-reject-btn"
 									onClick={() => (showRejectDialog = true)}>{m.reject()}</Button
 								>
 								<Button
 									class="neutral-tonal-button flex-1"
 									rounded
 									tonal
+									data-testid="direct-chat-accept-btn"
 									onClick={() => (showAcceptDialog = true)}>{m.accept()}</Button
 								>
 							</div>
@@ -586,6 +772,7 @@
 						{m.cancel()}
 					</DialogButton>
 					<DialogButton
+						data-testid="direct-chat-accept-confirm"
 						onClick={() => {
 							showAcceptDialog = false;
 							acceptContactRequest(contactRequest);
@@ -608,6 +795,7 @@
 						{m.cancel()}
 					</DialogButton>
 					<DialogButton
+						data-testid="direct-chat-reject-confirm"
 						onClick={() => {
 							showRejectDialog = false;
 							rejectContactRequest(contactRequest);

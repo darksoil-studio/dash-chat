@@ -51,7 +51,7 @@
 	{:then profile}
 		<Navbar transparent={true}>
 			{#snippet left()}
-				<NavbarBackLink onClick={() => goto(`/direct-chats/${agentId}`)} />
+				<NavbarBackLink onClick={() => goto(`/direct-chats/${agentId}`)} data-testid="chat-settings-back" />
 			{/snippet}
 		</Navbar>
 
@@ -66,7 +66,7 @@
 					</wa-avatar>
 
 					<button class="flex items-center gap-1" onclick={() => (showPeerProfile = true)}>
-						<span class="text-xl font-semibold">{fullName(profile!)}</span>
+						<span class="text-xl font-semibold" data-testid="chat-settings-peer-name">{fullName(profile!)}</span>
 						<wa-icon
 							class="small-icon quiet"
 							src={wrapPathInSvg(mdiChevronRight)}
@@ -79,14 +79,17 @@
 				</div>
 
 				<div class="mb-4 flex justify-center gap-6">
+					<!-- TODO: Coming soon - mute notifications -->
+					{#if false}
 					<div class="flex flex-col items-center gap-1">
 						<Button class="icon-only" tonal onClick={comingSoon}>
 							<wa-icon src={wrapPathInSvg(mdiBellOutline)}></wa-icon>
 						</Button>
 						<span class="text-xs">{m.mute()}</span>
 					</div>
+					{/if}
 					<div class="flex flex-col items-center gap-1">
-						<Button class="icon-only" tonal onClick={comingSoon}>
+						<Button class="icon-only" tonal onClick={() => goto(`/direct-chats/${agentId}?search=true`)} data-testid="chat-settings-search-btn">
 							<wa-icon src={wrapPathInSvg(mdiMagnify)}></wa-icon>
 						</Button>
 						<span class="text-xs">{m.search()}</span>
@@ -95,6 +98,8 @@
 
 				<div class="mx-4 my-2 border-t border-gray-200 dark:border-gray-700"></div>
 
+				<!-- TODO: Coming soon - chat color/wallpaper and groups in common -->
+				{#if false}
 				<List nested strongIos insetIos>
 					<ListItem
 						link
@@ -132,6 +137,7 @@
 						{/snippet}
 					</ListItem>
 				</List>
+				{/if}
 			</div>
 		</div>
 

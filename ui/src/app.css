@@ -149,10 +149,16 @@ li.plain span {
 	top: calc(64px + env(safe-area-inset-top, 0px) + 8px);
 	align-self: center;
 	z-index: 30;
-	background-color: var(--k-page-bg-color, #f2f2f7);
+	background-color: var(--k-color-md-light-surface);
 	padding: 4px 12px;
 	border-radius: 12px;
 	font-size: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+	.sticky-day-tag {
+		background-color: var(--k-color-md-dark-surface);
+	}
 }
 
 .small-icon {
@@ -187,4 +193,33 @@ li.plain span {
 	width: 56px;
 	height: 56px;
 	border-radius: 16px;
+}
+
+.search-highlight {
+	background-color: #fbbf24;
+	color: black;
+	border-radius: 2px;
+	padding: 0 1px;
+}
+
+.search-flash {
+	animation: search-flash-anim 0.8s ease-out;
+}
+
+@keyframes search-flash-anim {
+	0% {
+		filter: brightness(1);
+	}
+	15% {
+		filter: brightness(1.4);
+	}
+	30% {
+		filter: brightness(1);
+	}
+	45% {
+		filter: brightness(1.4);
+	}
+	70% {
+		filter: brightness(1);
+	}
 }

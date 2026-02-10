@@ -27,7 +27,7 @@
 <Page>
 	<Navbar title={m.profile()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => goto('/settings')} />
+			<NavbarBackLink onClick={() => goto('/settings')} data-testid="profile-back" />
 		{/snippet}
 	</Navbar>
 
@@ -49,7 +49,7 @@
 					>
 					</wa-avatar>
 
-					<Button tonal style="width: auto" rounded onClick={()=>goto('/settings/profile/edit-photo')}>{m.editPhoto()}</Button>
+					<Button tonal style="width: auto" rounded onClick={()=>goto('/settings/profile/edit-photo')} data-testid="profile-edit-photo">{m.editPhoto()}</Button>
 				</div>
 
 				<List nested strongIos insetIos>
@@ -57,6 +57,7 @@
 						title={fullName(myProfile!)}
 						link
 						linkProps={{ href: '/settings/profile/edit-name' }}
+						data-testid="profile-edit-name"
 					>
 						{#snippet media()}
 							<wa-icon src={wrapPathInSvg(mdiAccount)}></wa-icon>
@@ -66,6 +67,7 @@
 						title={m.about()}
 						link
 						linkProps={{ href: '/settings/profile/edit-about' }}
+						data-testid="profile-edit-about"
 					>
 						{#snippet media()}
 							<wa-icon src={wrapPathInSvg(mdiInformationOutline)}></wa-icon>
@@ -82,6 +84,7 @@
 						title={m.myQrCode()}
 						link
 						linkProps={{ href: '/add-contact' }}
+						data-testid="profile-qr-link"
 					>
 						{#snippet media()}
 							<wa-icon src={wrapPathInSvg(mdiQrcode)}></wa-icon>

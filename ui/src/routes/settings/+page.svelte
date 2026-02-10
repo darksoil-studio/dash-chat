@@ -29,7 +29,7 @@
 <Page>
 	<Navbar title={m.settings()} titleClass="opacity1" transparent={true}>
 		{#snippet left()}
-			<NavbarBackLink onClick={() => goto('/')} />
+			<NavbarBackLink onClick={() => goto('/')} data-testid="settings-back" />
 		{/snippet}
 	</Navbar>
 
@@ -52,6 +52,7 @@
 					link
 					chevron={false}
 					linkProps={{ href: '/settings/profile' }}
+					data-testid="settings-profile-link"
 					title={myProfile?.name}
 				>
 					{#snippet media()}
@@ -71,6 +72,7 @@
 						>
 							<Link
 								iconOnly
+								data-testid="settings-qr-link"
 								onClick={e => {
 									e.stopPropagation();
 									e.preventDefault();
@@ -92,6 +94,7 @@
 				<ListItem
 					link
 					linkProps={{ href: '/settings/account' }}
+					data-testid="settings-account-link"
 					title={m.account()}
 					chevron={false}
 				>
