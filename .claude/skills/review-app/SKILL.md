@@ -2,6 +2,7 @@
 name: review-app
 description: "Run a full app review — launches two instances, walks through every workflow, and checks all screens with iOS/Material themes and Farsi/German translations."
 user-invocable: true
+allowed-tools: mcp__tauri__driver_session, mcp__tauri__webview_screenshot, mcp__tauri__webview_dom_snapshot, mcp__tauri__webview_find_element, mcp__tauri__webview_execute_js, mcp__tauri__webview_wait_for, mcp__tauri__webview_interact, mcp__tauri__webview_keyboard, mcp__tauri__webview_get_styles, mcp__tauri__read_logs, mcp__tauri__manage_window, mcp__tauri__ipc_execute_command, mcp__tauri__ipc_monitor, mcp__tauri__ipc_get_captured
 ---
 
 # Review App
