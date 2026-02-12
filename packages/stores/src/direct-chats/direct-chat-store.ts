@@ -10,6 +10,7 @@ import { toPromise } from '../utils/to-promise';
 import { DirectChatClient } from './direct-chat-client';
 
 export interface Message {
+	hash: string;
 	content: MessageContent;
 	timestamp: number;
 	author: DeviceId;
@@ -52,6 +53,7 @@ export class DirectChatStore {
 				if (body?.type === 'Chat') {
 					if (body.payload.type === 'Message') {
 						messages[operation.hash] = {
+							hash: operation.hash,
 							content: body.payload.payload,
 							author,
 							timestamp: operation.header.timestamp * 1000,
@@ -141,7 +143,6 @@ export class DirectChatStore {
 	}
 
 	async sendReaction(reaction: ChatReaction) {
-		console.log('sending reaction', reaction)
 		const chatId = await toPromise(this.chatId);
 		const myDeviceId = await toPromise(this.contactsStore.myDeviceId);
 		const promise = new Promise(resolve => {
