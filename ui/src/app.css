@@ -130,3 +130,7 @@ li.plain span {
 .k-toolbar.transparent .bg-gradient-to-t {
 	display: none
 }
+
+emoji-picker {
+	width: 100%;
+}
