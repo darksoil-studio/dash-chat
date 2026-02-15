@@ -21,7 +21,7 @@
 	let chatId = page.params.chatId!;
 
 	const chatsStore: ChatsStore = getContext('chats-store');
-	const store = chatsStore.directMessagesChats(chatId);
+	const store = chatsStore.directChats(chatId);
 
 	const peerProfile = useReactivePromise(store.peerProfile);
 </script>
@@ -38,7 +38,7 @@
 		<Navbar transparent={true}>
 			{#snippet left()}
 				<NavbarBackLink
-					onClick={() => goto(`/direct-messages/${chatId}`)}
+					onClick={() => goto(`/direct-chats/${chatId}`)}
 				/>
 			{/snippet}
 

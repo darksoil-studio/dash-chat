@@ -1,8 +1,8 @@
 import { ReactivePromise, reactive } from 'signalium';
 
 import { ContactsStore } from '../contacts/contacts-store';
-import { DirectMessagesChatClient } from '../direct-messages/direct-messages-chat-client';
-import { DirectMessagesChatStore } from '../direct-messages/direct-messages-chat-store';
+import { DirectChatClient } from '../direct-chats/direct-chat-client';
+import { DirectChatStore } from '../direct-chats/direct-chat-store';
 import { GroupChatClient } from '../group-chats/group-chat-client';
 import { GroupChatStore } from '../group-chats/group-chat-store';
 import { LogsStore } from '../p2panda/logs-store';
@@ -50,12 +50,12 @@ export class ChatsStore {
 			),
 	);
 
-	directMessagesChats = reactive(
+	directChats = reactive(
 		(peer: AgentId) =>
-			new DirectMessagesChatStore(
+			new DirectChatStore(
 				this.logsStore,
 				this.contactsStore,
-				new DirectMessagesChatClient(),
+				new DirectChatClient(),
 				peer,
 			),
 	);
@@ -105,7 +105,7 @@ export class ChatsStore {
 		const profile = await this.contactsStore.profiles(chatId);
 
 		return {
-			type: 'DirectMessagesChat',
+			type: 'DirectChat',
 			chatId,
 			name: profile?.name,
 			avatar: profile?.avatar,
@@ -119,7 +119,7 @@ export class ChatsStore {
 }
 
 export interface ChatSummary {
-	type: 'GroupChat' | 'DirectMessagesChat' | 'ContactRequest';
+	type: 'GroupChat' | 'DirectChat' | 'ContactRequest';
 	chatId: TopicId;
 	unreadMessages: number;
 	name: string;

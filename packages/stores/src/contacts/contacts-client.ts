@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import { AgentId, type TopicId } from '../p2panda/types';
+import { AgentId, DeviceId, type TopicId } from '../p2panda/types';
 import { ContactCode } from '../types';
 
 export interface Profile {
@@ -12,6 +12,8 @@ export interface IContactsClient {
 	/// Profiles
 
 	myAgentId(): Promise<AgentId>;
+
+	myDeviceId(): Promise<DeviceId>;
 
 	// Sets the profile for this user
 	setProfile(profile: Profile): Promise<void>;
@@ -52,6 +54,10 @@ export interface IContactsClient {
 export class ContactsClient implements IContactsClient {
 	myAgentId(): Promise<AgentId> {
 		return invoke('my_agent_id');
+	}
+
+	myDeviceId(): Promise<DeviceId> {
+		return invoke('my_device_id');
 	}
 
 	async setProfile(profile: Profile): Promise<void> {

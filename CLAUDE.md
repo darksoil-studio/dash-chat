@@ -133,12 +133,12 @@ This is a pnpm workspace with multiple packages:
 
 **Structure:**
 - **ui/src/routes/**: SvelteKit file-based routing
-  - Main routes: contacts, direct-messages, group-chat, settings, add-contact, new-group, new-message
+  - Main routes: contacts, direct-chats, group-chat, settings, add-contact, new-group, new-message
   - Uses Svelte 5 runes (signals) for reactivity
 - **ui/src/components/**: Reusable UI components
 - **ui/src/utils/**: Utility functions (image compression, time formatting, QR codes, etc.)
 - **packages/stores/src/**: Shared state management
-  - Organized by domain: contacts, chats, group-chats, direct-messages, devices
+  - Organized by domain: contacts, chats, group-chats, direct-chats, devices
   - Each domain has a `-store.ts` (state) and `-client.ts` (Tauri commands)
   - `p2panda/`: Core p2panda integration (logs-store, logs-client, types)
 
@@ -241,7 +241,7 @@ setContext('chats-store', chatsStore);
 
 Stores depend on each other forming a dependency graph:
 - `LogsStore` (base) ← `DevicesStore` ← `ContactsStore` ← `ChatsStore`
-- Domain-specific stores (e.g., `DirectMessagesChatStore`, `GroupChatStore`) are created on-demand with specific parameters
+- Domain-specific stores (e.g., `DirectChatStore`, `GroupChatStore`) are created on-demand with specific parameters
 
 ### Data Flow
 

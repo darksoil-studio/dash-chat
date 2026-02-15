@@ -234,6 +234,14 @@ impl Node {
         self.node_data.agent_id
     }
 
+    pub fn device_id(&self) -> DeviceId {
+        self.node_data.device_id()
+    }
+
+    pub fn device_group_topic(&self) -> DeviceGroupId {
+        Topic::device_group(self.agent_id()).into()
+    }
+
     /// Get the topic for a direct chat between two public keys.
     ///
     /// The topic is the hashed sorted public keys.
@@ -388,14 +396,6 @@ impl Node {
             .await?;
 
         Ok(header)
-    }
-
-    pub fn device_id(&self) -> DeviceId {
-        self.node_data.device_id()
-    }
-
-    pub fn device_group_topic(&self) -> DeviceGroupId {
-        Topic::device_group(self.agent_id()).into()
     }
 
     /// Store someone as a contact, and:

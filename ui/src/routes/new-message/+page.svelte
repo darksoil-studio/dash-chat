@@ -91,7 +91,7 @@
 						{#each filteredContacts as [actorId, profile]}
 							<ListItem
 								link
-								linkProps={{ href: `/direct-messages/${actorId}` }}
+								linkProps={{ href: `/direct-chats/${actorId}` }}
 								title={profile.name}
 								chevron={false}
 							>

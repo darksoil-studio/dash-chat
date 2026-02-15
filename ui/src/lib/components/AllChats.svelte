@@ -45,7 +45,7 @@
 				link
 				linkProps={{ href: summary.type === 'GroupChat'
 					? `/group-chat/${summary.chatId}`
-					: `/direct-messages/${summary.chatId}` }}
+					: `/direct-chats/${summary.chatId}` }}
 				chevron={false}
 			>
 				{#snippet media()}

@@ -3,8 +3,6 @@ import {
 	AgentId,
 	DeviceId,
 	Hash,
-	LongTermKeyBundle,
-	PublicKey,
 	TopicId,
 } from './p2panda/types';
 
@@ -17,9 +15,19 @@ export interface SpaceControlMessage {
 	// spaces_args: SpacesArgs,
 }
 
+export interface ChatReaction {
+	/// The emoji to react with.
+	/// Use None to "remove" the prior reaction.
+	emoji: string | null;
+	/// The hash of the header of the message being reacted to.
+	target: Hash;
+}
+
 export type MessageContent = string;
 export type AnnouncementPayload = { type: 'SetProfile'; payload: Profile };
-export type ChatPayload = { type: 'Message'; payload: MessageContent };
+export type ChatPayload =
+	| { type: 'Message'; payload: MessageContent }
+	| { type: 'Reaction'; payload: ChatReaction };
 
 export interface InboxTopic {
 	expires_at: number;
